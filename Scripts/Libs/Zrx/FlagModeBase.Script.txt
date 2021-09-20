@@ -1,0 +1,53 @@
+/**
+ *	Base mode for flag based gamemodes, like FlagRush
+ */
+#Extends "Libs/Nadeo/TMNext/TrackMania/Modes/TMNextBase.Script.txt"
+
+//////////////
+// Includes //
+//////////////
+
+#Include "Libs/Zrx/Collision.Script.txt" as Collision
+#Include "Libs/Zrx/PlayerTelemetry.Script.txt" as Telemetry
+
+///////////
+// Plugs //
+///////////
+
+***Match_InitRound***
+***
+Telemetry::StartRound();
+***
+
+***MB_Private_AfterEndRound***
+***
+Telemetry::EndRound();
+***
+
+***Match_InitMap***
+***
+Telemetry::StartMap();
+***
+
+***MB_Private_AfterEndMap***
+***
+Telemetry::EndMap();
+***
+
+***Match_InitMatch***
+***
+Telemetry::StartMatch();
+***
+
+***MB_Private_AfterEndMatch***
+***
+Telemetry::EndMatch();
+***
+
+***MB_Private_Yield***
+***
+Collision::Yield();
+***
+
+// Empty dummy function because for some reason the compiler else throws an "Unexpected EOF" error
+Void UnusedDummyFunction(){}

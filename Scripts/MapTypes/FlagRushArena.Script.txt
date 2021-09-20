@@ -1,0 +1,120 @@
+/**
+ *	Trackmania Base Rush
+ *
+ *	One Start Team 1
+ *  One Start Team 2
+ *  One Base Team 1
+ *  One Base Team 2
+ *  One Flag Spawn
+ */
+#RequireContext CSmMapType
+#Const Version "2021-09-04"
+#Const C_MapTypeVersion 1
+#Const ScriptName "MapTypes/BaseRushArena.Script.txt"
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+// Libraries
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+#Include "Libs/Nadeo/ModeLibs/Legacy/MapType.Script.txt" as MapType
+#Include "Libs/Nadeo/TMxSM/Race/Landmark.Script.txt" as Landmark
+#Include "Libs/Nadeo/TMxSM/Race/MapSet.Script.txt" as MapSet
+#Include "Libs/Nadeo/TMxSM/Race/MapGet.Script.txt" as MapGet
+#Include "Modes/TrackMania/TM_RaceTest_Local.Script.txt" as RaceTest
+#Include "Libs/Nadeo/TMNext/TrackMania/Stores/ClubStore.Script.txt" as ClubStore
+#Include "Libs/Nadeo/TMNext/TrackMania/Structures/ClubStruct.Script.txt" as ClubStruct
+#Include "Libs/Nadeo/CommonLibs/Common/ReportContext.Script.txt" as ReportContext
+#Include "Libs/Nadeo/TMNext/TrackMania/Editor/MapType.Script.txt" as TMMapType
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+// Constants
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+// Functions
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+/// Check if the map is valid
+Void UpdateValidability() {
+	declare SpawnsTeam1Count = 0;
+	declare SpawnsTeam2Count = 0;
+	declare BasesTeam1Count = 0;
+	declare BasesTeam2Count = 0;
+	declare FlagSpawnsCount = 0;
+	
+	foreach (Anchor in AnchorData) {
+		switch (Anchor.WaypointType) {
+			case CAnchorData::EWaypointType::Start: {
+				if (Anchor.Tag == "SpawnTeam1") SpawnsTeam1Count += 1;
+				else if (Anchor.Tag == "SpawnTeam2") SpawnsTeam2Count += 1;
+			}
+			case CAnchorData::EWaypointType::Finish: {
+				if (Anchor.Tag == "BaseTeam1") BasesTeam1Count += 1;
+				else if (Anchor.Tag == "BaseTeam2") BasesTeam2Count += 1;
+			}
+			case CAnchorData::EWaypointType::StartFinish: {
+				if (Anchor.Tag == "SpawnTeam1") SpawnsTeam1Count += 1;
+				else if (Anchor.Tag == "SpawnTeam2") SpawnsTeam2Count += 1;
+			}
+			case CAnchorData::EWaypointType::Checkpoint: {
+				if (Anchor.Tag == "FlagSpawn") FlagSpawnsCount += 1;
+			}
+		}
+	}
+	
+	declare IsValid = True;
+	declare Message = "$sYour map is missing the following reqirements:\n";
+	
+	if (SpawnsTeam1Count != 1) {
+		IsValid = False;
+		Message ^= "\nYou must place exactly one SpawnTeam1!" ^ """ ({{{SpawnsTeam1Count}}}/1)""";
+	}
+	if (SpawnsTeam2Count != 1) {
+		IsValid = False;
+		Message ^= "\nYou must place exactly one SpawnTeam2!" ^ """ ({{{SpawnsTeam2Count}}}/1)""";
+	}
+	if (BasesTeam1Count  != 1) {
+		IsValid = False;
+		Message ^= "\nYou must place exactly one BaseTeam1!"  ^ """ ({{{BasesTeam1Count}}}/1)""";
+	}
+	if (BasesTeam2Count  != 1) {
+		IsValid = False;
+		Message ^= "\nYou must place exactly one BaseTeam2!"  ^ """ ({{{BasesTeam1Count}}}/1)""";
+	}
+	if (FlagSpawnsCount  != 1) {
+		IsValid = False;
+		Message ^= "\nYou must place exactly one FlagSpawn!"  ^ """ ({{{FlagSpawnsCount}}}/1)""";
+	}
+	
+	if (IsValid) {
+		ValidationStatus = CMapType::ValidationStatus::Validated;
+	} else {
+		ValidationStatus = CMapType::ValidationStatus::NotValidable;
+	}
+	ValidabilityRequirementsMessage = Message;
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+// Main
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+main() {
+	HoldLoadingScreen = True;
+	ReportContext::SetContext(System, ReportContext::C_Context_MapEditor);
+	TMMapType::ApplyDecoImages();
+	
+	MapType::SetVersion(C_MapTypeVersion);
+	UpdateValidability();
+	
+	HoldLoadingScreen = False;
+	
+	while (True) {
+		yield;
+		
+		foreach(Event in PendingEvents) {			
+			switch(Event.Type) {
+				case CMapEditorPluginEvent::Type::MapModified: {
+					UpdateValidability();
+				}
+			}
+		}
+	}
+}

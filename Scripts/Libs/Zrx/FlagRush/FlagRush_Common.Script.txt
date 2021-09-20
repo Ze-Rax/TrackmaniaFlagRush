@@ -1,0 +1,35 @@
+#Include "ColorLib" as CL
+
+#Const	C_DefaultNeutralColor						<1., 1., 1.>
+#Const	C_DefaultTeamColors							[0 => <0.2, 0.2, 1.>, 1 => <1., 0.2, 0.2>]
+#Const	C_DefaultTeamSecondaryColors		[0 => <0.2, 0.2, 1.>, 1 => <1., 0.2, 0.2>]
+#Const	C_DefaultTeamNames							[0 => "Team Blue"   , 1 => "Team Red"    ]
+
+#Const	C_PointsValue_ScoreFlag	3
+#Const	C_PointsValue_StealFlag	1
+
+Vec3 GetDefaultTeamColor(Integer Team) {
+	if(C_DefaultTeamColors.existskey(Team)) return C_DefaultTeamColors[Team];
+	return C_DefaultNeutralColor;
+}
+
+Vec3 GetDefaultTeamSecondaryColor(Integer Team) {
+	if(C_DefaultTeamSecondaryColors.existskey(Team)) return C_DefaultTeamSecondaryColors[Team];
+	return C_DefaultNeutralColor;
+}
+
+Text GetDefaultTeamName(Integer Team) {
+	if(C_DefaultTeamNames.existskey(Team)) return C_DefaultTeamNames[Team];
+	return "Unknown";
+}
+
+Vec3 ColorToFullSaturationAndValue(Vec3 ColorRgb) {
+	// Turn to HSV
+	declare ColorHsv = CL::RgbToHsv(ColorRgb);
+	//Maximize S & V
+	ColorHsv.Y = 1.;
+	ColorHsv.Z = 1.;
+	// Turn back to Rgb
+	declare Result = CL::HsvToRgb(ColorHsv);
+	return Result;
+}

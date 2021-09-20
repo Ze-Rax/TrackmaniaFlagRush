@@ -4,8 +4,7 @@
 // Structs //
 /////////////
 
-#Struct Struct_CollisionEvent
-{
+#Struct Struct_CollisionEvent {
 	CSmPlayer	Player1;
 	CSmPlayer	Player2;
 }
@@ -34,14 +33,11 @@ Void Yield() {
 	CollisionPendingEvents.clear();
 
 	// Collision detection using CylinderHitbox (based on Dommy's Lib)
-	for(IndexPlayer1, 0, Players.count - 2)
-	{
-		for(IndexPlayer2, IndexPlayer1 + 1, Players.count - 1)	// No need to check with previous players
-		{
+	for(IndexPlayer1, 0, Players.count - 2) {
+		for(IndexPlayer2, IndexPlayer1 + 1, Players.count - 1) {	// No need to check with previous players		
 			declare Player1 = Players[IndexPlayer1];
 			declare Player2 = Players[IndexPlayer2];
-			if(Hitbox::AreTouching(Player1, Player2))
-			{
+			if(Hitbox::AreTouching(Player1, Player2)) {
 				declare Struct_CollisionEvent CollisionEvent = Struct_CollisionEvent{Player1 = Player1, Player2 = Player2};
 				CollisionPendingEvents.add(CollisionEvent);
 			}

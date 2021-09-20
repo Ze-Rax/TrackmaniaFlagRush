@@ -50,6 +50,7 @@
 // ---------------------------------- //
 
 // ---------------------------------- //
+
 /** Convert pitch in radians to degress
  *
  *	@param	_Pitch		The pitch to convert
@@ -144,7 +145,7 @@ Boolean IsSpawned(CSmPlayer _Player) {
 // ---------------------------------- //
 /** Check if hitboxes of two players touch
  *
- *	@param	_Player1	Pirst point position
+ *	@param	_Player1	First point position
  *	@param	_Player2	Second point position
  *
  *	@return		True if cylinders touch
@@ -241,7 +242,7 @@ Struct_Hitbox GetHitbox(CSmPlayer _Player) {
 }
 
 Boolean CheckOverlap(Struct_Hitbox Hitbox1, Struct_Hitbox Hitbox2) {
-	if(Hitbox1.Diameter <= 0. || Hitbox2.Diameter <= 0. || Hitbox1.Height <= 0. || Hitbox2.Height <= 0.) return False;
+	if (Hitbox1.Diameter <= 0. || Hitbox2.Diameter <= 0. || Hitbox1.Height <= 0. || Hitbox2.Height <= 0.) return False;
 	
 	// Check X & Z
 	if (Private_Distance2D(Hitbox1.Center, Hitbox2.Center) > (Hitbox1.Diameter + Hitbox2.Diameter) / 2) return False;

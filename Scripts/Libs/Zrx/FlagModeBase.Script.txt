@@ -1,6 +1,6 @@
 /**
- *	Base mode for flag based gamemodes, like FlagRush
- */
+*	Base mode for flag based gamemodes, like FlagRush
+*/
 #Extends "Libs/Nadeo/TMNext/TrackMania/Modes/TMNextBase.Script.txt"
 
 //////////////

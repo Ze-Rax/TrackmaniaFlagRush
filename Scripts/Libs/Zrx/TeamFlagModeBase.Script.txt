@@ -1,6 +1,6 @@
 /**
- *	Base mode for team and flag based gamemodes, like FlagRush
- */
+*	Base mode for team and flag based gamemodes, like FlagRush
+*/
 #Extends "Libs/Zrx/FlagModeBase.Script.txt"
 
 //////////////

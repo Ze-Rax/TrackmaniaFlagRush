@@ -1,12 +1,13 @@
 /**
- *	Trackmania Base Rush
- *
- *	One Start Team 1
- *  One Start Team 2
- *  One Base Team 1
- *  One Base Team 2
- *  One Flag Spawn
- */
+*  Trackmania Base Rush
+*
+*  One Start Team 1
+*  One Start Team 2
+*  One Base Team 1
+*  One Base Team 2
+*  One Flag Spawn
+*/
+
 #RequireContext CSmMapType
 #Const Version "2021-09-04"
 #Const C_MapTypeVersion 1

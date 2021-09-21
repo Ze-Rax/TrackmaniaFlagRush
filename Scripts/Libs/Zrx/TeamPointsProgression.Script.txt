@@ -1,6 +1,6 @@
 /**
- *	For Tracking Match Score/Points Progression throughout a multiround/-map match
- */
+*	For Tracking Match Score/Points Progression throughout a multiround/-map match
+*/
 
 #Const	C_Level_Match		0
 #Const	C_Level_Map			1
@@ -65,7 +65,7 @@ Void StartMatch() {
 }
 
 Void EndMatch() {
-
+	
 }
 
 Void StartMap() {
@@ -73,7 +73,7 @@ Void StartMap() {
 }
 
 Void EndMap() {
-
+	
 }
 
 Void StartRound() {
@@ -81,5 +81,5 @@ Void StartRound() {
 }
 
 Void EndRound() {
-
+	
 }

@@ -188,7 +188,7 @@ declare Message = """Round start!""";
 UIManager.UIAll.QueueMessage(MessageDuration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
 MB_Sleep(MessageDuration);
 
-Layers::Attach(C_LayerName_RoundUI);
+// Layers::Attach(C_LayerName_RoundUI);
 
 StartTime = Now;
 EndTime = (ML::NearestInteger(Now + S_RoundTimeLimitSeconds * 1000 + C_SpawnAnimDuration));
@@ -229,7 +229,7 @@ EndTime += SleepDuration;
 ***
 FlagRush_Log("End Round");
 
-Layers::Detach(C_LayerName_RoundUI);
+// Layers::Detach(C_LayerName_RoundUI);
 UpdateUI();
 
 MB_ClearAllMessages();
@@ -590,8 +590,8 @@ Void InitUI() {
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
 	
-	Layers::Create(C_LayerName_RoundUI, FlagRush_UI::GetMainUIManialink());
-	Layers::SetType(C_LayerName_RoundUI, CUILayer::EUILayerType::Normal);
+	// Layers::Create(C_LayerName_RoundUI, FlagRush_UI::GetMainUIManialink());
+	// Layers::SetType(C_LayerName_RoundUI, CUILayer::EUILayerType::Normal);
 	// Layers::Attach(C_LayerName_RoundUI); // Attach and Detach at Match_RoundStart/End
 	
 	InitMarkers();
@@ -661,10 +661,13 @@ Integer[Text][Text] GetPlayerScoresTableData() {
 
 // --------------------------------------------------
 
+
+
+
 /**
-*	Updates general UI for all players.
+*	Updates general UI for a player.
 */
-Void UpdateUI() {
+Void UpdateUIForPlayer(CSmPlayer Player) {
 	// Need to loop twice, once to get all scores data from all player
 	// before sending to each player individually
 	
@@ -689,8 +692,6 @@ Void UpdateUI() {
 		ScoresTableData[Score.TeamNum][Score.User.Name] = PlayerScoresTableData;
 	}
 	
-	// Send data
-	foreach(Player in Players) {
 		declare UI <=> UIManager.GetUI(Player);
 		
 		/* Scores Header */
@@ -698,6 +699,9 @@ Void UpdateUI() {
 		declare netwrite Integer Net_NbMapsToWinMatch for UI;
 		Net_NbMapsToWinMatch = S_NbMapsToWinMatch;
 		
+		declare netwrite Integer Net_NbRoundsToWinMap for UI;
+		Net_NbRoundsToWinMap = S_NbRoundsToWinMap;
+
 		declare netwrite Integer Net_Team1RoundScore for UI;
 		Net_Team1RoundScore = Scores::GetClanRoundPoints(1);
 		declare netwrite Integer Net_Team2RoundScore for UI;
@@ -709,39 +713,32 @@ Void UpdateUI() {
 		declare netwrite Integer Net_Team2MapScore for UI;
 		Net_Team2MapScore = TeamPointsProgression::GetClanMapsWon(2);
 		
-		/* Scores Table */
-		
+		/* Scores Table */		
 		declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for UI;
 		Net_ScoresTableData = ScoresTableData;
 		
-		/* Timer */
-		
+		/* Timer */		
 		declare netwrite Boolean Net_HideTimer for UI;
 		Net_HideTimer = S_RoundTimeLimitSeconds <= 0.;
 		
 		declare netwrite Integer Net_RoundTimeLeft for UI;
 		Net_RoundTimeLeft = EndTime - Now;
-	}	
 }
 
+/**
+*	Updates general UI for all players.
+*/
+Void UpdateUI() {
+	// Send data
+	foreach(Player in AllPlayers) {
+		UpdateUIForPlayer(Player);
+	}
+}
 // --------------------------------------------------
 
-/**
-*	Updates the UI flag marker for each player (Color, Gauge).
-*	Only in specific situations
-*/
-Void UpdateFlagMarker(Integer GaugeDuration) {
-	declare FlagCarrier = GetFlagCarrier();	
-	declare ClampedGaugeDuration = GaugeDuration;
-	if (ClampedGaugeDuration < 0) ClampedGaugeDuration = 0;
-	
-	foreach(Player in Players) {
-		declare UI = UIManager.GetUI(Player);
-		
-		// Hide marker for Carrier
-		declare netwrite Boolean Net_HideFlagMarker for UI;
-		if (FlagCarrier == Player && !C_Debug) Net_HideFlagMarker = True;
-		else Net_HideFlagMarker = False;
+Void UpdateFlagCarrier(CSmPlayer Player) {
+		declare UI = UIManager.GetUI(Player);	
+		declare FlagCarrier = GetFlagCarrier();	
 		
 		// Carrier Clan Index (for color)
 		declare netwrite Integer Net_FlagCarrierClan for UI;
@@ -753,12 +750,40 @@ Void UpdateFlagMarker(Integer GaugeDuration) {
 		if (FlagCarrier != Null) Net_FlagCarrierName = FlagCarrier.User.Name;
 		else if (G_FlagState.Landmark == G_FlagSpawn) Net_FlagCarrierName = "Spawn";
 		else Net_FlagCarrierName = "Dropped";
-		
-		// Timing for gauge
-		declare netwrite Integer Net_FlagGaugeStartServerDate for UI;
-		Net_FlagGaugeStartServerDate = Now;
-		declare netwrite Integer Net_FlagGaugeDuration for UI;
-		Net_FlagGaugeDuration = GaugeDuration;
+
+}
+
+/**
+*	Updates the UI flag marker for a player.
+*/
+Void UpdateFlagMarkerForPlayer(CSmPlayer Player, Integer GaugeDuration) {
+	declare FlagCarrier = GetFlagCarrier();	
+	declare ClampedGaugeDuration = GaugeDuration;
+	if (ClampedGaugeDuration < 0) ClampedGaugeDuration = 0;
+	
+	declare UI = UIManager.GetUI(Player);		
+
+	// Hide marker for Carrier
+	declare netwrite Boolean Net_HideFlagMarker for UI;
+	if (FlagCarrier == Player && !C_Debug) Net_HideFlagMarker = True;
+	else Net_HideFlagMarker = False;
+	
+	UpdateFlagCarrier(Player);
+	
+	// Timing for gauge
+	declare netwrite Integer Net_FlagGaugeStartServerDate for UI;
+	Net_FlagGaugeStartServerDate = Now;
+	declare netwrite Integer Net_FlagGaugeDuration for UI;
+	Net_FlagGaugeDuration = GaugeDuration;
+}
+
+/**
+*	Updates the UI flag marker for each player (Color, Gauge).
+*	Only in specific situations
+*/
+Void UpdateFlagMarker(Integer GaugeDuration) {	
+	foreach(Player in Players) {
+		UpdateFlagMarkerForPlayer(Player, GaugeDuration);
 	}
 }
 
@@ -1035,6 +1060,7 @@ Void SpawnPlayers() {
 				if (Spawn != Null) {
 					InitPlayer(Player);
 					SpawnPlayer(Player, Player.CurrentClan, Player.ArmorMax, Spawn, 0);
+					UpdateFlagCarrier(Player);					
 				}
 			}
 		}

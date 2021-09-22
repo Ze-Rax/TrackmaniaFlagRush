@@ -1,17 +1,21 @@
 /**
 *  Trackmania Base Rush
 *
-*  One Start Team 1
-*  One Start Team 2
-*  One Base Team 1
-*  One Base Team 2
-*  One Flag Spawn
+*  One StartTeam1
+*  One StartTeam2
+*  One BaseTeam1
+*  One BaseTeam2
+*  One FlagSpawn
 */
 
 #RequireContext CSmMapType
 #Const Version "2021-09-04"
 #Const C_MapTypeVersion 1
-#Const ScriptName "MapTypes/BaseRushArena.Script.txt"
+#Const ScriptName "MapTypes/FlagRushArena.Script.txt"
+
+#Const C_StartTagPrefix "SpawnTeam"
+#Const C_FinishTagPrefix "BaseTeam"
+#Const C_FlagSpawnTag "FlagSpawn"
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Libraries
@@ -45,19 +49,19 @@ Void UpdateValidability() {
 	foreach (Anchor in AnchorData) {
 		switch (Anchor.WaypointType) {
 			case CAnchorData::EWaypointType::Start: {
-				if (Anchor.Tag == "SpawnTeam1") SpawnsTeam1Count += 1;
-				else if (Anchor.Tag == "SpawnTeam2") SpawnsTeam2Count += 1;
+				if (Anchor.Tag == """{{{C_StartTagPrefix}}}1""") SpawnsTeam1Count += 1;
+				else if (Anchor.Tag == """{{{C_StartTagPrefix}}}2""") SpawnsTeam2Count += 1;
 			}
 			case CAnchorData::EWaypointType::Finish: {
-				if (Anchor.Tag == "BaseTeam1") BasesTeam1Count += 1;
-				else if (Anchor.Tag == "BaseTeam2") BasesTeam2Count += 1;
+				if (Anchor.Tag == """{{{C_FinishTagPrefix}}}1""") BasesTeam1Count += 1;
+				else if (Anchor.Tag == """{{{C_FinishTagPrefix}}}2""") BasesTeam2Count += 1;
 			}
 			case CAnchorData::EWaypointType::StartFinish: {
-				if (Anchor.Tag == "SpawnTeam1") SpawnsTeam1Count += 1;
-				else if (Anchor.Tag == "SpawnTeam2") SpawnsTeam2Count += 1;
+				if (Anchor.Tag == """{{{C_StartTagPrefix}}}1""") SpawnsTeam1Count += 1;
+				else if (Anchor.Tag == """{{{C_StartTagPrefix}}}2""") SpawnsTeam2Count += 1;
 			}
 			case CAnchorData::EWaypointType::Checkpoint: {
-				if (Anchor.Tag == "FlagSpawn") FlagSpawnsCount += 1;
+				if (Anchor.Tag == C_FlagSpawnTag) FlagSpawnsCount += 1;
 			}
 		}
 	}
@@ -67,23 +71,23 @@ Void UpdateValidability() {
 	
 	if (SpawnsTeam1Count != 1) {
 		IsValid = False;
-		Message ^= "\nYou must place exactly one SpawnTeam1!" ^ """ ({{{SpawnsTeam1Count}}}/1)""";
+		Message ^= """\nYou must place exactly one {{{C_StartTagPrefix}}}1! ({{{SpawnsTeam1Count}}}/1)""";
 	}
 	if (SpawnsTeam2Count != 1) {
 		IsValid = False;
-		Message ^= "\nYou must place exactly one SpawnTeam2!" ^ """ ({{{SpawnsTeam2Count}}}/1)""";
+		Message ^= """\nYou must place exactly one {{{C_StartTagPrefix}}}2! ({{{SpawnsTeam2Count}}}/1)""";
 	}
 	if (BasesTeam1Count  != 1) {
 		IsValid = False;
-		Message ^= "\nYou must place exactly one BaseTeam1!"  ^ """ ({{{BasesTeam1Count}}}/1)""";
+		Message ^= """\nYou must place exactly one {{{C_FinishTagPrefix}}}1! ({{{BasesTeam1Count}}}/1)""";
 	}
 	if (BasesTeam2Count  != 1) {
 		IsValid = False;
-		Message ^= "\nYou must place exactly one BaseTeam2!"  ^ """ ({{{BasesTeam1Count}}}/1)""";
+		Message ^= """\nYou must place exactly one {{{C_FinishTagPrefix}}}2! ({{{BasesTeam1Count}}}/1)""";
 	}
 	if (FlagSpawnsCount  != 1) {
 		IsValid = False;
-		Message ^= "\nYou must place exactly one FlagSpawn!"  ^ """ ({{{FlagSpawnsCount}}}/1)""";
+		Message ^= """\nYou must place exactly one {{{C_FlagSpawnTag}}}! ({{{FlagSpawnsCount}}}/1)""";
 	}
 	
 	if (IsValid) {
@@ -92,6 +96,211 @@ Void UpdateValidability() {
 		ValidationStatus = CMapType::ValidationStatus::NotValidable;
 	}
 	ValidabilityRequirementsMessage = Message;
+}
+
+Text GetEditAnchorManialink() {
+	return """
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="FlagRushArena_EditAnchorUI">
+	<frame id="anchor-edit-start" pos="140 20" hidden="1">
+		<quad pos="0 5" z-index="0" size="40 30" bgcolor="FFFA" style="Bgs1" substyle="BgDialogBlur" halign="center" valign="center"/>
+		
+		<!-- Header -->
+		<label  z-index="5" size="40 10" text="Edit Start:" valign="center" halign="center" style="TextValueSmallSm" textsize="5" pos="0 15"/>
+		
+		<quad pos="0 10" z-index="4" size="40 1" bgcolor="fff" halign="center" valign="center"/>
+		
+		<!-- Team Selection --->
+		<frame z-index="1">
+			<label pos="0 4" size="40 10" text="Team:" style="TextValueSmallSm" halign="center" valign="center" textsize="4"/>	
+			<label pos="-15 -4" size="10 10" text="1" halign="center" valign="center" style="TextButtonMedium" textsize="5" textemboss="1" scriptevents="1" textcolor="00f" id="start-team-1"/>
+			<label pos="0 -4" size="20 10" text="None" halign="center" valign="center" style="TextButtonMedium" textsize="3" textemboss="1" scriptevents="1" textcolor="fff" id="start-team-none"/>
+			<label pos="15 -4" size="10 10" text="2" halign="center" valign="center" style="TextButtonMedium" textsize="5" textemboss="1" scriptevents="1" textcolor="f00" id="start-team-2"/>
+		</frame>
+	</frame>
+	
+	<frame id="anchor-edit-finish" pos="140 20" hidden="1">
+		<quad pos="0 5" z-index="0" size="40 30" bgcolor="FFFA" style="Bgs1" substyle="BgDialogBlur" halign="center" valign="center"/>
+		
+		<!-- Header -->
+		<label  z-index="5" size="40 10" text="Edit Finish:" valign="center" halign="center" style="TextValueSmallSm" textsize="5" pos="0 15"/>
+		
+		<quad pos="0 10" z-index="4" size="40 1" bgcolor="fff" halign="center" valign="center"/>
+		
+		<!-- Team Selection --->
+		<frame z-index="1">
+			<label pos="0 4" size="40 10" text="Team:" style="TextValueSmallSm" halign="center" valign="center" textsize="4"/>	
+			<label pos="-15 -4" size="10 10" text="1" halign="center" valign="center" style="TextButtonMedium" textsize="5" textemboss="1" scriptevents="1" textcolor="00f" id="finish-team-1"/>
+			<label pos="0 -4" size="20 10" text="None" halign="center" valign="center" style="TextButtonMedium" textsize="3" textemboss="1" scriptevents="1" textcolor="fff" id="finish-team-none"/>
+			<label pos="15 -4" size="10 10" text="2" halign="center" valign="center" style="TextButtonMedium" textsize="5" textemboss="1" scriptevents="1" textcolor="f00" id="finish-team-2"/>
+		</frame>
+	</frame>
+	
+	<frame id="anchor-edit-checkpoint" pos="140 20" hidden="1">
+		<quad pos="0 5" z-index="0" size="40 30" bgcolor="FFFA" style="Bgs1" substyle="BgDialogBlur" halign="center" valign="center"/>
+		
+		<!-- Header -->
+		<label  z-index="5" size="40 10" text="Edit CP:" valign="center" halign="center" style="TextValueSmallSm" textsize="5" pos="0 15"/>
+		
+		<quad pos="0 10" z-index="4" size="40 1" bgcolor="fff" halign="center" valign="center"/>
+		
+		<!-- Function Selection --->
+		<frame z-index="1">
+			<label pos="0 4" size="40 10" text="Function:" style="TextValueSmallSm" halign="center" valign="center" textsize="4"/>	
+			<label pos="-18 -4" size="18 10" text="Flag" valign="center" style="TextButtonMedium" textsize="3" textemboss="1" scriptevents="1" textcolor="fff" halign="left" id="checkpoint-function-flag"/>
+			<label pos="18 -4" size="18 10" text="None" halign="right" valign="center" style="TextButtonMedium" textsize="3" textemboss="1" scriptevents="1" textcolor="fff" id="checkpoint-function-none"/>
+		</frame>
+	</frame>
+	
+	<!-- Order --->
+	<frame z-index="1" pos="140 20" hidden="1" id="frame-order">
+		<quad pos="0 -15" z-index="0" size="40 10" bgcolor="FFFA" style="Bgs1" substyle="BgDialogBlur" halign="center" valign="center"/>
+		<quad pos="0 -10" z-index="4" size="40 1" bgcolor="fff" halign="center" valign="center"/>
+	
+		<label pos="-18 -15" z-index="5" size="25 10" text="0" style="TextValueSmallSm" halign="left" valign="center" textsize="4" textprefix="Order: " id="label-order"/>
+		<quad pos="10 -15" z-index="5" size="5 5" bgcolor="FFFA" style="Icons64x64_1" substyle="ArrowUp" halign="center" valign="center" scriptevents="1" id="button-order-up"/>
+		<quad pos="15 -15" z-index="5" size="5 5" bgcolor="FFFA" style="Icons64x64_1" substyle="ArrowDown" halign="center" valign="center" scriptevents="1" id="button-order-down"/>
+	</frame>
+	
+	
+	<script><!--
+		#Include "TextLib" as TL
+	
+		main() {
+			declare CMlFrame FrameStart = (Page.GetFirstChild("anchor-edit-start") as CMlFrame);
+			declare CMlFrame FrameFinish = (Page.GetFirstChild("anchor-edit-finish") as CMlFrame);
+			declare CMlFrame FrameCheckpoint = (Page.GetFirstChild("anchor-edit-checkpoint") as CMlFrame);
+			
+			declare CMlLabel ButtonStartTeam1 = (Page.GetFirstChild("start-team-1") as CMlLabel);
+			declare CMlLabel ButtonStartTeam2 = (Page.GetFirstChild("start-team-2") as CMlLabel);
+			declare CMlLabel ButtonStartTeamNone = (Page.GetFirstChild("start-team-none") as CMlLabel);
+			
+			declare CMlLabel ButtonFinishTeam1 = (Page.GetFirstChild("finish-team-1") as CMlLabel);
+			declare CMlLabel ButtonFinishTeam2 = (Page.GetFirstChild("finish-team-2") as CMlLabel);
+			declare CMlLabel ButtonFinishTeamNone = (Page.GetFirstChild("finish-team-none") as CMlLabel);
+			
+			declare CMlLabel ButtonCheckpointFunctionFlag = (Page.GetFirstChild("checkpoint-function-flag") as CMlLabel);
+			declare CMlLabel ButtonCheckpointFunctionNone = (Page.GetFirstChild("checkpoint-function-none") as CMlLabel);
+			
+			declare CMlFrame FrameOrder = (Page.GetFirstChild("frame-order") as CMlFrame);
+			declare CMlLabel LabelOrder = (Page.GetFirstChild("label-order") as CMlLabel);
+			declare CMlQuad ButtonOrderUp = (Page.GetFirstChild("button-order-up") as CMlQuad);
+			declare CMlQuad ButtonOrderDown = (Page.GetFirstChild("button-order-down") as CMlQuad);
+			
+			// Declare for Page
+			declare Boolean FlagRushArena_EditStart for Page;
+			declare Boolean FlagRushArena_EditFinish for Page;
+			declare Boolean FlagRushArena_EditCheckpoint for Page;
+			
+			declare Ident FlagRushArena_EditedAnchorId for Page;
+			declare Text FlagRushArena_EditedAnchorTag for Page;
+			declare Integer FlagRushArena_EditedAnchorOrder for Page;
+			
+			// Block property changes tracking
+			declare Ident PrevAnchorId = NullId;
+			
+			// Main loop
+			while(True) {
+				yield;
+				
+				FrameStart.Visible = FlagRushArena_EditStart;
+				FrameFinish.Visible = FlagRushArena_EditFinish;
+				FrameCheckpoint.Visible	= FlagRushArena_EditCheckpoint;
+				// Enable when Order has a use
+				// FrameOrder.Visible = FlagRushArena_EditStart || FlagRushArena_EditFinish || FlagRushArena_EditCheckpoint;
+				
+				// Init UI when new anchor opened
+				if(PrevAnchorId != FlagRushArena_EditedAnchorId) {
+					
+				}
+				
+				LabelOrder.Value = TL::ToText(FlagRushArena_EditedAnchorOrder);
+				
+				foreach(Event in PendingEvents) {
+					log(Event.Type);
+					if (Event.Type == CMlScriptEvent::Type::MouseClick) {
+						switch(Event.Control) {
+							case ButtonStartTeam1: {
+								FlagRushArena_EditedAnchorTag = "{{{C_StartTagPrefix}}}1";
+							}
+							case ButtonStartTeam2: {
+								FlagRushArena_EditedAnchorTag = "{{{C_StartTagPrefix}}}2";
+							}
+							case ButtonStartTeamNone: {
+								FlagRushArena_EditedAnchorTag = "Unused Start";
+							}
+							case ButtonFinishTeam1: {
+								FlagRushArena_EditedAnchorTag = "{{{C_FinishTagPrefix}}}1";
+							}
+							case ButtonFinishTeam2: {
+								FlagRushArena_EditedAnchorTag = "{{{C_FinishTagPrefix}}}2";
+							}
+							case ButtonFinishTeamNone: {
+								FlagRushArena_EditedAnchorTag = "Unused Finish";
+							}
+							case ButtonCheckpointFunctionFlag: {
+								FlagRushArena_EditedAnchorTag = "{{{C_FlagSpawnTag}}}";
+							}
+							case ButtonCheckpointFunctionNone: {
+								FlagRushArena_EditedAnchorTag = "Unused Checkpoint";
+							}
+							case ButtonOrderUp: {
+								FlagRushArena_EditedAnchorOrder += 1;
+							}
+							case ButtonOrderDown: {
+								if(FlagRushArena_EditedAnchorOrder > 0) {
+									FlagRushArena_EditedAnchorOrder -= 1;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	--></script>
+</manialink>
+	""";
+}
+
+Void EditAnchorData(Ident _EditedAnchorDataId) {
+	
+	// Hide all Frames
+	declare Boolean FlagRushArena_EditStart for ManialinkPage;
+	FlagRushArena_EditStart = False;
+	declare Boolean FlagRushArena_EditCheckpoint for ManialinkPage;
+	FlagRushArena_EditCheckpoint = False;
+	declare Boolean FlagRushArena_EditFinish for ManialinkPage;
+	FlagRushArena_EditFinish = False;
+	
+	// Reset Anchor
+	declare Ident FlagRushArena_EditedAnchorId for ManialinkPage;
+	declare Text FlagRushArena_EditedAnchorTag for ManialinkPage;
+	declare Integer FlagRushArena_EditedAnchorOrder for ManialinkPage;
+	FlagRushArena_EditedAnchorId = NullId;
+	FlagRushArena_EditedAnchorTag = "";
+	FlagRushArena_EditedAnchorOrder = -1;
+	
+	// Check if anchor esists
+	if (AnchorData.existskey(_EditedAnchorDataId)) {
+		declare Anchor <=> AnchorData[_EditedAnchorDataId];
+		
+		FlagRushArena_EditedAnchorId = _EditedAnchorDataId;
+		FlagRushArena_EditedAnchorTag = Anchor.Tag;
+		FlagRushArena_EditedAnchorOrder = Anchor.Order;
+		
+		// Select right frame to show
+		switch (Anchor.WaypointType) {
+			case CAnchorData::EWaypointType::Start: {
+				FlagRushArena_EditStart = True;
+			}
+			case CAnchorData::EWaypointType::Checkpoint: {
+				FlagRushArena_EditCheckpoint = True;
+			}
+			case CAnchorData::EWaypointType::Finish: {
+				FlagRushArena_EditFinish = True;
+			}
+		}		
+	}
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -107,13 +316,44 @@ main() {
 	
 	HoldLoadingScreen = False;
 	
+	CustomEditAnchorData = True;
+	
+	// Block properties
+	ManialinkText = GetEditAnchorManialink();
+	declare PrevAnchorTag = "";
+	declare PrevAnchorOrder = -1;
+	declare Ident FlagRushArena_EditedAnchorId for ManialinkPage;
+	declare Text FlagRushArena_EditedAnchorTag for ManialinkPage;
+	declare Integer FlagRushArena_EditedAnchorOrder for ManialinkPage;
+	
 	while (True) {
 		yield;
 		
-		foreach(Event in PendingEvents) {			
+		// Hide config windows when not in block property mode
+		if (PlaceMode != CMapEditorPlugin::PlaceMode::BlockProperty) {
+				EditAnchorData(NullId);
+		}
+		
+		// Update block property
+		if (PrevAnchorTag != FlagRushArena_EditedAnchorTag || PrevAnchorOrder != FlagRushArena_EditedAnchorOrder) {
+			PrevAnchorTag = FlagRushArena_EditedAnchorTag;
+			PrevAnchorOrder = FlagRushArena_EditedAnchorOrder;
+			
+			if (AnchorData.existskey(FlagRushArena_EditedAnchorId)) {
+				declare Anchor <=> AnchorData[FlagRushArena_EditedAnchorId];
+				Anchor.Order = FlagRushArena_EditedAnchorOrder;
+				Anchor.Tag = FlagRushArena_EditedAnchorTag;
+			}
+		}
+		
+		// Check Events
+		foreach(Event in PendingEvents) {
 			switch(Event.Type) {
 				case CMapEditorPluginEvent::Type::MapModified: {
 					UpdateValidability();
+				}
+				case CMapEditorPluginEvent::Type::EditAnchor: {
+					EditAnchorData(Event.EditedAnchorDataId);
 				}
 			}
 		}

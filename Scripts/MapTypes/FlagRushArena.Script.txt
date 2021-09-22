@@ -303,6 +303,11 @@ Void EditAnchorData(Ident _EditedAnchorDataId) {
 	}
 }
 
+Void PlayTestRun() {
+	TMMapType::PlayTestRun_Yield();
+	ReportContext::SetContext(System, ReportContext::C_Context_MapEditor);
+}
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Main
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -315,6 +320,7 @@ main() {
 	UpdateValidability();
 	
 	HoldLoadingScreen = False;
+	EnableMapTypeStartTest = True; // The maptype will handle the 'StartTest' event
 	
 	CustomEditAnchorData = True;
 	
@@ -354,6 +360,9 @@ main() {
 				}
 				case CMapEditorPluginEvent::Type::EditAnchor: {
 					EditAnchorData(Event.EditedAnchorDataId);
+				}
+				case CMapEditorPluginEvent::Type::StartTest: {
+					PlayTestRun();
 				}
 			}
 		}

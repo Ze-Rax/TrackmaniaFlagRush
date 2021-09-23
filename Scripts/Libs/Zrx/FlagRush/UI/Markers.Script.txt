@@ -1,0 +1,96 @@
+#Include	"Libs/Zrx/FlagRush/UI/Shared.Script.txt" as Shared
+
+Text GetManialink() {
+	return """
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3" name="FlagRush_Markers">
+		
+		<framemodel id="model-marker-base">
+			<quad pos="0 0" z-index="1" size="10 10" bgcolor="FFFA" style="ManiaPlanetMainMenu" substyle="IconHome" halign="center" valign="center" colorize="fff" id="quad-base"/>
+		</framemodel>
+
+		<framemodel id="model-marker-flag">
+			<quad pos="0 0" z-index="2" size="10 10" bgcolor="FFFA" halign="center" valign="center" style="UIConstruction_Buttons" substyle="Validate" id="quad-flag"/>
+			<gauge pos="0 7.5" z-index="0" size="20 7.5" valign="center" halign="center" clan="0" style="EnergyBar" drawbg="0" id="gauge-flag" hidden="1"/>
+		</framemodel>
+
+		<frameinstance modelid="model-marker-base" id="marker-base-team1" hidden="1"/>
+		<frameinstance modelid="model-marker-base" id="marker-base-team2" hidden="1"/>
+		<frameinstance modelid="model-marker-flag" id="marker-flag" hidden="1"/>
+		
+		<script><!--
+			
+			{{{Shared::GetTeamColorNetreadFunctions()}}}
+		
+			main() {
+				declare CMlFrame FrameMarkerBase1 = (Page.GetFirstChild("marker-base-team1") as CMlFrame);
+				declare CMlQuad QuadMarkerBase1 = (FrameMarkerBase1.GetFirstChild("quad-base") as CMlQuad);
+				
+				declare CMlFrame FrameMarkerBase2 = (Page.GetFirstChild("marker-base-team2") as CMlFrame);
+				declare CMlQuad QuadMarkerBase2 = (FrameMarkerBase2.GetFirstChild("quad-base") as CMlQuad);
+				
+				declare CMlFrame FrameMarkerFlag = (Page.GetFirstChild("marker-flag") as CMlFrame);
+				declare CMlQuad QuadMarkerFlag = (FrameMarkerFlag.GetFirstChild("quad-flag") as CMlQuad);
+				declare CMlGauge GaugeMarkerFlag = (FrameMarkerFlag.GetFirstChild("gauge-flag") as CMlGauge);
+				
+				QuadMarkerBase1.Colorize = GetTeamPrimaryColor(Teams[0]);
+				QuadMarkerBase2.Colorize = GetTeamPrimaryColor(Teams[1]);
+				QuadMarkerFlag.Colorize = GetTeamPrimaryColor(Null);
+				
+				declare netread Integer Net_FlagCarrierClan for UI;
+				declare netread Boolean Net_HideFlagMarker for UI;
+				
+				declare netread Integer Net_FlagGaugeStartServerDate for UI;
+				declare netread Integer Net_FlagGaugeDuration for UI;
+				declare Integer LastFlagGaugeStartServerDate;
+				declare Integer FlagGaugeStartDate;
+							
+				while(True) {
+					yield;
+					
+					/* Hide when requested */
+					
+					if (Net_HideFlagMarker) {
+						GaugeMarkerFlag.Visible = False;
+						QuadMarkerFlag.Visible = False;
+						continue;
+					}
+					
+					QuadMarkerFlag.Visible = True;
+					
+					/* Colors */
+					
+					// Get the right color
+					declare Vec3 CurrentColor = GetTeamPrimaryColor(Null);
+					if (Net_FlagCarrierClan > 0) CurrentColor = GetTeamPrimaryColor(Teams[Net_FlagCarrierClan - 1]);
+					
+					// Apply color
+					QuadMarkerFlag.Colorize = CurrentColor;
+					GaugeMarkerFlag.Color = CurrentColor;
+					
+					/* Gauge animation */
+					
+					// Server CSmMode.Now is not Client CMlScript.Now (?), Get local timing equivalents
+					if(Net_FlagGaugeStartServerDate > LastFlagGaugeStartServerDate) {
+						LastFlagGaugeStartServerDate = Net_FlagGaugeStartServerDate;
+						FlagGaugeStartDate = Now;
+					}
+					
+					// Flag gauge end in future
+					if (FlagGaugeStartDate + Net_FlagGaugeDuration > Now) {
+						declare Ratio = (0. + Net_FlagGaugeDuration - (Now - FlagGaugeStartDate)) / Net_FlagGaugeDuration;
+						GaugeMarkerFlag.Ratio = 0.2 + Ratio * 0.8;
+						GaugeMarkerFlag.Visible = True;
+						QuadMarkerFlag.Opacity = 0.5;
+					}
+					// Flag gauge already finished
+					else {	// Flag respawn already happened
+						GaugeMarkerFlag.Visible = False;
+						QuadMarkerFlag.Opacity = 1.;
+					}
+				}
+			}
+		--></script>
+</manialink>
+	""";
+}

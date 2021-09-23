@@ -21,7 +21,6 @@
 #Include "Libs/Zrx/TeamPointsProgression.Script.txt" as TeamPointsProgression
 
 /* UI */
-
 #Include "Libs/Zrx/FlagRush/FlagRush_UI.Script.txt" as FlagRush_UI
 #Include "Libs/Zrx/ModeCommandsUI.Script.txt" as CommandsUI
 
@@ -76,7 +75,10 @@
 #Setting S_FlagCarrierAdherence						1.0 as "Flag carrier adherence (0.0 - 1.0)"
 
 #Setting S_CanJoinMidRound							True as "Players can join in the middle of a round"
-
+#Setting S_Team1Name 						"" as "Team1 Name"
+#Setting S_Team2Name 						"" as "Team2 Name"
+#Setting S_Team1Color 						"00a" as "Team1 Color"
+#Setting S_Team2Color 						"a00" as "Team2 Color"
 /////////////
 // Structs //
 /////////////
@@ -1195,6 +1197,36 @@ Void HandleEvents() {
 				else if (FlagCarrier == Event.Player2) StealFlag(Event.Player1, Event.Player2);
 			}
 		}
+	}
+	
+	// Handle Team color and name changes
+	declare Text G_Team1Color for Scores[0];
+	declare Text G_Team2Color for Scores[1];
+	declare Text G_Team1Name for Scores[0];
+	declare Text G_Team2Name for Scores[1];
+	declare Boolean NeedUpdate = False;
+	if (S_Team1Name != G_Team1Name) {
+		G_Team1Name = S_Team1Name;		
+		NeedUpdate = True;		
+	}
+
+	if (S_Team2Name != G_Team2Name) {
+		G_Team2Name = S_Team2Name;
+		NeedUpdate = True;
+	}
+	if (S_Team1Color != G_Team1Color) {
+		G_Team1Color = S_Team1Color;		
+		NeedUpdate = True;
+	}
+	if (S_Team2Color != G_Team2Color) {
+		G_Team2Color = S_Team2Color;		
+		NeedUpdate = True;
+	}
+
+	if (NeedUpdate) {
+		InitTeams();
+		InitUI();
+		UpdateUI();
 	}
 }
 

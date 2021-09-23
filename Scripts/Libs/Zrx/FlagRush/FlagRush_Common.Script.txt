@@ -1,4 +1,5 @@
 #Include "ColorLib" as CL
+#Include "TextLib" as TL
 
 #Const	C_DefaultNeutralColor				<1., 1., 1.>
 #Const	C_DefaultTeamColors					[0 => <0.2, 0.2, 1.>, 1 => <1., 0.2, 0.2>]
@@ -9,6 +10,19 @@
 #Const	C_PointsValue_StealFlag	1
 
 Vec3 GetDefaultTeamColor(Integer Team) {
+	declare Text G_Team1Color for Scores[0];
+	declare Text G_Team2Color for Scores[1];
+
+	switch (Team) {
+		case 0: {
+			if (G_Team1Color != "")
+				return TL::ToColor(G_Team1Color);			
+		}
+		case 1: {
+			if (G_Team2Color != "")
+				return TL::ToColor(G_Team2Color);			
+		}
+	}
 	if (C_DefaultTeamColors.existskey(Team)) return C_DefaultTeamColors[Team];
 	return C_DefaultNeutralColor;
 }
@@ -19,7 +33,20 @@ Vec3 GetDefaultTeamSecondaryColor(Integer Team) {
 }
 
 Text GetDefaultTeamName(Integer Team) {
-	if (C_DefaultTeamNames.existskey(Team)) return C_DefaultTeamNames[Team];
+	declare Text G_Team1Name for Scores[0];
+	declare Text G_Team2Name for Scores[1];
+
+	switch (Team) {
+		case 0: {			
+			if (G_Team1Name != "")
+				return G_Team1Name;			
+		}
+		case 1: {			
+			if (G_Team2Name != "")
+				return G_Team2Name;
+		}
+	}
+	if (C_DefaultTeamNames.existskey(Team)) return C_DefaultTeamNames[Team];			
 	return "Unknown";
 }
 

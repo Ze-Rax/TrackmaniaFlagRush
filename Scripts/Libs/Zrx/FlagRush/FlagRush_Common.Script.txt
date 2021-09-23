@@ -12,15 +12,13 @@
 Vec3 GetDefaultTeamColor(Integer Team) {
 	declare Text G_Team1Color for This;
 	declare Text G_Team2Color for This;
-
+	
 	switch (Team) {
 		case 0: {
-			if (G_Team1Color != "")
-				return TL::ToColor(G_Team1Color);			
+			if (G_Team1Color != "") return TL::ToColor(G_Team1Color);			
 		}
 		case 1: {
-			if (G_Team2Color != "")
-				return TL::ToColor(G_Team2Color);			
+			if (G_Team2Color != "") return TL::ToColor(G_Team2Color);			
 		}
 	}
 	if (C_DefaultTeamColors.existskey(Team)) return C_DefaultTeamColors[Team];
@@ -35,17 +33,18 @@ Vec3 GetDefaultTeamSecondaryColor(Integer Team) {
 Text GetDefaultTeamName(Integer Team) {
 	declare Text G_Team1Name for This;
 	declare Text G_Team2Name for This;
-
+	
 	switch (Team) {
 		case 0: {			
 			if (G_Team1Name != "")
-				return G_Team1Name;			
+			return G_Team1Name;			
 		}
 		case 1: {			
 			if (G_Team2Name != "")
-				return G_Team2Name;
+			return G_Team2Name;
 		}
 	}
+	
 	if (C_DefaultTeamNames.existskey(Team)) return C_DefaultTeamNames[Team];			
 	return "Unknown";
 }

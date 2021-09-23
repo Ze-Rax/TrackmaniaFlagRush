@@ -131,6 +131,7 @@ MB_Settings_UseDefaultPodiumSequence = False;
 ***Match_StartMatch***
 ***
 FlagRush_Log("Start Match");
+
 ***
 
 // --------------------------------------------------
@@ -162,6 +163,7 @@ FlagRush_Log("Start Map");
 MB_Sleep(5000);
 
 Users_SetNbFakeUsers(C_Debug_NbFakeUsers.X, C_Debug_NbFakeUsers.Y);
+
 ***
 
 // --------------------------------------------------
@@ -587,7 +589,7 @@ Void InitUI() {
 	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoretable::GetManialink(6));
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
-
+	
 	InitMarkers();
 }
 
@@ -928,31 +930,33 @@ Void ResetHandicaps(CSmPlayer Player) {
 *	Set a player as flag carrier. If player is Null, reset flag instead.
 */
 Void SetFlagCarrier(CSmPlayer Player) {
-	if(Player == Null) { 
+	if(Player == Null) {
 		ResetFlag();
-	} else {
-		FlagRush_Log("""{{{Player.User.Name}}} got the flag!""");
-		
-		// Display a message to all players
-		MB_ClearAllMessages();
-		declare Color = FlagRush_Common::C_DefaultNeutralColor;
-		if(Player.CurrentClan > 0) {
-			declare Team <=> Teams[Player.CurrentClan - 1];
-			declare Vec3 ColorPrimaryUI for Team;
-			Color = ColorPrimaryUI;
-		}
-		declare ColorText = "$" ^ CL::RgbToHex3(Color);
-		declare Message = """{{{ColorText}}}{{{Player.User.Name}}}$z got the {{{ColorText}}}flag$z!""";
-		UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
-		
-		// Update the flag carrier
-		SetFlagPosition(Player, Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
-		
-		UpdateFlagMarker(ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
-		
-		// Apply handicaps
-		ApplyHandicaps(Player);
+		return;
+	} 
+	
+	FlagRush_Log("""{{{Player.User.Name}}} got the flag!""");
+	
+	// Display a message to all players
+	MB_ClearAllMessages();
+	declare Color = FlagRush_Common::C_DefaultNeutralColor;
+	if(Player.CurrentClan > 0) {
+		declare Team <=> Teams[Player.CurrentClan - 1];
+		declare Vec3 ColorPrimaryUI for Team;
+		Color = ColorPrimaryUI;
 	}
+	declare ColorText = "$" ^ CL::RgbToHex3(Color);
+	declare Message = """{{{ColorText}}}{{{Player.User.Name}}}$z got the {{{ColorText}}}flag$z!""";
+	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
+	
+	// Update the flag carrier
+	SetFlagPosition(Player, Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
+	
+	UpdateFlagMarker(ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
+	
+	// Apply handicaps
+	ApplyHandicaps(Player);
+	
 }
 
 // --------------------------------------------------
@@ -1114,7 +1118,7 @@ Void UpdateModeSettingValues() {
 	declare Text G_Team2Color for This;
 	declare Text G_Team1Name for This;
 	declare Text G_Team2Name for This;
-
+	
 	declare Boolean NeedUpdate = False;
 	if (S_Team1Name != G_Team1Name) {
 		G_Team1Name = S_Team1Name;		

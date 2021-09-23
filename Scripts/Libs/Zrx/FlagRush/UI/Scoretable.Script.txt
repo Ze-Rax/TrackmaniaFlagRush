@@ -113,14 +113,14 @@ Text GetManialink(Integer _PlayersPerPage) {
 				</frame>
 				<frame id="column-legend" pos="0 -10">
 					<frame id="team1" pos="-68 0">
-						<label class="legend" pos="60 0" z-index="1" size="10 5" text="Points"  valign="center" halign="center" textsize="0.1" />
+						<label class="legend" pos="42 0" z-index="1" size="10 5" text="Points"  valign="center" halign="center" textsize="0.1" />
 						<label class="legend" pos="51 0" z-index="1" size="10 5" text="  Scored" valign="center" halign="center" textsize="0.1"/>
-						<label class="legend" pos="42 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
+						<label class="legend" pos="60 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
 					</frame>
 					<frame id="team2" pos="5 0">
-						<label class="legend" pos="60 0" z-index="1" size="10 5" text="Points" valign="center" halign="center" textsize="0.1" />
+						<label class="legend" pos="42 0" z-index="1" size="10 5" text="Points" valign="center" halign="center" textsize="0.1" />
 						<label class="legend" pos="51 0" z-index="1" size="10 5" text="  Scored" valign="center" halign="center" textsize="0.1" />
-						<label class="legend" pos="42 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
+						<label class="legend" pos="60 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
 					</frame>
 			</frame>
 			<!-- column legend -->

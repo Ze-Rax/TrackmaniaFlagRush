@@ -381,7 +381,7 @@ Text GetScoresTableManialink(Integer _PlayersPerPage) {
 						4x player-card-team1 (Frameinstance)
 						4x player-card-team2 (Frameinstance)
 	-->
-		<frame id="scoreboard-main" scale="1.4" pos="0 45" valign="bottom">
+		<frame id="scoreboard-main" scale="1.4" pos="0 43" valign="bottom">
 			<frame id="body" pos="0 0">
 				<frame id="header">
 					<quad pos="-53 0" z-index="0" size="12 8" valign="top" halign="right" id="team1-score-background" style="UICommon64_1" substyle="BgFrame1" colorize="00f"/>
@@ -508,8 +508,7 @@ Text GetScoresTableManialink(Integer _PlayersPerPage) {
 					declare Integer NbPlayersTeam2 = Net_ScoresTableData.get(2, []).count;
 					declare Integer NbPages	= ML::Max(NbPlayersTeam1, NbPlayersTeam2) / {{{PlayersPerPage}}} + 1;
 					CurrentPageIndex = ML::Clamp(CurrentPageIndex, 0, NbPages - 1);
-					
-					
+										
 					// hide Framecontrols if page is less then one
 					if (NbPages <= 1) FramePageControls.Visible = False;
 					

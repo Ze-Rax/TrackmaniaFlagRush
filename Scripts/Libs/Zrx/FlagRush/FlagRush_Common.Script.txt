@@ -11,7 +11,7 @@
 
 Vec3 GetDefaultTeamColor(Integer Team) {
 	declare Text G_Team1Color for Scores[0];
-	declare Text G_Team2Color for Scores[1];
+	declare Text G_Team2Color for Scores[0];
 
 	switch (Team) {
 		case 0: {
@@ -34,7 +34,7 @@ Vec3 GetDefaultTeamSecondaryColor(Integer Team) {
 
 Text GetDefaultTeamName(Integer Team) {
 	declare Text G_Team1Name for Scores[0];
-	declare Text G_Team2Name for Scores[1];
+	declare Text G_Team2Name for Scores[0];
 
 	switch (Team) {
 		case 0: {			

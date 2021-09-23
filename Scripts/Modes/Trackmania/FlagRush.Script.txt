@@ -44,8 +44,8 @@
 #Const  C_Debug 							True
 #Const	C_Debug_MarkersLabels				True
 #Const	C_Debug_UseFakeUsers				True
-#Const	C_Debug_NbFakeUsersTeam1			1
-#Const	C_Debug_NbFakeUsersTeam2			1
+#Const	C_Debug_NbFakeUsersTeam1			0
+#Const	C_Debug_NbFakeUsersTeam2			0
 #Const	C_SpawnAnimDuration					1500
 
 //////////////
@@ -606,6 +606,8 @@ Void InitUI() {
 */
 Void InitPlayer(CSmPlayer Player) {	
 	SetPlayerClan(Player, Player.RequestedClan);
+	declare Integer PreviousClan for Player;
+	PreviousClan = Player.RequestedClan;
 	declare Team <=> Teams[Player.CurrentClan - 1];
 	declare ColorPrimaryUI for Team = FlagRush_Common::C_DefaultNeutralColor;
 	Player.Dossard_Color = ColorPrimaryUI;
@@ -694,37 +696,37 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 		ScoresTableData[Score.TeamNum][Score.User.Name] = PlayerScoresTableData;
 	}
 	
-		declare UI <=> UIManager.GetUI(Player);
-		
-		/* Scores Header */
-		
-		declare netwrite Integer Net_NbMapsToWinMatch for UI;
-		Net_NbMapsToWinMatch = S_NbMapsToWinMatch;
-		
-		declare netwrite Integer Net_NbRoundsToWinMap for UI;
-		Net_NbRoundsToWinMap = S_NbRoundsToWinMap;
-
-		declare netwrite Integer Net_Team1RoundScore for UI;
-		Net_Team1RoundScore = Scores::GetClanRoundPoints(1);
-		declare netwrite Integer Net_Team2RoundScore for UI;
-		Net_Team2RoundScore = Scores::GetClanRoundPoints(2);
-		
-		declare netwrite Integer Net_Team1MapScore for UI;
-		Net_Team1MapScore = TeamPointsProgression::GetClanMapsWon(1);
-		
-		declare netwrite Integer Net_Team2MapScore for UI;
-		Net_Team2MapScore = TeamPointsProgression::GetClanMapsWon(2);
-		
-		/* Scores Table */		
-		declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for UI;
-		Net_ScoresTableData = ScoresTableData;
-		
-		/* Timer */		
-		declare netwrite Boolean Net_HideTimer for UI;
-		Net_HideTimer = S_RoundTimeLimitSeconds <= 0.;
-		
-		declare netwrite Integer Net_RoundTimeLeft for UI;
-		Net_RoundTimeLeft = EndTime - Now;
+	declare UI <=> UIManager.GetUI(Player);
+	
+	/* Scores Header */
+	
+	declare netwrite Integer Net_NbMapsToWinMatch for UI;
+	Net_NbMapsToWinMatch = S_NbMapsToWinMatch;
+	
+	declare netwrite Integer Net_NbRoundsToWinMap for UI;
+	Net_NbRoundsToWinMap = S_NbRoundsToWinMap;
+	
+	declare netwrite Integer Net_Team1RoundScore for UI;
+	Net_Team1RoundScore = Scores::GetClanRoundPoints(1);
+	declare netwrite Integer Net_Team2RoundScore for UI;
+	Net_Team2RoundScore = Scores::GetClanRoundPoints(2);
+	
+	declare netwrite Integer Net_Team1MapScore for UI;
+	Net_Team1MapScore = TeamPointsProgression::GetClanMapsWon(1);
+	
+	declare netwrite Integer Net_Team2MapScore for UI;
+	Net_Team2MapScore = TeamPointsProgression::GetClanMapsWon(2);
+	
+	/* Scores Table */		
+	declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for UI;
+	Net_ScoresTableData = ScoresTableData;
+	
+	/* Timer */		
+	declare netwrite Boolean Net_HideTimer for UI;
+	Net_HideTimer = S_RoundTimeLimitSeconds <= 0.;
+	
+	declare netwrite Integer Net_RoundTimeLeft for UI;
+	Net_RoundTimeLeft = EndTime - Now;
 }
 
 /**
@@ -739,20 +741,34 @@ Void UpdateUI() {
 // --------------------------------------------------
 
 Void UpdateFlagCarrier(CSmPlayer Player) {
-		declare UI = UIManager.GetUI(Player);	
-		declare FlagCarrier = GetFlagCarrier();	
-		
-		// Carrier Clan Index (for color)
-		declare netwrite Integer Net_FlagCarrierClan for UI;
-		if (FlagCarrier == Null) Net_FlagCarrierClan = 0;
-		else Net_FlagCarrierClan = FlagCarrier.CurrentClan;
-		
-		// Carrier name
-		declare netwrite Text Net_FlagCarrierName for UI;
-		if (FlagCarrier != Null) Net_FlagCarrierName = FlagCarrier.User.Name;
-		else if (G_FlagState.Landmark == G_FlagSpawn) Net_FlagCarrierName = "Spawn";
-		else Net_FlagCarrierName = "Dropped";
+	declare UI = UIManager.GetUI(Player);	
+	declare FlagCarrier = GetFlagCarrier();	
+	
+	// Carrier Clan Index (for color)
+	declare netwrite Integer Net_FlagCarrierClan for UI;
+	if (FlagCarrier == Null) Net_FlagCarrierClan = 0;
+	else Net_FlagCarrierClan = FlagCarrier.CurrentClan;
+	
+	// Carrier name
+	declare netwrite Text Net_FlagCarrierName for UI;
+	if (FlagCarrier != Null) Net_FlagCarrierName = FlagCarrier.User.Name;
+	else if (G_FlagState.Landmark == G_FlagSpawn) Net_FlagCarrierName = "Spawn";
+	else Net_FlagCarrierName = "Dropped";
 
+	Player.Dossard_Color = <1., 1., 1.>;
+	if (FlagCarrier != Null) {
+		if (FlagCarrier.Score.TeamNum == Player.CurrentClan) {
+			Player.Dossard_Trigram = "OWN";
+		} else {
+			Player.Dossard_Trigram = "OPP";
+		}
+	} else {
+		Player.Dossard_Trigram = "   ";
+	}
+
+	if (FlagCarrier == Player) {			
+		Player.Dossard_Trigram = "FLG"; // 
+	}
 }
 
 /**
@@ -764,7 +780,7 @@ Void UpdateFlagMarkerForPlayer(CSmPlayer Player, Integer GaugeDuration) {
 	if (ClampedGaugeDuration < 0) ClampedGaugeDuration = 0;
 	
 	declare UI = UIManager.GetUI(Player);		
-
+	
 	// Hide marker for Carrier
 	declare netwrite Boolean Net_HideFlagMarker for UI;
 	if (FlagCarrier == Player && !C_Debug) Net_HideFlagMarker = True;
@@ -1060,8 +1076,8 @@ Void SpawnPlayers() {
 			if (S_CanJoinMidRound || PlayerCanSpawnMidRound || !MB_RoundIsRunning()) {
 				declare CMapSpawn Spawn = GetPlayerSpawn(Player);
 				if (Spawn != Null) {
-					InitPlayer(Player);
-					SpawnPlayer(Player, Player.CurrentClan, Player.ArmorMax, Spawn, 0);
+					InitPlayer(Player);					
+					SpawnPlayer(Player, Player.CurrentClan, 1, Spawn, 0);
 					UpdateFlagCarrier(Player);					
 				}
 			}
@@ -1107,6 +1123,9 @@ Void UpdatePlayers() {
 	// Update Clan
 	foreach (Player in Players) {
 		if (Player.RequestedClan != Player.CurrentClan) {
+			UpdateUIForPlayer(Player);
+			UpdateFlagCarrier(Player);
+			log("!");
 			if (Player.User.Login == G_FlagState.CarrierLogin) DropFlag();
 			UnspawnPlayer(Player);
 			InitPlayer(Player);
@@ -1145,11 +1164,12 @@ Void HandleEvents() {
 		FlagRush_Log("" ^ Event.Type);
 		
 		declare FlagCarrier = GetFlagCarrier();
+		
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				switch(Event.Landmark.Waypoint) {
 					case G_FlagSpawn.Waypoint: 
-					{
+					{										
 						if (Event.Player != Null && FlagCarrier == Null && Now > G_FlagState.PickupableDate) {
 							SetFlagCarrier(Event.Player);
 						}
@@ -1175,8 +1195,10 @@ Void HandleEvents() {
 			
 			case CSmModeEvent::EType::OnPlayerRequestRespawn:
 			{
-				UnspawnPlayer(Event.Player);
-				if(FlagCarrier == Event.Player) DropFlag();
+				if (Event.Player.Speed < 3.) {
+					UnspawnPlayer(Event.Player);
+					if(FlagCarrier == Event.Player) DropFlag();			
+				}
 			}
 			
 			case CSmModeEvent::EType::OnPlayerRemoved:
@@ -1198,18 +1220,22 @@ Void HandleEvents() {
 			}
 		}
 	}
+
+	foreach (Player in Spectators) {
+		if(G_FlagState.CarrierLogin == Player.User.Login) DropFlag();
+	}
 	
 	// Handle Team color and name changes
 	declare Text G_Team1Color for Scores[0];
-	declare Text G_Team2Color for Scores[1];
+	declare Text G_Team2Color for Scores[0];
 	declare Text G_Team1Name for Scores[0];
-	declare Text G_Team2Name for Scores[1];
+	declare Text G_Team2Name for Scores[0];
 	declare Boolean NeedUpdate = False;
 	if (S_Team1Name != G_Team1Name) {
 		G_Team1Name = S_Team1Name;		
 		NeedUpdate = True;		
 	}
-
+	
 	if (S_Team2Name != G_Team2Name) {
 		G_Team2Name = S_Team2Name;
 		NeedUpdate = True;
@@ -1222,7 +1248,7 @@ Void HandleEvents() {
 		G_Team2Color = S_Team2Color;		
 		NeedUpdate = True;
 	}
-
+	
 	if (NeedUpdate) {
 		InitTeams();
 		InitUI();

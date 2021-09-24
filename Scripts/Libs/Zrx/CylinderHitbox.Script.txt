@@ -37,7 +37,7 @@
 #Const C_CarModelSizes [
 	"CanyonCar" => <4.25, 1.125, 2.>,		// Leftover from TM2
 	"StadiumCar" => <4., 1., 1.75>,			// Leftover from TM2
-	"ValleyCar" => <4.25, 1.25, 2.25>,	// Leftover from TM2
+	"ValleyCar" => <4.25, 1.25, 2.25>,		// Leftover from TM2
 	"CarSport" => <4., 1., 1.75>
 ]
 

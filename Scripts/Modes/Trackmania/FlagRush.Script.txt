@@ -21,9 +21,12 @@
 #Include "Libs/Zrx/TeamPointsProgression.Script.txt" as TeamPointsProgression
 
 /* UI */
+
+#Include "Libs/Zrx/FlagRush/UI/Feed.Script.txt" as FlagRush_UIFeed
 #Include "Libs/Zrx/FlagRush/UI/Header.Script.txt" as FlagRush_UIHeader
 #Include "Libs/Zrx/FlagRush/UI/Markers.Script.txt" as FlagRush_UIMarkers
 #Include "Libs/Zrx/FlagRush/UI/Scoretable.Script.txt" as FlagRush_UIScoretable
+
 
 #Include "Libs/Zrx/ModeCommandsUI.Script.txt" as CommandsUI
 
@@ -37,8 +40,7 @@
 #Const	C_LayerName_ScoresHeader			"Layer_FlagRush_ScoresHeader"
 #Const	C_LayerName_RoundUI					"Layer_FlagRush_RoundUI"
 #Const	C_LayerName_Markers					"Layer_FlagRush_Markers"
-#Const 	C_LayerName_OwnTeamMarkers			"Layer_FlagRush_OwnTeamMarkers"
-#Const 	C_LayerName_TheirTeamMarkers		"Layer_FlagRush_TheirTeamMarkers"
+#Const 	C_LayerName_Feed					"Layer_FlagRush_Feed"
 
 #Const	C_Telemetry_Key_FlagsScored			"FlagsScored"
 #Const	C_Telemetry_Key_FlagsStolen			"FlagsStolen"
@@ -117,6 +119,7 @@ declare Struct_FlagState G_FlagState;
 
 /* UI */
 declare CUIConfigMarker G_FlagMarker;
+declare Text[] G_FeedMessages;
 
 ///////////
 // Plugs //
@@ -195,6 +198,7 @@ FlagRush_Log("Start Round");
 declare MessageDuration = 3000;
 declare Message = """Round start!""";
 UIManager.UIAll.QueueMessage(MessageDuration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
+AddFeedEntry(Message);
 MB_Sleep(MessageDuration);
 
 StartTime = Now;
@@ -260,7 +264,7 @@ if (G_RoundValid) {
 	}
 	
 	UIManager.UIAll.QueueMessage(MessageDuration, 2, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Record, 0);
-	
+	AddFeedEntry(Message);
 	// Update Scores & Telemetry
 	Telemetry::AffectPlayersRoundToMapAndMatchTelemetry();
 	Scores::AffectPlayersRoundToMapAndMatchPoints();
@@ -319,6 +323,7 @@ if (G_MapValid) {
 	}
 	
 	UIManager.UIAll.QueueMessage(MessageDuration, 2, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
+	AddFeedEntry(Message);
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 	MB_Sleep(MessageDuration);
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
@@ -344,6 +349,7 @@ if(MapWinsTeam1 >= S_NbMapsToWinMatch || MapWinsTeam2 >= S_NbMapsToWinMatch)
 		Message = """{{{ColorText}}}{{{WinnerTeam.Name}}}$z won the match!""";
 	}
 	UIManager.UIAll.QueueMessage(MessageDuration, 3, CUIConfig::EMessageDisplay::Big, Message,CUIConfig::EUISound::EndMatch, 0);
+	AddFeedEntry(Message);
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 	MB_Sleep(MessageDuration);
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
@@ -586,12 +592,12 @@ Void InitMarkers() {
 				declare CUIConfigMarker Marker = UI.AddMarker(UIPlayer);				
 				Marker.Box = <0., 1., 0.>;
 				declare Text Color = "$fff";
-
+				
 				if (Teams.existskey(UIPlayer.CurrentClan-1)) {								
 					Marker.Color = Teams[UIPlayer.CurrentClan-1].ColorPrimary;				
 					Color = "$" ^ TL::ColorToText(Teams[UIPlayer.CurrentClan-1].ColorPrimary);
 				}
-
+				
 				// Own Team
 				if (CurrentPlayer.CurrentClan == UIPlayer.CurrentClan) {
 					Marker.Label = UIPlayer.User.Name;				
@@ -633,6 +639,10 @@ Void InitUI() {
 	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoretable::GetManialink(6));
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
+	
+	Layers::Create(C_LayerName_Feed, FlagRush_UIFeed::GetManialink());
+	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Feed);
 	
 	InitMarkers();
 }
@@ -712,9 +722,6 @@ Integer[Text] GetPlayerScoresTableData(CSmScore Score) {
 
 // --------------------------------------------------
 
-
-
-
 /**
 *	Updates general UI for a player.
 */
@@ -764,6 +771,21 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 	
 	declare netwrite Integer Net_RoundTimeLeft for UI;
 	Net_RoundTimeLeft = EndTime - Now;
+}
+
+Void AddFeedEntry(Text string) {
+	declare Text time = TL::SubString(System.CurrentLocalDateText, 11, 8);
+	
+	G_FeedMessages.addfirst("""$n[{{{time}}}]$z {{{string}}}""");
+	G_FeedMessages = G_FeedMessages.slice(0,10);
+	
+	foreach(Player in AllPlayers) {
+		declare CUIConfig UI = UIManager.GetUI(Player);
+		if (UI != Null) {
+			declare netwrite Text[] Net_FlagRush_Feed for UI;
+			Net_FlagRush_Feed = G_FeedMessages;
+		}
+	}
 }
 
 /**
@@ -914,6 +936,7 @@ Void ResetFlag(Integer RespawnDelay, Boolean Silent) {
 	if (!Silent) {
 		declare Message = "The flag was reset!";
 		UIManager.UIAll.QueueMessage(3000, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Warning, 0);
+		AddFeedEntry(Message);
 	}
 	
 	SetFlagPosition(G_FlagSpawn, Now + RespawnDelay);	
@@ -993,6 +1016,7 @@ Void SetFlagCarrier(CSmPlayer Player) {
 	declare ColorText = "$" ^ CL::RgbToHex3(Color);
 	declare Message = """{{{ColorText}}}{{{Player.User.Name}}}$z got the {{{ColorText}}}flag$z!""";
 	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
+	AddFeedEntry(Message);
 	
 	// Update the flag carrier
 	SetFlagPosition(Player, Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
@@ -1026,7 +1050,7 @@ Void DropFlag() {
 	declare ColorText = "$" ^ CL::RgbToHex3(Color);
 	declare Message = """{{{ColorText}}}{{{FlagCarrier.User.Name}}}$z dropped the {{{ColorText}}}flag$z!""";
 	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
-	
+	AddFeedEntry(Message);
 	// Set the flag to the players position
 	declare FlagPosition = FlagCarrier.Position;
 	log(MapPlayerModelName);
@@ -1059,7 +1083,7 @@ Void ScoreFlag(CSmPlayer Player) {
 	declare Teamname = Team.Name;
 	declare Message = """{{{ColorText}}}{{{Player.User.Name}}}$z scored for {{{ColorText}}}{{{Teamname}}}$z!""";
 	UIManager.UIAll.QueueMessage (3000, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Finish, 0);
-	
+	AddFeedEntry(Message);
 	// Add the points
 	Scores::AddClanRoundPoints(Player.CurrentClan, 1);
 	Scores::AddPlayerRoundPoints(Player.Score, FlagRush_Common::C_PointsValue_ScoreFlag);

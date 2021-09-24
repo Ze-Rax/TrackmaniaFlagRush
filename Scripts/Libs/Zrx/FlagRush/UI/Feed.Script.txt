@@ -1,0 +1,49 @@
+
+
+Text GetManialink() {
+    return """
+    <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="FlagRush_Feed">
+    <frame id="FlagRush_Feed" pos="-150 0">
+        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
+        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
+        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
+        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
+        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
+        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
+        <label size="60 4" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
+        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
+    </frame>
+    
+    <script><!--
+    // #RequireContext CMlScriptIngame
+    #Include "MathLib" as Math
+    
+    main() {        
+        declare netread Text[] Net_FlagRush_Feed for UI; 
+        declare CMlFrame frame = (Page.GetFirstChild("FlagRush_Feed") as CMlFrame);	
+        declare Real posY = 0.;
+        declare Real opacity = 0.;			
+        foreach (i => Elem in frame.Controls) {
+            declare CMlLabel label = (Elem as CMlLabel);
+            opacity += 1. / frame.Controls.count;
+            label.Opacity = Math::Clamp(opacity, 0.1, 1.);
+            label.RelativePosition_V3.Y= posY;
+            posY -= label.Size.Y;
+        }
+        
+        while(True) {
+            yield;
+            foreach (i => string in Net_FlagRush_Feed) {
+                declare Integer idx = frame.Controls.count - i -1;
+                if (frame.Controls.existskey(idx)) {
+                    declare CMlLabel label = (frame.Controls[idx] as CMlLabel);
+                    label.Value = string;
+                }
+            }
+        }	
+    } 
+    --></script>
+</manialink>
+    """;
+}

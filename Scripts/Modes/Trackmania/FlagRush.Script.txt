@@ -595,7 +595,7 @@ Void InitMarkers() {
 				// Own Team
 				if (CurrentPlayer.CurrentClan == UIPlayer.CurrentClan) {
 					Marker.Label = UIPlayer.User.Name;				
-					Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenVisible;
+					Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
 				} 
 				// Their Team
 				else {					

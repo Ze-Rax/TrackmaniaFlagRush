@@ -780,9 +780,7 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 }
 
 Void AddFeedEntry(Text string) {
-	declare Text time = TL::SubString(System.CurrentLocalDateText, 11, 8);
-
-	G_FeedMessages.addfirst("""$n[{{{time}}}]$z {{{string}}}""");
+	G_FeedMessages.addfirst(string);
 	G_FeedMessages = G_FeedMessages.slice(0,10);
 	
 	foreach(Player in AllPlayers) {

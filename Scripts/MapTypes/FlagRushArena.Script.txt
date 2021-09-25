@@ -1,21 +1,23 @@
 /**
 *  Trackmania Base Rush
 *
-*  One Start Team 1
-*  One Start Team 2
-*  One Base Team 1
-*  One Base Team 2
-*  One Flag Spawn
+*  One StartTeam1
+*  One StartTeam2
+*  One BaseTeam1
+*  One BaseTeam2
+*  At least one FlagSpawn
 */
 
 #RequireContext CSmMapType
 #Const Version "2021-09-04"
 #Const C_MapTypeVersion 1
-#Const ScriptName "MapTypes/BaseRushArena.Script.txt"
+#Const ScriptName "MapTypes/FlagRushArena.Script.txt"
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Libraries
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+#Include "TextLib" as TL
+
 #Include "Libs/Nadeo/ModeLibs/Legacy/MapType.Script.txt" as MapType
 #Include "Libs/Nadeo/TMxSM/Race/Landmark.Script.txt" as Landmark
 #Include "Libs/Nadeo/TMxSM/Race/MapSet.Script.txt" as MapSet
@@ -29,6 +31,20 @@
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Constants
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+#Const C_StartTagPrefix				"SpawnTeam"
+#Const C_FinishTagPrefix			"BaseTeam"
+#Const C_FlagSpawnTag				"FlagSpawn"
+
+#Const C_StartTagNoFunction			"Unused Start"
+#Const C_FinishTagNoFunction		"Unused Finish"
+#Const C_CheckpointTagNoFunction	"Unused Checkpoint"
+#Const C_MultilapTagNoFunction		"Unused Multilap"
+#Const C_LandmarkTagNoFunction		"Unused Landmark"
+
+#Const C_UI_BackgroundOpacity		0.9
+#Const C_UI_ButtonOpacityFocus		0.5
+#Const C_UI_ButtonOpacityNofocus	0.25
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Functions
@@ -45,19 +61,18 @@ Void UpdateValidability() {
 	foreach (Anchor in AnchorData) {
 		switch (Anchor.WaypointType) {
 			case CAnchorData::EWaypointType::Start: {
-				if (Anchor.Tag == "SpawnTeam1") SpawnsTeam1Count += 1;
-				else if (Anchor.Tag == "SpawnTeam2") SpawnsTeam2Count += 1;
+				if (Anchor.Tag == """{{{C_StartTagPrefix}}}1""") SpawnsTeam1Count += 1;
+				else if (Anchor.Tag == """{{{C_StartTagPrefix}}}2""") SpawnsTeam2Count += 1;
 			}
 			case CAnchorData::EWaypointType::Finish: {
-				if (Anchor.Tag == "BaseTeam1") BasesTeam1Count += 1;
-				else if (Anchor.Tag == "BaseTeam2") BasesTeam2Count += 1;
+				if (Anchor.Tag == """{{{C_FinishTagPrefix}}}1""") BasesTeam1Count += 1;
+				else if (Anchor.Tag == """{{{C_FinishTagPrefix}}}2""") BasesTeam2Count += 1;
 			}
 			case CAnchorData::EWaypointType::StartFinish: {
-				if (Anchor.Tag == "SpawnTeam1") SpawnsTeam1Count += 1;
-				else if (Anchor.Tag == "SpawnTeam2") SpawnsTeam2Count += 1;
+				// What to do with multilaps?
 			}
 			case CAnchorData::EWaypointType::Checkpoint: {
-				if (Anchor.Tag == "FlagSpawn") FlagSpawnsCount += 1;
+				if (Anchor.Tag == C_FlagSpawnTag) FlagSpawnsCount += 1;
 			}
 		}
 	}
@@ -67,23 +82,23 @@ Void UpdateValidability() {
 	
 	if (SpawnsTeam1Count != 1) {
 		IsValid = False;
-		Message ^= "\nYou must place exactly one SpawnTeam1!" ^ """ ({{{SpawnsTeam1Count}}}/1)""";
+		Message ^= "\n" ^ """You must place exactly one {{{C_StartTagPrefix}}}1! ({{{SpawnsTeam1Count}}}/1)""";
 	}
 	if (SpawnsTeam2Count != 1) {
 		IsValid = False;
-		Message ^= "\nYou must place exactly one SpawnTeam2!" ^ """ ({{{SpawnsTeam2Count}}}/1)""";
+		Message ^= "\n" ^ """You must place exactly one {{{C_StartTagPrefix}}}2! ({{{SpawnsTeam2Count}}}/1)""";
 	}
 	if (BasesTeam1Count  != 1) {
 		IsValid = False;
-		Message ^= "\nYou must place exactly one BaseTeam1!"  ^ """ ({{{BasesTeam1Count}}}/1)""";
+		Message ^= "\n" ^ """You must place exactly one {{{C_FinishTagPrefix}}}1! ({{{BasesTeam1Count}}}/1)""";
 	}
 	if (BasesTeam2Count  != 1) {
 		IsValid = False;
-		Message ^= "\nYou must place exactly one BaseTeam2!"  ^ """ ({{{BasesTeam1Count}}}/1)""";
+		Message ^= "\n" ^ """You must place exactly one {{{C_FinishTagPrefix}}}2! ({{{BasesTeam1Count}}}/1)""";
 	}
-	if (FlagSpawnsCount  != 1) {
+	if (FlagSpawnsCount  == 0) {
 		IsValid = False;
-		Message ^= "\nYou must place exactly one FlagSpawn!"  ^ """ ({{{FlagSpawnsCount}}}/1)""";
+		Message ^= "\n" ^ """You must place at least one {{{C_FlagSpawnTag}}}!""";
 	}
 	
 	if (IsValid) {
@@ -94,26 +109,331 @@ Void UpdateValidability() {
 	ValidabilityRequirementsMessage = Message;
 }
 
+Text GetEditAnchorManialink() {
+	return """
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3">
+	<frame id="anchor-window" pos="132.5 50">
+		<frame id="header">
+			<quad pos="0 0" z-index="0" size="50 10" style="UICommon64_1" substyle="BgFrame1"  colorize="000" halign="center" valign="center" opacity="{{{C_UI_BackgroundOpacity}}}"/>
+			<label pos="0 0" z-index="1" size="45 8" text="LandmarkType" halign="center" valign="center" textsize="4" style="Default" textfont="GameFontSemiBold" id="label-header"/>
+		</frame>
+		
+		<frame id="body" pos="0 -25">
+			<frame id="body-teamselection" hidden="1">
+				<quad pos="0 0" z-index="0" size="50 35" halign="center" valign="center" colorize="000" style="UICommon64_1" substyle="BgFrame2" opacity="{{{C_UI_BackgroundOpacity}}}"/>
+				<label pos="0 10" size="45 8" text="Team:" halign="center" valign="center" style="Default" textfont="GameFontReqular" textsize="3" z-index="1" textcolor="FFF"/>
+				
+				<quad pos="-12.5 0" z-index="1" size="20 8" id="button-team1-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="00F" scriptevents="1" opacity="{{{C_UI_ButtonOpacityNofocus}}}"/>
+				<label pos="-12.5 0" z-index="2" size="20 6" text="Team 1" id="button-team1-label" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="44F" scriptevents="1"/>
+				
+				<quad pos="12.5 0" z-index="1" size="20 8" id="button-team2-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="F00" scriptevents="1" opacity="{{{C_UI_ButtonOpacityNofocus}}}"/>
+				<label pos="12.5 0" z-index="2" size="20 6" text="Team 2" id="button-team2-label" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="F44" scriptevents="1"/>
+				
+				<quad pos="0 -10" z-index="1" size="45 8" id="button-teamnone-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="FFF" scriptevents="1" opacity="{{{C_UI_ButtonOpacityNofocus}}}"/>
+				<label pos="0 -10" z-index="2" size="40 6" text="None" id="button-teamnone-label" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="FFF" scriptevents="1"/>
+			</frame>
+			
+			<frame id="body-cpfunction" hidden="1">
+				<quad pos="0 5" z-index="0" size="50 25" halign="center" valign="center" colorize="000" style="UICommon64_1" substyle="BgFrame2" opacity="{{{C_UI_BackgroundOpacity}}}"/>
+				<label pos="0 10" size="45 8" text="Function:" halign="center" valign="center" style="Default" textfont="GameFontReqular" textsize="3" z-index="1" textcolor="FFF"/>
+				
+				<quad pos="-12.5 0" z-index="1" size="20 8" id="button-cpfunctionflag-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="FFF" scriptevents="1" opacity="{{{C_UI_ButtonOpacityNofocus}}}"/>
+				<label pos="-12.5 0" z-index="2" size="20 6" text="Flag" id="button-cpfunctionflag-label" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="FFF" scriptevents="1"/>
+				
+				<quad pos="12.5 0" z-index="1" size="20 8" id="button-cpfunctionnone-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="FFF" scriptevents="1" opacity="{{{C_UI_ButtonOpacityNofocus}}}"/>
+				<label pos="12.5 0" z-index="2" size="20 6" text="None" id="button-cpfunctionnone-label" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="FFF" scriptevents="1"/>
+			</frame>
+			
+			<frame id="body-noedit">
+				<quad pos="0 " z-index="0" size="50 35" halign="center" valign="center" colorize="000" style="UICommon64_1" substyle="BgFrame2" opacity="{{{C_UI_BackgroundOpacity}}}"/>
+				<label pos="0 10" size="45 8" text="Unsupported:" halign="center" valign="center" style="Default" textfont="GameFontReqular" textsize="3" z-index="1" textcolor="F88"/>
+				<label pos="0 -5" size="45 18" text="This landmark is not supported and can therefore not be edited!" halign="center" valign="center" style="Default" textfont="GameFontReqular" textsize="2.5" z-index="1" autonewline="1" textcolor="FFF"/>
+			</frame>
+		</frame>
+		
+		<frame id="order" pos="-35 -15" hidden="1">
+			<quad pos="0 0" z-index="0" size="15 15" halign="center" valign="center" colorize="000" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
+			<label pos="0 3.5" z-index="1" size="10 5" text="Order" halign="center" valign="center" style="Default" textfont="GameFontRegular" textsize="2" textcolor="FFF"/>
+			<label pos="0 -1.5" z-index="1" size="10 8" text="0" halign="center" valign="center" style="Default" textfont="GameFontBlack" textsize="5" textcolor="FFF" id="label-ordervalue"/>
+			
+			<quad pos="0 10" z-index="0" size="8 5" bgcolor="FFF" opacity="0.7" style="UICommon64_2" substyle="ArrowUpSlim_light" valign="center" halign="center" scriptevents="1" id="button-order-up"/>
+			<quad pos="0 -10" z-index="0" size="8 5" bgcolor="FFF" opacity="0.7" style="UICommon64_2" substyle="ArrowDownSlim_light" valign="center" halign="center" scriptevents="1" id="button-order-down"/>
+		</frame>
+	</frame>
+
+	<script><!--
+	#Include "TextLib" as TL
+	
+	main() {
+		declare CMlFrame FrameAnchorWindow = (Page.GetFirstChild("anchor-window") as CMlFrame);
+
+		declare CMlFrame FrameHeader = (Page.GetFirstChild("header") as CMlFrame);
+		declare CMlFrame FrameTeamselection = (Page.GetFirstChild("body-teamselection") as CMlFrame);
+		declare CMlFrame FrameCPFunction = (Page.GetFirstChild("body-cpfunction") as CMlFrame);
+		declare CMlFrame FrameNoEdit = (Page.GetFirstChild("body-noedit") as CMlFrame);
+		declare CMlFrame FrameOrder = (Page.GetFirstChild("order") as CMlFrame);
+
+		declare CMlLabel LabelHeaderLandmark = (Page.GetFirstChild("label-header") as CMlLabel);
+
+		declare CMlQuad ButtonTeam1Bg = (Page.GetFirstChild("button-team1-bg") as CMlQuad);
+		declare CMlLabel ButtonTeam1Label = (Page.GetFirstChild("button-team1-label") as CMlLabel);
+		declare CMlQuad ButtonTeam2Bg = (Page.GetFirstChild("button-team2-bg") as CMlQuad);
+		declare CMlLabel ButtonTeam2Label = (Page.GetFirstChild("button-team2-label") as CMlLabel);
+		declare CMlQuad ButtonTeamNoneBg = (Page.GetFirstChild("button-teamnone-bg") as CMlQuad);
+		declare CMlLabel ButtonTeamNoneLabel = (Page.GetFirstChild("button-teamnone-label") as CMlLabel);
+
+		declare CMlQuad ButtonCPFunctionFlagBg = (Page.GetFirstChild("button-cpfunctionflag-bg") as CMlQuad);
+		declare CMlLabel ButtonCPFunctionFlagLabel = (Page.GetFirstChild("button-cpfunctionflag-label") as CMlLabel);
+		declare CMlQuad ButtonCPFunctionNoneBg = (Page.GetFirstChild("button-cpfunctionnone-bg") as CMlQuad);
+		declare CMlLabel ButtonCPFunctionNoneLabel = (Page.GetFirstChild("button-cpfunctionnone-label") as CMlLabel);
+
+		declare CMlLabel LabelOrder = (Page.GetFirstChild("label-ordervalue") as CMlLabel);
+		declare CMlQuad ButtonOrderUp = (Page.GetFirstChild("button-order-up") as CMlQuad);
+		declare CMlQuad ButtonOrderDown = (Page.GetFirstChild("button-order-down") as CMlQuad);
+		
+		// Declare for Page
+		declare Boolean FlagRushArena_IsEditingAnchor for Page;
+
+		declare Boolean FlagRushArena_EditStart for Page;
+		declare Boolean FlagRushArena_EditFinish for Page;
+		declare Boolean FlagRushArena_EditCheckpoint for Page;
+		
+		declare Ident FlagRushArena_EditedAnchorId for Page;
+		declare Text FlagRushArena_EditedAnchorTag for Page;
+		declare Text FlagRushArena_EditedAnchorDefaultTag for Page;
+		declare Integer FlagRushArena_EditedAnchorOrder for Page;
+		
+		// Main loop
+		while(True) {
+			yield;
+			
+			// Show the right frames
+			FrameAnchorWindow.Visible = FlagRushArena_IsEditingAnchor;
+			FrameTeamselection.Visible = FlagRushArena_EditStart || FlagRushArena_EditFinish;
+			FrameOrder.Visible = False; // Order not used yet
+			FrameCPFunction.Visible = FlagRushArena_EditCheckpoint;
+			FrameNoEdit.Visible = !(FlagRushArena_EditStart || FlagRushArena_EditFinish || FlagRushArena_EditCheckpoint);
+			
+			// Put order value and right header text
+			LabelOrder.Value = TL::ToText(FlagRushArena_EditedAnchorOrder);
+			declare Text HeaderText;
+			if(FlagRushArena_EditStart) {
+				HeaderText = "Spawn";
+			} else if (FlagRushArena_EditFinish) {
+				HeaderText = "Base";
+			} else if (FlagRushArena_EditCheckpoint) {
+				HeaderText = "Checkpoint";
+			} else {
+				HeaderText = FlagRushArena_EditedAnchorDefaultTag;
+			}
+			LabelHeaderLandmark.Value = HeaderText;
+			
+			// I'm sorry for the pain that these nested if-else-clauses are
+			foreach(Event in PendingEvents) {
+				switch (Event.Type) {
+					case CMlScriptEvent::Type::MouseClick: {
+						if(Event.Control == ButtonTeam1Bg || Event.Control == ButtonTeam1Label) {
+							if(FlagRushArena_EditStart) {
+								FlagRushArena_EditedAnchorTag = "{{{C_StartTagPrefix}}}1";
+							} else if (FlagRushArena_EditFinish) {
+								FlagRushArena_EditedAnchorTag = "{{{C_FinishTagPrefix}}}1";
+							}
+						} else if(Event.Control == ButtonTeam2Bg || Event.Control == ButtonTeam2Label) {
+							if(FlagRushArena_EditStart) {
+								FlagRushArena_EditedAnchorTag = "{{{C_StartTagPrefix}}}2";
+							} else if (FlagRushArena_EditFinish) {
+								FlagRushArena_EditedAnchorTag = "{{{C_FinishTagPrefix}}}2";
+							}
+						} else if(Event.Control == ButtonTeamNoneBg || Event.Control == ButtonTeamNoneLabel) {
+							if(FlagRushArena_EditStart) {
+								FlagRushArena_EditedAnchorTag = "{{{C_StartTagNoFunction}}}";
+							} else if (FlagRushArena_EditFinish) {
+								FlagRushArena_EditedAnchorTag = "{{{C_FinishTagNoFunction}}}";
+							}
+						} else if(Event.Control == ButtonCPFunctionFlagBg || Event.Control == ButtonCPFunctionFlagLabel) {
+							FlagRushArena_EditedAnchorTag = "{{{C_FlagSpawnTag}}}";
+						} else if(Event.Control == ButtonCPFunctionNoneBg || Event.Control == ButtonCPFunctionNoneLabel) {
+							FlagRushArena_EditedAnchorTag = "{{{C_CheckpointTagNoFunction}}}";
+						} else if (Event.Control == ButtonOrderUp) {
+							FlagRushArena_EditedAnchorOrder += 1;
+						} else if (Event.Control == ButtonOrderDown) {
+							if(FlagRushArena_EditedAnchorOrder > 0) {
+								FlagRushArena_EditedAnchorOrder -= 1;
+							}
+						}
+					}
+					case CMlScriptEvent::Type::MouseOver: {
+						declare CMlQuad ButtonBackground;
+						if(Event.Control == ButtonTeam1Bg || Event.Control == ButtonTeam1Label) {
+							ButtonBackground = ButtonTeam1Bg;
+						} else if(Event.Control == ButtonTeam2Bg || Event.Control == ButtonTeam2Label) {
+							ButtonBackground = ButtonTeam2Bg;
+						} else if(Event.Control == ButtonTeamNoneBg || Event.Control == ButtonTeamNoneLabel) {
+							ButtonBackground = ButtonTeamNoneBg;
+						} else if(Event.Control == ButtonCPFunctionFlagBg || Event.Control == ButtonCPFunctionFlagLabel) {
+							ButtonBackground = ButtonCPFunctionFlagBg;
+						} else if(Event.Control == ButtonCPFunctionNoneBg || Event.Control == ButtonCPFunctionNoneLabel) {
+							ButtonBackground = ButtonCPFunctionNoneBg;
+						}
+						
+						if(ButtonBackground != Null) {
+							ButtonBackground.Opacity = {{{C_UI_ButtonOpacityFocus}}};
+						}
+					}
+					case CMlScriptEvent::Type::MouseOut: {
+						declare CMlQuad ButtonBackground;
+						if(Event.Control == ButtonTeam1Bg || Event.Control == ButtonTeam1Label) {
+							ButtonBackground = ButtonTeam1Bg;
+						} else if(Event.Control == ButtonTeam2Bg || Event.Control == ButtonTeam2Label) {
+							ButtonBackground = ButtonTeam2Bg;
+						} else if(Event.Control == ButtonTeamNoneBg || Event.Control == ButtonTeamNoneLabel) {
+							ButtonBackground = ButtonTeamNoneBg;
+						} else if(Event.Control == ButtonCPFunctionFlagBg || Event.Control == ButtonCPFunctionFlagLabel) {
+							ButtonBackground = ButtonCPFunctionFlagBg;
+						} else if(Event.Control == ButtonCPFunctionNoneBg || Event.Control == ButtonCPFunctionNoneLabel) {
+							ButtonBackground = ButtonCPFunctionNoneBg;
+						}
+
+						if(ButtonBackground != Null) {
+							ButtonBackground.Opacity = {{{C_UI_ButtonOpacityNofocus}}};
+						}
+					}
+				}
+			}
+		}
+	}
+	--></script>
+</manialink>
+	""";
+}
+
+Void EditAnchorData(Ident _EditedAnchorDataId) {
+	declare Boolean FlagRushArena_IsEditingAnchor for ManialinkPage;
+	FlagRushArena_IsEditingAnchor = _EditedAnchorDataId != NullId;
+	
+	// Reset Data for Page
+	declare Boolean FlagRushArena_EditStart for ManialinkPage;
+	FlagRushArena_EditStart = False;
+	declare Boolean FlagRushArena_EditCheckpoint for ManialinkPage;
+	FlagRushArena_EditCheckpoint = False;
+	declare Boolean FlagRushArena_EditFinish for ManialinkPage;
+	FlagRushArena_EditFinish = False;
+	
+	declare Ident FlagRushArena_EditedAnchorId for ManialinkPage;
+	declare Text FlagRushArena_EditedAnchorTag for ManialinkPage;
+	declare Text FlagRushArena_EditedAnchorDefaultTag for ManialinkPage;
+	declare Integer FlagRushArena_EditedAnchorOrder for ManialinkPage;
+	FlagRushArena_EditedAnchorId = NullId;
+	FlagRushArena_EditedAnchorTag = "";
+	FlagRushArena_EditedAnchorDefaultTag = "";
+	FlagRushArena_EditedAnchorOrder = -1;
+	
+	// Check if anchor exists
+	if (AnchorData.existskey(_EditedAnchorDataId)) {
+		declare Anchor <=> AnchorData[_EditedAnchorDataId];
+		
+		FlagRushArena_EditedAnchorId = _EditedAnchorDataId;
+		FlagRushArena_EditedAnchorTag = Anchor.Tag;
+		FlagRushArena_EditedAnchorDefaultTag = Anchor.DefaultTag;
+		FlagRushArena_EditedAnchorOrder = Anchor.Order;
+		
+		// Select right frame to show
+		switch (Anchor.WaypointType) {
+			case CAnchorData::EWaypointType::Start: {
+				FlagRushArena_EditStart = True;
+			}
+			case CAnchorData::EWaypointType::Checkpoint: {
+				FlagRushArena_EditCheckpoint = True;
+			}
+			case CAnchorData::EWaypointType::Finish: {
+				FlagRushArena_EditFinish = True;
+			}
+		}		
+	}
+}
+
+Void InitLandmarks() {
+	foreach (Anchor in AnchorData) {
+		switch (Anchor.WaypointType) {
+			case CAnchorData::EWaypointType::Start: {
+				if(!TL::StartsWith(C_StartTagPrefix, Anchor.Tag)) Anchor.Tag = C_StartTagNoFunction;
+			}
+			case CAnchorData::EWaypointType::Finish: {				
+				if(!TL::StartsWith(C_FinishTagPrefix, Anchor.Tag)) Anchor.Tag = C_FinishTagNoFunction;
+			}
+			case CAnchorData::EWaypointType::Checkpoint: {
+				if(!TL::StartsWith(C_FlagSpawnTag, Anchor.Tag)) Anchor.Tag = C_CheckpointTagNoFunction;				
+			}
+			default: {
+				Anchor.Tag = C_LandmarkTagNoFunction;
+			}
+		}
+	}
+}
+
+Void PlayTestRun() {
+	TMMapType::PlayTestRun_Yield();
+	ReportContext::SetContext(System, ReportContext::C_Context_MapEditor);
+}
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Main
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-main() {
+main() {	
 	HoldLoadingScreen = True;
 	ReportContext::SetContext(System, ReportContext::C_Context_MapEditor);
 	TMMapType::ApplyDecoImages();
 	
 	MapType::SetVersion(C_MapTypeVersion);
+	InitLandmarks();
 	UpdateValidability();
 	
 	HoldLoadingScreen = False;
+	EnableMapTypeStartTest = True; // The maptype will handle the 'StartTest' event
+	
+	CustomEditAnchorData = True;
+	
+	// Block properties
+	ManialinkText = GetEditAnchorManialink();
+	declare PrevAnchorTag = "";
+	declare PrevAnchorOrder = -1;
+	declare Ident FlagRushArena_EditedAnchorId for ManialinkPage;
+	declare Text FlagRushArena_EditedAnchorTag for ManialinkPage;
+	declare Integer FlagRushArena_EditedAnchorOrder for ManialinkPage;
 	
 	while (True) {
 		yield;
 		
-		foreach(Event in PendingEvents) {			
+		// Hide config windows when not in block property mode
+		if (PlaceMode != CMapEditorPlugin::PlaceMode::BlockProperty) {
+				EditAnchorData(NullId);
+		}
+		
+		// Update block property
+		if (PrevAnchorTag != FlagRushArena_EditedAnchorTag || PrevAnchorOrder != FlagRushArena_EditedAnchorOrder) {
+			PrevAnchorTag = FlagRushArena_EditedAnchorTag;
+			PrevAnchorOrder = FlagRushArena_EditedAnchorOrder;
+			
+			if (AnchorData.existskey(FlagRushArena_EditedAnchorId)) {
+				declare Anchor <=> AnchorData[FlagRushArena_EditedAnchorId];
+				Anchor.Order = FlagRushArena_EditedAnchorOrder;
+				Anchor.Tag = FlagRushArena_EditedAnchorTag;
+			}
+		}
+		
+		// Check Events
+		foreach(Event in PendingEvents) {
 			switch(Event.Type) {
 				case CMapEditorPluginEvent::Type::MapModified: {
+					InitLandmarks();
 					UpdateValidability();
+				}
+				case CMapEditorPluginEvent::Type::EditAnchor: {
+					EditAnchorData(Event.EditedAnchorDataId);
+				}
+				case CMapEditorPluginEvent::Type::StartTest: {
+					PlayTestRun();
 				}
 			}
 		}

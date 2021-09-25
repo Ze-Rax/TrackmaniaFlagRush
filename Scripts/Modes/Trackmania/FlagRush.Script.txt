@@ -116,7 +116,8 @@ declare CMapLandmark G_SpawnTeam1;
 declare CMapLandmark G_SpawnTeam2;
 declare CMapLandmark G_BaseTeam1;
 declare CMapLandmark G_BaseTeam2;
-declare CMapLandmark G_FlagSpawn;
+declare CMapLandmark[] G_FlagSpawns;
+declare CMapLandmark G_ActiveFlagSpawn;
 declare Struct_FlagState G_FlagState;
 
 /* UI */
@@ -513,6 +514,14 @@ Void InitTeams() {
 // --------------------------------------------------
 
 /**
+* Randomly choose a flag spawn to activate.
+*/
+Void PickNewFlagSpawn() {
+	declare FlagSpawnToActivate = ML::Rand(0, G_FlagSpawns.count - 1);
+	G_ActiveFlagSpawn = G_FlagSpawns[FlagSpawnToActivate];
+}
+
+/**
 *	Looks through all the landmarks on the map and set the global variables accordingly.
 */
 Void InitLandmarks() {
@@ -524,7 +533,7 @@ Void InitLandmarks() {
 			case "SpawnTeam2": if (Landmark.PlayerSpawn != Null) G_SpawnTeam2 = Landmark;
 			case "BaseTeam1": if (Landmark.Waypoint != Null) G_BaseTeam1 = Landmark;
 			case "BaseTeam2": if (Landmark.Waypoint != Null) G_BaseTeam2 = Landmark;
-			case "FlagSpawn": if (Landmark.Waypoint != Null) G_FlagSpawn = Landmark;
+			case "FlagSpawn": if (Landmark.Waypoint != Null) G_FlagSpawns.add(Landmark);
 		}
 	}
 	
@@ -532,7 +541,7 @@ Void InitLandmarks() {
 	declare FoundSpawnTeam2 = G_SpawnTeam2 != Null;
 	declare FoundBaseTeam1 = G_BaseTeam1 != Null;
 	declare FoundBaseTeam2 = G_BaseTeam2 != Null;
-	declare FoundFlagSpawn = G_FlagSpawn != Null;
+	declare FoundFlagSpawn = G_FlagSpawns.count != 0;
 	
 	assert(
 		FoundSpawnTeam1 && FoundSpawnTeam2 && FoundBaseTeam1 && FoundBaseTeam2 && FoundFlagSpawn,
@@ -543,7 +552,9 @@ Void InitLandmarks() {
 		{{{"\t"}}}BaseTeam2 : {{{FoundBaseTeam2}}}
 		{{{"\t"}}}FlagSpawn : {{{FoundFlagSpawn}}}"""
 	);
-	
+	// Initialize active flag spawn
+	PickNewFlagSpawn();
+
 	FlagRush_Log("All Landmarks found!");
 }
 
@@ -575,7 +586,7 @@ Void InitMarkers() {
 	MarkerBaseTeam2.Box = <0., 8., 0.>;
 	// if (C_Debug_MarkersLabels) MarkerBaseTeam2.Label = "Base Team 2";
 	
-	G_FlagMarker = UIManager.UIAll.AddMarker(G_FlagSpawn);
+	G_FlagMarker = UIManager.UIAll.AddMarker(G_ActiveFlagSpawn);
 	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
 	G_FlagMarker.ManialinkFrameId = "marker-flag";
 	G_FlagMarker.Box = <0., 3.3, 0.>;
@@ -817,7 +828,7 @@ Void UpdateFlagCarrier(CSmPlayer Player) {
 	// Carrier name
 	declare netwrite Text Net_FlagCarrierName for UI;
 	if (FlagCarrier != Null) Net_FlagCarrierName = FlagCarrier.User.Name;
-	else if (G_FlagState.Landmark == G_FlagSpawn) Net_FlagCarrierName = "Spawn";
+	else if (G_FlagState.Landmark == G_ActiveFlagSpawn) Net_FlagCarrierName = "Spawn";
 	else Net_FlagCarrierName = "Dropped";
 	if (Teams.existskey(Player.CurrentClan-1)) {
 		Player.Dossard_Color = Teams[Player.CurrentClan-1].ColorPrimary;
@@ -890,9 +901,9 @@ Void SetMarkerCommonProperties() {
 	//if(C_Debug_MarkersLabels) G_FlagMarker.Label = "Flag";
 }
 
-Void SetFlagPosition(CMapLandmark Landmark, Integer PickupableDate) {
+Void SetFlagPositionAtSpawn(Integer PickupableDate) {
 	// Update FlagState
-	G_FlagState.Landmark = Landmark;
+	G_FlagState.Landmark = G_ActiveFlagSpawn;
 	G_FlagState.PickupableDate = PickupableDate;
 	G_FlagState.CarrierLogin = "";
 	G_FlagState.DropLocation = <0., 0., 0.>;
@@ -901,7 +912,7 @@ Void SetFlagPosition(CMapLandmark Landmark, Integer PickupableDate) {
 	if(UIManager.UIAll.Markers.exists(G_FlagMarker))	// Check if marker exists (prevents warning)
 	UIManager.UIAll.RemoveMarker(G_FlagMarker);			// Remove old
 	
-	G_FlagMarker = UIManager.UIAll.AddMarker(G_FlagSpawn);
+	G_FlagMarker = UIManager.UIAll.AddMarker(G_ActiveFlagSpawn);
 	G_FlagMarker.Box = <0., 3., 0.>;
 	SetMarkerCommonProperties();
 }
@@ -948,7 +959,8 @@ Void ResetFlag(Integer RespawnDelay, Boolean Silent) {
 		AddFeedEntry(Message);
 	}
 	
-	SetFlagPosition(G_FlagSpawn, Now + RespawnDelay);	
+	PickNewFlagSpawn();	
+	SetFlagPositionAtSpawn(Now + RespawnDelay);
 	UpdateFlagMarker(RespawnDelay);
 }
 
@@ -1287,8 +1299,8 @@ Void HandleEvents() {
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				switch(Event.Landmark.Waypoint) {
-					case G_FlagSpawn.Waypoint: 
-					{										
+					case G_ActiveFlagSpawn.Waypoint:
+					{
 						if (Event.Player != Null && FlagCarrier == Null && Now > G_FlagState.PickupableDate) {
 							SetFlagCarrier(Event.Player);
 						}

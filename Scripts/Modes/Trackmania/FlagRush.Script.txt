@@ -142,7 +142,7 @@ MB_Settings_UseDefaultPodiumSequence = False;
 ***Match_StartMatch***
 ***
 FlagRush_Log("Start Match");
-
+AddFeedEntry("Start Match");
 ***
 
 // --------------------------------------------------
@@ -170,7 +170,7 @@ if(C_Debug) {
 ***Match_StartMap***
 ***
 FlagRush_Log("Start Map");
-
+AddFeedEntry("Start Map");
 MB_Sleep(5000);
 
 Users_SetNbFakeUsers(C_Debug_NbFakeUsers.X, C_Debug_NbFakeUsers.Y);
@@ -213,6 +213,7 @@ EndTime = (ML::NearestInteger(Now + S_RoundTimeLimitSeconds * 1000 + C_SpawnAnim
 ***
 FlagRush_Log("Start Turn");
 
+AddFeedEntry("Start Turn");
 ResetFlag(ML::NearestInteger(S_FlagInitialSpawnDelaySeconds * 1000 + C_SpawnAnimDuration), True);
 
 SpawnPlayers();
@@ -223,7 +224,7 @@ SpawnPlayers();
 ***Match_EndTurn***
 ***
 FlagRush_Log("End Turn");
-
+AddFeedEntry("End Turn");
 UpdateUI();
 UpdateFlagMarker();
 
@@ -241,7 +242,7 @@ EndTime += SleepDuration;
 ***Match_EndRound***
 ***
 FlagRush_Log("End Round");
-
+AddFeedEntry("End Round");
 UpdateUI();
 
 MB_ClearAllMessages();
@@ -291,7 +292,7 @@ if(RoundWinsTeam1 >= S_NbRoundsToWinMap || RoundWinsTeam2 >= S_NbRoundsToWinMap)
 ***Match_EndMap***
 ***
 FlagRush_Log("End Map");
-
+AddFeedEntry("End Map");
 UpdateUI();
 
 // Evaluate Current Map
@@ -365,6 +366,7 @@ Layers::DestroyAll();
 ***Match_EndMatch***
 ***
 FlagRush_Log("End Match");
+AddFeedEntry("End Match");
 ***
 
 // --------------------------------------------------
@@ -711,11 +713,11 @@ CSmPlayer GetFlagCarrier() {
 }
 
 // --------------------------------------------------
+
 /**
-*
+* Get the player scores
 */
 Integer[Text] GetPlayerScoresTableData(CSmScore Score) {
-	// Get the player scores
 	declare Integer[Text] PlayerScoresTableData;
 	PlayerScoresTableData[FlagRush_UIScoretable::C_ScoresTable_FlagsScoredKey] = Telemetry::GetPlayerMapInteger(Score, C_Telemetry_Key_FlagsScored);
 	PlayerScoresTableData[FlagRush_UIScoretable::C_ScoresTable_FlagsScoredRoundKey] = Telemetry::GetPlayerRoundInteger(Score, C_Telemetry_Key_FlagsScored);

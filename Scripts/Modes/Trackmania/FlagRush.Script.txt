@@ -23,6 +23,7 @@
 /* UI */
 
 #Include "Libs/Zrx/FlagRush/UI/Feed.Script.txt" as FlagRush_UIFeed
+#Include "Libs/Zrx/FlagRush/UI/Flash.Script.txt" as FlagRush_UIFlash
 #Include "Libs/Zrx/FlagRush/UI/Header.Script.txt" as FlagRush_UIHeader
 #Include "Libs/Zrx/FlagRush/UI/Markers.Script.txt" as FlagRush_UIMarkers
 #Include "Libs/Zrx/FlagRush/UI/Scoretable.Script.txt" as FlagRush_UIScoretable
@@ -41,6 +42,7 @@
 #Const	C_LayerName_RoundUI					"Layer_FlagRush_RoundUI"
 #Const	C_LayerName_Markers					"Layer_FlagRush_Markers"
 #Const 	C_LayerName_Feed					"Layer_FlagRush_Feed"
+#Const 	C_LayerName_Flash					"Layer_FlagRush_Flash"
 
 #Const	C_Telemetry_Key_FlagsScored			"FlagsScored"
 #Const	C_Telemetry_Key_FlagsStolen			"FlagsStolen"
@@ -644,6 +646,10 @@ Void InitUI() {
 	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Feed);
 	
+	Layers::Create(C_LayerName_Flash, FlagRush_UIFlash::GetManialink());
+	Layers::SetType(C_LayerName_Flash, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Flash);
+
 	InitMarkers();
 }
 
@@ -775,7 +781,7 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 
 Void AddFeedEntry(Text string) {
 	declare Text time = TL::SubString(System.CurrentLocalDateText, 11, 8);
-	
+
 	G_FeedMessages.addfirst("""$n[{{{time}}}]$z {{{string}}}""");
 	G_FeedMessages = G_FeedMessages.slice(0,10);
 	
@@ -1259,6 +1265,12 @@ Void UpdateSpectators() {
 
 // --------------------------------------------------
 
+Void FlashRespawn(CSmPlayer Player) {
+	declare UI = UIManager.GetUI(Player);
+	declare netwrite Integer Net_RespawnStamp for UI;
+	Net_RespawnStamp = Now;
+}
+
 /**
 * Loops though all events and reacts accordingly
 */
@@ -1307,6 +1319,8 @@ Void HandleEvents() {
 						SpawnDate = Now + S_RespawnDelay;
 						UnspawnPlayer(Event.Player);
 						if(FlagCarrier == Event.Player) DropFlag();			
+					} else {
+						FlashRespawn(Event.Player);
 					}
 				} else {
 					SpawnDate = Now + S_RespawnDelay;
@@ -1335,6 +1349,7 @@ Void HandleEvents() {
 		}
 	}
 }
+
 
 //////////////////
 // TEST & DEBUG //

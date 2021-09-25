@@ -581,7 +581,7 @@ Void InitMarkers() {
 	foreach(CurrentPlayer in AllPlayers) {
 		declare CUIConfig UI = UIManager.GetUI(CurrentPlayer);
 		UI.LabelsVisibility = CUIConfig::EHudVisibility::MarkersOnly;
-		UI.LabelsVisibility_SkipMarkersOnly = False;
+		UI.LabelsVisibility_SkipMarkersOnly = True;
 		UI.TeamLabelsShowNames = CUIConfig::EVisibility::None;
 		UI.AlliesLabelsShowNames =  CUIConfig::EVisibility::None;
 		UI.OpposingTeamLabelsShowNames = CUIConfig::EVisibility::None;
@@ -819,8 +819,10 @@ Void UpdateFlagCarrier(CSmPlayer Player) {
 	if (FlagCarrier != Null) Net_FlagCarrierName = FlagCarrier.User.Name;
 	else if (G_FlagState.Landmark == G_FlagSpawn) Net_FlagCarrierName = "Spawn";
 	else Net_FlagCarrierName = "Dropped";
-	
-	Player.Dossard_Color = <1., 1., 1.>;
+	if (Teams.existskey(Player.CurrentClan-1)) {
+		Player.Dossard_Color = Teams[Player.CurrentClan-1].ColorPrimary;
+		Player.Dossard_Number = "0" ^ Player.CurrentClan;
+	}
 	if (FlagCarrier != Null) {
 		if (FlagCarrier.Score.TeamNum == Player.CurrentClan) {
 			Player.Dossard_Trigram = "OWN";
@@ -831,6 +833,7 @@ Void UpdateFlagCarrier(CSmPlayer Player) {
 		Player.Dossard_Trigram = "   ";
 	}
 	
+
 	if (FlagCarrier == Player) {			
 		Player.Dossard_Trigram = "FLG"; // 
 	}
@@ -1059,7 +1062,6 @@ Void DropFlag() {
 	AddFeedEntry(Message);
 	// Set the flag to the players position
 	declare FlagPosition = FlagCarrier.Position;
-	log(MapPlayerModelName);
 	
 	FlagPosition.Y += Hitbox::GetCarSize(MapPlayerModelName).Y / 2;
 	SetFlagPosition(FlagCarrier.Position, Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000));

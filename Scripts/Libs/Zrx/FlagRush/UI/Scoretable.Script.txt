@@ -113,14 +113,14 @@ Text GetManialink(Integer _PlayersPerPage) {
 				</frame>
 				<frame id="column-legend" pos="0 -10">
 					<frame id="team1" pos="-68 0">
-						<label class="legend" pos="60 0" z-index="1" size="10 5" text="Points"  valign="center" halign="center" textsize="0.1" />
+						<label class="legend" pos="42 0" z-index="1" size="10 5" text="Points"  valign="center" halign="center" textsize="0.1" />
 						<label class="legend" pos="51 0" z-index="1" size="10 5" text="  Scored" valign="center" halign="center" textsize="0.1"/>
-						<label class="legend" pos="42 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
+						<label class="legend" pos="60 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
 					</frame>
 					<frame id="team2" pos="5 0">
-						<label class="legend" pos="60 0" z-index="1" size="10 5" text="Points" valign="center" halign="center" textsize="0.1" />
+						<label class="legend" pos="42 0" z-index="1" size="10 5" text="Points" valign="center" halign="center" textsize="0.1" />
 						<label class="legend" pos="51 0" z-index="1" size="10 5" text="  Scored" valign="center" halign="center" textsize="0.1" />
-						<label class="legend" pos="42 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
+						<label class="legend" pos="60 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
 					</frame>
 			</frame>
 			<!-- column legend -->
@@ -132,9 +132,12 @@ Text GetManialink(Integer _PlayersPerPage) {
 			<frame id="playergrid" pos="0 -9">
 				{{{PlayerCardFrameInstancesXml}}}
 			</frame>			
-			<frame valign="top" halign="center" size="140 42" pos="0 -9">
-				<quad id="team2-background" pos="0 0" z-index="-1" size="70 50" halign="left" opacity="0.8"/>
-				<quad id="team1-background" pos="0 0" size="70 50" halign="right" opacity="0.8"/>
+			<frame valign="top" halign="center" size="140 42" pos="0 -9">				
+			<quad id="team2-background" pos="1 0" size="0.5 50" bgcolor="000" opacity="0.6" halign="left" />	
+			<quad pos="1 0" size="70 50"  bgcolor="000a" halign="left" />
+
+			<quad id="team1-background" pos="-1 0" size="0.5 50" bgcolor="000" opacity="0.6" halign="right" />				
+			<quad pos="-1 0" size="70 50" bgcolor="000a" halign="right" />
 			</frame>
 		</frame>
 		<!-- body -->
@@ -195,8 +198,8 @@ Text GetManialink(Integer _PlayersPerPage) {
 				QuadTeam1ScoreBackground2.Colorize = CL::HsvToRgb(BgColor1);
 				QuadTeam2ScoreBackground2.Colorize = CL::HsvToRgb(BgColor2);
 				
-				QuadTeam1Background.BgColor = CL::HsvToRgb(BgColor1);
-				QuadTeam2Background.BgColor = CL::HsvToRgb(BgColor2);
+				QuadTeam1Background.BgColor = GetTeamPrimaryColor(Teams[0]);
+				QuadTeam2Background.BgColor = GetTeamPrimaryColor(Teams[1]);
 
 				/* Netread variables */
 				

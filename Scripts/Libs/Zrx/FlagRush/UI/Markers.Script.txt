@@ -1,3 +1,5 @@
+//#RequireContext CMlScriptIngame
+
 #Include	"Libs/Zrx/FlagRush/UI/Shared.Script.txt" as Shared
 
 Text GetManialink() {

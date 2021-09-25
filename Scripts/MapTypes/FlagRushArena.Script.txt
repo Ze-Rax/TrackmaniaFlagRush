@@ -5,7 +5,7 @@
 *  One StartTeam2
 *  One BaseTeam1
 *  One BaseTeam2
-*  One FlagSpawn
+*  At least one FlagSpawn
 */
 
 #RequireContext CSmMapType
@@ -82,23 +82,23 @@ Void UpdateValidability() {
 	
 	if (SpawnsTeam1Count != 1) {
 		IsValid = False;
-		Message ^= """\nYou must place exactly one {{{C_StartTagPrefix}}}1! ({{{SpawnsTeam1Count}}}/1)""";
+		Message ^= "\n" ^ """You must place exactly one {{{C_StartTagPrefix}}}1! ({{{SpawnsTeam1Count}}}/1)""";
 	}
 	if (SpawnsTeam2Count != 1) {
 		IsValid = False;
-		Message ^= """\nYou must place exactly one {{{C_StartTagPrefix}}}2! ({{{SpawnsTeam2Count}}}/1)""";
+		Message ^= "\n" ^ """You must place exactly one {{{C_StartTagPrefix}}}2! ({{{SpawnsTeam2Count}}}/1)""";
 	}
 	if (BasesTeam1Count  != 1) {
 		IsValid = False;
-		Message ^= """\nYou must place exactly one {{{C_FinishTagPrefix}}}1! ({{{BasesTeam1Count}}}/1)""";
+		Message ^= "\n" ^ """You must place exactly one {{{C_FinishTagPrefix}}}1! ({{{BasesTeam1Count}}}/1)""";
 	}
 	if (BasesTeam2Count  != 1) {
 		IsValid = False;
-		Message ^= """\nYou must place exactly one {{{C_FinishTagPrefix}}}2! ({{{BasesTeam1Count}}}/1)""";
+		Message ^= "\n" ^ """You must place exactly one {{{C_FinishTagPrefix}}}2! ({{{BasesTeam1Count}}}/1)""";
 	}
-	if (FlagSpawnsCount  != 1) {
+	if (FlagSpawnsCount  == 0) {
 		IsValid = False;
-		Message ^= """\nYou must place exactly one {{{C_FlagSpawnTag}}}! ({{{FlagSpawnsCount}}}/1)""";
+		Message ^= "\n" ^ """You must place at least one {{{C_FlagSpawnTag}}}!""";
 	}
 	
 	if (IsValid) {

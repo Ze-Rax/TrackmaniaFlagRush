@@ -54,7 +54,7 @@
 #Const	C_Debug_MarkersLabels				True
 #Const	C_Debug_NbFakeUsers					<1, 1>
 #Const	C_SpawnAnimDuration					1500
-#Const 	C_RespawnSpeedLimit 				15.
+#Const 	C_RespawnSpeedLimitKmh 				30.
 
 //////////////
 // Settings //
@@ -64,32 +64,32 @@
 // #Setting S_UseWarmup											False as "Start each map with a warmup"
 
 #Setting S_NbMapsToWinMatch							1 	as "Number of maps to win a match"
-#Setting S_NbRoundsToWinMap							3 	as "Number of rounds to win a map"
-#Setting S_NbFlagsToWinRound						1	as "Number of flags scored to win a round"
-#Setting S_RoundTimeLimitSeconds					120. as "Round Timelimit (seconds)"
+#Setting S_NbRoundsToWinMap							2 	as "Number of rounds to win a map"
+#Setting S_NbFlagsToWinRound						3	as "Number of flags scored to win a round"
+#Setting S_RoundTimeLimitSeconds					0 as "Round Timelimit (seconds)"
 #Setting S_UseTurns									False as "Use turns (Reset after a player scores a flag)"
 
 // Gameplay
-#Setting S_UseReversedBases							False as "Switch team bases"
+#Setting S_UseReversedBases							False as "<hidden>" // Switch team bases
 #Setting S_RandomizeFlagspawn						True as "Randomize flag spawn location"
-#Setting S_FlagInitialSpawnDelaySeconds				0. as "Initial flag spawn delay (seconds)"
-#Setting S_FlagRespawnDelaySeconds					0. as "Flag respawn delay (seconds)"
-#Setting S_FlagDropStateDurationSeconds				5. as "Flag drop state duration (seconds)"
-#Setting S_FlagStealResistDurationSeconds			0.5 as "Flag steal resistance (seconds)"
+#Setting S_FlagInitialSpawnDelaySeconds				0. as "<hidden>" // Initial flag spawn delay (seconds)
+#Setting S_FlagRespawnDelaySeconds					0. as "<hidden>" // Flag respawn delay (seconds)
+#Setting S_FlagDropStateDurationSeconds				8. as "Flag drop state duration (seconds)"
+#Setting S_FlagStealResistDurationSeconds			1. as "<hidden>" // Flag steal resistance (seconds)
 #Setting S_FlagSameTeamSteal						False as "Team flag steal"
 #Setting S_FlagCarrierFragile						False as "Flag carrier becomes fragile"
-#Setting S_FlagCarrierAcceleration					1.0 as "Flag carrier acceleration (0.0 - 1.0)"
-#Setting S_FlagCarrierControl						1.0 as "Flag carrier steering control (0.0 - 1.0)"
-#Setting S_FlagCarrierAdherence						1.0 as "Flag carrier adherence (0.0 - 1.0)"
-#Setting S_CanJoinMidRound							True as "Players can join in the middle of a round"
+#Setting S_FlagCarrierAcceleration					0.8 as "Flag carrier acceleration (0.0 - 1.0)"
+#Setting S_FlagCarrierControl						1.0 as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
+#Setting S_FlagCarrierAdherence						1.0 as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
+#Setting S_CanJoinMidRound							True as "<hidden>" // Players can join in the middle of a round
 #Setting S_RespawnWhenStill							True as "Players can respawn only when being still"
-#Setting S_RespawnDelay								3000 as "Respawn Delay"
+#Setting S_RespawnDelay								1.5 as "Respawn Delay (seconds)"
 
 // Teams
-#Setting S_Team1Name 								"Team Blue" as "Team1 Name"
-#Setting S_Team2Name 								"Team Red" as "Team2 Name"
-#Setting S_Team1Color 								"44f" as "Team1 Color"
-#Setting S_Team2Color 								"f44" as "Team2 Color"
+#Setting S_Team1Name 								"" as "Force Team1 Name"
+#Setting S_Team2Name 								"" as "Force Team2 Name"
+#Setting S_Team1Color 								"" as "Force Team1 Color"
+#Setting S_Team2Color 								"" as "Force Team2 Color"
 
 /////////////
 // Structs //
@@ -205,7 +205,7 @@ UIEventFeed::SendMessage(Message, "info");
 MB_Sleep(MessageDuration);
 
 StartTime = Now;
-EndTime = (ML::NearestInteger(Now + S_RoundTimeLimitSeconds * 1000 + C_SpawnAnimDuration));
+EndTime = Now + S_RoundTimeLimitSeconds * 1000 + C_SpawnAnimDuration;
 ***
 
 // --------------------------------------------------
@@ -527,7 +527,7 @@ Void InitLandmarks() {
 			case "BaseTeam2": if (Landmark.Waypoint != Null) G_BasesTeam2.add(Landmark);
 			case "FlagSpawn": if (Landmark.Waypoint != Null) G_FlagSpawns.add(Landmark);
 			case "DefaultFlagSpawn": if (Landmark.Waypoint != Null) {
-				G_FlagSpawns.add(Landmark.Waypoint);
+				G_FlagSpawns.add(Landmark);
 				G_ActiveFlagSpawn = Landmark;
 			}
 		}
@@ -1314,15 +1314,15 @@ Void HandleEvents() {
 				declare Integer SpawnDate for Event.Player;
 				
 				if (S_RespawnWhenStill) {
-					if (Event.Player.Speed < C_RespawnSpeedLimit) {					
-						SpawnDate = Now + S_RespawnDelay;
+					if (Event.Player.Speed < C_RespawnSpeedLimitKmh / 3.6) {					
+						SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
 						UnspawnPlayer(Event.Player);
 						if(FlagCarrier == Event.Player) DropFlag();			
 					} else {
 						FlashRespawn(Event.Player);
 					}
 				} else {
-					SpawnDate = Now + S_RespawnDelay;
+					SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
 					UnspawnPlayer(Event.Player);
 					if(FlagCarrier == Event.Player) DropFlag();
 				}

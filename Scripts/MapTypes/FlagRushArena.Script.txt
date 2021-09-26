@@ -35,6 +35,7 @@
 #Const C_StartTagPrefix				"SpawnTeam"
 #Const C_FinishTagPrefix			"BaseTeam"
 #Const C_FlagSpawnTag				"FlagSpawn"
+#Const C_DefaultFlagSpawnTag		"DefaultFlagSpawn"
 
 #Const C_StartTagNoFunction			"Unused Start"
 #Const C_FinishTagNoFunction		"Unused Finish"
@@ -57,6 +58,7 @@ Void UpdateValidability() {
 	declare BasesTeam1Count = 0;
 	declare BasesTeam2Count = 0;
 	declare FlagSpawnsCount = 0;
+	declare DefaultFlagSpawnsCount = 0;
 	
 	foreach (Anchor in AnchorData) {
 		switch (Anchor.WaypointType) {
@@ -73,6 +75,10 @@ Void UpdateValidability() {
 			}
 			case CAnchorData::EWaypointType::Checkpoint: {
 				if (Anchor.Tag == C_FlagSpawnTag) FlagSpawnsCount += 1;
+				else if (Anchor.Tag == C_DefaultFlagSpawnTag) {
+					FlagSpawnsCount += 1;
+					DefaultFlagSpawnsCount += 1;
+				}
 			}
 		}
 	}
@@ -99,6 +105,14 @@ Void UpdateValidability() {
 	if (FlagSpawnsCount  == 0) {
 		IsValid = False;
 		Message ^= "\n" ^ """You must place at least one {{{C_FlagSpawnTag}}}!""";
+	}
+	if (DefaultFlagSpawnsCount == 0) {
+		IsValid = False;
+		Message ^= "\n" ^ """You haven't set a default {{{C_FlagSpawnTag}}}!""";
+	}
+	if (DefaultFlagSpawnsCount > 1) {
+		IsValid = False;
+		Message ^= "\n" ^ """You cannot have more than one default {{{C_FlagSpawnTag}}}! ({{{DefaultFlagSpawnsCount}}}/1)""";
 	}
 	
 	if (IsValid) {

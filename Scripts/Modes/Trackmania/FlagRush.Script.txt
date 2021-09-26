@@ -71,6 +71,7 @@
 
 // Gameplay
 #Setting S_UseReversedBases							False as "Switch team bases"
+#Setting S_RandomizeFlagspawn						True as "Randomize flag spawn location"
 #Setting S_FlagInitialSpawnDelaySeconds				0. as "Initial flag spawn delay (seconds)"
 #Setting S_FlagRespawnDelaySeconds					0. as "Flag respawn delay (seconds)"
 #Setting S_FlagDropStateDurationSeconds				5. as "Flag drop state duration (seconds)"
@@ -514,14 +515,6 @@ Void InitTeams() {
 // --------------------------------------------------
 
 /**
-* Randomly choose a flag spawn to activate.
-*/
-Void PickNewFlagSpawn() {
-	declare FlagSpawnToActivate = ML::Rand(0, G_FlagSpawns.count - 1);
-	G_ActiveFlagSpawn = G_FlagSpawns[FlagSpawnToActivate];
-}
-
-/**
 *	Looks through all the landmarks on the map and set the global variables accordingly.
 */
 Void InitLandmarks() {
@@ -534,6 +527,7 @@ Void InitLandmarks() {
 			case "BaseTeam1": if (Landmark.Waypoint != Null) G_BaseTeam1 = Landmark;
 			case "BaseTeam2": if (Landmark.Waypoint != Null) G_BaseTeam2 = Landmark;
 			case "FlagSpawn": if (Landmark.Waypoint != Null) G_FlagSpawns.add(Landmark);
+			case "DefaultFlagSpawn": if (Landmark.Waypoint != Null) G_ActiveFlagSpawn = Landmark;
 		}
 	}
 	
@@ -542,6 +536,7 @@ Void InitLandmarks() {
 	declare FoundBaseTeam1 = G_BaseTeam1 != Null;
 	declare FoundBaseTeam2 = G_BaseTeam2 != Null;
 	declare FoundFlagSpawn = G_FlagSpawns.count != 0;
+	declare FoundDefaultFlagSpawn = G_ActiveFlagSpawn != Null;
 	
 	assert(
 		FoundSpawnTeam1 && FoundSpawnTeam2 && FoundBaseTeam1 && FoundBaseTeam2 && FoundFlagSpawn,
@@ -550,10 +545,9 @@ Void InitLandmarks() {
 		{{{"\t"}}}SpawnTeam2: {{{FoundSpawnTeam2}}}
 		{{{"\t"}}}BaseTeam1 : {{{FoundBaseTeam1}}}
 		{{{"\t"}}}BaseTeam2 : {{{FoundBaseTeam2}}}
-		{{{"\t"}}}FlagSpawn : {{{FoundFlagSpawn}}}"""
+		{{{"\t"}}}FlagSpawn : {{{FoundFlagSpawn}}}
+		{{{"\t"}}}DefaultFlagSpawn : {{{FoundDefaultFlagSpawn}}}"""
 	);
-	// Initialize active flag spawn
-	PickNewFlagSpawn();
 
 	FlagRush_Log("All Landmarks found!");
 }
@@ -899,6 +893,16 @@ Void SetMarkerCommonProperties() {
 	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
 	G_FlagMarker.ManialinkFrameId = "marker-flag";
 	//if(C_Debug_MarkersLabels) G_FlagMarker.Label = "Flag";
+}
+
+/**
+* Randomly choose a new flag spawn to activate if enabled.
+*/
+Void PickNewFlagSpawn() {
+	if (S_RandomizeFlagspawn) {
+		declare FlagSpawnToActivate = ML::Rand(0, G_FlagSpawns.count - 1);
+		G_ActiveFlagSpawn = G_FlagSpawns[FlagSpawnToActivate];
+	}
 }
 
 Void SetFlagPositionAtSpawn(Integer PickupableDate) {

@@ -35,6 +35,7 @@
 #Const C_StartTagPrefix				"SpawnTeam"
 #Const C_FinishTagPrefix			"BaseTeam"
 #Const C_FlagSpawnTag				"FlagSpawn"
+#Const C_DefaultFlagSpawnTag		"DefaultFlagSpawn"
 
 #Const C_StartTagNoFunction			"Unused Start"
 #Const C_FinishTagNoFunction		"Unused Finish"
@@ -46,6 +47,7 @@
 #Const C_UI_ButtonOpacity			0.75
 
 #Const C_Dbg_ButtonActivatorOpacity	0.0
+#Const C_Dbg_ButtonActivatorColor	"F00"
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Functions
@@ -58,6 +60,7 @@ Void UpdateValidability() {
 	declare BasesTeam1Count = 0;
 	declare BasesTeam2Count = 0;
 	declare FlagSpawnsCount = 0;
+	declare DefaultFlagSpawnsCount = 0;
 	
 	foreach (Anchor in AnchorData) {
 		switch (Anchor.WaypointType) {
@@ -74,6 +77,10 @@ Void UpdateValidability() {
 			}
 			case CAnchorData::EWaypointType::Checkpoint: {
 				if (Anchor.Tag == C_FlagSpawnTag) FlagSpawnsCount += 1;
+				else if (Anchor.Tag == C_DefaultFlagSpawnTag) {
+					FlagSpawnsCount += 1;
+					DefaultFlagSpawnsCount += 1;
+				}
 			}
 		}
 	}
@@ -95,7 +102,7 @@ Void UpdateValidability() {
 	}
 	if (BasesTeam2Count  < 1) {
 		IsValid = False;
-		Message ^= "\n" ^ """You must place at least one $ff4{{{C_FinishTagPrefix}}}2$fff! ({{{BasesTeam1Count}}}/1)""";
+		Message ^= "\n" ^ """You must place at least one $f44{{{C_FinishTagPrefix}}}2$fff! ({{{BasesTeam1Count}}}/1)""";
 	}
 	if (BasesTeam1Count != BasesTeam2Count) {
 		IsValid = False;
@@ -105,7 +112,14 @@ Void UpdateValidability() {
 		IsValid = False;
 		Message ^= "\n" ^ """You must place at least one {{{C_FlagSpawnTag}}}!""";
 	}
-
+	if (DefaultFlagSpawnsCount == 0) {
+		IsValid = False;
+		Message ^= "\n" ^ """You haven't set a default {{{C_FlagSpawnTag}}}!""";
+	}
+	if (DefaultFlagSpawnsCount > 1) {
+		IsValid = False;
+		Message ^= "\n" ^ """You cannot have more than one default {{{C_FlagSpawnTag}}}! ({{{DefaultFlagSpawnsCount}}}/1)""";
+	}
 	Message ^= "\n\n" ^ "Need help? Check out $4cf$l[https://docs.google.com/document/d/e/2PACX-1vRVujmSYunjz7mrLf5sTF4BDS7GwayxjWyY8clXgyiZzgH_EYz0d7mx2EJHu0FdNoyoJgPyEpkD-yoe/pub]this FlagRush Mapping Guide$l$fff by Realspace!";
 	
 	if (IsValid) {
@@ -145,38 +159,43 @@ Text GetEditAnchorManialink() {
 		</frame>
 		
 		<frame id="body" pos="0 -25">
-			<frame id="body-teamselection" hidden="1">
-				<quad pos="0 0" z-index="0" size="50 35" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
+			<frame id="body-teamselection" z-index="1" hidden="1">
+			<quad pos="0 0" z-index="0" size="50 35" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
 				<label pos="0 10" size="45 8" text="Team:" halign="center" valign="center" style="Default" textfont="GameFontReqular" textsize="3" z-index="1" textcolor="FFF"/>
 				
-				<quad pos="-12.5 0" z-index="1" size="20 8" id="button-team1-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Blue)}}}" scriptevents="1" opacity="{{{C_UI_ButtonOpacity}}}"/>
-				<label pos="-12.5 0" z-index="2" size="20 6" text="Team 1" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Blue)}}}" scriptevents="1"/>
-				<quad pos="-12.5 0" z-index="3" size="20 8" id="button-team1-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" scriptevents="1"/>
+				<quad pos="-12.5 0" z-index="1" size="20 8" id="button-team1-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Blue)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>
+				<label pos="-12.5 0" z-index="2" size="20 6" text="Team 1" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Blue)}}}" />
+				<quad pos="-12.5 0" z-index="3" size="20 8" id="button-team1-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
 				
-				<quad pos="12.5 0" z-index="1" size="20 8" id="button-team2-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Red)}}}" scriptevents="1" opacity="{{{C_UI_ButtonOpacity}}}"/>
-				<label pos="12.5 0" z-index="2" size="20 6" text="Team 2" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Red)}}}" scriptevents="1"/>
-				<quad pos="12.5 0" z-index="3" size="20 8" id="button-team2-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" scriptevents="1"/>
+				<quad pos="12.5 0" z-index="1" size="20 8" id="button-team2-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Red)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>
+				<label pos="12.5 0" z-index="2" size="20 6" text="Team 2" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Red)}}}"/>
+				<quad pos="12.5 0" z-index="3" size="20 8" id="button-team2-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
 
-				<quad pos="0 -10" z-index="1" size="45 8" id="button-teamnone-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Neutral)}}}" scriptevents="1" opacity="{{{C_UI_ButtonOpacity}}}"/>
-				<label pos="0 -10" z-index="2" size="45 6" text="None" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}" scriptevents="1"/>
-				<quad pos="0 -10" z-index="3" size="45 8" id="button-teamnone-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" scriptevents="1"/>
+				<quad pos="0 -10" z-index="1" size="45 8" id="button-teamnone-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Neutral)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>
+				<label pos="0 -10" z-index="2" size="45 6" text="None" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}"/>
+				<quad pos="0 -10" z-index="3" size="45 8" id="button-teamnone-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
 			</frame>
 			
-			<frame id="body-cpfunction" hidden="1">
-				<quad pos="0 5" z-index="0" size="50 25" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
+			<frame id="body-cpfunction" z-index="1" hidden="1">
+				<quad pos="0 -5" z-index="0" size="50 45" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
 				<label pos="0 10" size="45 8" text="Function:" halign="center" valign="center" style="Default" textfont="GameFontReqular" textsize="3" z-index="1" textcolor="FFF"/>
 				
-				<quad pos="-12.5 0" z-index="1" size="20 8" id="button-cpfunctionflag-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Neutral)}}}" scriptevents="1" opacity="{{{C_UI_ButtonOpacity}}}"/>
-				<label pos="-12.5 0" z-index="2" size="20 6" text="Flag" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}" scriptevents="1"/>
-				<quad pos="-12.5 0" z-index="3" size="20 8" id="button-cpfunctionflag-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" scriptevents="1"/>
+				<quad pos="0 0" z-index="1" size="45 8" id="button-cpfunctionflag-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Neutral)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>
+				<label pos="0 0" z-index="2" size="45 6" text="Flag spawn" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}"/>
+				<quad pos="0 0" z-index="3" size="45 8" id="button-cpfunctionflag-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
 
-				<quad pos="12.5 0" z-index="1" size="20 8" id="button-cpfunctionnone-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Neutral)}}}" scriptevents="1" opacity="{{{C_UI_ButtonOpacity}}}"/>
-				<label pos="12.5 0" z-index="2" size="20 6" text="None" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}" scriptevents="1"/>
-				<quad pos="12.5 0" z-index="3" size="20 8" id="button-cpfunctionnone-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" scriptevents="1"/>
+				<quad pos="17.5 -10" z-index="1" size="10 8" id="button-cpfunctionflagdefault-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Neutral)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>
+				<label pos="-20 -10" z-index="2" size="30 6" id="button-cpfunctionflagdefault-label" text="Default flag spawn:" halign="left" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}"/>
+				<label pos="17.5 -10" z-index="2" size="10 6" id="button-cpfunctionflagdefault-icon" text="" halign="center" valign="center" style="Default" textfont="GameFontBlack" textsize="4" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}"/>
+				<quad pos="17.5 -10" z-index="3" size="10 8" id="button-cpfunctionflagdefault-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
+
+				<quad pos="0 -20" z-index="1" size="45 8" id="button-cpfunctionnone-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Neutral)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>
+				<label pos="0 -20" z-index="2" size="45 6" text="None" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}"/>
+				<quad pos="0 -20" z-index="3" size="45 8" id="button-cpfunctionnone-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
 			</frame>
 			
-			<frame id="body-noedit">
-				<quad pos="0 " z-index="0" size="50 35" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
+			<frame id="body-noedit" z-index="1" hidden="1">
+			<quad pos="0 0" z-index="0" size="50 35" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
 				<label pos="0 10" size="45 8" text="Unsupported:" halign="center" valign="center" style="Default" textfont="GameFontSemibold" textsize="3" z-index="1" textcolor="{{{ColorPalette::C_Color_Bad}}}"/>
 				<label pos="0 -5" size="45 18" text="This landmark is not supported and can therefore not be edited!" halign="center" valign="center" style="Default" textfont="GameFontReqular" textsize="2.5" z-index="1" autonewline="1" textcolor="FFF"/>
 			</frame>
@@ -215,6 +234,10 @@ Text GetEditAnchorManialink() {
 
 		declare CMlQuad ButtonCPFunctionFlagBg = (Page.GetFirstChild("button-cpfunctionflag-bg") as CMlQuad);
 		declare CMlQuad ButtonCPFunctionFlagActivator = (Page.GetFirstChild("button-cpfunctionflag-activator") as CMlQuad);
+		declare CMlQuad ButtonCPFunctionFlagDefaultToggleBg = (Page.GetFirstChild("button-cpfunctionflagdefault-bg") as CMlQuad);
+		declare CMlLabel ButtonCPFucntionFlagDefaultToggleIcon = (Page.GetFirstChild("button-cpfunctionflagdefault-icon") as CMlLabel);
+		declare CMlLabel ButtonCPFucntionFlagDefaultToggleLabel = (Page.GetFirstChild("button-cpfunctionflagdefault-label") as CMlLabel);
+		declare CMlQuad ButtonCPFunctionFlagDefaultActivator = (Page.GetFirstChild("button-cpfunctionflagdefault-activator") as CMlQuad);
 		declare CMlQuad ButtonCPFunctionNoneBg = (Page.GetFirstChild("button-cpfunctionnone-bg") as CMlQuad);
 		declare CMlQuad ButtonCPFunctionNoneActivator = (Page.GetFirstChild("button-cpfunctionnone-activator") as CMlQuad);
 
@@ -254,6 +277,20 @@ Text GetEditAnchorManialink() {
 				HeaderText = "Base";
 			} else if (FlagRushArena_EditCheckpoint) {
 				HeaderText = "Checkpoint";
+				if(FlagRushArena_EditedAnchorTag == "{{{C_FlagSpawnTag}}}" || FlagRushArena_EditedAnchorTag == "{{{C_DefaultFlagSpawnTag}}}") {
+					ButtonCPFucntionFlagDefaultToggleLabel.Opacity = 1.;
+					ButtonCPFucntionFlagDefaultToggleIcon.Opacity = 1.;
+					ButtonCPFunctionFlagDefaultToggleBg.Opacity = 1.;
+				} else {
+					ButtonCPFucntionFlagDefaultToggleLabel.Opacity = .25;
+					ButtonCPFucntionFlagDefaultToggleIcon.Opacity = .25;
+					ButtonCPFunctionFlagDefaultToggleBg.Opacity = .25;
+				}
+				if (FlagRushArena_EditedAnchorTag == "{{{C_DefaultFlagSpawnTag}}}") {
+					ButtonCPFucntionFlagDefaultToggleIcon.Value = "";
+				} else {
+					ButtonCPFucntionFlagDefaultToggleIcon.Value = "";
+				}
 			} else {
 				HeaderText = FlagRushArena_EditedAnchorDefaultTag;
 			}
@@ -287,6 +324,13 @@ Text GetEditAnchorManialink() {
 							}
 							case ButtonCPFunctionFlagActivator: {
 								FlagRushArena_EditedAnchorTag = "{{{C_FlagSpawnTag}}}";
+							}
+							case ButtonCPFunctionFlagDefaultActivator: {
+								if(FlagRushArena_EditedAnchorTag == "{{{C_FlagSpawnTag}}}") {
+									FlagRushArena_EditedAnchorTag = "{{{C_DefaultFlagSpawnTag}}}";
+								} else if (FlagRushArena_EditedAnchorTag == "{{{C_DefaultFlagSpawnTag}}}") {
+									FlagRushArena_EditedAnchorTag = "{{{C_FlagSpawnTag}}}";
+								}
 							}
 							case ButtonCPFunctionNoneActivator: {
 								FlagRushArena_EditedAnchorTag = "{{{C_CheckpointTagNoFunction}}}";
@@ -325,6 +369,10 @@ Text GetEditAnchorManialink() {
 								ButtonBackground = ButtonCPFunctionNoneBg;
 								BackgroundColor = {{{Color_ButtonBackground_Neutral_Focus}}};
 							}
+							case ButtonCPFunctionFlagDefaultActivator: {
+								ButtonBackground = ButtonCPFunctionFlagDefaultToggleBg;
+								BackgroundColor = {{{Color_ButtonBackground_Neutral_Focus}}};
+							}
 						}
 						
 						if(ButtonBackground != Null) {
@@ -353,6 +401,11 @@ Text GetEditAnchorManialink() {
 							}
 							case ButtonCPFunctionNoneActivator: {
 								ButtonBackground = ButtonCPFunctionNoneBg;
+								BackgroundColor = {{{Color_ButtonBackground_Neutral}}};
+							}
+							
+							case ButtonCPFunctionFlagDefaultActivator: {
+								ButtonBackground = ButtonCPFunctionFlagDefaultToggleBg;
 								BackgroundColor = {{{Color_ButtonBackground_Neutral}}};
 							}
 						}
@@ -425,7 +478,7 @@ Void InitLandmarks() {
 				if(!TL::StartsWith(C_FinishTagPrefix, Anchor.Tag)) Anchor.Tag = C_FinishTagNoFunction;
 			}
 			case CAnchorData::EWaypointType::Checkpoint: {
-				if(!TL::StartsWith(C_FlagSpawnTag, Anchor.Tag)) Anchor.Tag = C_CheckpointTagNoFunction;				
+				if(!( Anchor.Tag == C_FlagSpawnTag || Anchor.Tag == C_DefaultFlagSpawnTag)) Anchor.Tag = C_CheckpointTagNoFunction;				
 			}
 			default: {
 				Anchor.Tag = C_LandmarkTagNoFunction;
@@ -481,6 +534,15 @@ main() {
 				declare Anchor <=> AnchorData[FlagRushArena_EditedAnchorId];
 				Anchor.Order = FlagRushArena_EditedAnchorOrder;
 				Anchor.Tag = FlagRushArena_EditedAnchorTag;
+
+				// If Anchor is DefaultFlagSpawn, remove defualt from other potential flagspawns
+				if(Anchor.Tag == C_DefaultFlagSpawnTag) {
+					foreach(OtherAnchor in AnchorData) {
+						if(OtherAnchor.Id != Anchor.Id && OtherAnchor.Tag == C_DefaultFlagSpawnTag) {
+							OtherAnchor.Tag = C_FlagSpawnTag;
+						}
+					}
+				}
 			}
 		}
 		

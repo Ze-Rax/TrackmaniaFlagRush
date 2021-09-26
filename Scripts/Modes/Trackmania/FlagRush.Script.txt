@@ -526,7 +526,10 @@ Void InitLandmarks() {
 			case "BaseTeam1": if (Landmark.Waypoint != Null) G_BasesTeam1.add(Landmark);
 			case "BaseTeam2": if (Landmark.Waypoint != Null) G_BasesTeam2.add(Landmark);
 			case "FlagSpawn": if (Landmark.Waypoint != Null) G_FlagSpawns.add(Landmark);
-			case "DefaultFlagSpawn": if (Landmark.Waypoint != Null) G_ActiveFlagSpawn = Landmark;
+			case "DefaultFlagSpawn": if (Landmark.Waypoint != Null) {
+				G_FlagSpawns.add(Landmark.Waypoint);
+				G_ActiveFlagSpawn = Landmark;
+			}
 		}
 	}
 	
@@ -538,7 +541,7 @@ Void InitLandmarks() {
 	declare FoundDefaultFlagSpawn = G_ActiveFlagSpawn != Null;
 	
 	assert(
-		FoundSpawnTeam1 && FoundSpawnTeam2 && FoundBaseTeam1 && FoundBaseTeam2 && FoundFlagSpawn,
+		FoundSpawnTeam1 && FoundSpawnTeam2 && FoundBaseTeam1 && FoundBaseTeam2 && FoundFlagSpawn && FoundDefaultFlagSpawn,
 		"""Couldn't init all landmarks!
 		{{{"\t"}}}SpawnTeam1: {{{FoundSpawnTeam1}}}
 		{{{"\t"}}}SpawnTeam2: {{{FoundSpawnTeam2}}}

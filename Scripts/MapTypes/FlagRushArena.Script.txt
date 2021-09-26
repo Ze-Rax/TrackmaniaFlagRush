@@ -106,7 +106,7 @@ Void UpdateValidability() {
 		Message ^= "\n" ^ """You must place at least one {{{C_FlagSpawnTag}}}!""";
 	}
 
-	Message ^= "\n\n" ^ "Need help? check out $4cf$l[https://docs.google.com/document/d/e/2PACX-1vRVujmSYunjz7mrLf5sTF4BDS7GwayxjWyY8clXgyiZzgH_EYz0d7mx2EJHu0FdNoyoJgPyEpkD-yoe/pub]this FlagRush Mapping Guide$l$fff by Realspace!";
+	Message ^= "\n\n" ^ "Need help? Check out $4cf$l[https://docs.google.com/document/d/e/2PACX-1vRVujmSYunjz7mrLf5sTF4BDS7GwayxjWyY8clXgyiZzgH_EYz0d7mx2EJHu0FdNoyoJgPyEpkD-yoe/pub]this FlagRush Mapping Guide$l$fff by Realspace!";
 	
 	if (IsValid) {
 		ValidationStatus = CMapType::ValidationStatus::Validated;

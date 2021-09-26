@@ -1,49 +1,140 @@
+// #RequireContext CSmMode
 
+// this must be exact same as in manialink, remember to change it if you edit here.
+#Struct K_FeedMessage {
+    Text Message;
+    Text IconStyle;
+    Text IconSubstyle;
+    Vec3 IconColor;
+}
+
+#Const C_FeedMessageAmount 8
+
+declare K_FeedMessage[] G_FeedMessages;
+
+
+Void ClearMessages() {
+    G_FeedMessages.clear();
+    foreach(Player in AllPlayers) {
+        declare CUIConfig UI = UIManager.GetUI(Player);
+        if (UI != Null) {
+            declare netwrite K_FeedMessage[] EventFeed for UI;
+            EventFeed = G_FeedMessages;
+        } 
+    }
+}
+
+/**
+* Adds Message to event Feed
+* @param string:Text = main message, displayed in white without colorcodes, supports game colorcodes syntax  
+* @param Style:Text = Style of the quad
+* @param Substyle:Text = Substyle of the quad
+* @param Color:Text = Color of the quad
+*/
+Void SendMessage(Text string, Text Style, Text Substyle, Vec3 Color) {
+    G_FeedMessages.addfirst(K_FeedMessage{Message=string, IconStyle=Style, IconSubstyle=Substyle, IconColor=Color});
+    G_FeedMessages = G_FeedMessages.slice(0, C_FeedMessageAmount);
+
+    foreach(Player in AllPlayers) {
+        declare CUIConfig UI = UIManager.GetUI(Player);
+        if (UI != Null) {
+            declare netwrite K_FeedMessage[] EventFeed for UI;
+            EventFeed = G_FeedMessages;
+        }
+    }
+}
+
+/**
+* Adds Message to event Feed
+* @param string:Text = main message, displayed in white without colorcodes, supports game colorcodes syntax
+* @param icon:Text = icon to show
+* @param Color:Vec3
+*/
+Void SendMessage(Text String, Text Icon, Vec3 Color) {
+    declare color = Color;
+    if (color == <0., 0., 0.>) color = <1., 1., 1.>;
+    
+    switch (Icon) {
+        case "base": SendMessage(String, "ManiaPlanetMainMenu", "IconHome", color);
+        case "flag": SendMessage(String, "UIConstruction_Buttons", "Validate", color);
+        case "info": SendMessage(String, "UICommon64_1", "Info_light", color);
+        default: SendMessage(String, "", "", color);
+    }
+}
+
+Void SendMessage(Text String, Text Icon) {
+    SendMessage(String, Icon, <1., 1., 1.>);
+}
+
+Void SendMessage(Text string) {  
+    SendMessage(string, "", "", <1., 1., 1.>);
+}
 
 Text GetManialink() {
-    return """
-    <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<manialink version="3" name="FlagRush_Feed">
-    <frame id="FlagRush_Feed" pos="-150 0">
-        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
-        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
-        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
-        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
-        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
-        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
-        <label size="60 4" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
-        <label size="60 3" text="" textsize="1" halign="left" valign="center2" textfont="GameFontSemiBold"/>
+    return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+    <manialink version="3">
+    <framemodel id="message">
+    <quad size="3 3" pos="0 -4" halign="center" valign="bottom"/>
+    <label size="60 3" pos="1.5 -4" text="" textsize="1" textfont="GameFontSemiBold" halign="left" valign="bottom"/>
+    </framemodel>
+    <frame id="EventFeed" pos="-150 0">
+    <frameinstance modelid="message" />
+    <frameinstance modelid="message" />	
+    <frameinstance modelid="message" />
+    <frameinstance modelid="message" />
+    <frameinstance modelid="message" />
+    <frameinstance modelid="message" />
+    <frameinstance modelid="message" />
+    <frameinstance modelid="message" />
     </frame>
-    
     <script><!--
-    // #RequireContext CMlScriptIngame
     #Include "MathLib" as Math
+    #Struct K_FeedMessage {
+        Text Message;
+        Text IconStyle;
+        Text IconSubstyle;
+        Vec3 IconColor;
+    }
     
-    main() {        
-        declare netread Text[] Net_FlagRush_Feed for UI; 
-        declare CMlFrame frame = (Page.GetFirstChild("FlagRush_Feed") as CMlFrame);	
+    main() {
+        declare netread K_FeedMessage[] EventFeed for UI;        
+        declare CMlFrame frame = (Page.GetFirstChild("EventFeed") as CMlFrame);	        
         declare Real posY = 0.;
-        declare Real opacity = 0.;			
-        foreach (i => Elem in frame.Controls) {
-            declare CMlLabel label = (Elem as CMlLabel);
+        declare Real opacity = 0.;	
+        
+        foreach (i => elem in frame.Controls) {
+            declare frame2 = (elem as CMlFrame);
+            frame2.RelativePosition_V3.Y= posY;
+            posY -= 3;
+            if (i == frame.Controls.count -2) posY -=1; // make a small whitespace before last entry
+            declare CMlQuad quad = (frame2.Controls[0] as CMlQuad);
+            declare CMlLabel label = (frame2.Controls[1] as CMlLabel);
             opacity += 1. / frame.Controls.count;
-            label.Opacity = Math::Clamp(opacity, 0.1, 1.);
-            label.RelativePosition_V3.Y= posY;
-            posY -= label.Size.Y;
+            quad.Opacity = Math::Clamp(opacity, 0.2, 1.);
+            label.Opacity = Math::Clamp(opacity, 0.2, 1.);
+            label.Value ="";
+            quad.Style = "";                        
+            quad.Substyle = "";
         }
         
         while(True) {
             yield;
-            foreach (i => string in Net_FlagRush_Feed) {
+            foreach (i => value in EventFeed) {
                 declare Integer idx = frame.Controls.count - i -1;
-                if (frame.Controls.existskey(idx)) {
-                    declare CMlLabel label = (frame.Controls[idx] as CMlLabel);
-                    label.Value = string;
+                if (frame.Controls.existskey(idx)) {			
+                    declare CMlFrame elem = (frame.Controls[idx] as CMlFrame);
+                    declare quad = (elem.Controls[0] as CMlQuad);
+                    quad.Style = value.IconStyle;
+                    quad.Substyle = value.IconSubstyle;
+                    declare Vec3 color = value.IconColor;                            
+                    if (color == <0., 0., 0.>) color = <1., 1., 1.>; // if color is not defined (black), have it white
+                    quad.Colorize = color;
+                    (elem.Controls[1] as CMlLabel).Value = value.Message;
                 }
             }
         }	
     } 
     --></script>
-</manialink>
+    </manialink>
     """;
 }

@@ -114,8 +114,8 @@ declare Boolean G_MapValid;
 
 declare CMapLandmark G_SpawnTeam1;
 declare CMapLandmark G_SpawnTeam2;
-declare CMapLandmark G_BaseTeam1;
-declare CMapLandmark G_BaseTeam2;
+declare CMapLandmark[] G_BasesTeam1;
+declare CMapLandmark[] G_BasesTeam2;
 declare CMapLandmark[] G_FlagSpawns;
 declare CMapLandmark G_ActiveFlagSpawn;
 declare Struct_FlagState G_FlagState;
@@ -531,16 +531,16 @@ Void InitLandmarks() {
 		switch (Landmark.Tag) {
 			case "SpawnTeam1": if (Landmark.PlayerSpawn != Null) G_SpawnTeam1 = Landmark;
 			case "SpawnTeam2": if (Landmark.PlayerSpawn != Null) G_SpawnTeam2 = Landmark;
-			case "BaseTeam1": if (Landmark.Waypoint != Null) G_BaseTeam1 = Landmark;
-			case "BaseTeam2": if (Landmark.Waypoint != Null) G_BaseTeam2 = Landmark;
+			case "BaseTeam1": if (Landmark.Waypoint != Null) G_BasesTeam1.add(Landmark);
+			case "BaseTeam2": if (Landmark.Waypoint != Null) G_BasesTeam2.add(Landmark);
 			case "FlagSpawn": if (Landmark.Waypoint != Null) G_FlagSpawns.add(Landmark);
 		}
 	}
 	
 	declare FoundSpawnTeam1 = G_SpawnTeam1 != Null;
 	declare FoundSpawnTeam2 = G_SpawnTeam2 != Null;
-	declare FoundBaseTeam1 = G_BaseTeam1 != Null;
-	declare FoundBaseTeam2 = G_BaseTeam2 != Null;
+	declare FoundBaseTeam1 = G_BasesTeam1.count != 0;
+	declare FoundBaseTeam2 = G_BasesTeam2.count != 0;
 	declare FoundFlagSpawn = G_FlagSpawns.count != 0;
 	
 	assert(
@@ -569,22 +569,25 @@ Void InitMarkers() {
 	G_FlagMarker = Null;
 	
 	// Create Layer for all UIs
-	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
+	declare AmountOfBases = G_BasesTeam1.count;
+	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink(AmountOfBases));
 	Layers::SetType(C_LayerName_Markers, CUILayer::EUILayerType::Markers);
 	Layers::Attach(C_LayerName_Markers);
 	
-	// Create Markers for the Flag and Bases	
-	declare MarkerBaseTeam1 = UIManager.UIAll.AddMarker(G_BaseTeam1);
-	MarkerBaseTeam1.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
-	MarkerBaseTeam1.ManialinkFrameId = "marker-base-team1";
-	MarkerBaseTeam1.Box = <0., 8., 0.>;
-	// if (C_Debug_MarkersLabels) MarkerBaseTeam1.Label = "Base Team 1";
-	
-	declare MarkerBaseTeam2 = UIManager.UIAll.AddMarker(G_BaseTeam2);
-	MarkerBaseTeam2.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
-	MarkerBaseTeam2.ManialinkFrameId = "marker-base-team2";
-	MarkerBaseTeam2.Box = <0., 8., 0.>;
-	// if (C_Debug_MarkersLabels) MarkerBaseTeam2.Label = "Base Team 2";
+	// Create Markers for the Flag and Bases
+	for(I, 0, AmountOfBases-1) {
+		declare MarkerBaseTeam1 = UIManager.UIAll.AddMarker(G_BasesTeam1[I]);
+		MarkerBaseTeam1.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
+		MarkerBaseTeam1.ManialinkFrameId = "marker-base-team1-" ^ I;
+		MarkerBaseTeam1.Box = <0., 8., 0.>;
+		// if (C_Debug_MarkersLabels) MarkerBaseTeam1.Label = "Base Team 1";
+		
+		declare MarkerBaseTeam2 = UIManager.UIAll.AddMarker(G_BasesTeam2[I]);
+		MarkerBaseTeam2.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
+		MarkerBaseTeam2.ManialinkFrameId = "marker-base-team2-" ^ I;
+		MarkerBaseTeam2.Box = <0., 8., 0.>;
+		// if (C_Debug_MarkersLabels) MarkerBaseTeam2.Label = "Base Team 2";
+	}
 	
 	G_FlagMarker = UIManager.UIAll.AddMarker(G_ActiveFlagSpawn);
 	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
@@ -1298,28 +1301,21 @@ Void HandleEvents() {
 		
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
-				switch(Event.Landmark.Waypoint) {
-					case G_ActiveFlagSpawn.Waypoint:
-					{
+				if (Event.Landmark == G_ActiveFlagSpawn) {
 						if (Event.Player != Null && FlagCarrier == Null && Now > G_FlagState.PickupableDate) {
 							SetFlagCarrier(Event.Player);
 						}
+				} else if (G_BasesTeam1.exists(Event.Landmark)) {
+					if (S_UseReversedBases) {
+						if (Event.Player == FlagCarrier && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
+					} else {
+						if (Event.Player == FlagCarrier && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
 					}
-					case G_BaseTeam1.Waypoint:
-					{
-						if (S_UseReversedBases) {
-							if (Event.Player == FlagCarrier && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
-						} else {
-							if (Event.Player == FlagCarrier && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
-						}
-					}
-					case G_BaseTeam2.Waypoint:
-					{
-						if (S_UseReversedBases) {
-							if(Event.Player == FlagCarrier && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
-						} else {
-							if(Event.Player == FlagCarrier && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
-						}
+				} else if (G_BasesTeam2.exists(Event.Landmark)) {
+					if (S_UseReversedBases) {
+						if(Event.Player == FlagCarrier && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
+					} else {
+						if(Event.Player == FlagCarrier && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
 					}
 				}
 			}

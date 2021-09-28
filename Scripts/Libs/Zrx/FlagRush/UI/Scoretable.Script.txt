@@ -102,14 +102,26 @@ Text GetManialink(Integer _PlayersPerPage) {
 		<frame id="scoreboard-main" scale="1.4" pos="0 43" valign="bottom">
 			<frame id="body" pos="0 0">
 				<frame id="header">
-					<quad pos="-53 0" z-index="0" size="12 8" valign="top" halign="right" id="team1-score-background" style="UICommon64_1" substyle="BgFrame1" colorize="00f"/>
-					<quad pos="5 0" z-index="0" size="12 8" halign="left" id="team2-score-background" style="UICommon64_1" substyle="BgFrame1" colorize="f00"/>
-					<label pos="-59 -4" z-index="2" size="12 8" text="0" halign="center" valign="center2" textsize="	5" id="team1-score" textfont="GameFontBlack" />
-					<label pos="11 -4" z-index="2" size="12 10" text="0" halign="center" valign="center2" textsize="5" id="team2-score" textfont="GameFontBlack"/>					
-					<label pos="-29 -4" z-index="1" size="48 8" text="Team Blue" halign="center" textsize="4" id="team1-name" textfont="GameFontRegular" valign="center2"/>
-					<label pos="41 -4" z-index="1" size="48 10" text="Team Red" valign="center2" halign="center" textsize="4" id="team2-name" textfont="GameFontRegular"/>											
-					<quad id="team2-score-background2" pos="35 0" z-index="0" size="60 8" bgcolor="400" opacity="1" colorize="400" style="UICommon64_1" substyle="BgFrame1" halign="center"/>
-					<quad id="team1-score-background2" pos="-35 0" z-index="0" size="60 8" opacity="1" colorize="004" bgcolor="004" style="UICommon64_1" substyle="BgFrame1" halign="center"/>
+					<frame id="logo" pos="0 -4" size="280 15" scale="0.5" valign="center" halign="center" z-index="-1">
+						<!-- logo -->
+						<frame id="text" pos="0 -0.5">
+							<label pos="-2 -4" z-index="0" size="20 10" text="$iRUSH" textemboss="1" textfont="RobotoCondensedBold" halign="left" valign="center2" textsize="6"/>
+							<quad pos="0 1" z-index="0" size="18.1 18.1"  style="UIConstruction_Buttons" substyle="Validate" halign="center" valign="center" rot="-17"/>
+							<label pos="2 0" z-index="0" size="20 10" text="$iFLAG" halign="right" valign="center2" textsize="6" textemboss="1" textfont="RobotoCondensedBold"/>
+						</frame>
+						<!-- background -->
+						<frame id="background" rot="71" valign="center" halign="center">
+							<quad pos="0 0" size="0.5 300" bgcolor="000" opacity="1" halign="center" valign="center"/>
+							<quad pos="35 0" size="70 400" bgcolor="900" opacity="0.7" halign="center" valign="center" id="team2-score-background2"/>
+							<quad pos="-35 0" size="70 400" bgcolor="00b" opacity="0.7" halign="center" valign="center" id="team1-score-background2"/>
+						</frame>
+					</frame>
+					<quad id="team1-score-background" pos="-18 0" z-index="0" size="12 8" style="UICommon64_1" substyle="BgFrame1" colorize="000" halign="center" valign="top" opacity="0.5"/>
+					<quad id="team2-score-background" pos="20 0" z-index="0" size="12 8" halign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000" opacity="0.5"/>
+					<label pos="-18 -4" z-index="2" size="12 8" text="0" halign="center" valign="center2" textsize="	5" id="team1-score" textfont="GameFontBlack" />
+					<label pos="20 -4" z-index="2" size="12 10" text="0" halign="center" valign="center2" textsize="5" id="team2-score" textfont="GameFontBlack"/>
+					<label pos="-47 -4" z-index="1" size="46 8" text="Team 1" halign="center" textsize="4" id="team1-name" textfont="GameFontRegular" valign="center2"/>
+					<label pos="46 -4" z-index="1" size="48 10" text="Team 2" valign="center2" halign="center" textsize="4" id="team2-name" textfont="GameFontRegular"/>				
 				</frame>
 				<frame id="column-legend" pos="0 -10">
 					<frame id="team1" pos="-68 0">
@@ -195,8 +207,8 @@ Text GetManialink(Integer _PlayersPerPage) {
 				BgColor1.Z /= 3;
 				BgColor2.Z /= 3;
 	
-				QuadTeam1ScoreBackground2.Colorize = CL::HsvToRgb(BgColor1);
-				QuadTeam2ScoreBackground2.Colorize = CL::HsvToRgb(BgColor2);
+				QuadTeam1ScoreBackground2.BgColor = CL::HsvToRgb(BgColor1);
+				QuadTeam2ScoreBackground2.BgColor = CL::HsvToRgb(BgColor2);
 				
 				QuadTeam1Background.BgColor = GetTeamPrimaryColor(Teams[0]);
 				QuadTeam2Background.BgColor = GetTeamPrimaryColor(Teams[1]);

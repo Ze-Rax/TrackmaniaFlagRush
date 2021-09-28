@@ -654,7 +654,7 @@ Void InitUI() {
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
 	
-	Layers::Create(C_LayerName_Feed, UIEventFeed::GetManialink());
+	Layers::Create(C_LayerName_Feed, UIEventFeed::GetManialink(10));
 	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Feed);
 	

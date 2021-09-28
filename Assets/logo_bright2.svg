@@ -9,6 +9,9 @@
    id="svg5"
    sodipodi:docname="logo_bright.svg"
    inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   inkscape:export-filename="C:\Users\php_r\Desktop\logo_1x1.png"
+   inkscape:export-xdpi="72.050003"
+   inkscape:export-ydpi="72.050003"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -32,7 +35,8 @@
      inkscape:window-x="1912"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g1428" />
+     inkscape:current-layer="g1428"
+     inkscape:snap-center="true" />
   <defs
      id="defs2">
     <linearGradient
@@ -84,13 +88,25 @@
        x2="119.82762"
        y2="162.19711"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.1338573,0,0,1.1338573,-9.8550038,-19.877801)" />
+       gradientTransform="matrix(1.1338573,0,0,1.1338573,-8.8542254,-78.635328)" />
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath2283">
+      <rect
+         style="opacity:1;fill:#1155ff;fill-opacity:1;stroke:#000000;stroke-width:0.313568;stroke-opacity:1"
+         id="rect2285"
+         width="97.733833"
+         height="35.928093"
+         x="22.395607"
+         y="107.38155"
+         transform="matrix(0.97742903,-0.21126405,0.41720325,0.90881321,0,0)" />
+    </clipPath>
   </defs>
   <g
      inkscape:label="Background"
      inkscape:groupmode="layer"
      id="layer1"
-     style="display:inline"
+     style="display:none"
      sodipodi:insensitive="true">
     <g
        id="g7996"
@@ -129,38 +145,115 @@
   </g>
   <g
      inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Background2"
+     style="display:inline">
+    <g
+       id="g7996-0"
+       transform="matrix(1.9035065,0.60179637,-0.87383094,2.7842563,-41.203512,-141.38377)"
+       clip-path="url(#clipPath2283)"
+       inkscape:export-filename="C:\Users\php_r\Desktop\logo_2x1.png"
+       inkscape:export-xdpi="72.052048"
+       inkscape:export-ydpi="72.052048"
+       style="display:inline">
+      <rect
+         style="fill:#b71c1c;fill-opacity:1;stroke:#000000;stroke-width:0.643164;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect3581-2-2"
+         width="85.428078"
+         height="125.45461"
+         x="75.825294"
+         y="-53.487698"
+         transform="matrix(0.81888196,0.57396196,-0.83009895,0.55761612,0,0)" />
+      <rect
+         style="fill:#0d47a1;fill-opacity:1;stroke:#000000;stroke-width:0.643158;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect3581-9-1"
+         width="85.334305"
+         height="125.59008"
+         x="161.02734"
+         y="-50.266655"
+         transform="matrix(0.81724343,0.57629261,-0.83165683,0.55528994,0,0)" />
+      <rect
+         style="fill:#ff0012;fill-opacity:1;stroke:#000000;stroke-width:0.417226;stroke-opacity:1"
+         id="rect2153-2"
+         width="0.43231362"
+         height="0.41291592"
+         x="102.70981"
+         y="140.84375"
+         transform="matrix(0.98711624,0.16000479,-0.32551835,0.94553572,0,0)" />
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="g3135"
+     inkscape:label="Background2 copy"
+     style="display:inline">
+    <g
+       id="g3133"
+       transform="matrix(1.9035065,0.60179637,-0.87383094,2.7842563,-39.741882,-258.89884)"
+       clip-path="url(#clipPath2283)"
+       inkscape:export-filename="C:\Users\php_r\Desktop\logo_2x1.png"
+       inkscape:export-xdpi="72.052048"
+       inkscape:export-ydpi="72.052048"
+       style="display:inline">
+      <rect
+         style="fill:#b71c1c;fill-opacity:1;stroke:#000000;stroke-width:0.643164;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect3127"
+         width="85.428078"
+         height="125.45461"
+         x="75.825294"
+         y="-53.487698"
+         transform="matrix(0.81888196,0.57396196,-0.83009895,0.55761612,0,0)" />
+      <rect
+         style="fill:#0d47a1;fill-opacity:1;stroke:#000000;stroke-width:0.643158;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         id="rect3129"
+         width="85.334305"
+         height="125.59008"
+         x="161.02734"
+         y="-50.266655"
+         transform="matrix(0.81724343,0.57629261,-0.83165683,0.55528994,0,0)" />
+      <rect
+         style="fill:#ff0012;fill-opacity:1;stroke:#000000;stroke-width:0.417226;stroke-opacity:1"
+         id="rect3131"
+         width="0.43231362"
+         height="0.41291592"
+         x="102.70981"
+         y="140.84375"
+         transform="matrix(0.98711624,0.16000479,-0.32551835,0.94553572,0,0)" />
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
      id="layer3"
      inkscape:label="Logo1"
-     sodipodi:insensitive="true"
-     style="display:none">
+     style="display:inline">
     <text
        xml:space="preserve"
        style="font-style:italic;font-variant:normal;font-weight:900;font-stretch:normal;font-size:22.4001px;line-height:2;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Heavy Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;letter-spacing:0px;word-spacing:0.00299999px;text-anchor:middle;mix-blend-mode:normal;fill:none;fill-opacity:1;stroke:#fefefe;stroke-width:0.850393;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-       x="104.9508"
-       y="147.85638"
+       x="105.95158"
+       y="89.098854"
        id="text22581"><tspan
          sodipodi:role="line"
          id="tspan22579"
          style="font-style:italic;font-variant:normal;font-weight:900;font-stretch:normal;font-size:22.4001px;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Heavy Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:none;fill-opacity:1;stroke:#fefefe;stroke-width:0.850393;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-         x="104.9508"
-         y="147.85638">FLAG</tspan></text>
+         x="105.95158"
+         y="89.098854">FLAG</tspan></text>
     <path
        style="fill:url(#linearGradient7413);fill-opacity:1;stroke:#000000;stroke-width:0.7937;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-       d="m 96.103972,179.47427 c -2.70755,-1.79609 4.189278,-12.36346 7.430918,-18.67143 2.68261,-5.22022 7.73738,-15.83208 7.73738,-15.83208 0.75225,-3.76586 -12.259578,-12.35836 -25.782368,-17.02555 -5.03742,-1.73868 -6.70153,-2.67807 -6.05985,-3.42106 0.20419,-0.23662 3.01502,-1.17343 6.24613,-2.08211 7.42883,-2.08925 26.288578,-3.50077 32.938508,-1.75993 5.48707,1.43635 4.34217,1.87042 6.28735,-1.15329 2.64213,-4.10705 7.27605,-2.11402 5.33797,2.18192 -0.75647,1.67667 -6.74143,14.02741 -23.90897,46.05245 -3.07448,5.73514 -7.631498,13.43298 -10.227018,11.71101 z"
+       d="m 97.10475,120.71674 c -2.70755,-1.79609 4.18928,-12.36346 7.43092,-18.67143 2.68261,-5.220221 7.73738,-15.832081 7.73738,-15.832081 0.75225,-3.76586 -12.25958,-12.35836 -25.78237,-17.02555 -5.03742,-1.73868 -6.70153,-2.67807 -6.05985,-3.42106 0.20419,-0.23662 3.01502,-1.17343 6.24613,-2.08211 7.42883,-2.08925 26.28858,-3.50077 32.93851,-1.75993 5.48707,1.43635 4.34217,1.87042 6.28735,-1.15329 2.64213,-4.10705 7.27605,-2.11402 5.33797,2.18192 -0.75647,1.67667 -6.74143,14.02741 -23.90897,46.052451 -3.07448,5.73514 -7.6315,13.43298 -10.22702,11.71101 z"
        id="path110"
        sodipodi:nodetypes="sscssssssss"
        clip-path="none" />
     <text
        xml:space="preserve"
        style="font-style:italic;font-variant:normal;font-weight:900;font-stretch:normal;font-size:28.8px;line-height:2;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Heavy Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;letter-spacing:0px;word-spacing:0.00299999px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.850393;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       x="104.42344"
-       y="170.55205"
+       x="105.42422"
+       y="111.79452"
        id="text22581-2"><tspan
          sodipodi:role="line"
          id="tspan22579-4"
          style="font-style:italic;font-variant:normal;font-weight:900;font-stretch:normal;font-size:28.8px;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Heavy Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.850393;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         x="104.42344"
-         y="170.55205">RUSH</tspan></text>
+         x="105.42422"
+         y="111.79452">RUSH</tspan></text>
   </g>
   <g
      inkscape:groupmode="layer"
@@ -169,7 +262,7 @@
      style="display:inline">
     <g
        id="g1428"
-       transform="translate(0.63633323,3.52619)">
+       transform="translate(0.63633323,62.655792)">
       <text
          xml:space="preserve"
          style="font-style:italic;font-variant:normal;font-weight:900;font-stretch:normal;font-size:19.7556px;line-height:2;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Heavy Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;letter-spacing:0px;word-spacing:0.00264583px;text-anchor:middle;mix-blend-mode:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.352778;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -199,5 +292,34 @@
            x="125.53945"
            y="161.33418">RUSH</tspan></text>
     </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer5"
+     inkscape:label="TextLayers">
+    <text
+       xml:space="preserve"
+       style="font-size:10.5833px;line-height:2;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI';text-align:center;letter-spacing:0px;word-spacing:0.00264583px;text-anchor:middle;white-space:pre;inline-size:53.956;stroke-width:0.264583"
+       x="95.882942"
+       y="31.278887"
+       id="text6484"
+       transform="translate(10.052529)"><tspan
+         id="tspan6482"
+         style="stroke-width:0.264583"
+         x="95.882942"
+         y="31.278887">Variation 1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:10.5833px;line-height:2;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI';text-align:center;letter-spacing:0px;word-spacing:0.00264583px;text-anchor:middle;stroke-width:0.264583"
+       x="105.23771"
+       y="267.186"
+       id="text10780"
+       inkscape:transform-center-x="27.478648"
+       inkscape:transform-center-y="-3.5079125"><tspan
+         sodipodi:role="line"
+         id="tspan10778"
+         style="stroke-width:0.264583"
+         x="105.23771"
+         y="267.186">Variation 2</tspan></text>
   </g>
 </svg>

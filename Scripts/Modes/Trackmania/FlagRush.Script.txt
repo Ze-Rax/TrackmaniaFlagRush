@@ -118,12 +118,13 @@ declare Boolean G_MapValid;
 
 declare CMapLandmark G_SpawnTeam1;
 declare CMapLandmark G_SpawnTeam2;
+declare CMapLandmark G_DefaultFlagSpawn;
 declare CMapLandmark[] G_BasesTeam1;
 declare CMapLandmark[] G_BasesTeam2;
 declare CMapLandmark[] G_FlagSpawns;
 declare CMapLandmark G_ActiveFlagSpawn;
 declare Struct_FlagState G_FlagState;
-
+declare Integer G_FlagSpawnCounter;
 /* UI */
 declare CUIConfigMarker G_FlagMarker;
 
@@ -163,6 +164,7 @@ UpdateFlagMarker();
 
 Map::SetDefaultStart(G_SpawnTeam1);
 G_MapValid = True;
+G_FlagSpawnCounter = 0;
 
 if(C_Debug) { 
 	InitTestCommands();	
@@ -522,10 +524,11 @@ Void InitTeams() {
 */
 Void InitLandmarks() {
 	FlagRush_Log("Initialising Landmarks...");
+	G_FlagSpawnCounter = 0;
 	G_FlagSpawns.clear();
 	G_BasesTeam1.clear();
 	G_BasesTeam2.clear();
-	
+
 	foreach (Landmark in MapLandmarks) {
 		switch (Landmark.Tag) {
 			case "SpawnTeam1": if (Landmark.PlayerSpawn != Null) G_SpawnTeam1 = Landmark;
@@ -535,7 +538,8 @@ Void InitLandmarks() {
 			case "FlagSpawn": if (Landmark.Waypoint != Null) G_FlagSpawns.add(Landmark);
 			case "DefaultFlagSpawn": if (Landmark.Waypoint != Null) {
 				G_FlagSpawns.add(Landmark);
-				G_ActiveFlagSpawn = Landmark;
+				G_DefaultFlagSpawn = Landmark;
+				G_ActiveFlagSpawn = Landmark;				
 			}
 		}
 	}
@@ -545,7 +549,7 @@ Void InitLandmarks() {
 	declare FoundBaseTeam1 = G_BasesTeam1.count != 0;
 	declare FoundBaseTeam2 = G_BasesTeam2.count != 0;
 	declare FoundFlagSpawn = G_FlagSpawns.count != 0;
-	declare FoundDefaultFlagSpawn = G_ActiveFlagSpawn != Null;
+	declare FoundDefaultFlagSpawn = G_DefaultFlagSpawn != Null;
 	
 	assert(
 		FoundSpawnTeam1 && FoundSpawnTeam2 && FoundBaseTeam1 && FoundBaseTeam2 && FoundFlagSpawn && FoundDefaultFlagSpawn,
@@ -893,11 +897,21 @@ Void SetMarkerCommonProperties() {
 /**
 * Randomly choose a new flag spawn to activate if enabled.
 */
-Void PickNewFlagSpawn() {
+Void PickNewFlagSpawn() {	
+
+	if (G_FlagSpawnCounter == 0) {
+		G_ActiveFlagSpawn = G_DefaultFlagSpawn;
+		G_FlagSpawnCounter += 1;
+		return;
+	}
+
 	if (S_RandomizeFlagspawn) {
 		declare FlagSpawnToActivate = ML::Rand(0, G_FlagSpawns.count - 1);
 		G_ActiveFlagSpawn = G_FlagSpawns[FlagSpawnToActivate];
+	} else {
+		G_ActiveFlagSpawn = G_DefaultFlagSpawn;
 	}
+	G_FlagSpawnCounter += 1;
 }
 
 Void SetFlagPositionAtSpawn(Integer PickupableDate) {

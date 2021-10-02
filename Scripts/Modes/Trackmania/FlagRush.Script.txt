@@ -158,7 +158,8 @@ InitLandmarks();
 InitUI();
 InitTeams();
 UpdateUI();
-
+// Make flag reset - just to be sure
+ResetFlag(-1, True);
 // Update Flag marker so it does not show the gauge from last dates after InitUI
 UpdateFlagMarker();
 
@@ -205,7 +206,7 @@ FlagRush_Log("Start Round");
 
 declare MessageDuration = 3000;
 declare Message = """Round start!""";
-UIManager.UIAll.QueueMessage(MessageDuration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
+UIManager.UIAll.QueueMessage(MessageDuration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::StartRound, 0);
 UIEventFeed::SendMessage(Message, "info");
 UIManager.UIAll.SendChat("""Please report game mode bugs: $3af$l[https://discord.gg/J6ApdyRqEZ]FlagRush Discord$l $fffat playtest channel!""");
 MB_Sleep(MessageDuration);
@@ -219,7 +220,7 @@ EndTime = Now + S_RoundTimeLimitSeconds * 1000 + C_SpawnAnimDuration;
 ***Match_StartTurn***
 ***
 FlagRush_Log("Start Turn");
-
+G_FlagSpawnCounter = 0;
 UIEventFeed::SendMessage("Start Turn", "info");
 ResetFlag(ML::NearestInteger(S_FlagInitialSpawnDelaySeconds * 1000 + C_SpawnAnimDuration), True);
 
@@ -823,7 +824,7 @@ Void UpdateFlagCarrier(CSmPlayer Player) {
 	
 	// Carrier name
 	declare netwrite Text Net_FlagCarrierName for UI;
-	if (FlagCarrier != Null) Net_FlagCarrierName = FlagCarrier.User.Name;
+	if (FlagCarrier != Null && FlagCarrier.User != Null) Net_FlagCarrierName = FlagCarrier.User.Name;
 	else if (G_FlagState.Landmark == G_ActiveFlagSpawn) Net_FlagCarrierName = "Spawn";
 	else Net_FlagCarrierName = "Dropped";
 
@@ -872,7 +873,7 @@ Void UpdateFlagMarkerForPlayer(CSmPlayer Player, Integer GaugeDuration) {
 *	Only in specific situations
 */
 Void UpdateFlagMarker(Integer GaugeDuration) {	
-	foreach(Player in Players) {
+	foreach(Player in AllPlayers) {
 		UpdateFlagMarkerForPlayer(Player, GaugeDuration);
 	}
 }
@@ -1049,10 +1050,11 @@ Void SetFlagCarrier(CSmPlayer Player) {
 	}
 	declare ColorText = "$" ^ CL::RgbToHex3(Color);
 	declare Message = """{{{ColorText}}}{{{Player.User.Name}}}$z got the {{{ColorText}}}flag$z!""";
-	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
+	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Capture, 0);
 	UIEventFeed::SendMessage(Message, "flag", Color);
 	
 	// Update the flag carrier
+	
 	SetFlagPosition(Player, Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
 	
 	UpdateFlagMarker(ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
@@ -1083,7 +1085,7 @@ Void DropFlag() {
 	}
 	declare ColorText = "$" ^ CL::RgbToHex3(Color);
 	declare Message = """{{{ColorText}}}{{{FlagCarrier.User.Name}}}$z dropped the {{{ColorText}}}flag$z!""";
-	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
+	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::PhaseChange, 0);
 	UIEventFeed::SendMessage(Message, "flag");
 	// Set the flag to the players position
 	declare FlagPosition = FlagCarrier.Position;

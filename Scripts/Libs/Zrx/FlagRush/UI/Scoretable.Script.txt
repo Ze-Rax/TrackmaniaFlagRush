@@ -1,4 +1,4 @@
-// #RequireContext CMlScriptIngame
+// #RequireContext CSmMlScriptIngame
 
 #Include	"MathLib" as ML
 #Include	"ColorLib" as CL
@@ -19,10 +19,10 @@ Text GetManialink(Integer _PlayersPerPage) {
 	declare Text PlayerCardFrameInstancesTeam2Xml;
 	for(I, 1, PlayersPerPage) {
 		PlayerCardFrameInstancesTeam1Xml ^= """
-			<frameinstance modelid="player-card-left" pos="-68 {{{-(5+(I-1)*6.5)}}}" id="player-card-team1-{{{I}}}"/>
+			<frameinstance modelid="player-card-left" pos="-68 {{{-(5+(I-1)*6.5)}}}" id="player-card-team1-{{{I}}}" hidden="1" />
 			""";
 		PlayerCardFrameInstancesTeam2Xml ^= """
-			<frameinstance modelid="player-card-right" pos="5 {{{-(5+(I-1)*6.5)}}}" id="player-card-team2-{{{I}}}"/>
+			<frameinstance modelid="player-card-right" pos="5 {{{-(5+(I-1)*6.5)}}}" id="player-card-team2-{{{I}}}" hidden="1" />
 			""";
 	}
 	declare Text PlayerCardFrameInstancesXml = """
@@ -67,9 +67,10 @@ Text GetManialink(Integer _PlayersPerPage) {
 			<label pos="42 -3" z-index="1" size="9 3" text="0"  halign="center" textsize="0.1" id="points-add" valign="bottom" textprefix="$fff+" />
 			<label pos="51 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-scored-add" textprefix="$fff+" />
 			<label pos="60 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-stolen-add" textprefix="$fff+" />
-			<quad pos="42 0" z-index="-1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
-			<quad pos="51 0" z-index="-1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
-			<quad pos="60 0" z-index="-1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
+			<quad pos="42 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
+			<quad pos="51 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
+			<quad pos="60 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
+			<quad pos="36 0" z-index="2" size="3 3" halign="center" valign="center" id="info-icon" style="Icons64x64_2" substyle="Disconnected" hidden="1" /> <!-- Style="UICommon64_1" SubStyle="Camera_light" -->
 		</framemodel>
 		<framemodel id="player-card-right">
 			<quad pos="0 0" z-index="-1" size="64 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame2" colorize="300" halign="left"/>
@@ -81,9 +82,10 @@ Text GetManialink(Integer _PlayersPerPage) {
 			<label pos="42 -3" z-index="1" size="9 3" text="0"  halign="center" textsize="0.1" id="points-add" valign="bottom" textprefix="$fff+" />
 			<label pos="51 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-scored-add" textprefix="$fff+" />
 			<label pos="60 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-stolen-add" textprefix="$fff+" />
-			<quad pos="42 0" z-index="-1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
-			<quad pos="51 0" z-index="-1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
-			<quad pos="60 0" z-index="-1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
+			<quad pos="42 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
+			<quad pos="51 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
+			<quad pos="60 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
+			<quad pos="36 0" id="info-icon" z-index="2" size="3 3" halign="center" valign="center" style="Icons64x64_2" substyle="Disconnected" hidden="1" /> <!-- Style="UICommon64_1" SubStyle="Camera_light" -->
 		</framemodel>
 		<!-- Actual scoreboard -->
 		<!--
@@ -166,7 +168,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 			#Include "ColorLib" as CL
 
 			{{{Shared::GetTeamColorNetreadFunctions()}}}
-			
+
 			main() {
 				
 				/* CMlControl references */
@@ -221,7 +223,8 @@ Text GetManialink(Integer _PlayersPerPage) {
 				declare netread Integer Net_Team1MapScore for UI;			// Not used (yet)
 				declare netread Integer Net_Team2MapScore for UI;			// Not used (yet)
 				declare netread Integer Net_NbMapsToWinMatch for UI;		// Not used (yet)
-				
+				declare netread Integer Net_ScoreBoardUpdateStamp for UI;
+
 				// Scoreboard data
 
 				// Looks scary, but: ClanIndex => [PlayerName => [ScoreFieldName => ScoreFieldValue]]
@@ -231,12 +234,15 @@ Text GetManialink(Integer _PlayersPerPage) {
 				/* Scoreboard control Variables */
 				
 				declare Integer CurrentPageIndex = 0;
+				declare Integer LastUpdate = 0;
 
 				while(True) {
 					yield;
 					
-					/* Update state (CurrentPageIndex) */
-					
+					if (LastUpdate == Net_ScoreBoardUpdateStamp) continue;					
+					LastUpdate = Net_ScoreBoardUpdateStamp;
+
+					/* Update state (CurrentPageIndex) */					
 					declare Integer NbPlayersTeam1 = Net_ScoresTableData.get(1, []).count;
 					declare Integer NbPlayersTeam2 = Net_ScoresTableData.get(2, []).count;
 					declare Integer NbPages	= ML::Max(NbPlayersTeam1, NbPlayersTeam2) / {{{PlayersPerPage}}} + 1;
@@ -262,7 +268,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 					for (TeamIndex, 1, 2) {
 						for (PlayerCardIndex, 0, {{{PlayersPerPage - 1}}}) {
 							// Get the player card
-							declare CMlFrame PlayerCard;
+							declare CMlFrame PlayerCard;							
 							if (TeamIndex == 1) PlayerCard = PlayerCardFramesTeam1[PlayerCardIndex];
 							else PlayerCard = PlayerCardFramesTeam2[PlayerCardIndex];
 							
@@ -273,6 +279,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 								PlayerCard.Visible = False;
 								continue;
 							}
+							// @todo do check here if card needs to hidden on conditions							
 							PlayerCard.Visible = True;
 							
 							declare Text PlayerName;
@@ -290,34 +297,70 @@ Text GetManialink(Integer _PlayersPerPage) {
 								PlayerScoresTableData = _PlayerScoresTableData;
 								break;
 							}
-							
+
 							// Get player reference
-							declare CSmPlayer Player;
-							foreach (PlayerFromList in Players) if(PlayerFromList.User.Name == PlayerName) Player <=> PlayerFromList;
-							if (Player == Null) continue;
-							
+							declare CSmScore PlayerScore;
+							declare Boolean isSpectator = False;
+							declare Boolean isDisconnected = True;
+
+							foreach (Score in Scores) {
+								if (PlayerName == Score.User.Name) {
+									PlayerScore <=> Score;
+								}
+
+								foreach (Player in Players) {
+									if (Player.User.Name == PlayerName) {										
+										isDisconnected = False;
+										if (Player.RequestsSpectate) {
+											isSpectator = True;
+										}
+									}
+								}
+							}
+							declare CMlQuad QuadInfo = (PlayerCard.GetFirstChild("info-icon") as CMlQuad);							
+							QuadInfo.Hide();
+						
+
 							// Set values in player card
 							declare CMlLabel LabelPlayerName = (PlayerCard.GetFirstChild("name") as CMlLabel);
 							declare CMlQuad QuadPlayerAvatar = (PlayerCard.GetFirstChild("avatar") as CMlQuad);
 							declare CMlQuad QuadPlayerBackground = (PlayerCard.GetFirstChild("background") as CMlQuad);
-							
 							declare CMlLabel LabelPlayerPoints = (PlayerCard.GetFirstChild("points") as CMlLabel);
 							declare CMlLabel LabelPlayerPointsAdd = (PlayerCard.GetFirstChild("points-add") as CMlLabel);
 							declare CMlLabel LabelPlayerFlagsScored = (PlayerCard.GetFirstChild("flags-scored") as CMlLabel);
 							declare CMlLabel LabelPlayerFlagsScoredAdd = (PlayerCard.GetFirstChild("flags-scored-add") as CMlLabel);
 							declare CMlLabel LabelPlayerFlagsStolen = (PlayerCard.GetFirstChild("flags-stolen") as CMlLabel);
-							declare CMlLabel LabelPlayerFlagsStolenAdd = (PlayerCard.GetFirstChild("flags-stolen-add") as CMlLabel);
-							
+							declare CMlLabel LabelPlayerFlagsStolenAdd = (PlayerCard.GetFirstChild("flags-stolen-add") as CMlLabel);							
 							declare CTeam Team = Null;
-							if (Player.CurrentClan > 0) Team <=> Teams[Player.CurrentClan - 1];
+							if (PlayerScore != Null) {
+								if (PlayerScore.TeamNum > 0) Team <=> Teams[PlayerScore.TeamNum - 1];
+							}
+							
+							declare backgroundColorMultiplier = 0.5;							
+							QuadPlayerAvatar.Opacity = 1.;
+							
+							if (isSpectator || isDisconnected) {
+								QuadInfo.Show();
+								QuadInfo.Style = "UICommon64_1";
+								QuadInfo.Substyle = "Camera_light";
+								if (isDisconnected) {
+									QuadInfo.Style = "Icons64x64_2";
+									QuadInfo.Substyle = "Disconnected";
+								}
+								backgroundColorMultiplier = 0.25;
+								QuadPlayerAvatar.Opacity = 0.5;
+							}
+
 							declare Vec3 BackgroundColor = GetTeamPrimaryColor(Team);
-							BackgroundColor.X /= 2;
-							BackgroundColor.Y /= 2;
-							BackgroundColor.Z /= 2;
+							BackgroundColor.X *= backgroundColorMultiplier;
+							BackgroundColor.Y *= backgroundColorMultiplier;
+							BackgroundColor.Z *= backgroundColorMultiplier;
 							
 							LabelPlayerName.Value = PlayerName;
 							QuadPlayerAvatar.BgColor =  GetTeamPrimaryColor(Team);
-							QuadPlayerAvatar.ImageUrl = Player.User.CountryFlagUrl;
+							if (PlayerScore.User != Null) {
+								QuadPlayerAvatar.ImageUrl = PlayerScore.User.CountryFlagUrl;																
+							}
 							QuadPlayerBackground.Colorize = BackgroundColor;
 							
 							LabelPlayerPoints.Value
@@ -332,7 +375,8 @@ Text GetManialink(Integer _PlayersPerPage) {
 								= TL::ToText(PlayerScoresTableData.get("{{{C_ScoresTable_FlagsStolenKey}}}", 0));
 							LabelPlayerFlagsStolenAdd.Value
 								= TL::ToText(PlayerScoresTableData.get("{{{C_ScoresTable_FlagsStolenRoundKey}}}", 0));
-									
+							
+						
 							PlayerCard.Visible = True;
 						} //Player CardIndex
 					} // TeamIndex

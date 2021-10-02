@@ -777,7 +777,9 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 	declare UI <=> UIManager.GetUI(Player);
 	
 	/* Scores Header */
-	
+	declare netwrite Integer Net_ScoreBoardUpdateStamp for UI;
+	Net_ScoreBoardUpdateStamp = Now;
+
 	declare netwrite Integer Net_NbMapsToWinMatch for UI;
 	Net_NbMapsToWinMatch = S_NbMapsToWinMatch;
 	
@@ -1358,10 +1360,11 @@ Void HandleEvents() {
 					if(FlagCarrier == Event.Player) DropFlag();
 				}
 			}
-			case CSmModeEvent::EType::OnPlayerAdded: {				
+
+			case CSmModeEvent::EType::OnPlayerAdded: 
+			{				
 				InitMarkers();
 			}
-
 
 			case CSmModeEvent::EType::OnPlayerRemoved:
 			{

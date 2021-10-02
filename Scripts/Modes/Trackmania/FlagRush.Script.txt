@@ -206,7 +206,7 @@ FlagRush_Log("Start Round");
 
 declare MessageDuration = 3000;
 declare Message = """Round start!""";
-UIManager.UIAll.QueueMessage(MessageDuration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::StartRound, 0);
+UIManager.UIAll.QueueMessage(MessageDuration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
 UIEventFeed::SendMessage(Message, "info");
 UIManager.UIAll.SendChat("""Please report game mode bugs: $3af$l[https://discord.gg/J6ApdyRqEZ]FlagRush Discord$l $fffat playtest channel!""");
 MB_Sleep(MessageDuration);
@@ -274,7 +274,7 @@ if (G_RoundValid) {
 		Message = """{{{ColorText}}}{{{Team.Name}}}$z won the round!""";
 	}
 	
-	UIManager.UIAll.QueueMessage(MessageDuration, 2, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Record, 0);
+	UIManager.UIAll.QueueMessage(MessageDuration, 2, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
 	UIEventFeed::SendMessage(Message, "info");
 	// Update Scores & Telemetry
 	Telemetry::AffectPlayersRoundToMapAndMatchTelemetry();
@@ -1057,7 +1057,7 @@ Void SetFlagCarrier(CSmPlayer Player) {
 	}
 	declare ColorText = "$" ^ CL::RgbToHex3(Color);
 	declare Message = """{{{ColorText}}}{{{Player.User.Name}}}$z got the {{{ColorText}}}flag$z!""";
-	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Capture, 0);
+	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
 	UIEventFeed::SendMessage(Message, "flag", Color);
 	
 	// Update the flag carrier
@@ -1092,7 +1092,7 @@ Void DropFlag() {
 	}
 	declare ColorText = "$" ^ CL::RgbToHex3(Color);
 	declare Message = """{{{ColorText}}}{{{FlagCarrier.User.Name}}}$z dropped the {{{ColorText}}}flag$z!""";
-	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::PhaseChange, 0);
+	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
 	UIEventFeed::SendMessage(Message, "flag");
 	// Set the flag to the players position
 	declare FlagPosition = FlagCarrier.Position;

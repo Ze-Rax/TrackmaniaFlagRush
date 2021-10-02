@@ -279,7 +279,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 								PlayerCard.Visible = False;
 								continue;
 							}
-							// @todo do check here if card needs to hidden on conditions							
+
 							PlayerCard.Visible = True;
 							
 							declare Text PlayerName;
@@ -358,7 +358,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 							
 							LabelPlayerName.Value = PlayerName;
 							QuadPlayerAvatar.BgColor =  GetTeamPrimaryColor(Team);
-							if (PlayerScore.User != Null) {
+							if (PlayerScore != Null && PlayerScore.User != Null) {
 								QuadPlayerAvatar.ImageUrl = PlayerScore.User.CountryFlagUrl;																
 							}
 							QuadPlayerBackground.Colorize = BackgroundColor;

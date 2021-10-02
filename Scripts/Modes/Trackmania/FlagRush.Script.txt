@@ -50,9 +50,12 @@
 #Const	C_FlagHitbox_Diameter				6.
 #Const	C_FlagHitbox_Height					4.
 
+// To prevent flag pickup when slow speed - prevents flag camping
+#Const 	C_FlagPickupSpeedThreshold			80.
+
 #Const  C_Debug 							True
 #Const	C_Debug_MarkersLabels				True
-#Const	C_Debug_NbFakeUsers					<1, 1>
+#Const	C_Debug_NbFakeUsers					<0, 0>
 #Const	C_SpawnAnimDuration					1500
 #Const 	C_RespawnSpeedLimitKmh 				30.
 
@@ -202,6 +205,7 @@ declare MessageDuration = 3000;
 declare Message = """Round start!""";
 UIManager.UIAll.QueueMessage(MessageDuration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
 UIEventFeed::SendMessage(Message, "info");
+UIManager.UIAll.SendChat("""Please report game mode bugs: $3af$l[https://discord.gg/J6ApdyRqEZ]FlagRush Discord$l $fffat playtest channel!""");
 MB_Sleep(MessageDuration);
 
 StartTime = Now;
@@ -610,17 +614,17 @@ Void InitMarkers() {
 				if (Teams.existskey(UIPlayer.CurrentClan-1)) {								
 					Marker.Color = Teams[UIPlayer.CurrentClan-1].ColorPrimary;				
 					Color = "$" ^ TL::ColorToText(Teams[UIPlayer.CurrentClan-1].ColorPrimary);
-				}
-				
-				// Own Team
-				if (CurrentPlayer.CurrentClan == UIPlayer.CurrentClan) {
-					Marker.Label = UIPlayer.User.Name;				
-					Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
-				} 
-				// Their Team
-				else {					
-					Marker.Label = UIPlayer.User.Name;					
-					Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenVisible;
+														
+					// Own Team
+					if (CurrentPlayer.CurrentClan == UIPlayer.CurrentClan) {
+						Marker.Label = UIPlayer.User.Name;				
+						Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
+					} 
+					// Their Team
+					else {					
+						Marker.Label = UIPlayer.User.Name;					
+						Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenVisible;
+					}
 				}
 			}
 		}
@@ -1003,7 +1007,7 @@ Void ApplyHandicaps(CSmPlayer Player) {
 */
 Void ResetHandicaps(CSmPlayer Player) {
 	while(SetPlayer_DelayedIsFull(Player)) MB_Yield();
-	SetPlayer_Delayed_Reset(Player);
+	SetPlayer_Delayed_Reset(Player);	
 }
 
 // --------------------------------------------------
@@ -1292,7 +1296,9 @@ Void HandleEvents() {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				if (Event.Landmark == G_ActiveFlagSpawn) {
 						if (Event.Player != Null && FlagCarrier == Null && Now > G_FlagState.PickupableDate) {
-							SetFlagCarrier(Event.Player);
+							if (Event.Player.Speed * 3.6 > C_FlagPickupSpeedThreshold) {
+								SetFlagCarrier(Event.Player);
+							}
 						}
 				} else if (G_BasesTeam1.exists(Event.Landmark)) {
 					if (S_UseReversedBases) {
@@ -1327,7 +1333,11 @@ Void HandleEvents() {
 					if(FlagCarrier == Event.Player) DropFlag();
 				}
 			}
-			
+			case CSmModeEvent::EType::OnPlayerAdded: {				
+				InitMarkers();
+			}
+
+
 			case CSmModeEvent::EType::OnPlayerRemoved:
 			{
 				// Event.Player is Null; Only User available

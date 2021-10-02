@@ -522,6 +522,9 @@ Void InitTeams() {
 */
 Void InitLandmarks() {
 	FlagRush_Log("Initialising Landmarks...");
+	G_FlagSpawns.clear();
+	G_BasesTeam1.clear();
+	G_BasesTeam2.clear();
 	
 	foreach (Landmark in MapLandmarks) {
 		switch (Landmark.Tag) {
@@ -614,7 +617,7 @@ Void InitMarkers() {
 				if (Teams.existskey(UIPlayer.CurrentClan-1)) {								
 					Marker.Color = Teams[UIPlayer.CurrentClan-1].ColorPrimary;				
 					Color = "$" ^ TL::ColorToText(Teams[UIPlayer.CurrentClan-1].ColorPrimary);
-														
+
 					// Own Team
 					if (CurrentPlayer.CurrentClan == UIPlayer.CurrentClan) {
 						Marker.Label = UIPlayer.User.Name;				

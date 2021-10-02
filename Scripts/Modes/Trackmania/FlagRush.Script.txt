@@ -604,6 +604,7 @@ Void InitMarkers() {
 	
 	foreach(CurrentPlayer in AllPlayers) {
 		declare CUIConfig UI = UIManager.GetUI(CurrentPlayer);
+		UI.ClearMarkers();
 		UI.LabelsVisibility = CUIConfig::EHudVisibility::MarkersOnly;
 		UI.LabelsVisibility_SkipMarkersOnly = True;
 		UI.TeamLabelsShowNames = CUIConfig::EVisibility::None;
@@ -686,7 +687,11 @@ Void InitPlayer(CSmPlayer Player) {
 	Player.TrustClientSimu = True;
 	SetPlayerClan(Player, Player.RequestedClan);
 	declare Integer PreviousClan for Player;
-	PreviousClan = Player.RequestedClan;	
+	if (Player.RequestedClan != PreviousClan) {
+		InitMarkers();
+	}
+	PreviousClan = Player.RequestedClan;
+		
 	declare Vec3 ColorPrimaryUI for Teams[Player.CurrentClan-1];
 	Player.Dossard_Color = ColorPrimaryUI;
 	Player.Dossard_Number = "0" ^ Player.CurrentClan;
@@ -1142,10 +1147,12 @@ Void StealFlag(CSmPlayer NewCarrier, CSmPlayer OldCarrier) {
 	if (FlagCarrier != OldCarrier) return;
 	FlagRush_Log("""{{{NewCarrier.User.Name}}} stole the flag from {{{OldCarrier.User.Name}}}!""");
 	
-	// Add the points
-	Scores::AddPlayerRoundPoints(NewCarrier.Score, FlagRush_Common::C_PointsValue_StealFlag);
-	Telemetry::AddPlayerRoundInteger(NewCarrier.Score, C_Telemetry_Key_FlagsStolen, 1);
-	
+	if (NewCarrier.CurrentClan != OldCarrier.CurrentClan) {
+		// Add the points only if the flag carrier is at different team!
+		Scores::AddPlayerRoundPoints(NewCarrier.Score, FlagRush_Common::C_PointsValue_StealFlag);
+		Telemetry::AddPlayerRoundInteger(NewCarrier.Score, C_Telemetry_Key_FlagsStolen, 1);
+	}
+
 	// Set the new flag carrier
 	SetFlagCarrier(NewCarrier);
 	
@@ -1261,8 +1268,7 @@ Void UpdateModeSettingValues() {
 Void UpdatePlayers() {
 	// Update Clan
 	foreach (Player in Players) {
-		if (Player.RequestedClan != Player.CurrentClan) {
-			UpdateUIForPlayer(Player);
+		if (Player.RequestedClan != Player.CurrentClan) {						
 			UpdateFlagCarrier(Player);	
 			if (Player.User.Login == G_FlagState.CarrierLogin) DropFlag();
 			UnspawnPlayer(Player);

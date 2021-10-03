@@ -375,9 +375,13 @@ Text GetManialink(Integer _PlayersPerPage) {
 								= TL::ToText(PlayerScoresTableData.get("{{{C_ScoresTable_FlagsStolenKey}}}", 0));
 							LabelPlayerFlagsStolenAdd.Value
 								= TL::ToText(PlayerScoresTableData.get("{{{C_ScoresTable_FlagsStolenRoundKey}}}", 0));
-							
-						
+																					
 							PlayerCard.Visible = True;
+							if (isSpectator || isDisconnected) {
+								if (PlayerScoresTableData.get("{{{C_ScoresTable_PointsKey}}}", 0) == 0) {
+									PlayerCard.Visible = False;
+								}
+							}							
 						} //Player CardIndex
 					} // TeamIndex
 					

@@ -115,11 +115,14 @@ Text GetManialink() {
 				
 				if(!Net_HideTimer)
 				{
-					declare RoundMinutesLeft = Net_RoundTimeLeft / 60000;					
-					declare RoundSecondsLeft = (Net_RoundTimeLeft - RoundMinutesLeft * 60000) / 1000;	// Just the portion					
+					declare Integer RoundTimeLeft = Net_RoundTimeLeft;					
+					if (Net_RoundTimeLeft < 0) RoundTimeLeft = 0;
+
+					declare RoundMinutesLeft = RoundTimeLeft / 60000;					
+					declare RoundSecondsLeft = (RoundTimeLeft - RoundMinutesLeft * 60000) / 1000;	// Just the portion					
 					declare Text PotentialNegativeSign;
 
-					if (Net_RoundTimeLeft < 0) PotentialNegativeSign = "-";
+					if (RoundTimeLeft < 0) PotentialNegativeSign = "-";
 					
 					declare Text PotentialLeadingZero;
 					if (ML::Abs(RoundSecondsLeft) < 10) PotentialLeadingZero = "0";

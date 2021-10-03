@@ -232,7 +232,7 @@ SpawnPlayers();
 ***Match_EndTurn***
 ***
 FlagRush_Log("End Turn");
-UIEventFeed::SendMessage("End Turn");
+UIEventFeed::SendMessage("End Turn", "info");
 UpdateUI();
 UpdateFlagMarker();
 
@@ -844,7 +844,6 @@ Void UpdateFlagCarrier(CSmPlayer Player) {
 	} else {
 		Player.Dossard_Trigram = "   ";
 	}
-	
 
 	if (FlagCarrier == Player) {			
 		Player.Dossard_Trigram = "FLG"; // 
@@ -1189,6 +1188,7 @@ Void SpawnPlayers() {
 					if (SpawnDate <= Now) {						
 						SpawnPlayer(Player, Player.CurrentClan, 1, Spawn, Now + 2000);
 						UpdateFlagCarrier(Player);					
+						UpdateFlagMarkerForPlayer(Player, -1);
 						SpawnDate = 0;
 					}
 				}
@@ -1362,7 +1362,8 @@ Void HandleEvents() {
 			}
 
 			case CSmModeEvent::EType::OnPlayerAdded: 
-			{				
+			{						
+				UpdateUIForPlayer(Event.Player);
 				InitMarkers();
 			}
 
@@ -1455,6 +1456,21 @@ Void CheckTestCommands() {
 		case "botjoin":
 		{
 			Users_SetNbFakeUsers(1,1);
+		}
+		case "tw0":
+		{
+			foreach(Player in Players) {
+				while(SetPlayer_DelayedIsFull(Player)) MB_Yield();				
+				SetPlayer_Delayed_TireWear(Player, 0.);
+			}
+			
+		}
+		case "tw1":
+		{
+			foreach(Player in Players) {				
+				while(SetPlayer_DelayedIsFull(Player)) MB_Yield();				
+				SetPlayer_Delayed_TireWear(Player, 1.);
+			}
 		}
 	}
 }

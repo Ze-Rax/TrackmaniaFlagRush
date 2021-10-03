@@ -98,6 +98,7 @@ Text GetManialink() {
 			declare netread Text Net_FlagCarrierName for UI;
 			declare netread Integer Net_RoundTimeLeft for UI;
 			declare netread Boolean Net_HideTimer for UI;
+			declare netread Boolean Net_IsWarmUp for UI;
 
 			while(True) {
 				yield;
@@ -108,6 +109,10 @@ Text GetManialink() {
 				if (Net_FlagCarrierClan > 0) Team <=> Teams[Net_FlagCarrierClan - 1];
 				LabelFlagCarrier.TextPrefix = "$" ^ CL::RgbToHex3(GetTeamPrimaryColor(Team));
 				LabelFlagCarrier.Value = Net_FlagCarrierName;
+				if (Net_IsWarmUp) {
+					LabelFlagCarrier.TextPrefix = "$fe0";
+					LabelFlagCarrier.Value = "WarmUp";
+				}
 				QuadCenterFlag.Colorize = GetTeamPrimaryColor(Team);
 				
 				/* Timer */					
@@ -131,8 +136,10 @@ Text GetManialink() {
 												^ ML::Abs(RoundMinutesLeft)
 												^ ":" ^ PotentialLeadingZero
 												^ ML::Abs(RoundSecondsLeft);
-					
-					LabelTimeLimit.Value = RoundTimeLeftText;
+					declare Color = "$fff";
+					if (Net_IsWarmUp) Color = "$fe0";
+
+					LabelTimeLimit.Value = Color ^ RoundTimeLeftText;
 				}
 				
 				/* Round score */					

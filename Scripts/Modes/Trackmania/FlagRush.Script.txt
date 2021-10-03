@@ -50,14 +50,12 @@
 #Const	C_FlagHitbox_Diameter				6.
 #Const	C_FlagHitbox_Height					4.
 
-// To prevent flag pickup when slow speed - prevents flag camping
-#Const 	C_FlagPickupSpeedThreshold			80.
-
 #Const  C_Debug 							True
 #Const	C_Debug_MarkersLabels				True
 #Const	C_Debug_NbFakeUsers					<0, 0>
 #Const	C_SpawnAnimDuration					1500
 #Const 	C_RespawnSpeedLimitKmh 				30.
+#Const 	C_FlagPickupSpeedThresholdKmh		80.
 
 //////////////
 // Settings //
@@ -85,14 +83,15 @@
 #Setting S_FlagCarrierControl						1.0 as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
 #Setting S_FlagCarrierAdherence						1.0 as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
 #Setting S_CanJoinMidRound							True as "<hidden>" // Players can join in the middle of a round
+#Setting S_UseAntiFlagCamping						True as "Use flag pickup speed threshold"
 #Setting S_RespawnWhenStill							True as "Players can respawn only when being still"
 #Setting S_RespawnDelay								1.5 as "Respawn Delay (seconds)"
 
 // Teams
-#Setting S_Team1Name 								"" as "Force Team1 Name"
-#Setting S_Team2Name 								"" as "Force Team2 Name"
-#Setting S_Team1Color 								"" as "Force Team1 Color"
-#Setting S_Team2Color 								"" as "Force Team2 Color"
+#Setting S_Team1Name 								"" as "Team 1 Name"
+#Setting S_Team2Name 								"" as "Team 2 Name"
+#Setting S_Team1Color 								"" as "Team 1 Color"
+#Setting S_Team2Color 								"" as "Team 2 Color"
 
 /////////////
 // Structs //
@@ -1323,7 +1322,7 @@ Void HandleEvents() {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				if (Event.Landmark == G_ActiveFlagSpawn) {
 						if (Event.Player != Null && FlagCarrier == Null && Now > G_FlagState.PickupableDate) {
-							if (Event.Player.Speed * 3.6 > C_FlagPickupSpeedThreshold) {
+							if (!S_UseAntiFlagCamping || Event.Player.Speed * 3.6 > C_FlagPickupSpeedThresholdKmh) {
 								SetFlagCarrier(Event.Player);
 							}
 						}

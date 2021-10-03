@@ -72,7 +72,7 @@
 #Setting S_NbMapsToWinMatch							1 	as "Number of maps to win a match"
 #Setting S_NbRoundsToWinMap							2 	as "Number of rounds to win a map"
 #Setting S_NbFlagsToWinRound						3	as "Number of flags scored to win a round"
-#Setting S_RoundTimeLimitSeconds					0 as "Round Timelimit (seconds)"
+#Setting S_RoundTimeLimitSeconds					600 as "Round Timelimit (seconds)"
 #Setting S_UseTurns									False as "Use turns (Reset after a player scores a flag)"
 
 // Gameplay
@@ -188,11 +188,11 @@ if(C_Debug) {
 ***
 FlagRush_Log("WarmUp Phase");
 Users_SetNbFakeUsers(C_Debug_NbFakeUsers.X, C_Debug_NbFakeUsers.Y);
-Do_WarmUp(S_WarmUpNb, S_WarmUpTimeout * 1000);
+Do_WarmUp(S_WarmUpNb, S_WarmUpTimeout * 1000 + 5000);
 
 FlagRush_Log("Start Map");
+FlagRush_UIHeader::SetWarmUpStatus(False, "");
 UIEventFeed::SendMessage("Start Map", "info");
-
 MB_Sleep(5000);
 
 ***
@@ -401,6 +401,7 @@ UpdateUI();
 UpdateFlag();
 SpawnPlayers();
 HandleEvents();
+HandleXmlRpcEvents();
 
 CheckRoundEndConditions();
 
@@ -822,10 +823,6 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 	/* Timer */		
 	declare netwrite Boolean Net_HideTimer for UI;
 	Net_HideTimer = (S_RoundTimeLimitSeconds <= 0.);
-	
-	declare netwrite Boolean Net_IsWarmUp for UI;
-	Net_IsWarmUp = WarmUp::IsActive();
-	if (Net_IsWarmUp) Net_HideTimer = False;
 	
 	declare netwrite Integer Net_RoundTimeLeft for UI;
 	Net_RoundTimeLeft = EndTime - Now;
@@ -1430,7 +1427,7 @@ Void HandleWarmUpEvents() {
 				if (Event.Landmark == G_ActiveFlagSpawn) {					
 					ApplyHandicaps(Event.Player);
 					UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s got the flag!""", "flag", Color);
-
+					
 				} else if (G_BasesTeam1.exists(Event.Landmark)) {
 					if (Event.Player.CurrentClan == 2) {					
 						UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s Scored!""", "flag", Color);
@@ -1482,21 +1479,25 @@ Void Do_WarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 	
 	declare PrevUISequence = UIManager.UIAll.UISequence;
 	FlagRush_Log("Start WarmUp");
-
+	
 	WarmUp::Start();
 	declare WarmUpPlayedNb = 0;
+	
 
 	+++WarmUp_StartWarmUp+++
 	
 	while (!WarmUp::Finished() && WarmUpPlayedNb < NbOfWarmUp && !ServerShutdownRequested && !MatchEndRequested) {
 		
 		UIEventFeed::SendMessage("""WarmUp {{{WarmUpPlayedNb + 1}}}/{{{ NbOfWarmUp }}}""", "info");
+		FlagRush_UIHeader::SetWarmUpStatus(True, """$f90WARMUP {{{WarmUpPlayedNb + 1}}}/{{{ NbOfWarmUp }}}""");
+
 		WarmUp::StartRound(WarmUpPlayedNb + 1, NbOfWarmUp, TimeLimit, -1);  
 		EndTime = Now + TimeLimit;
 		
 		+++Warmup_StartRound+++
-		
-		while (!WarmUp::Finished() && !WarmUp::RoundFinished() && !ServerShutdownRequested && !MatchEndRequested) {
+		declare EndRoundRequested = False;
+
+		while (!WarmUp::Finished() && !WarmUp::RoundFinished() && !ServerShutdownRequested && !MatchEndRequested && !EndRoundRequested) {
 			MB_WarmUp_Yield();
 			+++WarmUp_Loop+++
 			UpdateUI();
@@ -1513,6 +1514,18 @@ Void Do_WarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 				Events::Invalid(Event);
 			}
 			
+			foreach (XmlRpcEvent in XmlRpc.PendingEvents) {		
+				switch (XmlRpcEvent.Type) {
+					case CXmlRpcEvent::EType::CallbackArray: {
+						switch (XmlRpcEvent.ParamArray1) {
+							case "Trackmania.ForceEndRound": {
+								EndRoundRequested = True;	
+							}
+						}			
+					}
+				}
+			}
+
 			WarmUp::Yield();
 		}
 		
@@ -1538,10 +1551,25 @@ Void Do_WarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 	WarmUp::End();
 	MB_WarmUp_Yield();
 	FlagRush_Log("End WarmUp");
-
+	FlagRush_UIHeader::SetWarmUpStatus(False, "");
 	EndTime = -1;    
 	UIManager.UIAll.UISequence = PrevUISequence;
 }
+
+Void HandleXmlRpcEvents() {
+	foreach (XmlRpcEvent in XmlRpc.PendingEvents) {		
+		switch (XmlRpcEvent.Type) {
+			case CXmlRpcEvent::EType::CallbackArray: {
+				switch (XmlRpcEvent.ParamArray1) {
+					case "Trackmania.ForceEndRound": {
+						MB_StopRound();	
+					}
+				}			
+			}
+		}
+	}
+}
+
 
 //////////////////
 // TEST & DEBUG //

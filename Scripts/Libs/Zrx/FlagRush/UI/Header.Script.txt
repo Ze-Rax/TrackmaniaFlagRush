@@ -1,4 +1,19 @@
+// #RequireContext CSmMode
+
 #Include	"Libs/Zrx/FlagRush/UI/Shared.Script.txt" as Shared
+
+/**
+* Set warmup status and text
+*/
+Void SetWarmUpStatus(Boolean Status, Text Message) {
+	foreach (Player in AllPlayers) {
+		declare CUIConfig UI = UIManager.GetUI(Player);
+		declare netwrite Text Net_WarmUpText for UI;
+		declare netwrite Boolean Net_IsWarmUp for UI;
+		Net_WarmUpText = Message;
+		Net_IsWarmUp = Status;
+	}
+}
 
 Text GetManialink() {	
 	return """
@@ -96,6 +111,7 @@ Text GetManialink() {
 			
 			declare netread Integer Net_FlagCarrierClan for UI;
 			declare netread Text Net_FlagCarrierName for UI;
+			declare netread Text Net_WarmUpText for UI;
 			declare netread Integer Net_RoundTimeLeft for UI;
 			declare netread Boolean Net_HideTimer for UI;
 			declare netread Boolean Net_IsWarmUp for UI;
@@ -110,8 +126,8 @@ Text GetManialink() {
 				LabelFlagCarrier.TextPrefix = "$" ^ CL::RgbToHex3(GetTeamPrimaryColor(Team));
 				LabelFlagCarrier.Value = Net_FlagCarrierName;
 				if (Net_IsWarmUp) {
-					LabelFlagCarrier.TextPrefix = "$fe0";
-					LabelFlagCarrier.Value = "WarmUp";
+					LabelFlagCarrier.TextPrefix = "";
+					LabelFlagCarrier.Value = Net_WarmUpText;
 				}
 				QuadCenterFlag.Colorize = GetTeamPrimaryColor(Team);
 				
@@ -137,8 +153,7 @@ Text GetManialink() {
 												^ ":" ^ PotentialLeadingZero
 												^ ML::Abs(RoundSecondsLeft);
 					declare Color = "$fff";
-					if (Net_IsWarmUp) Color = "$fe0";
-
+					if (Net_IsWarmUp) Color = "$f90";
 					LabelTimeLimit.Value = Color ^ RoundTimeLeftText;
 				}
 				

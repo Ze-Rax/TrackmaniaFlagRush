@@ -1411,12 +1411,12 @@ Void HandleWarmUpEvents() {
 		}
 		
 		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {			
-			declare CMapLandmark Spawn = GetPlayerSpawnLandmark(Player);			
+			declare CMapSpawn Spawn = GetPlayerSpawn(Player);			
 			declare Integer SpawnDate for Player;
 			if (Spawn != Null) {				
 				if (SpawnDate <= Now) {
-					InitPlayer(Player);																
-					Race::Start(Player, Spawn, Player.CurrentClan, Now);
+					InitPlayer(Player);				
+					SpawnPlayer(Player, Player.CurrentClan, 1, Spawn, Now + 2000);	
 					SpawnDate = Now+3000;
 				}
 			}

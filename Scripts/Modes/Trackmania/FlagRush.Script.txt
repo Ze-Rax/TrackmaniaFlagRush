@@ -190,6 +190,9 @@ FlagRush_Log("WarmUp Phase");
 Users_SetNbFakeUsers(C_Debug_NbFakeUsers.X, C_Debug_NbFakeUsers.Y);
 Do_WarmUp(S_WarmUpNb, S_WarmUpTimeout * 1000 + 5000);
 
+ResetFlag(-1, True);
+UpdateFlagMarker();
+
 FlagRush_Log("Start Map");
 FlagRush_UIHeader::SetWarmUpStatus(False, "");
 UIEventFeed::SendMessage("Start Map", "info");
@@ -590,14 +593,17 @@ Void InitLandmarks() {
 /**
 *	Creates Markers for the bases and the flag for each player.
 */
-Void InitMarkers() {
+Void InitMarkers(Boolean InitAllFlags) {
 	// Clear old markers
 	UIManager.UIAll.ClearMarkers();
 	G_FlagMarker = Null;
 	
 	// Create Layer for all UIs
-	declare AmountOfBases = G_BasesTeam1.count;
-	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink(AmountOfBases));
+	declare Integer AmountOfBases = G_BasesTeam1.count;
+	declare Integer FlagAmount = G_FlagSpawns.count;
+	if (!InitAllFlags) FlagAmount = -1;
+	
+	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink(AmountOfBases, FlagAmount));
 	Layers::SetType(C_LayerName_Markers, CUILayer::EUILayerType::Markers);
 	Layers::Attach(C_LayerName_Markers);
 	
@@ -615,11 +621,19 @@ Void InitMarkers() {
 		MarkerBaseTeam2.Box = <0., 8., 0.>;
 		// if (C_Debug_MarkersLabels) MarkerBaseTeam2.Label = "Base Team 2";
 	}
-	
-	G_FlagMarker = UIManager.UIAll.AddMarker(G_ActiveFlagSpawn);
-	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
-	G_FlagMarker.ManialinkFrameId = "marker-flag";
-	G_FlagMarker.Box = <0., 3.3, 0.>;
+	if (InitAllFlags) {
+		foreach(I => FlagSpawn in G_FlagSpawns) {			
+			declare Marker = UIManager.UIAll.AddMarker(FlagSpawn);
+			Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
+			Marker.ManialinkFrameId = "marker-flag-"^I;
+			Marker.Box = <0., 3.3, 0.>;
+		}	
+	} else {
+		G_FlagMarker = UIManager.UIAll.AddMarker(G_ActiveFlagSpawn);
+		G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
+		G_FlagMarker.ManialinkFrameId = "marker-flag";
+		G_FlagMarker.Box = <0., 3.3, 0.>;
+	}
 	
 	foreach(CurrentPlayer in AllPlayers) {
 		declare CUIConfig UI = UIManager.GetUI(CurrentPlayer);
@@ -657,20 +671,10 @@ Void InitMarkers() {
 			}
 		}
 	}
-	
-	
-	// if (C_Debug_MarkersLabels) G_FlagMarker.Label = "Flag";	
-	/*if (C_Debug_MarkersLabels) {
-		declare MarkerSpawnTeam1 = UIManager.UIAll.AddMarker(G_SpawnTeam1);
-		MarkerSpawnTeam1.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
-		MarkerSpawnTeam1.Box = <0., 7.5, 0.>;
-		MarkerSpawnTeam1.Label = "Spawn Team 1";
-		
-		declare MarkerSpawnTeam2 = UIManager.UIAll.AddMarker(G_SpawnTeam2);
-		MarkerSpawnTeam2.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
-		MarkerSpawnTeam2.Box = <0., 7.5, 0.>;
-		MarkerSpawnTeam2.Label = "Spawn Team 2";
-	} */
+}
+
+Void InitMarkers() {
+	InitMarkers(False);
 }
 
 // --------------------------------------------------
@@ -948,12 +952,14 @@ Void SetFlagPositionAtSpawn(Integer PickupableDate) {
 	G_FlagState.DropLocation = <0., 0., 0.>;
 	
 	// Update flag marker
-	if(UIManager.UIAll.Markers.exists(G_FlagMarker))	// Check if marker exists (prevents warning)
-	UIManager.UIAll.RemoveMarker(G_FlagMarker);			// Remove old
-	
-	G_FlagMarker = UIManager.UIAll.AddMarker(G_ActiveFlagSpawn);
-	G_FlagMarker.Box = <0., 3., 0.>;
-	SetMarkerCommonProperties();
+	if (G_FlagMarker != Null) {
+		if(UIManager.UIAll.Markers.exists(G_FlagMarker))	// Check if marker exists (prevents warning)
+		UIManager.UIAll.RemoveMarker(G_FlagMarker);			// Remove old
+		
+		G_FlagMarker = UIManager.UIAll.AddMarker(G_ActiveFlagSpawn);
+		G_FlagMarker.Box = <0., 3., 0.>;
+		SetMarkerCommonProperties();
+	}
 }
 
 Void SetFlagPosition(CSmPlayer Player, Integer PickupableDate) {
@@ -1345,7 +1351,7 @@ Void HandleEvents() {
 	foreach(Event in PendingEvents) {
 		// FlagRush_Log("Event: " ^ Event.Type);
 		
-		declare FlagCarrier = GetFlagCarrier();
+		declare CSmPlayer FlagCarrier = GetFlagCarrier();
 		
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
@@ -1424,25 +1430,34 @@ Void HandleWarmUpEvents() {
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				declare Vec3 Color = FlagRush_Common::GetDefaultTeamColor(Event.Player.CurrentClan);
-				if (Event.Landmark == G_ActiveFlagSpawn) {					
-					ApplyHandicaps(Event.Player);
-					UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s got the flag!""", "flag", Color);
-					
-				} else if (G_BasesTeam1.exists(Event.Landmark)) {
-					if (Event.Player.CurrentClan == 2) {					
-						UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s Scored!""", "flag", Color);
-						ResetHandicaps(Event.Player);
-					}				
-				} else if (G_BasesTeam2.exists(Event.Landmark)) {					
-					if (Event.Player.CurrentClan == 1) {
-						UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s Scored!""", "flag", Color);
-						ResetHandicaps(Event.Player);
-					}					
+				if (Event.Player != Null) {
+					declare Integer WUFlag for Event.Player = 0;
+					if (G_FlagSpawns.exists(Event.Landmark)) {												 														
+						if (WUFlag + 3000 < Now) {
+							WUFlag = Now;
+							ApplyHandicaps(Event.Player);
+							UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s got the flag!""", "flag", Color);
+						}
+						
+					} else if (G_BasesTeam1.exists(Event.Landmark)) {
+						if (Event.Player.CurrentClan == 2) {												
+							UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s Scored!""", "flag", Color);
+							WUFlag = 0;
+							ResetHandicaps(Event.Player);
+						}				
+					} else if (G_BasesTeam2.exists(Event.Landmark)) {					
+						if (Event.Player.CurrentClan == 1) {
+							WUFlag = 0;
+							UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s Scored!""", "flag", Color);
+							ResetHandicaps(Event.Player);
+						}					
+					}
 				}
 			}
-			
 			case CSmModeEvent::EType::OnPlayerRequestRespawn:
 			{			
+				declare Integer WUFlag for Event.Player;
+				WUFlag = 0;
 				ResetHandicaps(Event.Player);						
 				UnspawnPlayer(Event.Player);			
 			}
@@ -1450,7 +1465,7 @@ Void HandleWarmUpEvents() {
 			case CSmModeEvent::EType::OnPlayerAdded: 
 			{						
 				UpdateUIForPlayer(Event.Player);
-				InitMarkers();
+				InitMarkers(True);
 			}						
 		}
 	}
@@ -1482,37 +1497,30 @@ Void Do_WarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 	
 	WarmUp::Start();
 	declare WarmUpPlayedNb = 0;
+	G_FlagMarker = Null;
+	G_ActiveFlagSpawn = Null;
 	
-
+	InitMarkers(True);
+	
 	+++WarmUp_StartWarmUp+++
 	
 	while (!WarmUp::Finished() && WarmUpPlayedNb < NbOfWarmUp && !ServerShutdownRequested && !MatchEndRequested) {
 		
 		UIEventFeed::SendMessage("""WarmUp {{{WarmUpPlayedNb + 1}}}/{{{ NbOfWarmUp }}}""", "info");
 		FlagRush_UIHeader::SetWarmUpStatus(True, """$f90WARMUP {{{WarmUpPlayedNb + 1}}}/{{{ NbOfWarmUp }}}""");
-
+		
+		
 		WarmUp::StartRound(WarmUpPlayedNb + 1, NbOfWarmUp, TimeLimit, -1);  
 		EndTime = Now + TimeLimit;
 		
 		+++Warmup_StartRound+++
 		declare EndRoundRequested = False;
-
+		
 		while (!WarmUp::Finished() && !WarmUp::RoundFinished() && !ServerShutdownRequested && !MatchEndRequested && !EndRoundRequested) {
 			MB_WarmUp_Yield();
 			+++WarmUp_Loop+++
 			UpdateUI();
 			HandleWarmUpEvents();
-			// Manage race events
-			declare RacePendingEvents = Race::GetPendingEvents();
-			foreach (Event in RacePendingEvents) {
-				Race::ValidEvent(Event);
-			}
-			
-			// Manage mode events
-			foreach (Event in PendingEvents) {
-				if (Event.HasBeenPassed || Event.HasBeenDiscarded) continue;
-				Events::Invalid(Event);
-			}
 			
 			foreach (XmlRpcEvent in XmlRpc.PendingEvents) {		
 				switch (XmlRpcEvent.Type) {
@@ -1525,7 +1533,7 @@ Void Do_WarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 					}
 				}
 			}
-
+			
 			WarmUp::Yield();
 		}
 		

@@ -50,12 +50,6 @@ Telemetry::EndMatch();
 Collision::Yield();
 ***
 
-Void MB_WarmUp_Yield() {
-    WarmUp::Yield();
-    WarmUp::Yield_XmlRpc();
-    MB_Yield();    
-}
-
 // Empty dummy function because for some reason the compiler else throws an "Unexpected EOF" error
 Void UnusedDummyFunction(){}
 

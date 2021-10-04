@@ -11,9 +11,6 @@
 #Include "MathLib" as ML
 #Include "ColorLib" as CL
 
-/* Game dependencies */
-#Include "Libs/Nadeo/TMxSM/Race/WarmUp.Script.txt" as WarmUp
-
 /* Additional dependencies from other extends */
 #Include "Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 #Include "Libs/Zrx/CylinderHitbox.Script.txt" as Hitbox
@@ -65,9 +62,8 @@
 //////////////
 
 // Match progression
-#Setting S_UseWarmup								False as "Start each map with a warmup"
-#Setting S_WarmUpNb 								1 	as _("Number of warm up")
-#Setting S_WarmUpTimeout							300	as _("Warm up timeout")
+#Setting S_WarmUpNb									1 	as _("Number of warm up")
+#Setting S_WarmUpTimeout							60	as _("Warm up timeout")
 
 #Setting S_NbMapsToWinMatch							1 	as "Number of maps to win a match"
 #Setting S_NbRoundsToWinMap							2 	as "Number of rounds to win a map"
@@ -116,6 +112,7 @@
 
 declare Boolean G_RoundValid;
 declare Boolean G_MapValid;
+declare Boolean G_IsWarmUpActive;
 
 /* General mid round */
 
@@ -134,11 +131,6 @@ declare CUIConfigMarker G_FlagMarker;
 ///////////
 // Plugs //
 ///////////
-***MB_Private_LoadLibraries***
-***
-WarmUp::Load();
-
-***
 
 ***Match_StartServer***
 ***
@@ -146,9 +138,9 @@ Race::UseCppRaceProgression(False);					// To make it possible to trigger checkp
 UsePvECollisions = True;							// To force player visibility
 UsePvPCollisions = False;
 UseClans = True;
+MB_Settings_UseDefaultHud = False;
 MB_Settings_UseDefaultPodiumSequence = False;
-
-WarmUp::SetAvailability(True);
+G_IsWarmUpActive = False;
 
 ***
 
@@ -168,12 +160,10 @@ InitLandmarks();
 InitUI();
 InitTeams();
 UpdateUI();
-// Make flag reset - just to be sure
 ResetFlag(-1, True);
-// Update Flag marker so it does not show the gauge from last dates after InitUI
 UpdateFlagMarker();
-
 Map::SetDefaultStart(G_SpawnTeam1);
+
 G_MapValid = True;
 G_FlagSpawnCounter = 0;
 
@@ -188,10 +178,8 @@ if(C_Debug) {
 ***
 FlagRush_Log("WarmUp Phase");
 Users_SetNbFakeUsers(C_Debug_NbFakeUsers.X, C_Debug_NbFakeUsers.Y);
-Do_WarmUp(S_WarmUpNb, S_WarmUpTimeout * 1000 + 5000);
 
-ResetFlag(-1, True);
-UpdateFlagMarker();
+ExecWarmUp(S_WarmUpNb, S_WarmUpTimeout * 1000 + 5000);
 
 FlagRush_Log("Start Map");
 FlagRush_UIHeader::SetWarmUpStatus(False, "");
@@ -411,10 +399,6 @@ CheckRoundEndConditions();
 if(C_Debug) CheckTestCommands();
 ***
 
-***MB_Private_Yield***
-***
-WarmUp::Yield_XmlRpc();
-***
 
 ///////////////
 // Functions //
@@ -708,11 +692,14 @@ Void InitUI() {
 */
 Void InitPlayer(CSmPlayer Player) {	
 	Player.TrustClientSimu = True;
+	Player.UseCrudeExtrapolation = True;
+	
 	SetPlayerClan(Player, Player.RequestedClan);
 	declare Integer PreviousClan for Player;
 	if (Player.RequestedClan != PreviousClan) {
-		InitMarkers();
+		InitMarkers(G_IsWarmUpActive);
 	}
+
 	PreviousClan = Player.RequestedClan;
 	
 	declare Vec3 ColorPrimaryUI for Teams[Player.CurrentClan-1];
@@ -1032,29 +1019,21 @@ Void ResetFlag() {
 /**
 *	Applies all handicaps for a player
 */
-Void Select_Yield() {
-	if (WarmUp::IsActive()) {
-		MB_WarmUp_Yield();
-	} else {
-		MB_Yield();
-	}
-}
-
 Void ApplyHandicaps(CSmPlayer Player) {
 	if (S_FlagCarrierFragile) {
-		while(SetPlayer_DelayedIsFull(Player)) Select_Yield();
+		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 		SetPlayer_Delayed_Fragile(Player, S_FlagCarrierFragile);
 	}
 	if (S_FlagCarrierControl != 1.) {
-		while(SetPlayer_DelayedIsFull(Player)) Select_Yield();
+		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 		SetPlayer_Delayed_ControlCoef(Player, S_FlagCarrierControl);
 	}
 	if (S_FlagCarrierAcceleration != 1.) {
-		while(SetPlayer_DelayedIsFull(Player)) Select_Yield();
+		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 		SetPlayer_Delayed_AccelCoef(Player, S_FlagCarrierAcceleration);
 	}
 	if(S_FlagCarrierAdherence != 1.) {
-		while(SetPlayer_DelayedIsFull(Player)) Select_Yield();
+		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 		SetPlayer_Delayed_AdherenceCoef(Player, S_FlagCarrierAdherence);
 	}
 }
@@ -1063,7 +1042,7 @@ Void ApplyHandicaps(CSmPlayer Player) {
 *	Reset all handicaps from a player
 */
 Void ResetHandicaps(CSmPlayer Player) {
-	while(SetPlayer_DelayedIsFull(Player)) Select_Yield();
+	while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 	SetPlayer_Delayed_Reset(Player);	
 }
 
@@ -1219,9 +1198,9 @@ Void SpawnPlayers() {
 				if (Spawn != Null) {
 					declare Integer SpawnDate for Player;
 					InitPlayer(Player);
-					if (SpawnDate <= Now) {						
-						SpawnPlayer(Player, Player.CurrentClan, 1, Spawn, Now + 2000);
-						UpdateFlagCarrier(Player);					
+					if (SpawnDate <= Now) {							
+						SpawnPlayer(Player, Player.CurrentClan, 1, Spawn, Now + 2000);			
+						UpdateFlagCarrier(Player);						
 						UpdateFlagMarkerForPlayer(Player, -1);
 						SpawnDate = 0;
 					}
@@ -1396,7 +1375,7 @@ Void HandleEvents() {
 			}
 			
 			case CSmModeEvent::EType::OnPlayerAdded: 
-			{						
+			{				
 				UpdateUIForPlayer(Event.Player);
 				InitMarkers();
 			}
@@ -1426,6 +1405,24 @@ Void HandleEvents() {
 * Loops though all events and reacts accordingly
 */
 Void HandleWarmUpEvents() {	
+	foreach (Player in AllPlayers) {
+		if (Player.Armor <= 0) {		// If Player has no armor, unspawn first (for example Offzone hit)			
+			UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null
+		}
+		
+		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {			
+			declare CMapLandmark Spawn = GetPlayerSpawnLandmark(Player);			
+			declare Integer SpawnDate for Player;
+			if (Spawn != Null) {				
+				if (SpawnDate <= Now) {
+					InitPlayer(Player);																
+					Race::Start(Player, Spawn, Player.CurrentClan, Now);
+					SpawnDate = Now+3000;
+				}
+			}
+		}
+	}
+	
 	foreach(Event in PendingEvents) {
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
@@ -1463,61 +1460,46 @@ Void HandleWarmUpEvents() {
 			}
 			
 			case CSmModeEvent::EType::OnPlayerAdded: 
-			{						
-				UpdateUIForPlayer(Event.Player);
-				InitMarkers(True);
+			{	
+				InitPlayer(Event.Player);				
+				UpdateUIForPlayer(Event.Player);				
 			}						
 		}
 	}
 	
-	foreach (Player in Players) {
-		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {										
-			declare CMapSpawn Spawn = GetPlayerSpawn(Player);
-			if (Spawn != Null) {
-				declare Integer SpawnDate for Player;
-				InitPlayer(Player);
-				if (SpawnDate <= Now) {						
-					SpawnPlayer(Player, Player.CurrentClan, 1, Spawn, Now + 2000);			
-					SpawnDate = 0;
-				}
-			}			
-		}
-	}
 }
 
 
-Void Do_WarmUp(Integer NbOfWarmUp, Integer TimeLimit) {       
+Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {       
 	if (NbOfWarmUp <= 0 || TimeLimit <= 0) return;
-	
 	Race::StopSkipOutroAll();
-	MB_WarmUp_Yield();
-	
+	InitPlayers();
+	MB_Yield();
 	declare PrevUISequence = UIManager.UIAll.UISequence;
 	FlagRush_Log("Start WarmUp");
-	
-	WarmUp::Start();
 	declare WarmUpPlayedNb = 0;
+	InitMarkers(True);	
+	G_IsWarmUpActive = True;
+	
+	StartTime = Now;	
+	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
-	InitMarkers(True);
-	
-	+++WarmUp_StartWarmUp+++
-	
-	while (!WarmUp::Finished() && WarmUpPlayedNb < NbOfWarmUp && !ServerShutdownRequested && !MatchEndRequested) {
-		
-		UIEventFeed::SendMessage("""WarmUp {{{WarmUpPlayedNb + 1}}}/{{{ NbOfWarmUp }}}""", "info");
-		FlagRush_UIHeader::SetWarmUpStatus(True, """$f90WARMUP {{{WarmUpPlayedNb + 1}}}/{{{ NbOfWarmUp }}}""");
+	while (WarmUpPlayedNb < NbOfWarmUp && !ServerShutdownRequested && !MatchEndRequested) {		
 		
 		
-		WarmUp::StartRound(WarmUpPlayedNb + 1, NbOfWarmUp, TimeLimit, -1);  
-		EndTime = Now + TimeLimit;
-		
-		+++Warmup_StartRound+++
+		declare Text Message = """WarmUp {{{WarmUpPlayedNb + 1}}}/{{{ NbOfWarmUp }}}""";			
+		UIManager.UIAll.QueueMessage(3000, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
+		UIEventFeed::SendMessage(Message, "info");
+		FlagRush_UIHeader::SetWarmUpStatus(True, "$f90" ^ Message);
 		declare EndRoundRequested = False;
-		
-		while (!WarmUp::Finished() && !WarmUp::RoundFinished() && !ServerShutdownRequested && !MatchEndRequested && !EndRoundRequested) {
-			MB_WarmUp_Yield();
-			+++WarmUp_Loop+++
-			UpdateUI();
+		MB_Sleep(3000);
+
+		EndTime = Now + TimeLimit;
+	
+
+		while (!ServerShutdownRequested && !MatchEndRequested && !EndRoundRequested) {						
+			MB_Yield();	
+			UpdateUI();		
 			HandleWarmUpEvents();
 			
 			foreach (XmlRpcEvent in XmlRpc.PendingEvents) {		
@@ -1527,39 +1509,47 @@ Void Do_WarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 							case "Trackmania.ForceEndRound": {
 								EndRoundRequested = True;	
 							}
+							case "Trackmania.WarmUp.ForceStopRound": {
+								EndRoundRequested = True;	
+							}
+							case "Trackmania.WarmUp.ForceStop": {
+								EndRoundRequested = True;
+								MatchEndRequested = True;	
+							}
 						}			
 					}
 				}
 			}
+
+
 			
-			WarmUp::Yield();
-		}
+			if (Now >= EndTime) {
+				EndRoundRequested = True;
+				MatchEndRequested = True;
+			}
+
+		} // end warmup round loop
 		
-		WarmUp::EndRound();
 		WarmUpPlayedNb += 1;
 		
 		+++WarmUp_EndRound+++
-		
-		MB_WarmUp_Yield();
-	}
-	
+
+		MB_Yield();
+	} // end warmup match loop
+	EndTime = -1;
+	G_IsWarmUpActive = False;
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
-	declare Text Message = "End of warmup, match starting...";
+	declare Text Message = "WarmUp Ends";
 	UIManager.UIAll.QueueMessage(3000, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
-	EndTime = Now + 4000;
-	
-	+++Warmup_EndWarmUp+++
-	
-	while (Now < EndTime && !ServerShutdownRequested && !MatchEndRequested) {
-		MB_WarmUp_Yield();
-	}
-	
-	WarmUp::End();
-	MB_WarmUp_Yield();
+	MatchEndRequested = False;
+	+++Warmup_EndWarmUp+++			
 	FlagRush_Log("End WarmUp");
 	FlagRush_UIHeader::SetWarmUpStatus(False, "");
-	EndTime = -1;    
+	MB_Sleep(3000);
 	UIManager.UIAll.UISequence = PrevUISequence;
+	foreach(Player in Players) {
+		UnspawnPlayer(Player);
+	}
 }
 
 Void HandleXmlRpcEvents() {

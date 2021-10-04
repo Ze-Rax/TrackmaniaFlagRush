@@ -868,7 +868,7 @@ Void UpdateFlagCarrier(CSmPlayer Player) {
 		Player.Dossard_Trigram = "   ";
 	}
 	
-	if (FlagCarrier == Player) {			
+	if (FlagCarrier != Null && FlagCarrier == Player) {			
 		Player.Dossard_Trigram = "FLG"; // 
 	}
 }
@@ -1497,9 +1497,7 @@ Void Do_WarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 	
 	WarmUp::Start();
 	declare WarmUpPlayedNb = 0;
-	G_FlagMarker = Null;
-	G_ActiveFlagSpawn = Null;
-	
+
 	InitMarkers(True);
 	
 	+++WarmUp_StartWarmUp+++

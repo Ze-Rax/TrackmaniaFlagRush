@@ -55,7 +55,6 @@
 #Const	C_Debug_NbFakeUsers					<0, 0>
 #Const	C_SpawnAnimDuration					1500
 #Const 	C_RespawnSpeedLimitKmh 				30.
-#Const 	C_FlagPickupSpeedThresholdKmh		80.
 
 //////////////
 // Settings //
@@ -83,7 +82,6 @@
 #Setting S_FlagCarrierControl						1.0 as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
 #Setting S_FlagCarrierAdherence						1.0 as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
 #Setting S_CanJoinMidRound							True as "<hidden>" // Players can join in the middle of a round
-#Setting S_UseAntiFlagCamping						True as "Use flag pickup speed threshold"
 #Setting S_RespawnWhenStill							True as "Players can respawn only when being still"
 #Setting S_RespawnDelay								1.5 as "Respawn Delay (seconds)"
 
@@ -1322,9 +1320,7 @@ Void HandleEvents() {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				if (Event.Landmark == G_ActiveFlagSpawn) {
 						if (Event.Player != Null && FlagCarrier == Null && Now > G_FlagState.PickupableDate) {
-							if (!S_UseAntiFlagCamping || Event.Player.Speed * 3.6 > C_FlagPickupSpeedThresholdKmh) {
-								SetFlagCarrier(Event.Player);
-							}
+							SetFlagCarrier(Event.Player);
 						}
 				} else if (G_BasesTeam1.exists(Event.Landmark)) {
 					if (S_UseReversedBases) {

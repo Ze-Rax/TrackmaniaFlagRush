@@ -917,14 +917,6 @@ Void UpdateUI() {
 }
 // --------------------------------------------------
 
-Void SetMarkerCommonProperties() {
-	if(G_FlagMarker == Null) return;
-	
-	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
-	G_FlagMarker.ManialinkFrameId = "marker-flag";
-	//if(C_Debug_MarkersLabels) G_FlagMarker.Label = "Flag";
-}
-
 /**
 * Randomly choose a new flag spawn to activate if enabled.
 */
@@ -958,8 +950,7 @@ Void SetFlagPositionAtSpawn(Integer PickupableDate) {
 		UIManager.UIAll.RemoveMarker(G_FlagMarker);			// Remove old
 		
 		G_FlagMarker = UIManager.UIAll.AddMarker(G_ActiveFlagSpawn);
-		G_FlagMarker.Box = <0., 3., 0.>;
-		SetMarkerCommonProperties();
+		G_FlagMarker.Box = <0., 3., 0.>;				
 	}
 }
 
@@ -974,7 +965,6 @@ Void SetFlagPosition(CSmPlayer Player, Integer PickupableDate) {
 	UIManager.UIAll.RemoveMarker(G_FlagMarker);
 	G_FlagMarker = UIManager.UIAll.AddMarker(Player);
 	G_FlagMarker.Box = <0., 1., 0.>;
-	SetMarkerCommonProperties();
 }
 
 Void SetFlagPosition(Vec3 Position, Integer PickupableDate) {
@@ -987,7 +977,6 @@ Void SetFlagPosition(Vec3 Position, Integer PickupableDate) {
 	// Update flag marker
 	UIManager.UIAll.RemoveMarker(G_FlagMarker);
 	G_FlagMarker = UIManager.UIAll.AddMarker(Position);
-	SetMarkerCommonProperties();
 	G_FlagMarker.Box = <0., 0., 0.>;
 }
 

@@ -699,7 +699,7 @@ Void InitPlayer(CSmPlayer Player) {
 	if (Player.RequestedClan != PreviousClan) {
 		InitMarkers(G_IsWarmUpActive);
 	}
-
+	
 	PreviousClan = Player.RequestedClan;
 	
 	declare Vec3 ColorPrimaryUI for Teams[Player.CurrentClan-1];
@@ -1429,24 +1429,21 @@ Void HandleWarmUpEvents() {
 				declare Vec3 Color = FlagRush_Common::GetDefaultTeamColor(Event.Player.CurrentClan);
 				if (Event.Player != Null) {
 					declare Integer WUFlag for Event.Player = 0;
-					if (G_FlagSpawns.exists(Event.Landmark)) {												 														
-						if (WUFlag + 3000 < Now) {
-							WUFlag = Now;
-							ApplyHandicaps(Event.Player);
-							UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s got the flag!""", "flag", Color);
-						}
-						
+					if (G_FlagSpawns.exists(Event.Landmark) && WUFinish + 3000 < Now) {												 																				
+						WUFlag = Now;
+						ApplyHandicaps(Event.Player);
+						UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s got the flag!""", "flag", Color);												
 					} else if (G_BasesTeam1.exists(Event.Landmark)) {
-						if (Event.Player.CurrentClan == 2) {												
-							UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s Scored!""", "flag", Color);
+						if (Event.Player.CurrentClan == 2 && WUFinish + 3000 < Now) {												
 							WUFlag = 0;
 							ResetHandicaps(Event.Player);
+							UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s Scored!""", "flag", Color);
 						}				
 					} else if (G_BasesTeam2.exists(Event.Landmark)) {					
-						if (Event.Player.CurrentClan == 1) {
-							WUFlag = 0;
-							UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s Scored!""", "flag", Color);
+						if (Event.Player.CurrentClan == 1 && WUFinish + 3000 < Now) {
+							WUFlag = 0;							
 							ResetHandicaps(Event.Player);
+							UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s Scored!""", "flag", Color);							
 						}					
 					}
 				}
@@ -1466,7 +1463,6 @@ Void HandleWarmUpEvents() {
 			}						
 		}
 	}
-	
 }
 
 
@@ -1483,7 +1479,7 @@ Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 	
 	StartTime = Now;	
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
-
+	
 	while (WarmUpPlayedNb < NbOfWarmUp && !ServerShutdownRequested && !MatchEndRequested) {		
 		
 		
@@ -1493,10 +1489,10 @@ Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 		FlagRush_UIHeader::SetWarmUpStatus(True, "$f90" ^ Message);
 		declare EndRoundRequested = False;
 		MB_Sleep(3000);
-
+		
 		EndTime = Now + TimeLimit;
-	
-
+		
+		
 		while (!ServerShutdownRequested && !MatchEndRequested && !EndRoundRequested) {						
 			MB_Yield();	
 			UpdateUI();		
@@ -1520,20 +1516,20 @@ Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 					}
 				}
 			}
-
-
+			
+			
 			
 			if (Now >= EndTime) {
 				EndRoundRequested = True;
 				MatchEndRequested = True;
 			}
-
+			
 		} // end warmup round loop
 		
 		WarmUpPlayedNb += 1;
 		
 		+++WarmUp_EndRound+++
-
+		
 		MB_Yield();
 	} // end warmup match loop
 	EndTime = -1;

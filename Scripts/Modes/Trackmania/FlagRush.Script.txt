@@ -1428,20 +1428,20 @@ Void HandleWarmUpEvents() {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				declare Vec3 Color = FlagRush_Common::GetDefaultTeamColor(Event.Player.CurrentClan);
 				if (Event.Player != Null) {
-					declare Integer WUFlag for Event.Player = 0;
-					if (G_FlagSpawns.exists(Event.Landmark) && WUFinish + 3000 < Now) {												 																				
+					declare Integer WUFlag for Event.Player = 0;				
+					if (G_FlagSpawns.exists(Event.Landmark) && WUFlag + 1500 < Now) {												 																				
 						WUFlag = Now;
 						ApplyHandicaps(Event.Player);
 						UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s got the flag!""", "flag", Color);												
 					} else if (G_BasesTeam1.exists(Event.Landmark)) {
-						if (Event.Player.CurrentClan == 2 && WUFinish + 3000 < Now) {												
-							WUFlag = 0;
+						if (Event.Player.CurrentClan == 2 && WUFlag + 1500 < Now) {												
+							WUFlag = Now;
 							ResetHandicaps(Event.Player);
 							UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s Scored!""", "flag", Color);
 						}				
 					} else if (G_BasesTeam2.exists(Event.Landmark)) {					
-						if (Event.Player.CurrentClan == 1 && WUFinish + 3000 < Now) {
-							WUFlag = 0;							
+						if (Event.Player.CurrentClan == 1 && WUFlag + 1500 < Now) {
+							WUFlag = Now;							
 							ResetHandicaps(Event.Player);
 							UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s Scored!""", "flag", Color);							
 						}					

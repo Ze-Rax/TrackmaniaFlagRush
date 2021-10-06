@@ -627,18 +627,21 @@ Void InitMarkers(Boolean InitAllFlags) {
 		if (FlagCarrier != Null) {
 			if (G_FlagState.DropLocation != <0., 0., 0.>) {
 				G_FlagMarker = UIManager.UIAll.AddMarker(G_FlagState.DropLocation);
+				G_FlagMarker.ManialinkFrameId = "marker-flag";
 				G_FlagMarker.Box = <0., 0., 0.>;
 			} else {
 				G_FlagMarker = UIManager.UIAll.AddMarker(FlagCarrier);
+				G_FlagMarker.ManialinkFrameId = "marker-flag";
 				G_FlagMarker.Box = <0., 1., 0.>;
 			}
 		}		
 		else {
 			G_FlagMarker = UIManager.UIAll.AddMarker(G_ActiveFlagSpawn);
+			G_FlagMarker.ManialinkFrameId = "marker-flag";
 			G_FlagMarker.Box = <0., 3., 0.>;
 		}
 		G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
-		G_FlagMarker.ManialinkFrameId = "marker-flag";		
+				
 	}
 	
 	foreach(CurrentPlayer in AllPlayers) {
@@ -791,8 +794,7 @@ Void InitPlayer(CSmPlayer Player) {
 	declare Integer PreviousClan for Player;
 
 	SetPlayerClan(Player, Player.RequestedClan);
-	if (Player.RequestedClan != PreviousClan) {
-		log("init markers on team change!");
+	if (Player.RequestedClan != PreviousClan) {		
 		InitMarkers(G_IsWarmUpActive);
 		UpdateFlagMarker(-1);
 	}
@@ -948,10 +950,12 @@ Void SetFlagPositionAtSpawn(Integer PickupableDate) {
 	if (G_FlagMarker != Null) {
 		if(UIManager.UIAll.Markers.exists(G_FlagMarker))	// Check if marker exists (prevents warning)
 		UIManager.UIAll.RemoveMarker(G_FlagMarker);			// Remove old
-		
-		G_FlagMarker = UIManager.UIAll.AddMarker(G_ActiveFlagSpawn);
-		G_FlagMarker.Box = <0., 3., 0.>;				
 	}
+		G_FlagMarker = UIManager.UIAll.AddMarker(G_ActiveFlagSpawn);
+		G_FlagMarker.ManialinkFrameId = "marker-flag";
+		G_FlagMarker.Box = <0., 3., 0.>;
+		G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+
 }
 
 Void SetFlagPosition(CSmPlayer Player, Integer PickupableDate) {
@@ -964,7 +968,9 @@ Void SetFlagPosition(CSmPlayer Player, Integer PickupableDate) {
 	// Update flag marker
 	UIManager.UIAll.RemoveMarker(G_FlagMarker);
 	G_FlagMarker = UIManager.UIAll.AddMarker(Player);
+	G_FlagMarker.ManialinkFrameId = "marker-flag";
 	G_FlagMarker.Box = <0., 1., 0.>;
+	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
 }
 
 Void SetFlagPosition(Vec3 Position, Integer PickupableDate) {
@@ -977,7 +983,9 @@ Void SetFlagPosition(Vec3 Position, Integer PickupableDate) {
 	// Update flag marker
 	UIManager.UIAll.RemoveMarker(G_FlagMarker);
 	G_FlagMarker = UIManager.UIAll.AddMarker(Position);
+	G_FlagMarker.ManialinkFrameId = "marker-flag";
 	G_FlagMarker.Box = <0., 0., 0.>;
+	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
 }
 
 // --------------------------------------------------

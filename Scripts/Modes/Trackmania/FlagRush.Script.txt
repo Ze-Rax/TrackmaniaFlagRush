@@ -413,6 +413,10 @@ Void FlagRush_Log(Text Message) {
 	if (C_Debug) log("[FlagRush] " ^ Message);
 }
 
+Void Flagrush_Chat(Text Message) {
+	UIManager.UIAll.SendChat(Message);
+}
+
 // --------------------------------------------------
 // Match Progression functions
 // --------------------------------------------------
@@ -1031,30 +1035,36 @@ Void ResetFlag() {
 *	Applies all handicaps for a player
 */
 Void ApplyHandicaps(CSmPlayer Player) {
-	if (S_FlagCarrierFragile) {
-		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
-		SetPlayer_Delayed_Fragile(Player, S_FlagCarrierFragile);
-	}
-	if (S_FlagCarrierControl != 1.) {
+
+	if (S_FlagCarrierControl != 1.) {		
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 		SetPlayer_Delayed_ControlCoef(Player, S_FlagCarrierControl);
 	}
-	if (S_FlagCarrierAcceleration != 1.) {
+
+	if (S_FlagCarrierAcceleration != 1.) {		
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 		SetPlayer_Delayed_AccelCoef(Player, S_FlagCarrierAcceleration);
 	}
-	if(S_FlagCarrierAdherence != 1.) {
+
+	if (S_FlagCarrierAdherence != 1.) {		
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
-		SetPlayer_Delayed_AdherenceCoef(Player, S_FlagCarrierAdherence);
+			SetPlayer_Delayed_AdherenceCoef(Player, S_FlagCarrierAdherence);
 	}
+	
+	if (S_FlagCarrierFragile) {		
+		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
+		SetPlayer_Delayed_Fragile(Player, S_FlagCarrierFragile);
+	}	
 }
 
 /**
 *	Reset all handicaps from a player
 */
-Void ResetHandicaps(CSmPlayer Player) {
-	while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
-	SetPlayer_Delayed_Reset(Player);	
+Void ResetHandicaps() {
+	foreach (Player in Players) {
+		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();			
+		SetPlayer_Delayed_Reset(Player);
+	}	
 }
 
 // --------------------------------------------------
@@ -1089,7 +1099,6 @@ Void SetFlagCarrier(CSmPlayer Player) {
 	
 	// Apply handicaps
 	ApplyHandicaps(Player);
-	
 }
 
 // --------------------------------------------------
@@ -1124,7 +1133,7 @@ Void DropFlag() {
 	UpdateFlagMarker(ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000));
 	
 	// Reset Carrier handicaps
-	ResetHandicaps(FlagCarrier);
+	ResetHandicaps();
 }
 
 // --------------------------------------------------
@@ -1152,7 +1161,7 @@ Void ScoreFlag(CSmPlayer Player) {
 	Scores::AddPlayerRoundPoints(Player.Score, FlagRush_Common::C_PointsValue_ScoreFlag);
 	Telemetry::AddPlayerRoundInteger(Player.Score, C_Telemetry_Key_FlagsScored, 1);
 	
-	ResetHandicaps(Player);
+	ResetHandicaps();
 	ResetFlag(True);
 	if(S_UseTurns) MB_StopTurn();
 }
@@ -1176,11 +1185,12 @@ Void StealFlag(CSmPlayer NewCarrier, CSmPlayer OldCarrier) {
 		Telemetry::AddPlayerRoundInteger(NewCarrier.Score, C_Telemetry_Key_FlagsStolen, 1);
 	}
 	
+	// Reset old flag carrier handicaps
+	ResetHandicaps();
+
 	// Set the new flag carrier
 	SetFlagCarrier(NewCarrier);
-	
-	// Reset old flag carrier handicaps
-	ResetHandicaps(OldCarrier);
+
 }
 
 // #region PlayerFuncitons
@@ -1443,13 +1453,13 @@ Void HandleWarmUpEvents() {
 					} else if (G_BasesTeam1.exists(Event.Landmark)) {
 						if (Event.Player.CurrentClan == 2 && WUFlag + 1500 < Now) {												
 							WUFlag = Now;
-							ResetHandicaps(Event.Player);
+							ResetHandicaps();
 							UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s Scored!""", "flag", Color);
 						}				
 					} else if (G_BasesTeam2.exists(Event.Landmark)) {					
 						if (Event.Player.CurrentClan == 1 && WUFlag + 1500 < Now) {
 							WUFlag = Now;							
-							ResetHandicaps(Event.Player);
+							ResetHandicaps();
 							UIEventFeed::SendMessage("""${{{ TL::ColorToText(Color) ^ Event.Player.User.Name}}}$z$s Scored!""", "flag", Color);							
 						}					
 					}
@@ -1459,7 +1469,7 @@ Void HandleWarmUpEvents() {
 			{			
 				declare Integer WUFlag for Event.Player;
 				WUFlag = 0;
-				ResetHandicaps(Event.Player);						
+				ResetHandicaps();						
 				UnspawnPlayer(Event.Player);			
 			}
 			
@@ -1523,8 +1533,6 @@ Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 					}
 				}
 			}
-			
-			
 			
 			if (Now >= EndTime) {
 				EndRoundRequested = True;

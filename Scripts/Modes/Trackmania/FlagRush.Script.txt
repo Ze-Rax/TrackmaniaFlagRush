@@ -14,6 +14,10 @@
 /* Additional dependencies from other extends */
 #Include "Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 #Include "Libs/Zrx/CylinderHitbox.Script.txt" as Hitbox
+#Include "Libs/Zrx/ClubTagUtil.Script.txt" as ClubTagUtil
+
+/* Additional dependencies from other extends */
+
 #Include "Libs/Zrx/Collision.Script.txt" as Collision
 #Include "Libs/Zrx/PlayerTelemetry.Script.txt" as Telemetry
 #Include "Libs/Zrx/TeamPointsProgression.Script.txt" as TeamPointsProgression
@@ -47,9 +51,6 @@
 
 #Const	C_FlagHitbox_Diameter				6.
 #Const	C_FlagHitbox_Height					4.
-
-// To prevent flag pickup when slow speed - prevents flag camping
-#Const 	C_FlagPickupSpeedThreshold			10.
 
 #Const  C_Debug 							True
 #Const	C_Debug_MarkersLabels				True
@@ -88,10 +89,10 @@
 #Setting S_RespawnDelay								1.5 as "Respawn Delay (seconds)"
 
 // Teams
-#Setting S_Team1Name 								"" as "Force Team1 Name"
-#Setting S_Team2Name 								"" as "Force Team2 Name"
-#Setting S_Team1Color 								"" as "Force Team1 Color"
-#Setting S_Team2Color 								"" as "Force Team2 Color"
+#Setting S_Team1Name 								"" as "Team 1 Name"
+#Setting S_Team2Name 								"" as "Team 2 Name"
+#Setting S_Team1Color 								"" as "Team 1 Color"
+#Setting S_Team2Color 								"" as "Team 2 Color"
 
 /////////////
 // Structs //
@@ -158,7 +159,6 @@ UIEventFeed::SendMessage("Start Match", "info");
 ***
 InitLandmarks();
 InitUI();
-InitTeams();
 UpdateUI();
 ResetFlag(-1, True);
 UpdateFlagMarker();
@@ -195,7 +195,10 @@ MB_Sleep(5000);
 G_RoundValid = True;
 InitPlayers();
 InitMarkers();
+InitTeams();
+InitUI();
 UpdateUI();
+
 foreach(Player in Players) {
 	declare Boolean PlayerCanSpawnMidRound for Player;
 	PlayerCanSpawnMidRound = True;
@@ -395,7 +398,6 @@ HandleEvents();
 HandleXmlRpcEvents();
 
 CheckRoundEndConditions();
-
 if(C_Debug) CheckTestCommands();
 ***
 
@@ -500,16 +502,50 @@ Integer EvaluateMatch() {
 // Initialisation functions for StartTurn/Round/Map
 // --------------------------------------------------
 
+ClubTagUtil::K_TeamConfig[] GetTeamConfigs() {
+	declare Text G_Team1Name for This;
+	declare Text G_Team1Color for This;
+	declare Text G_Team2Name for This;
+	declare Text G_Team2Color for This;
+	
+	// Get TeamConfigs from ClubTags
+	declare ClubTagUtil::K_TeamConfig[] TeamConfigs; // = ClubTagUtil::GetTeamConfigs();
+	TeamConfigs.add(ClubTagUtil::GetTeamConfig(1));
+	TeamConfigs.add(ClubTagUtil::GetTeamConfig(2));
+	
+	// Overwrite empty values or forced values
+	if (TeamConfigs[0].Name == "" || G_Team1Name != "") TeamConfigs[0].Name = FlagRush_Common::GetDefaultTeamName(0);
+	if (TeamConfigs[0].Color == ClubTagUtil::C_InvalidColor || G_Team1Color != "") TeamConfigs[0].Color = FlagRush_Common::GetDefaultTeamColor(0);
+	if (TeamConfigs[1].Name == "" || G_Team2Name != "") TeamConfigs[1].Name = FlagRush_Common::GetDefaultTeamName(1);
+	if (TeamConfigs[1].Color == ClubTagUtil::C_InvalidColor || G_Team2Color != "") TeamConfigs[1].Color = FlagRush_Common::GetDefaultTeamColor(1);
+	
+	// Adjust colors to avoid hue overlap
+	// Only adjust if at least one team color is not forced by settings
+	if(G_Team1Color == "" || G_Team2Color == "") {
+		// If second is forced or second team uses ClubTag and first doesn't: Adjust first
+		if(G_Team2Color != "" || TeamConfigs[1].ClubTag != "" && TeamConfigs[0].ClubTag == "") {
+			TeamConfigs[0].Color = FlagRush_Common::GetTeam2ColorWithoutHueOverlap(TeamConfigs[1].Color, TeamConfigs[0].Color);
+		}
+		// If first is forced or first team uses ClubTag or none is forced or both use ClubTags: Adjust second
+		else {
+			TeamConfigs[1].Color = FlagRush_Common::GetTeam2ColorWithoutHueOverlap(TeamConfigs[0].Color, TeamConfigs[1].Color);
+		}
+	}
+	
+	return TeamConfigs;
+}
+
 /**
 *	Prepares the teams by setting default values
 */
-Void InitTeams() {
+Void InitTeams() {	
+	// Get TeamConfigs by ClubTag
+	declare ClubTagUtil::K_TeamConfig[] TeamConfigs = GetTeamConfigs();
+	
 	// 0 is Team1, 1 is Team2 ("Team X" = Clan X = Teams[X-1])
 	for(I, 0, 1) {
-		Teams[I].Name = FlagRush_Common::GetDefaultTeamName(I);
-		
-		declare Vec3 PrimaryColor = FlagRush_Common::GetDefaultTeamColor(I);
-		declare Vec3 SecondaryColor = FlagRush_Common::GetDefaultTeamSecondaryColor(I);
+		Teams[I].Name = TeamConfigs[I].Name;
+		declare Vec3 PrimaryColor = TeamConfigs[I].Color;
 		
 		// Teams have automatic change for colors; Need full saturation and value (HSV)
 		Teams[I].ColorPrimary = FlagRush_Common::ColorToFullSaturationAndValue(PrimaryColor);
@@ -517,14 +553,10 @@ Void InitTeams() {
 		
 		// Use "declare for" for actual colors for UI. Player Markers still use Teams[I].ColorPrimary
 		declare Vec3 ColorPrimaryUI for Teams[I];
-		declare Vec3 ColorSecondaryUI for Teams[I];
 		ColorPrimaryUI = PrimaryColor;
-		ColorSecondaryUI = SecondaryColor;
 		
 		declare netwrite Vec3 Net_PrimaryColor for Teams[I];
-		declare netwrite Vec3 Net_SecondaryColor for Teams[I];
 		Net_PrimaryColor = PrimaryColor;
-		Net_SecondaryColor = SecondaryColor;
 	}
 }
 
@@ -645,7 +677,7 @@ Void InitMarkers(Boolean InitAllFlags) {
 			G_FlagMarker.Box = <0., 3., 0.>;
 		}
 		G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
-				
+		
 	}
 	
 	foreach(CurrentPlayer in AllPlayers) {
@@ -796,7 +828,7 @@ Void InitPlayer(CSmPlayer Player) {
 	Player.TrustClientSimu = True;
 	Player.UseCrudeExtrapolation = True;
 	declare Integer PreviousClan for Player;
-
+	
 	SetPlayerClan(Player, Player.RequestedClan);
 	if (Player.RequestedClan != PreviousClan) {		
 		InitMarkers(G_IsWarmUpActive);
@@ -955,11 +987,11 @@ Void SetFlagPositionAtSpawn(Integer PickupableDate) {
 		if(UIManager.UIAll.Markers.exists(G_FlagMarker))	// Check if marker exists (prevents warning)
 		UIManager.UIAll.RemoveMarker(G_FlagMarker);			// Remove old
 	}
-		G_FlagMarker = UIManager.UIAll.AddMarker(G_ActiveFlagSpawn);
-		G_FlagMarker.ManialinkFrameId = "marker-flag";
-		G_FlagMarker.Box = <0., 3., 0.>;
-		G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
-
+	G_FlagMarker = UIManager.UIAll.AddMarker(G_ActiveFlagSpawn);
+	G_FlagMarker.ManialinkFrameId = "marker-flag";
+	G_FlagMarker.Box = <0., 3., 0.>;
+	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+	
 }
 
 Void SetFlagPosition(CSmPlayer Player, Integer PickupableDate) {
@@ -1035,20 +1067,20 @@ Void ResetFlag() {
 *	Applies all handicaps for a player
 */
 Void ApplyHandicaps(CSmPlayer Player) {
-
+	
 	if (S_FlagCarrierControl != 1.) {		
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 		SetPlayer_Delayed_ControlCoef(Player, S_FlagCarrierControl);
 	}
-
+	
 	if (S_FlagCarrierAcceleration != 1.) {		
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 		SetPlayer_Delayed_AccelCoef(Player, S_FlagCarrierAcceleration);
 	}
-
+	
 	if (S_FlagCarrierAdherence != 1.) {		
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
-			SetPlayer_Delayed_AdherenceCoef(Player, S_FlagCarrierAdherence);
+		SetPlayer_Delayed_AdherenceCoef(Player, S_FlagCarrierAdherence);
 	}
 	
 	if (S_FlagCarrierFragile) {		
@@ -1187,10 +1219,10 @@ Void StealFlag(CSmPlayer NewCarrier, CSmPlayer OldCarrier) {
 	
 	// Reset old flag carrier handicaps
 	ResetHandicaps();
-
+	
 	// Set the new flag carrier
 	SetFlagCarrier(NewCarrier);
-
+	
 }
 
 // #region PlayerFuncitons
@@ -1306,6 +1338,9 @@ Void UpdatePlayers() {
 			if (Player.User.Login == G_FlagState.CarrierLogin) DropFlag();
 			UnspawnPlayer(Player);
 			InitPlayer(Player);
+			InitTeams();
+			InitUI();
+			UpdateUI();
 		}
 	}
 }
@@ -1353,10 +1388,8 @@ Void HandleEvents() {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				if (Event.Landmark == G_ActiveFlagSpawn) {
 					if (Event.Player != Null && FlagCarrier == Null && Now > G_FlagState.PickupableDate) {
-						if (Event.Player.Speed * 3.6 > C_FlagPickupSpeedThreshold) {
-							SetFlagCarrier(Event.Player);
-						}
-					}
+						SetFlagCarrier(Event.Player);
+					}					
 				} else if (G_BasesTeam1.exists(Event.Landmark)) {
 					if (S_UseReversedBases) {
 						if (Event.Player == FlagCarrier && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
@@ -1485,12 +1518,15 @@ Void HandleWarmUpEvents() {
 
 Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {       
 	if (NbOfWarmUp <= 0 || TimeLimit <= 0) return;
-	Race::StopSkipOutroAll();
+	Race::StopSkipOutroAll();	
 	InitPlayers();
+	InitTeams();
 	MB_Yield();
 	declare PrevUISequence = UIManager.UIAll.UISequence;
 	FlagRush_Log("Start WarmUp");
+	
 	declare WarmUpPlayedNb = 0;
+
 	InitMarkers(True);	
 	G_IsWarmUpActive = True;
 	
@@ -1512,7 +1548,8 @@ Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 		
 		while (!ServerShutdownRequested && !MatchEndRequested && !EndRoundRequested) {						
 			MB_Yield();	
-			UpdateUI();		
+			UpdateUI();	
+			UpdateModeSettingValues();	
 			HandleWarmUpEvents();
 			
 			foreach (XmlRpcEvent in XmlRpc.PendingEvents) {		

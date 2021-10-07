@@ -75,9 +75,6 @@ Text GetManialink() {
 			declare CMlGauge GaugeMapScoreTeam2 = (Page.GetFirstChild("mapscore-gauge-team2") as CMlGauge);
 			declare CMlGauge GaugeMapScoreTeam2Background = (Page.GetFirstChild("mapscore-gauge-team2-background") as CMlGauge);
 			
-			
-			LabelTeam1Name.Value = Teams[0].Name;
-			LabelTeam2Name.Value = Teams[1].Name;
 			QuadTeam1ScoreBackground.Colorize = GetTeamPrimaryColor(Teams[0]);
 			QuadTeam2ScoreBackground.Colorize = GetTeamPrimaryColor(Teams[1]);
 
@@ -118,9 +115,11 @@ Text GetManialink() {
 
 			while(True) {
 				yield;
+				/* Sync Team Name */
+				LabelTeam1Name.Value = Teams[0].Name;
+				LabelTeam2Name.Value = Teams[1].Name;
 				
 				/* Flag Carrier */
-				
 				declare CTeam Team = Null;
 				if (Net_FlagCarrierClan > 0) Team <=> Teams[Net_FlagCarrierClan - 1];
 				LabelFlagCarrier.TextPrefix = "$" ^ CL::RgbToHex3(GetTeamPrimaryColor(Team));

@@ -50,9 +50,6 @@
 #Const	C_FlagHitbox_Diameter				6.
 #Const	C_FlagHitbox_Height					4.
 
-// To prevent flag pickup when slow speed - prevents flag camping
-#Const 	C_FlagPickupSpeedThreshold			80.
-
 #Const  C_Debug 							True
 #Const	C_Debug_MarkersLabels				True
 #Const	C_Debug_NbFakeUsers					<0, 0>
@@ -89,10 +86,10 @@
 #Setting S_RespawnDelay								1.5 as "Respawn Delay (seconds)"
 
 // Teams
-#Setting S_Team1Name 								"" as "Force Team1 Name"
-#Setting S_Team2Name 								"" as "Force Team2 Name"
-#Setting S_Team1Color 								"" as "Force Team1 Color"
-#Setting S_Team2Color 								"" as "Force Team2 Color"
+#Setting S_Team1Name 								"" as "Team 1 Name"
+#Setting S_Team2Name 								"" as "Team 2 Name"
+#Setting S_Team1Color 								"" as "Team 1 Color"
+#Setting S_Team2Color 								"" as "Team 2 Color"
 
 /////////////
 // Structs //
@@ -1323,9 +1320,7 @@ Void HandleEvents() {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				if (Event.Landmark == G_ActiveFlagSpawn) {
 						if (Event.Player != Null && FlagCarrier == Null && Now > G_FlagState.PickupableDate) {
-							if (Event.Player.Speed * 3.6 > C_FlagPickupSpeedThreshold) {
-								SetFlagCarrier(Event.Player);
-							}
+							SetFlagCarrier(Event.Player);
 						}
 				} else if (G_BasesTeam1.exists(Event.Landmark)) {
 					if (S_UseReversedBases) {

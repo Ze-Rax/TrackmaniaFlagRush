@@ -13,6 +13,7 @@
 
 #Include "Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 #Include "Libs/Zrx/CylinderHitbox.Script.txt" as Hitbox
+#Include "Libs/Zrx/ClubTagUtil.Script.txt" as ClubTagUtil
 
 /* Additional dependencies from other extends */
 
@@ -153,7 +154,6 @@ UIEventFeed::SendMessage("Start Match", "info");
 ***
 InitLandmarks();
 InitUI();
-InitTeams();
 UpdateUI();
 // Make flag reset - just to be sure
 ResetFlag(-1, True);
@@ -188,7 +188,10 @@ Users_SetNbFakeUsers(C_Debug_NbFakeUsers.X, C_Debug_NbFakeUsers.Y);
 G_RoundValid = True;
 InitPlayers();
 InitMarkers();
+InitTeams();
+InitUI();
 UpdateUI();
+
 foreach(Player in Players) {
 	declare Boolean PlayerCanSpawnMidRound for Player;
 	PlayerCanSpawnMidRound = True;
@@ -387,7 +390,6 @@ SpawnPlayers();
 HandleEvents();
 
 CheckRoundEndConditions();
-
 if(C_Debug) CheckTestCommands();
 ***
 
@@ -487,16 +489,50 @@ Integer EvaluateMatch() {
 // Initialisation functions for StartTurn/Round/Map
 // --------------------------------------------------
 
+ClubTagUtil::K_TeamConfig[] GetTeamConfigs() {
+	declare Text G_Team1Name for This;
+	declare Text G_Team1Color for This;
+	declare Text G_Team2Name for This;
+	declare Text G_Team2Color for This;
+
+	// Get TeamConfigs from ClubTags
+	declare ClubTagUtil::K_TeamConfig[] TeamConfigs; // = ClubTagUtil::GetTeamConfigs();
+	TeamConfigs.add(ClubTagUtil::GetTeamConfig(1));
+	TeamConfigs.add(ClubTagUtil::GetTeamConfig(2));
+
+	// Overwrite empty values or forced values
+	if (TeamConfigs[0].Name == "" || G_Team1Name != "") TeamConfigs[0].Name = FlagRush_Common::GetDefaultTeamName(0);
+	if (TeamConfigs[0].Color == ClubTagUtil::C_InvalidColor || G_Team1Color != "") TeamConfigs[0].Color = FlagRush_Common::GetDefaultTeamColor(0);
+	if (TeamConfigs[1].Name == "" || G_Team2Name != "") TeamConfigs[1].Name = FlagRush_Common::GetDefaultTeamName(1);
+	if (TeamConfigs[1].Color == ClubTagUtil::C_InvalidColor || G_Team2Color != "") TeamConfigs[1].Color = FlagRush_Common::GetDefaultTeamColor(1);
+
+	// Adjust colors to avoid hue overlap
+	// Only adjust if at least one team color is not forced by settings
+	if(G_Team1Color == "" || G_Team2Color == "") {
+		// If second is forced or second team uses ClubTag and first doesn't: Adjust first
+		if(G_Team2Color != "" || TeamConfigs[1].ClubTag != "" && TeamConfigs[0].ClubTag == "") {
+			TeamConfigs[0].Color = FlagRush_Common::GetTeam2ColorWithoutHueOverlap(TeamConfigs[1].Color, TeamConfigs[0].Color);
+		}
+		// If first is forced or first team uses ClubTag or none is forced or both use ClubTags: Adjust second
+		else {
+			TeamConfigs[1].Color = FlagRush_Common::GetTeam2ColorWithoutHueOverlap(TeamConfigs[0].Color, TeamConfigs[1].Color);
+		}
+	}
+
+	return TeamConfigs;
+}
+
 /**
 *	Prepares the teams by setting default values
 */
-Void InitTeams() {
+Void InitTeams() {	
+	// Get TeamConfigs by ClubTag
+	declare ClubTagUtil::K_TeamConfig[] TeamConfigs = GetTeamConfigs();
+
 	// 0 is Team1, 1 is Team2 ("Team X" = Clan X = Teams[X-1])
 	for(I, 0, 1) {
-		Teams[I].Name = FlagRush_Common::GetDefaultTeamName(I);
-		
-		declare Vec3 PrimaryColor = FlagRush_Common::GetDefaultTeamColor(I);
-		declare Vec3 SecondaryColor = FlagRush_Common::GetDefaultTeamSecondaryColor(I);
+		Teams[I].Name = TeamConfigs[I].Name;
+		declare Vec3 PrimaryColor = TeamConfigs[I].Color;
 		
 		// Teams have automatic change for colors; Need full saturation and value (HSV)
 		Teams[I].ColorPrimary = FlagRush_Common::ColorToFullSaturationAndValue(PrimaryColor);
@@ -504,14 +540,10 @@ Void InitTeams() {
 		
 		// Use "declare for" for actual colors for UI. Player Markers still use Teams[I].ColorPrimary
 		declare Vec3 ColorPrimaryUI for Teams[I];
-		declare Vec3 ColorSecondaryUI for Teams[I];
 		ColorPrimaryUI = PrimaryColor;
-		ColorSecondaryUI = SecondaryColor;
 		
 		declare netwrite Vec3 Net_PrimaryColor for Teams[I];
-		declare netwrite Vec3 Net_SecondaryColor for Teams[I];
 		Net_PrimaryColor = PrimaryColor;
-		Net_SecondaryColor = SecondaryColor;
 	}
 }
 
@@ -1272,6 +1304,9 @@ Void UpdatePlayers() {
 			if (Player.User.Login == G_FlagState.CarrierLogin) DropFlag();
 			UnspawnPlayer(Player);
 			InitPlayer(Player);
+			InitTeams();
+			InitUI();
+			UpdateUI();
 		}
 	}
 }

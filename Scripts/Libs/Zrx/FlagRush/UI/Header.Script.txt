@@ -1,4 +1,19 @@
+// #RequireContext CSmMode
+
 #Include	"Libs/Zrx/FlagRush/UI/Shared.Script.txt" as Shared
+
+/**
+* Set warmup status and text
+*/
+Void SetWarmUpStatus(Boolean Status, Text Message) {
+	foreach (Player in AllPlayers) {
+		declare CUIConfig UI = UIManager.GetUI(Player);
+		declare netwrite Text Net_WarmUpText for UI;
+		declare netwrite Boolean Net_IsWarmUp for UI;
+		Net_WarmUpText = Message;
+		Net_IsWarmUp = Status;
+	}
+}
 
 Text GetManialink() {	
 	return """
@@ -60,9 +75,6 @@ Text GetManialink() {
 			declare CMlGauge GaugeMapScoreTeam2 = (Page.GetFirstChild("mapscore-gauge-team2") as CMlGauge);
 			declare CMlGauge GaugeMapScoreTeam2Background = (Page.GetFirstChild("mapscore-gauge-team2-background") as CMlGauge);
 			
-			
-			LabelTeam1Name.Value = Teams[0].Name;
-			LabelTeam2Name.Value = Teams[1].Name;
 			QuadTeam1ScoreBackground.Colorize = GetTeamPrimaryColor(Teams[0]);
 			QuadTeam2ScoreBackground.Colorize = GetTeamPrimaryColor(Teams[1]);
 
@@ -96,18 +108,26 @@ Text GetManialink() {
 			
 			declare netread Integer Net_FlagCarrierClan for UI;
 			declare netread Text Net_FlagCarrierName for UI;
+			declare netread Text Net_WarmUpText for UI;
 			declare netread Integer Net_RoundTimeLeft for UI;
 			declare netread Boolean Net_HideTimer for UI;
+			declare netread Boolean Net_IsWarmUp for UI;
 
 			while(True) {
 				yield;
+				/* Sync Team Name */
+				LabelTeam1Name.Value = Teams[0].Name;
+				LabelTeam2Name.Value = Teams[1].Name;
 				
 				/* Flag Carrier */
-				
 				declare CTeam Team = Null;
 				if (Net_FlagCarrierClan > 0) Team <=> Teams[Net_FlagCarrierClan - 1];
 				LabelFlagCarrier.TextPrefix = "$" ^ CL::RgbToHex3(GetTeamPrimaryColor(Team));
 				LabelFlagCarrier.Value = Net_FlagCarrierName;
+				if (Net_IsWarmUp) {
+					LabelFlagCarrier.TextPrefix = "";
+					LabelFlagCarrier.Value = Net_WarmUpText;
+				}
 				QuadCenterFlag.Colorize = GetTeamPrimaryColor(Team);
 				
 				/* Timer */					
@@ -115,11 +135,14 @@ Text GetManialink() {
 				
 				if(!Net_HideTimer)
 				{
-					declare RoundMinutesLeft = Net_RoundTimeLeft / 60000;					
-					declare RoundSecondsLeft = (Net_RoundTimeLeft - RoundMinutesLeft * 60000) / 1000;	// Just the portion					
+					declare Integer RoundTimeLeft = Net_RoundTimeLeft;					
+					if (Net_RoundTimeLeft < 0) RoundTimeLeft = 0;
+
+					declare RoundMinutesLeft = RoundTimeLeft / 60000;					
+					declare RoundSecondsLeft = (RoundTimeLeft - RoundMinutesLeft * 60000) / 1000;	// Just the portion					
 					declare Text PotentialNegativeSign;
 
-					if (Net_RoundTimeLeft < 0) PotentialNegativeSign = "-";
+					if (RoundTimeLeft < 0) PotentialNegativeSign = "-";
 					
 					declare Text PotentialLeadingZero;
 					if (ML::Abs(RoundSecondsLeft) < 10) PotentialLeadingZero = "0";
@@ -128,8 +151,9 @@ Text GetManialink() {
 												^ ML::Abs(RoundMinutesLeft)
 												^ ":" ^ PotentialLeadingZero
 												^ ML::Abs(RoundSecondsLeft);
-					
-					LabelTimeLimit.Value = RoundTimeLeftText;
+					declare Color = "$fff";
+					if (Net_IsWarmUp) Color = "$f90";
+					LabelTimeLimit.Value = Color ^ RoundTimeLeftText;
 				}
 				
 				/* Round score */					

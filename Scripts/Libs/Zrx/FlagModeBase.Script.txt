@@ -1,3 +1,4 @@
+// #RequireContext CSmMode
 /**
 *	Base mode for flag based gamemodes, like FlagRush
 */
@@ -51,3 +52,4 @@ Collision::Yield();
 
 // Empty dummy function because for some reason the compiler else throws an "Unexpected EOF" error
 Void UnusedDummyFunction(){}
+

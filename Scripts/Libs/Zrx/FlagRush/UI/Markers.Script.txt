@@ -2,13 +2,20 @@
 
 #Include	"Libs/Zrx/FlagRush/UI/Shared.Script.txt" as Shared
 
-Text GetManialink(Integer NbBasesPerTeam) {
+Text GetManialink(Integer NbBasesPerTeam, Integer TotalFlagAmount) {
 	
 	declare Text BasesFrameInstancesXml;
 	for(I, 0, NbBasesPerTeam-1) {
 		BasesFrameInstancesXml ^= """
 		<frameinstance modelid="model-marker-base" id="marker-base-team1-{{{I}}}" hidden="1"/>
 		<frameinstance modelid="model-marker-base" id="marker-base-team2-{{{I}}}" hidden="1"/>
+		""";
+	}
+
+	declare Text FlagsFrameInstancesXml;
+	for(I, 0, TotalFlagAmount-1) {
+		FlagsFrameInstancesXml ^= """
+		<frameinstance modelid="model-marker-flag" id="marker-flag-{{{I}}}" scale="0.7"/>		
 		""";
 	}
 	
@@ -27,7 +34,8 @@ Text GetManialink(Integer NbBasesPerTeam) {
 
 		{{{BasesFrameInstancesXml}}}
 		<frameinstance modelid="model-marker-flag" id="marker-flag" hidden="1"/>
-		
+		{{{FlagsFrameInstancesXml}}}
+
 		<script><!--
 			
 			{{{Shared::GetTeamColorNetreadFunctions()}}}

@@ -11,6 +11,10 @@
 
 #Const C_HueOverlapThreshold 0.166
 
+#Const C_GameplayPhase_Warmup 0
+#Const C_GameplayPhase_Round 1
+#Const C_GameplayPhase_Overtime 2
+
 Vec3 GetDefaultTeamColor(Integer Team) {
 	declare Text G_Team1Color for This;
 	declare Text G_Team2Color for This;

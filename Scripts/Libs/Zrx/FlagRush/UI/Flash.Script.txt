@@ -19,13 +19,13 @@ Text GetManialink() {
         }
     }
     
-    main() {
-        declare Integer lastUpdate = 0;
+    main() {        
         declare netread Integer Net_RespawnStamp for UI;
-        
+        declare Integer lastUpdate = Net_RespawnStamp;
+
         while(True) {
             yield;
-            if (lastUpdate != Net_RespawnStamp) {
+            if (Net_RespawnStamp > lastUpdate) {
                 lastUpdate = Net_RespawnStamp;
                 FlashRespawn();
             }

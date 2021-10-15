@@ -962,12 +962,13 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 	// Collect scores
 	// Looks scary, but: ClanIndex => [PlayerName => [ScoreFieldName => ScoreFieldValue]]
 	declare Integer[Text][Text][Integer] ScoresTableData;
-	
+	declare Text[Text] ScoresTableNames = [];
 	// Make sure no Index out of bounds error occurs
 	for(I, 0, 2) ScoresTableData[I] = [];
 	
 	foreach(Score in Scores) {
-		ScoresTableData[Score.TeamNum][Score.User.Name] = GetPlayerScoresTableData(Score);
+		ScoresTableData[Score.TeamNum][Score.User.Login] = GetPlayerScoresTableData(Score);
+		ScoresTableNames[Score.User.Login] = Score.User.Name;
 	}
 	
 	declare UI <=> UIManager.GetUI(Player);
@@ -995,7 +996,9 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 	
 	/* Scores Table */		
 	declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for UI;
+	declare netwrite Text[Text] Net_ScoresTableNames for UI;
 	Net_ScoresTableData = ScoresTableData;
+	Net_ScoresTableNames = ScoresTableNames;
 	
 	/* Timer */	
 	declare netwrite Integer Net_RoundTimeLeft for UI;
@@ -1465,8 +1468,7 @@ Void HandleEvents() {
 			
 			case CSmModeEvent::EType::OnPlayerRequestRespawn:
 			{
-				declare Integer SpawnDate for Event.Player;
-				
+				declare Integer SpawnDate for Event.Player;				
 				if (S_RespawnWhenStill) {
 					if (Event.Player.Speed < C_RespawnSpeedLimitKmh / 3.6) {					
 						SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
@@ -1504,6 +1506,21 @@ Void HandleEvents() {
 				declare FlagCarrier = GetFlagCarrier();				
 				if (FlagCarrier == Event.Player1) StealFlag(Event.Player2, Event.Player1);
 				else if (FlagCarrier == Event.Player2) StealFlag(Event.Player1, Event.Player2);
+			} 
+		}
+	}
+}
+
+
+Void HandleXmlRpcEvents() {
+	foreach (XmlRpcEvent in XmlRpc.PendingEvents) {		
+		switch (XmlRpcEvent.Type) {
+			case CXmlRpcEvent::EType::CallbackArray: {
+				switch (XmlRpcEvent.ParamArray1) {
+					case "Trackmania.ForceEndRound": {
+						MB_StopRound();	
+					}
+				}			
 			}
 		}
 	}
@@ -1521,11 +1538,11 @@ Void HandleWarmUpEvents() {
 		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {			
 			declare CMapSpawn Spawn = GetPlayerSpawn(Player);			
 			declare Integer SpawnDate for Player;
+			InitPlayer(Player);			
 			if (Spawn != Null) {				
-				if (SpawnDate <= Now) {
-					InitPlayer(Player);					
+				if (SpawnDate <= Now) {					
 					SpawnPlayer(Player, Player.CurrentClan, 1, Spawn, Now + 2000);	
-					SpawnDate = Now+3000;
+					SpawnDate = Now+3009;
 				}
 			}
 		}
@@ -1649,21 +1666,6 @@ Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 		UnspawnPlayer(Player);
 	}
 }
-
-Void HandleXmlRpcEvents() {
-	foreach (XmlRpcEvent in XmlRpc.PendingEvents) {		
-		switch (XmlRpcEvent.Type) {
-			case CXmlRpcEvent::EType::CallbackArray: {
-				switch (XmlRpcEvent.ParamArray1) {
-					case "Trackmania.ForceEndRound": {
-						MB_StopRound();	
-					}
-				}			
-			}
-		}
-	}
-}
-
 
 //////////////////
 // TEST & DEBUG //

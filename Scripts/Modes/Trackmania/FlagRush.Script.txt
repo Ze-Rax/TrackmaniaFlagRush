@@ -39,6 +39,9 @@
 #Const	Version				"2021-09-02"
 #Const	ScriptName			"Modes/TrackMania/FlagRush.Script.txt"
 
+#Const	C_BigMessage_Duration				3000
+
+
 #Const	C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
 #Const	C_LayerName_ScoresHeader			"Layer_FlagRush_ScoresHeader"
 #Const	C_LayerName_RoundUI					"Layer_FlagRush_RoundUI"
@@ -55,7 +58,7 @@
 #Const  C_Debug 							True
 #Const	C_Debug_MarkersLabels				True
 #Const	C_Debug_NbFakeUsers					<0, 0>
-#Const	C_SpawnAnimDuration					1500
+#Const	C_SpawnAnimDuration					2000
 #Const 	C_RespawnSpeedLimitKmh 				30.
 
 //////////////
@@ -71,6 +74,7 @@
 #Setting S_NbFlagsToWinRound						3	as "Number of flags scored to win a round"
 #Setting S_RoundTimeLimitSeconds					600 as "Round Timelimit (seconds)"
 #Setting S_UseTurns									False as "Use turns (Reset after a player scores a flag)"
+#Setting S_UseOvertime								True as _("Use overtime when round is tied")
 
 // Gameplay
 #Setting S_UseReversedBases							False as "<hidden>" // Switch team bases
@@ -114,6 +118,7 @@
 declare Boolean G_RoundValid;
 declare Boolean G_MapValid;
 declare Boolean G_IsWarmUpActive;
+declare Integer G_GameplayPhase;
 
 /* General mid round */
 
@@ -179,10 +184,9 @@ if(C_Debug) {
 FlagRush_Log("WarmUp Phase");
 Users_SetNbFakeUsers(C_Debug_NbFakeUsers.X, C_Debug_NbFakeUsers.Y);
 
-ExecWarmUp(S_WarmUpNb, S_WarmUpTimeout * 1000 + 5000);
+ExecWarmUp(S_WarmUpNb, S_WarmUpTimeout * 1000 + C_SpawnAnimDuration);
 
 FlagRush_Log("Start Map");
-FlagRush_UIHeader::SetWarmUpStatus(False, "");
 UIEventFeed::SendMessage("Start Map", "info");
 MB_Sleep(5000);
 
@@ -211,12 +215,9 @@ foreach(Player in Players) {
 ***
 FlagRush_Log("Start Round");
 
-declare MessageDuration = 3000;
-declare Message = """Round start!""";
-UIManager.UIAll.QueueMessage(MessageDuration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
-UIEventFeed::SendMessage(Message, "info");
 UIManager.UIAll.SendChat("""Please report game mode bugs: $3af$l[https://discord.gg/J6ApdyRqEZ]FlagRush Discord$l $fffat playtest channel!""");
-MB_Sleep(MessageDuration);
+SwitchGameplayPhase(FlagRush_Common::C_GameplayPhase_Round);
+MB_Sleep(C_BigMessage_Duration);
 
 StartTime = Now;
 EndTime = Now + S_RoundTimeLimitSeconds * 1000 + C_SpawnAnimDuration;
@@ -424,18 +425,78 @@ Void Flagrush_Chat(Text Message) {
 // --------------------------------------------------
 
 /**
+*	Changes the current gameplay phase and reacts accordingly,
+*/
+Void SwitchGameplayPhase(Integer Phase) {
+	G_GameplayPhase = Phase;
+	
+	foreach (Player in AllPlayers) {
+		declare CUIConfig UI = UIManager.GetUI(Player);
+		declare netwrite Integer Net_GameplayPhase for UI;
+		Net_GameplayPhase = Phase;
+	}
+
+	declare ColorText = "";
+	declare Message = "";
+	declare MessageDuration = C_BigMessage_Duration;
+	declare CUIConfig::EUISound Sound = CUIConfig::EUISound::Default;
+	switch (Phase) {
+		case FlagRush_Common::C_GameplayPhase_Warmup: {
+			ColorText = "$f90";
+			Message = "WarmUp";
+		}
+		case FlagRush_Common::C_GameplayPhase_Round: {
+			Message = "Round start";
+		}
+		case FlagRush_Common::C_GameplayPhase_Overtime: {
+			Sound = CUIConfig::EUISound::Warning;
+			ColorText = "$f90";
+			Message = "Overtime";
+		}
+		default: {
+			MessageDuration = 0;
+		}
+	}
+	UIEventFeed::SendMessage(Message, "info");
+	UIManager.UIAll.QueueMessage(MessageDuration, 1, CUIConfig::EMessageDisplay::Big, ColorText ^ Message, Sound, 0);
+}
+
+/**
 *	Checks if the conditions to end a round is met.
 */
 Void CheckRoundEndConditions() {
-	// Check Timelimit
-	if (S_RoundTimeLimitSeconds > 0) if(Now > EndTime) MB_StopRound();
-	
-	// Check Flags scores
-	if (S_NbFlagsToWinRound > 0)
-	{
-		declare Integer RoundPointsTeam1 = Scores::GetClanRoundPoints(1);
-		declare Integer RoundPointsTeam2 = Scores::GetClanRoundPoints(2);
-		if (RoundPointsTeam1 >= S_NbFlagsToWinRound || RoundPointsTeam2 >= S_NbFlagsToWinRound) MB_StopRound();
+	declare Integer RoundPointsTeam1 = Scores::GetClanRoundPoints(1);
+	declare Integer RoundPointsTeam2 = Scores::GetClanRoundPoints(2);
+
+	switch(G_GameplayPhase) {
+		case FlagRush_Common::C_GameplayPhase_Round: {
+			// Check Flags scores
+			if (S_NbFlagsToWinRound > 0)
+			{
+				if (RoundPointsTeam1 >= S_NbFlagsToWinRound || RoundPointsTeam2 >= S_NbFlagsToWinRound) {
+					MB_StopRound();
+				}
+			}
+
+			// Check Timelimit
+			if (S_RoundTimeLimitSeconds > 0) {
+				if(Now > EndTime) {
+					declare IsTie = RoundPointsTeam1 == RoundPointsTeam2;
+				
+					if(IsTie && S_UseOvertime) {
+						SwitchGameplayPhase(FlagRush_Common::C_GameplayPhase_Overtime);
+					} else {
+						MB_StopRound();
+					}
+				}
+			}
+		}
+		case FlagRush_Common::C_GameplayPhase_Overtime: {
+			// Check flags scores
+			if(RoundPointsTeam1 != RoundPointsTeam2) {
+				MB_StopRound();
+			}
+		}
 	}
 }
 
@@ -936,10 +997,7 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 	declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for UI;
 	Net_ScoresTableData = ScoresTableData;
 	
-	/* Timer */		
-	declare netwrite Boolean Net_HideTimer for UI;
-	Net_HideTimer = (S_RoundTimeLimitSeconds <= 0.);
-	
+	/* Timer */	
 	declare netwrite Integer Net_RoundTimeLeft for UI;
 	Net_RoundTimeLeft = EndTime - Now;
 }
@@ -1034,7 +1092,7 @@ Void ResetFlag(Integer RespawnDelay, Boolean Silent) {
 	// Display a message to all players
 	if (!Silent) {
 		declare Message = "The flag was reset!";
-		UIManager.UIAll.QueueMessage(3000, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Warning, 0);
+		UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Warning, 0);
 		UIEventFeed::SendMessage(Message, "flag");
 	}
 	
@@ -1186,7 +1244,7 @@ Void ScoreFlag(CSmPlayer Player) {
 	declare ColorText = "$" ^ CL::RgbToHex3(ColorPrimaryUI);
 	declare Teamname = Team.Name;
 	declare Message = """{{{ColorText}}}{{{Player.User.Name}}}$z scored for {{{ColorText}}}{{{Teamname}}}$z!""";
-	UIManager.UIAll.QueueMessage (3000, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Finish, 0);
+	UIManager.UIAll.QueueMessage (C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Finish, 0);
 	UIEventFeed::SendMessage(Message, "flag", ColorPrimaryUI);
 	// Add the points
 	Scores::AddClanRoundPoints(Player.CurrentClan, 1);
@@ -1516,7 +1574,7 @@ Void HandleWarmUpEvents() {
 }
 
 
-Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {       
+Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 	if (NbOfWarmUp <= 0 || TimeLimit <= 0) return;
 	Race::StopSkipOutroAll();	
 	InitPlayers();
@@ -1524,6 +1582,8 @@ Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 	MB_Yield();
 	declare PrevUISequence = UIManager.UIAll.UISequence;
 	FlagRush_Log("Start WarmUp");
+	SwitchGameplayPhase(FlagRush_Common::C_GameplayPhase_Warmup);
+	MB_Sleep(C_BigMessage_Duration);
 	
 	declare WarmUpPlayedNb = 0;
 
@@ -1534,17 +1594,8 @@ Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 	
 	while (WarmUpPlayedNb < NbOfWarmUp && !ServerShutdownRequested && !MatchEndRequested) {		
-		
-		
-		declare Text Message = """WarmUp {{{WarmUpPlayedNb + 1}}}/{{{ NbOfWarmUp }}}""";			
-		UIManager.UIAll.QueueMessage(3000, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
-		UIEventFeed::SendMessage(Message, "info");
-		FlagRush_UIHeader::SetWarmUpStatus(True, "$f90" ^ Message);
-		declare EndRoundRequested = False;
-		MB_Sleep(3000);
-		
-		EndTime = Now + TimeLimit;
-		
+		declare EndRoundRequested = False;		
+		EndTime = Now + TimeLimit;		
 		
 		while (!ServerShutdownRequested && !MatchEndRequested && !EndRoundRequested) {						
 			MB_Yield();	
@@ -1588,11 +1639,10 @@ Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
 	G_IsWarmUpActive = False;
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
 	declare Text Message = "WarmUp Ends";
-	UIManager.UIAll.QueueMessage(3000, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
+	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
 	MatchEndRequested = False;
 	+++Warmup_EndWarmUp+++			
 	FlagRush_Log("End WarmUp");
-	FlagRush_UIHeader::SetWarmUpStatus(False, "");
 	MB_Sleep(3000);
 	UIManager.UIAll.UISequence = PrevUISequence;
 	foreach(Player in Players) {

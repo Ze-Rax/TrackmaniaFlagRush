@@ -1,19 +1,7 @@
 // #RequireContext CSmMode
 
 #Include	"Libs/Zrx/FlagRush/UI/Shared.Script.txt" as Shared
-
-/**
-* Set warmup status and text
-*/
-Void SetWarmUpStatus(Boolean Status, Text Message) {
-	foreach (Player in AllPlayers) {
-		declare CUIConfig UI = UIManager.GetUI(Player);
-		declare netwrite Text Net_WarmUpText for UI;
-		declare netwrite Boolean Net_IsWarmUp for UI;
-		Net_WarmUpText = Message;
-		Net_IsWarmUp = Status;
-	}
-}
+#Include	"Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 
 Text GetManialink() {	
 	return """
@@ -95,7 +83,7 @@ Text GetManialink() {
 			declare netread Integer Net_Team2MapScore for UI;
 			declare netread Integer Net_NbMapsToWinMatch for UI;
 			declare netread Integer Net_NbRoundsToWinMap for UI;
-
+			
 			/* Control references */
 			
 			declare CMlFrame FrameFlagCarrier = (Page.GetFirstChild("flagcarrier") as CMlFrame);
@@ -108,10 +96,8 @@ Text GetManialink() {
 			
 			declare netread Integer Net_FlagCarrierClan for UI;
 			declare netread Text Net_FlagCarrierName for UI;
-			declare netread Text Net_WarmUpText for UI;
 			declare netread Integer Net_RoundTimeLeft for UI;
-			declare netread Boolean Net_HideTimer for UI;
-			declare netread Boolean Net_IsWarmUp for UI;
+			declare netread Integer Net_GameplayPhase for UI;
 
 			while(True) {
 				yield;
@@ -122,38 +108,46 @@ Text GetManialink() {
 				/* Flag Carrier */
 				declare CTeam Team = Null;
 				if (Net_FlagCarrierClan > 0) Team <=> Teams[Net_FlagCarrierClan - 1];
-				LabelFlagCarrier.TextPrefix = "$" ^ CL::RgbToHex3(GetTeamPrimaryColor(Team));
-				LabelFlagCarrier.Value = Net_FlagCarrierName;
-				if (Net_IsWarmUp) {
-					LabelFlagCarrier.TextPrefix = "";
-					LabelFlagCarrier.Value = Net_WarmUpText;
-				}
-				QuadCenterFlag.Colorize = GetTeamPrimaryColor(Team);
 				
-				/* Timer */					
-				FrameTimeLimit.Visible = !Net_HideTimer;
+				/* Timer */
+				declare Boolean IsTimeLeft = Net_RoundTimeLeft > 0;
+				FrameTimeLimit.Visible = IsTimeLeft;
+
+				declare Text RoundTimeLeftText = "00:00";
+				if(IsTimeLeft) {
+					declare RoundMinutesLeft = Net_RoundTimeLeft / 60000;					
+					declare RoundSecondsLeft = (Net_RoundTimeLeft - RoundMinutesLeft * 60000) / 1000;	// Just the portion
 				
-				if(!Net_HideTimer)
-				{
-					declare Integer RoundTimeLeft = Net_RoundTimeLeft;					
-					if (Net_RoundTimeLeft < 0) RoundTimeLeft = 0;
-
-					declare RoundMinutesLeft = RoundTimeLeft / 60000;					
-					declare RoundSecondsLeft = (RoundTimeLeft - RoundMinutesLeft * 60000) / 1000;	// Just the portion					
-					declare Text PotentialNegativeSign;
-
-					if (RoundTimeLeft < 0) PotentialNegativeSign = "-";
-					
 					declare Text PotentialLeadingZero;
 					if (ML::Abs(RoundSecondsLeft) < 10) PotentialLeadingZero = "0";
-					
-					declare RoundTimeLeftText = PotentialNegativeSign
-												^ ML::Abs(RoundMinutesLeft)
-												^ ":" ^ PotentialLeadingZero
-												^ ML::Abs(RoundSecondsLeft);
-					declare Color = "$fff";
-					if (Net_IsWarmUp) Color = "$f90";
-					LabelTimeLimit.Value = Color ^ RoundTimeLeftText;
+					RoundTimeLeftText = ML::Abs(RoundMinutesLeft)
+									^ ":" ^ PotentialLeadingZero
+									^ ML::Abs(RoundSecondsLeft);
+				}
+
+				switch(Net_GameplayPhase) {
+					case {{{FlagRush_Common::C_GameplayPhase_Warmup}}}: {
+						LabelTimeLimit.TextPrefix = "$f90";
+						LabelTimeLimit.Value = RoundTimeLeftText;
+						FrameTimeLimit.Visible = True;
+						
+						LabelFlagCarrier.TextPrefix = "$f90";
+						LabelFlagCarrier.Value = "WarmUp";
+						QuadCenterFlag.Colorize = {{{FlagRush_Common::C_DefaultNeutralColor}}};
+					}
+					case {{{FlagRush_Common::C_GameplayPhase_Overtime}}}: {
+						LabelTimeLimit.TextPrefix = "$f90";
+						LabelTimeLimit.Value = "Overtime";
+						FrameTimeLimit.Visible = True;
+					}
+					default: {
+						LabelTimeLimit.TextPrefix = "$fff";
+						LabelTimeLimit.Value = RoundTimeLeftText;
+						
+						LabelFlagCarrier.TextPrefix = "$" ^ CL::RgbToHex3(GetTeamPrimaryColor(Team));
+						LabelFlagCarrier.Value = Net_FlagCarrierName;
+						QuadCenterFlag.Colorize = GetTeamPrimaryColor(Team);
+					}
 				}
 				
 				/* Round score */					

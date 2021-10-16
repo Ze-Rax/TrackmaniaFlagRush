@@ -176,7 +176,7 @@ Boolean Private_MatchCanStart() {
 	Private_UpdateWarmUpEndTime(AllClansAtLeastOnePlayerReady, AllClansAllPlayersReady);
 	
 	// Check if the timeout ended
-	declare TimeoutEnded = Now > EndTime;
+	declare TimeoutEnded = G_TimeoutState.State != C_Timeout_State_NotStarted && Now > EndTime;
 	if(TimeoutEnded) {
 		Private_AddEvent(C_Event_Type_TimeoutEnd, "");
 	}

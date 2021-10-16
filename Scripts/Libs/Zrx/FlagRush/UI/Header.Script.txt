@@ -126,11 +126,10 @@ Text GetManialink() {
 				}
 
 				switch(Net_GameplayPhase) {
-					case {{{FlagRush_Common::C_GameplayPhase_Warmup}}}: {
+					case {{{FlagRush_Common::C_GameplayPhase_Warmup}}}: {	
 						LabelTimeLimit.TextPrefix = "$f90";
 						LabelTimeLimit.Value = RoundTimeLeftText;
-						FrameTimeLimit.Visible = True;
-						
+											
 						LabelFlagCarrier.TextPrefix = "$f90";
 						LabelFlagCarrier.Value = "WarmUp";
 						QuadCenterFlag.Colorize = {{{FlagRush_Common::C_DefaultNeutralColor}}};

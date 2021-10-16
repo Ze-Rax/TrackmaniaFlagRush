@@ -65,14 +65,17 @@ Text GetManialink() {
 			while(True) {
 				yield;
 				
-				// Reset Ready if player switched from spectator to player or other way round
-				if(InputPlayer.RequestsSpectate != LastRequestsSpectateState) {
-					LastRequestsSpectateState = InputPlayer.RequestsSpectate;
-					SetReady(False);
+				// InputPlayer is not available right at server join
+				if(InputPlayer != Null) {
+					// Reset Ready if player switched from spectator to player or other way round
+					if (InputPlayer.RequestsSpectate != LastRequestsSpectateState) {
+						LastRequestsSpectateState = InputPlayer.RequestsSpectate;
+						SetReady(False);
+					}
+					
+					// Hide the ready button when player is in spectator
+					FrameReady.Visible = !InputPlayer.RequestsSpectate;
 				}
-
-				// Hide the ready button when player is in spectator
-				FrameReady.Visible = !InputPlayer.RequestsSpectate;
 
 				// Update the ready button
 				if(Ready) {

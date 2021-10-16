@@ -197,6 +197,7 @@ MB_Sleep(5000);
 ***Match_InitRound***
 ***
 G_RoundValid = True;
+SwitchGameplayPhase(FlagRush_Common::C_GameplayPhase_Round);
 InitPlayers();
 InitMarkers();
 InitTeams();
@@ -216,7 +217,6 @@ foreach(Player in Players) {
 FlagRush_Log("Start Round");
 
 UIManager.UIAll.SendChat("""Please report game mode bugs: $3af$l[https://discord.gg/J6ApdyRqEZ]FlagRush Discord$l $fffat playtest channel!""");
-SwitchGameplayPhase(FlagRush_Common::C_GameplayPhase_Round);
 MB_Sleep(C_BigMessage_Duration);
 
 StartTime = Now;

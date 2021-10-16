@@ -184,6 +184,28 @@ Boolean Private_MatchCanStart() {
 }
 
 /**
+*   Starts the warmup.
+*/
+Void Start() {
+	G_WarmUpShouldStop = False;
+	PendingEvents = [];
+	G_PlayersReady = [];
+
+	Layers::Create(WarmUpReadyUp_UI::C_ManialinkName, WarmUpReadyUp_UI::GetManialink());
+	Layers::SetType(WarmUpReadyUp_UI::C_ManialinkName, CUILayer::EUILayerType::Normal);
+	Layers::Attach(WarmUpReadyUp_UI::C_ManialinkName);
+}
+
+/**
+*   Stops the warmup
+*/
+Void Stop() {
+	G_WarmUpShouldStop = True;
+	PendingEvents = [];
+	Layers::Destroy(WarmUpReadyUp_UI::C_ManialinkName);
+}
+
+/**
 *   Checks for XmlRpc events that would stop the warmup.
 */
 Void Private_HandleXmlRpcEvents() {
@@ -204,28 +226,6 @@ Void Private_HandleXmlRpcEvents() {
 			}
 		}
 	}
-}
-
-/**
-*   Starts the warmup.
-*/
-Void Start() {
-	G_WarmUpShouldStop = False;
-	PendingEvents = [];
-	G_PlayersReady = [];
-
-	Layers::Create(WarmUpReadyUp_UI::C_ManialinkName, WarmUpReadyUp_UI::GetManialink());
-	Layers::SetType(WarmUpReadyUp_UI::C_ManialinkName, CUILayer::EUILayerType::Normal);
-	Layers::Attach(WarmUpReadyUp_UI::C_ManialinkName);
-}
-
-/**
-*   Stops the warmup
-*/
-Void Stop() {
-	G_WarmUpShouldStop = True;
-	PendingEvents = [];
-	Layers::Destroy(WarmUpReadyUp_UI::C_ManialinkName);
 }
 
 /**

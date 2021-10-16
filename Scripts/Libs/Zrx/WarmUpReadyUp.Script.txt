@@ -36,7 +36,7 @@
 
 #Struct K_WarmUpReadyUpEvent {
 	Text Type;
-	Text Param;
+	Text[] Params;
 }
 
 #Struct K_ClanReadyState {
@@ -52,7 +52,7 @@
 declare K_WarmUpReadyUpEvent[] PendingEvents;
 
 declare Boolean G_WarmUpShouldStop;
-declare Boolean[Ident] G_PlayersReady;
+declare Boolean[Text] G_PlayersReady;
 
 declare K_TimeoutState G_TimeoutState;
 
@@ -71,10 +71,17 @@ K_WarmUpReadyUpEvent[] GetPendingEvents() {
 }
 
 /**
+*		Getter for PlayersReady
+*/
+Boolean[Text] GetPlayersReady() {
+	return G_PlayersReady;
+}
+
+/**
 *		Adds an Event to the PendingEvents
 */
-Void Private_AddEvent(Text Type, Text Param) {
-	declare K_WarmUpReadyUpEvent Event = K_WarmUpReadyUpEvent{Type = Type, Param = Param};
+Void Private_AddEvent(Text Type, Text[] Params) {
+	declare K_WarmUpReadyUpEvent Event = K_WarmUpReadyUpEvent{Type = Type, Params = Params};
 	PendingEvents.add(Event);
 }
 
@@ -85,7 +92,7 @@ Void Private_StartTimeout(Text State, Integer Timeout) {
 	G_TimeoutState.State = State;
 	G_TimeoutState.StartTime = Now;
 	EndTime = Now + Timeout;
-	Private_AddEvent(C_Event_Type_TimeoutStart, TL::ToText(Timeout));
+	Private_AddEvent(C_Event_Type_TimeoutStart, [TL::ToText(Timeout)]);
 }
 
 /**
@@ -103,7 +110,7 @@ Void Private_AbortTimeout() {
 	G_TimeoutState.State = C_Timeout_State_NotStarted;
 	G_TimeoutState.StartTime = -1;
 	EndTime = -1;
-	Private_AddEvent(C_Event_Type_TimeoutAbort, "");
+	Private_AddEvent(C_Event_Type_TimeoutAbort, []);
 }
 
 /**
@@ -149,14 +156,14 @@ Boolean Private_MatchCanStart() {
 	foreach (Player in Players) {
 		declare K_ClanReadyState PlayerClanReadyState = ClanReadyStates.get(Player.CurrentClan, K_ClanReadyState{});
 		PlayerClanReadyState.NbPlayers += 1;
-		if(G_PlayersReady.get(Player.Id, False)) {
+		if(G_PlayersReady.get(Player.User.Login, False)) {
 			PlayerClanReadyState.NbPlayersReady += 1;
 		}				
 		ClanReadyStates[Player.CurrentClan] = PlayerClanReadyState;
 	}
 	
 	// There have to be at least two clans
-	if (ClanReadyStates.count < 2) {
+	if ((UseClans || UseMultiClans) && ClanReadyStates.count < 2) {
 		if(G_TimeoutState.State != C_Timeout_State_NotStarted) {
 			Private_AbortTimeout();
 		}
@@ -178,7 +185,7 @@ Boolean Private_MatchCanStart() {
 	// Check if the timeout ended
 	declare TimeoutEnded = G_TimeoutState.State != C_Timeout_State_NotStarted && Now > EndTime;
 	if(TimeoutEnded) {
-		Private_AddEvent(C_Event_Type_TimeoutEnd, "");
+		Private_AddEvent(C_Event_Type_TimeoutEnd, []);
 	}
 	return TimeoutEnded;
 }
@@ -229,19 +236,27 @@ Void Private_HandleXmlRpcEvents() {
 }
 
 /**
+*		Handle UI Events coming from the warmup interface
+*/
+Void Private_HandleUIEvents() {
+	foreach (Event in UIManager.PendingEvents) {
+		if(Event.CustomEventType == WarmUpReadyUp_UI::C_ReadyEvent_Type) {
+			declare Boolean PlayerIsReady = Event.CustomEventData[0] == "True";
+			declare CSmPlayer Player = GetPlayer(Event.UI);
+			G_PlayersReady[Player.User.Login] = PlayerIsReady;
+			Private_AddEvent(C_Event_Type_PlayerReadyChanged, [Player.User.Login, TL::ToText(PlayerIsReady)]);
+		}
+	}
+}
+
+/**
 *   Does everything necessary during a frame of the script. Does not yield the mode!
 */
 Void Yield() {
 	PendingEvents = [];
+	
 	Private_HandleXmlRpcEvents();
-
-	foreach (Event in UIManager.PendingEvents) {
-		if(Event.CustomEventType == WarmUpReadyUp_UI::C_ReadyEvent_Type) {
-			declare Boolean PlayerIsReady = Event.CustomEventData[0] == "True";
-			G_PlayersReady[GetPlayer(Event.UI).Id] = PlayerIsReady;
-			Private_AddEvent(C_Event_Type_PlayerReadyChanged, TL::ToText(PlayerIsReady));
-		}
-	}
+	Private_HandleUIEvents();	
 
 	if (Private_MatchCanStart()) {
 		Stop();

@@ -998,8 +998,10 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 	/* Scores Table */		
 	declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for UI;
 	declare netwrite Text[Text] Net_ScoresTableNames for UI;
+	declare netwrite Boolean[Text] Net_WarmUpReadyStates for UI;
 	Net_ScoresTableData = ScoresTableData;
 	Net_ScoresTableNames = ScoresTableNames;
+	Net_WarmUpReadyStates = WarmUpReadyUp::GetPlayersReady();
 	
 	/* Timer */	
 	declare netwrite Integer Net_RoundTimeLeft for UI;
@@ -1613,11 +1615,8 @@ Void ExecWarmUp() {
 		MB_Yield();
 		WarmUpReadyUp::Yield();
 		HandleWarmUpEvents();
-		foreach(Player in AllPlayers) {
-			declare CUIConfig UI = UIManager.GetUI(Player);
-			declare netwrite Integer Net_RoundTimeLeft for UI;
-			Net_RoundTimeLeft = EndTime - Now;
-		}
+		UpdateUI();
+		UpdatePlayers();
 	}
 	
 	FlagRush_Log("End WarmUp");

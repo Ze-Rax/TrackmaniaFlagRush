@@ -367,7 +367,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 							if (Net_WarmUpReadyStates[Player.User.Login]) {
 								BackgroundColor = <0.1, 0.7, 0.1>;
 							} else {
-								BackgroundColor = <0.9, 0.1, 0.1>;
+								BackgroundColor = <0., 0., 0.>;
 							}
 						}
 					}

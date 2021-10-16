@@ -192,13 +192,13 @@ Void Private_HandleXmlRpcEvents() {
 			case CXmlRpcEvent::EType::CallbackArray: {
 				switch (XmlRpcEvent.ParamArray1) {
 					case "Trackmania.ForceEndRound": {
-						G_WarmUpShouldStop = True;	
+						Stop();
 					}
 					case "Trackmania.WarmUp.ForceStopRound": {
-						G_WarmUpShouldStop = True;	
+						Stop();
 					}
 					case "Trackmania.WarmUp.ForceStop": {
-						G_WarmUpShouldStop = True;
+						Stop();
 					}
 				}
 			}

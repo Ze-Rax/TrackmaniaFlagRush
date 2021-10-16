@@ -44,8 +44,10 @@ Text GetManialink() {
 		}
 
 		Void SetReady(Boolean IsReady) {
-			Ready = IsReady;
-			SendCustomEvent("{{{C_ReadyEvent_Type}}}", [TL::ToText(Ready)]);
+			if(Ready != IsReady) {
+				Ready = IsReady;
+				SendCustomEvent("{{{C_ReadyEvent_Type}}}", [TL::ToText(Ready)]);
+			}
 		}
 
 		main() {

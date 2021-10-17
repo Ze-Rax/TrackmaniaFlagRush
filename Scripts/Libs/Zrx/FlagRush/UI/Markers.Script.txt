@@ -56,11 +56,11 @@ Text GetManialink(Integer NbBasesPerTeam, Integer TotalFlagAmount) {
 				declare CMlGauge GaugeMarkerFlag = (FrameMarkerFlag.GetFirstChild("gauge-flag") as CMlGauge);
 				QuadMarkerFlag.Colorize = GetTeamPrimaryColor(Null);
 				
-				declare netread Integer Net_FlagCarrierClan for UI;
+				declare netread Integer Net_FlagCarrierClan for Teams[0];
 				declare netread Boolean Net_HideFlagMarker for UI;
 				
-				declare netread Integer Net_FlagGaugeStartServerDate for UI;
-				declare netread Integer Net_FlagGaugeDuration for UI;
+				declare netread Integer Net_FlagGaugeStartServerDate for Teams[0];
+				declare netread Integer Net_FlagGaugeDuration for Teams[0];
 				declare Integer LastFlagGaugeStartServerDate;
 				declare Integer FlagGaugeStartDate;
 							

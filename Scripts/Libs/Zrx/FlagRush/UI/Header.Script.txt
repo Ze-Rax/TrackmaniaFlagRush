@@ -84,17 +84,17 @@ Text GetManialink() {
 			declare CMlLabel LabelFlagCarrier = (FrameFlagCarrier.GetFirstChild("value") as CMlLabel);
 			
 			/* Netread variables */
-			declare netread Integer Net_Team1RoundScore for UI;
-			declare netread Integer Net_Team2RoundScore for UI;
-			declare netread Integer Net_Team1MapScore for UI;
-			declare netread Integer Net_Team2MapScore for UI;
-			declare netread Integer Net_NbMapsToWinMatch for UI;
-			declare netread Integer Net_NbRoundsToWinMap for UI;
+			declare netread Integer Net_Team1RoundScore for Teams[0];
+			declare netread Integer Net_Team2RoundScore for Teams[0];
+			declare netread Integer Net_Team1MapScore for Teams[0];
+			declare netread Integer Net_Team2MapScore for Teams[0];
+			declare netread Integer Net_NbMapsToWinMatch for Teams[0];
+			declare netread Integer Net_NbRoundsToWinMap for Teams[0];
 			
-			declare netread Integer Net_FlagCarrierClan for UI;
-			declare netread Text Net_FlagCarrierName for UI;
+			declare netread Integer Net_FlagCarrierClan for Teams[0];
+			declare netread Text Net_FlagCarrierName for Teams[0];
 			declare netread Integer Net_EndTime for Teams[0];
-			declare netread Integer Net_GameplayPhase for UI;
+			declare netread Integer Net_GameplayPhase for Teams[0];
 
 			/* Set initial values */
 			declare Vec3 ColorTeam1 = GetTeamPrimaryColor(Teams[0]);

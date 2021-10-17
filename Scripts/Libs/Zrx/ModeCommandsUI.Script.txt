@@ -16,18 +16,8 @@ Text GetManialink() {
 	<script><!--
 	#Include "TextLib" as TL
 	
-	Void Init() {
-		declare netwrite Text Net_Command for UI;
-		declare netwrite Integer Net_CommandTime for UI;
-		
-		Net_Command = "";
-		Net_CommandTime = -1;
-	}
-	
 	main(){		
 		declare CMlTextEdit TextEditCommand = (Page.GetFirstChild("textedit-command") as CMlTextEdit);
-		
-		Init();
 		
 		while(True) {
 			yield;

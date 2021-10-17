@@ -448,7 +448,7 @@ Void SwitchGameplayPhase(Integer Phase) {
 	
 	foreach (Player in AllPlayers) {
 		declare CUIConfig UI = UIManager.GetUI(Player);
-		declare netwrite Integer Net_GameplayPhase for UI;
+		declare netwrite Integer Net_GameplayPhase for Teams[0];
 		Net_GameplayPhase = Phase;
 	}
 }
@@ -805,12 +805,12 @@ Void UpdateFlagCarrier(CSmPlayer Player) {
 	declare FlagCarrier = GetFlagCarrier();	
 	
 	// Carrier Clan Index (for color)
-	declare netwrite Integer Net_FlagCarrierClan for UI;
+	declare netwrite Integer Net_FlagCarrierClan for Teams[0];
 	if (FlagCarrier == Null) Net_FlagCarrierClan = 0;
 	else Net_FlagCarrierClan = FlagCarrier.CurrentClan;
 	
 	// Carrier name
-	declare netwrite Text Net_FlagCarrierName for UI;
+	declare netwrite Text Net_FlagCarrierName for Teams[0];
 	if (FlagCarrier != Null && FlagCarrier.User != Null) Net_FlagCarrierName = FlagCarrier.User.Name;
 	else if (G_FlagState.Landmark == G_ActiveFlagSpawn) Net_FlagCarrierName = "Spawn";
 	else Net_FlagCarrierName = "Dropped";
@@ -848,9 +848,9 @@ Void UpdateFlagMarkerForPlayer(CSmPlayer Player, Integer GaugeDuration) {
 	UpdateFlagCarrier(Player);
 	
 	// Timing for gauge
-	declare netwrite Integer Net_FlagGaugeStartServerDate for UI;
+	declare netwrite Integer Net_FlagGaugeStartServerDate for Teams[0];
 	Net_FlagGaugeStartServerDate = Now;
-	declare netwrite Integer Net_FlagGaugeDuration for UI;
+	declare netwrite Integer Net_FlagGaugeDuration for Teams[0];
 	Net_FlagGaugeDuration = GaugeDuration;
 }
 
@@ -968,30 +968,30 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 	declare UI <=> UIManager.GetUI(Player);
 	
 	/* Scores Header */
-	declare netwrite Integer Net_ScoreBoardUpdateStamp for UI;
+	declare netwrite Integer Net_ScoreBoardUpdateStamp for Teams[0];
 	Net_ScoreBoardUpdateStamp = Now;
 	
-	declare netwrite Integer Net_NbMapsToWinMatch for UI;
+	declare netwrite Integer Net_NbMapsToWinMatch for Teams[0];
 	Net_NbMapsToWinMatch = S_NbMapsToWinMatch;
 	
-	declare netwrite Integer Net_NbRoundsToWinMap for UI;
+	declare netwrite Integer Net_NbRoundsToWinMap for Teams[0];
 	Net_NbRoundsToWinMap = S_NbRoundsToWinMap;
 	
-	declare netwrite Integer Net_Team1RoundScore for UI;
+	declare netwrite Integer Net_Team1RoundScore for Teams[0];
 	Net_Team1RoundScore = Scores::GetClanRoundPoints(1);
-	declare netwrite Integer Net_Team2RoundScore for UI;
+	declare netwrite Integer Net_Team2RoundScore for Teams[0];
 	Net_Team2RoundScore = Scores::GetClanRoundPoints(2);
 	
-	declare netwrite Integer Net_Team1MapScore for UI;
+	declare netwrite Integer Net_Team1MapScore for Teams[0];
 	Net_Team1MapScore = TeamPointsProgression::GetClanRoundsWon(1);
 	
-	declare netwrite Integer Net_Team2MapScore for UI;
+	declare netwrite Integer Net_Team2MapScore for Teams[0];
 	Net_Team2MapScore = TeamPointsProgression::GetClanRoundsWon(2);
 	
 	/* Scores Table */		
-	declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for UI;
-	declare netwrite Text[Text] Net_ScoresTableNames for UI;
-	declare netwrite Boolean[Text] Net_WarmUpReadyStates for UI;
+	declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for Teams[0];
+	declare netwrite Text[Text] Net_ScoresTableNames for Teams[0];
+	declare netwrite Boolean[Text] Net_WarmUpReadyStates for Teams[0];
 	Net_ScoresTableData = ScoresTableData;
 	Net_ScoresTableNames = ScoresTableNames;
 	Net_WarmUpReadyStates = WarmUpReadyUp::GetPlayersReady();

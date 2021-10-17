@@ -96,7 +96,7 @@ Text GetManialink() {
 			
 			declare netread Integer Net_FlagCarrierClan for UI;
 			declare netread Text Net_FlagCarrierName for UI;
-			declare netread Integer Net_RoundTimeLeft for UI;
+			declare netread Integer Net_EndTime for Teams[0];
 			declare netread Integer Net_GameplayPhase for UI;
 
 			while(True) {
@@ -110,13 +110,14 @@ Text GetManialink() {
 				if (Net_FlagCarrierClan > 0) Team <=> Teams[Net_FlagCarrierClan - 1];
 				
 				/* Timer */
-				declare Boolean IsTimeLeft = Net_RoundTimeLeft > 0;
+				declare Integer RoundTimeLeft = Net_EndTime - GameTime;
+				declare Boolean IsTimeLeft = RoundTimeLeft > 0;
 				FrameTimeLimit.Visible = IsTimeLeft;
 
 				declare Text RoundTimeLeftText = "00:00";
 				if(IsTimeLeft) {
-					declare RoundMinutesLeft = Net_RoundTimeLeft / 60000;					
-					declare RoundSecondsLeft = (Net_RoundTimeLeft - RoundMinutesLeft * 60000) / 1000;	// Just the portion
+					declare RoundMinutesLeft = RoundTimeLeft / 60000;					
+					declare RoundSecondsLeft = (RoundTimeLeft - RoundMinutesLeft * 60000) / 1000;	// Just the portion
 				
 					declare Text PotentialLeadingZero;
 					if (ML::Abs(RoundSecondsLeft) < 10) PotentialLeadingZero = "0";

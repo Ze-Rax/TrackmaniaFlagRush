@@ -223,7 +223,7 @@ UIManager.UIAll.SendChat("""Please report game mode bugs: $3af$l[https://discord
 MB_Sleep(C_BigMessage_Duration);
 
 StartTime = Now;
-EndTime = Now + S_RoundTimeLimitSeconds * 1000 + C_SpawnAnimDuration;
+SetEndTime(Now + S_RoundTimeLimitSeconds * 1000 + C_SpawnAnimDuration);
 ***
 
 // --------------------------------------------------
@@ -253,7 +253,7 @@ foreach(Player in Players) {
 
 declare SleepDuration = 3000;
 MB_Sleep(SleepDuration);
-EndTime += SleepDuration;
+SetEndTime(EndTime + SleepDuration);
 ***
 
 // --------------------------------------------------
@@ -426,6 +426,15 @@ Void Flagrush_Chat(Text Message) {
 // --------------------------------------------------
 // Match Progression functions
 // --------------------------------------------------
+
+/**
+*	Sets the EndTime but also sends it to the clients over netwrite
+*/
+Void SetEndTime(Integer _EndTime) {
+	EndTime = _EndTime;
+	declare netwrite Integer Net_EndTime for Teams[0];
+	Net_EndTime = EndTime;
+}
 
 /**
 *	Changes the current gameplay phase and reacts accordingly,
@@ -981,10 +990,6 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 	Net_ScoresTableData = ScoresTableData;
 	Net_ScoresTableNames = ScoresTableNames;
 	Net_WarmUpReadyStates = WarmUpReadyUp::GetPlayersReady();
-	
-	/* Timer */	
-	declare netwrite Integer Net_RoundTimeLeft for UI;
-	Net_RoundTimeLeft = EndTime - Now;
 }
 
 /**
@@ -1666,8 +1671,8 @@ Void ExecWarmUp() {
 	MB_Sleep(C_BigMessage_Duration);
 
 	InitMarkers();	
-	StartTime = Now;			
-	EndTime = -1;
+	StartTime = Now;
+	SetEndTime(-1);
 
 	declare PrevUISequence = UIManager.UIAll.UISequence;
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;

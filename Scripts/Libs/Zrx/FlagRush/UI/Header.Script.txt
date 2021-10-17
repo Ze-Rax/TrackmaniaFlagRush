@@ -84,10 +84,6 @@ Text GetManialink() {
 			declare CMlLabel LabelFlagCarrier = (FrameFlagCarrier.GetFirstChild("value") as CMlLabel);
 			
 			/* Netread variables */
-			declare netread Integer Net_Team1RoundScore for Teams[0];
-			declare netread Integer Net_Team2RoundScore for Teams[0];
-			declare netread Integer Net_Team1MapScore for Teams[0];
-			declare netread Integer Net_Team2MapScore for Teams[0];
 			declare netread Integer Net_NbMapsToWinMatch for Teams[0];
 			declare netread Integer Net_NbRoundsToWinMap for Teams[0];
 			
@@ -172,9 +168,12 @@ Text GetManialink() {
 					}
 				}
 				
-				/* Round score */					
-				LabelTeam1Score.Value = TL::ToText(Net_Team1RoundScore);
-				LabelTeam2Score.Value = TL::ToText(Net_Team2RoundScore);
+				/* Round score */
+				for (Clan, 1, 2) {
+					declare netread Integer Net_TeamRoundScore for Teams[Clan-1];
+					if (Clan == 1) LabelTeam1Score.Value = TL::ToText(Net_TeamRoundScore);
+					if (Clan == 2) LabelTeam2Score.Value = TL::ToText(Net_TeamRoundScore);
+				}
 				
 				/* Map score */				
 				declare Boolean ShowRoundWins = Net_NbRoundsToWinMap >= 2;
@@ -200,10 +199,12 @@ Text GetManialink() {
 					GaugeMapScoreTeam2Background.GradingRatio = GradingRatio;
 						
 					// Gauge Ratio
-					declare GaugeRatioTeam1 = ML::Min((0. + Net_Team1MapScore) / Net_NbRoundsToWinMap, 1.);
-					declare GaugeRatioTeam2 = ML::Min((0. + Net_Team2MapScore) / Net_NbRoundsToWinMap, 1.);
-					GaugeMapScoreTeam1.Ratio = GaugeRatioTeam1;
-					GaugeMapScoreTeam2.Ratio = GaugeRatioTeam2;
+					for (Clan, 1, 2) {
+						declare netread Integer Net_TeamMapScore for Teams[Clan-1];
+						declare GaugeRatioTeam = ML::Min((0. + Net_TeamMapScore) / Net_NbRoundsToWinMap, 1.);
+						if (Clan == 1) GaugeMapScoreTeam1.Ratio = GaugeRatioTeam;
+						if (Clan == 2) GaugeMapScoreTeam2.Ratio = GaugeRatioTeam;
+					}
 				}
 			}
 		}

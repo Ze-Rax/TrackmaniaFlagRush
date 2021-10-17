@@ -977,16 +977,12 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 	declare netwrite Integer Net_NbRoundsToWinMap for Teams[0];
 	Net_NbRoundsToWinMap = S_NbRoundsToWinMap;
 	
-	declare netwrite Integer Net_Team1RoundScore for Teams[0];
-	Net_Team1RoundScore = Scores::GetClanRoundPoints(1);
-	declare netwrite Integer Net_Team2RoundScore for Teams[0];
-	Net_Team2RoundScore = Scores::GetClanRoundPoints(2);
-	
-	declare netwrite Integer Net_Team1MapScore for Teams[0];
-	Net_Team1MapScore = TeamPointsProgression::GetClanRoundsWon(1);
-	
-	declare netwrite Integer Net_Team2MapScore for Teams[0];
-	Net_Team2MapScore = TeamPointsProgression::GetClanRoundsWon(2);
+	for(Clan, 1, 2) {
+		declare netwrite Integer Net_TeamRoundScore for Teams[Clan-1];
+		Net_TeamRoundScore = Scores::GetClanRoundPoints(Clan);
+		declare netwrite Integer Net_TeamMapScore for Teams[Clan-1];
+		Net_TeamMapScore = TeamPointsProgression::GetClanRoundsWon(Clan);		
+	}
 	
 	/* Scores Table */		
 	declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for Teams[0];

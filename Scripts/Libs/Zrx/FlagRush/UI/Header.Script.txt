@@ -9,36 +9,41 @@ Text GetManialink() {
 <manialink version="3" name="FlagRush_ScoresHeader">
 	<frame halign="center" valign="top" pos="0 83" scale="1">
 		<frame id="mapscores" pos="0 2.5">
-			<quad pos="-30 0" z-index="0" size="60 8" valign="center" halign="center" style="UICommon64_1" substyle="BgFrameTilted1" colorize="004" scale="0.5"/>
-			<quad pos="30 0" z-index="0" size="60 8" valign="center" halign="center" style="UICommon64_1" substyle="BgFrameTilted1" colorize="400" scale="0.5"/>
+			<quad pos="0 0" z-index="-1" size="60 8" bgcolor="FFF" valign="center" style="UICommon64_1" substyle="BgFrameTilted1" colorize="000" halign="center" scale="0.5"/>
+			<label pos="0 0.25" z-index="0" size="30 10" text="Round Wins" halign="center" valign="center" textfont="GameFontRegular" textsize="1"/>
+
+			<quad pos="-30 0" z-index="0" size="60 8" id="mapscore-background-team1" valign="center" halign="center" style="UICommon64_1" substyle="BgFrameTilted1" colorize="004" scale="0.5"/>
+			<quad pos="30 0" z-index="0" size="60 8" id="mapscore-background-team2" valign="center" halign="center" style="UICommon64_1" substyle="BgFrameTilted1" colorize="400" scale="0.5"/>
 			<gauge pos="-30 0" z-index="2" size="8 3" id="mapscore-gauge-team1" color="00F" halign="center" valign="center" style="ProgressBar" drawbg="0" drawblockbg="0" ratio="0.5"/>
 			<gauge pos="-30 0" z-index="1" size="8 3" id="mapscore-gauge-team1-background" color="FFF" halign="center" valign="center" style="ProgressBar" drawbg="0" ratio="1" grading="0.5"/>
 			<gauge pos="30 0" z-index="2" size="8 3" id="mapscore-gauge-team2" color="F00" valign="center" style="ProgressBar" halign="center" drawbg="0" ratio="0.5" grading="0.5" drawblockbg="0"/>
 			<gauge pos="30 0" z-index="1" size="8 3" id="mapscore-gauge-team2-background" color="FFF" halign="center" valign="center" style="ProgressBar" drawbg="0" grading="0.5"/>
 		</frame>
 
-		<frame id="timelimit" pos="0 -4" z-index="1">
-			<quad pos="0 0" size="20 8" id="background" valign="center" z-index="-1" style="UICommon64_1" substyle="BgFrame1" halign="center" colorize="000"/>
-			<label pos="0 0" z-index="1" size="25 8" text="00:00.00" id="value" halign="center" valign="center" textsize="2" textfont="GameFontSemiBold"/>
-		</frame>
-		
-		<quad pos="0 -4" z-index="1" size="8 8" opacity="1" halign="center" valign="center" style="UIConstruction_Buttons" substyle="Validate" id="center-flag"/>
-	  	<quad pos="0 -4" size="20 8" id="background" valign="center" z-index="1" style="UICommon64_1" substyle="BgFrame1" halign="center" colorize="000"/>
+		<frame id="main">
+			<frame id="team-stats">
+				<quad pos="-50 0" z-index="0" size="12 8" valign="top" halign="right" id="team1-score-background" style="UICommon64_1" substyle="BgFrame1" colorize="00f"/>
+				<quad pos="50 0" z-index="0" size="12 8" halign="left" id="team2-score-background" style="UICommon64_1" substyle="BgFrame1" colorize="f00"/>
+				<label pos="-30 -4.5" z-index="1" size="38 8" text="CarrierTeam Blue" halign="center" textsize="4" id="team1-name" textfont="GameFontRegular" valign="center2"/>
+				<label pos="30 -4.5" z-index="1" size="38 8" text="CarrierTeam Red" valign="center2" halign="center" textsize="4" id="team2-name" textfont="GameFontRegular"/>
+				<label pos="-56 -4.5" z-index="2" size="12 8" text="0" halign="center" valign="center2" textsize="5" id="team1-score" textfont="GameFontBlack" />
+				<label pos="56 -4.5" z-index="2" size="12 10" text="0" halign="center" valign="center2" textsize="5" id="team2-score" textfont="GameFontBlack"/>
+				<quad id="team2-score-background2" pos="0 0" z-index="0" size="60 8" opacity="1" halign="left" colorize="400" style="UICommon64_1" substyle="BgFrame1"/>
+				<quad id="team1-score-background2" pos="0 0" z-index="0" size="60 8" opacity="1" halign="right" colorize="004" style="UICommon64_1" substyle="BgFrame1"/>
+			</frame>
 
-		<frame id="flagcarrier" pos="0 -10" z-index="-2">
-			<label pos="0 -0.5" z-index="0" size="60 8" text="Playername" id="value" halign="center" valign="center" textsize="3" textfont="GameFontReqular" />
-			<quad pos="0 0" z-index="0" size="60 8" opacity="1" colorize="000" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame2"/>		
+			<frame id="center" pos="0 -4" z-index="1">
+				<quad pos="0 0" size="20 8" id="background" valign="center" z-index="-1" style="UICommon64_1" substyle="BgFrame1" halign="center" colorize="000"/>
+
+				<label pos="0 0" z-index="1" size="25 8" text="00:00.00" id="timelimit" halign="center" valign="center" textsize="2" textfont="GameFontSemiBold"/>
+				<quad pos="0 0" z-index="1" size="8 8" opacity="1" halign="center" valign="center" style="UIConstruction_Buttons" substyle="Validate" id="center-flag"/>
+			</frame>
+
+			<frame id="flagcarrier" pos="0 -10" z-index="-2">
+				<label pos="0 -0.5" z-index="0" size="60 8" text="Playername" id="value" halign="center" valign="center" textsize="3" textfont="GameFontRegular" />
+				<quad pos="0 0" z-index="0" size="60 8" opacity="1" colorize="000" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame2"/>		
+			</frame>
 		</frame>
-		
-		<quad pos="0 -10" z-index="-5" size="60 8" opacity="1" colorize="000" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame2"/>							
-		<quad pos="-50 0" z-index="0" size="12 8" valign="top" halign="right" id="team1-score-background" style="UICommon64_1" substyle="BgFrame1" colorize="00f"/>
-		<quad pos="50 0" z-index="0" size="12 8" halign="left" id="team2-score-background" style="UICommon64_1" substyle="BgFrame1" colorize="f00"/>
-		<label pos="-30 -4" z-index="1" size="50.7 8" text="Team Blue" halign="center" textsize="4" id="team1-name" textfont="GameFontRegular" valign="center2"/>
-		<label pos="30 -4" z-index="1" size="42 10" text="Team Red" valign="center2" halign="center" textsize="4" id="team2-name" textfont="GameFontRegular"/>
-		<label pos="-56 -4" z-index="2" size="12 8" text="0" halign="center" valign="center2" textsize="	5" id="team1-score" textfont="GameFontBlack" />
-		<label pos="56 -4" z-index="2" size="12 10" text="0" halign="center" valign="center2" textsize="5" id="team2-score" textfont="GameFontBlack"/>
-		<quad id="team2-score-background2" pos="0 0" z-index="0" size="60 8" opacity="1" halign="left" colorize="400" style="UICommon64_1" substyle="BgFrame1"/>
-		<quad id="team1-score-background2" pos="0 0" z-index="0" size="60 8" opacity="1" halign="right" colorize="004" style="UICommon64_1" substyle="BgFrame1"/>
 	</frame>
 	<script><!--
 		#Include "MathLib" as ML
@@ -48,6 +53,18 @@ Text GetManialink() {
 		{{{Shared::GetTeamColorNetreadFunctions()}}}
 		
 		main() {
+			/* MlControl references */
+			// Mapscore, Round Wins
+			declare CMlFrame FrameMapScores = (Page.GetFirstChild("mapscores") as CMlFrame);
+			declare CMlQuad QuadTeam1MapScoreBackground = (Page.GetFirstChild("mapscore-background-team1") as CMlQuad);
+			declare CMlQuad QuadTeam2MapScoreBackground = (Page.GetFirstChild("mapscore-background-team2") as CMlQuad);
+			declare CMlGauge GaugeMapScoreTeam1 = (Page.GetFirstChild("mapscore-gauge-team1") as CMlGauge);
+			declare CMlGauge GaugeMapScoreTeam1Background = (Page.GetFirstChild("mapscore-gauge-team1-background") as CMlGauge);
+			declare CMlGauge GaugeMapScoreTeam2 = (Page.GetFirstChild("mapscore-gauge-team2") as CMlGauge);
+			declare CMlGauge GaugeMapScoreTeam2Background = (Page.GetFirstChild("mapscore-gauge-team2-background") as CMlGauge);
+
+			// Main Stats
+			declare CMlFrame FrameMain = (Page.GetFirstChild("main") as CMlFrame);
 			declare CMlLabel LabelTeam1Name = (Page.GetFirstChild("team1-name") as CMlLabel);
 			declare CMlLabel LabelTeam2Name = (Page.GetFirstChild("team2-name") as CMlLabel);
 			declare CMlLabel LabelTeam1Score = (Page.GetFirstChild("team1-score") as CMlLabel);
@@ -56,27 +73,17 @@ Text GetManialink() {
 			declare CMlQuad QuadTeam2ScoreBackground = (Page.GetFirstChild("team2-score-background") as CMlQuad);
 			declare CMlQuad QuadTeam1ScoreBackground2 = (Page.GetFirstChild("team1-score-background2") as CMlQuad);
 			declare CMlQuad QuadTeam2ScoreBackground2 = (Page.GetFirstChild("team2-score-background2") as CMlQuad);
+
+			// Center (Timer/Flag)
+			declare CMlFrame FrameCenter = (Page.GetFirstChild("center") as CMlFrame);
+			declare CMlLabel LabelTimeLimit = (FrameCenter.GetFirstChild("timelimit") as CMlLabel);
 			declare CMlQuad QuadCenterFlag = (Page.GetFirstChild("center-flag") as CMlQuad);
-			declare CMlFrame FrameMapScores = (Page.GetFirstChild("mapscores") as CMlFrame);
-			declare CMlGauge GaugeMapScoreTeam1 = (Page.GetFirstChild("mapscore-gauge-team1") as CMlGauge);
-			declare CMlGauge GaugeMapScoreTeam1Background = (Page.GetFirstChild("mapscore-gauge-team1-background") as CMlGauge);
-			declare CMlGauge GaugeMapScoreTeam2 = (Page.GetFirstChild("mapscore-gauge-team2") as CMlGauge);
-			declare CMlGauge GaugeMapScoreTeam2Background = (Page.GetFirstChild("mapscore-gauge-team2-background") as CMlGauge);
-			
-			QuadTeam1ScoreBackground.Colorize = GetTeamPrimaryColor(Teams[0]);
-			QuadTeam2ScoreBackground.Colorize = GetTeamPrimaryColor(Teams[1]);
 
-			declare Vec3 BgColor1 = CL::RgbToHsv(GetTeamPrimaryColor(Teams[0]));			
-			declare Vec3 BgColor2 = CL::RgbToHsv(GetTeamPrimaryColor(Teams[1]));
-			BgColor1.Z /= 3;
-			BgColor2.Z /= 3;
-
-			QuadTeam1ScoreBackground2.Colorize = CL::HsvToRgb(BgColor1);
-			QuadTeam2ScoreBackground2.Colorize = CL::HsvToRgb(BgColor2);
+			// Flag Carrier
+			declare CMlFrame FrameFlagCarrier = (Page.GetFirstChild("flagcarrier") as CMlFrame);
+			declare CMlLabel LabelFlagCarrier = (FrameFlagCarrier.GetFirstChild("value") as CMlLabel);
 			
-			GaugeMapScoreTeam1.Color = GetTeamPrimaryColor(Teams[0]);
-			GaugeMapScoreTeam2.Color = GetTeamPrimaryColor(Teams[1]);
-			
+			/* Netread variables */
 			declare netread Integer Net_Team1RoundScore for UI;
 			declare netread Integer Net_Team2RoundScore for UI;
 			declare netread Integer Net_Team1MapScore for UI;
@@ -84,21 +91,33 @@ Text GetManialink() {
 			declare netread Integer Net_NbMapsToWinMatch for UI;
 			declare netread Integer Net_NbRoundsToWinMap for UI;
 			
-			/* Control references */
-			
-			declare CMlFrame FrameFlagCarrier = (Page.GetFirstChild("flagcarrier") as CMlFrame);
-			declare CMlLabel LabelFlagCarrier = (FrameFlagCarrier.GetFirstChild("value") as CMlLabel);
-			
-			declare CMlFrame FrameTimeLimit = (Page.GetFirstChild("timelimit") as CMlFrame);
-			declare CMlLabel LabelTimeLimit = (FrameTimeLimit.GetFirstChild("value") as CMlLabel);
-			
-			/* Netread variables */
-			
 			declare netread Integer Net_FlagCarrierClan for UI;
 			declare netread Text Net_FlagCarrierName for UI;
 			declare netread Integer Net_EndTime for Teams[0];
 			declare netread Integer Net_GameplayPhase for UI;
 
+			/* Set initial values */
+			declare Vec3 ColorTeam1 = GetTeamPrimaryColor(Teams[0]);
+			declare Vec3 ColorTeam2 = GetTeamPrimaryColor(Teams[1]);
+			declare Vec3 ColorTeam1Dark = CL::RgbToHsv(ColorTeam1);
+			ColorTeam1Dark.Z /= 3;
+			ColorTeam1Dark = CL::HsvToRgb(ColorTeam1Dark);
+			declare Vec3 ColorTeam2Dark = CL::RgbToHsv(ColorTeam2);
+			ColorTeam2Dark.Z /= 3;
+			ColorTeam2Dark = CL::HsvToRgb(ColorTeam2Dark);
+
+			QuadTeam1ScoreBackground.Colorize = ColorTeam1;
+			QuadTeam2ScoreBackground.Colorize = ColorTeam2;
+
+			QuadTeam1ScoreBackground2.Colorize = ColorTeam1Dark;
+			QuadTeam2ScoreBackground2.Colorize = ColorTeam2Dark;
+			QuadTeam1MapScoreBackground.Colorize = ColorTeam1Dark;
+			QuadTeam2MapScoreBackground.Colorize = ColorTeam2Dark;
+			
+			GaugeMapScoreTeam1.Color = GetTeamPrimaryColor(Teams[0]);
+			GaugeMapScoreTeam2.Color = GetTeamPrimaryColor(Teams[1]);		
+
+			/* Main Loop */
 			while(True) {
 				yield;
 				/* Sync Team Name */
@@ -106,13 +125,13 @@ Text GetManialink() {
 				LabelTeam2Name.Value = Teams[1].Name;
 				
 				/* Flag Carrier */
-				declare CTeam Team = Null;
-				if (Net_FlagCarrierClan > 0) Team <=> Teams[Net_FlagCarrierClan - 1];
+				declare CTeam FlagCarrierTeam = Null;
+				if (Net_FlagCarrierClan > 0) FlagCarrierTeam <=> Teams[Net_FlagCarrierClan - 1];
 				
 				/* Timer */
 				declare Integer RoundTimeLeft = Net_EndTime - GameTime;
 				declare Boolean IsTimeLeft = RoundTimeLeft > 0;
-				FrameTimeLimit.Visible = IsTimeLeft;
+				LabelTimeLimit.Visible = IsTimeLeft;
 
 				declare Text RoundTimeLeftText = "00:00";
 				if(IsTimeLeft) {
@@ -125,12 +144,22 @@ Text GetManialink() {
 									^ ":" ^ PotentialLeadingZero
 									^ ML::Abs(RoundSecondsLeft);
 				}
+				
+				/* Center Flag or TimeLimit */
+				LabelTimeLimit.TextPrefix = "$fff";
+				LabelTimeLimit.Value = RoundTimeLeftText;
+				LabelTimeLimit.Visible = IsTimeLeft;
+				QuadCenterFlag.Visible = !IsTimeLeft;	
+				QuadCenterFlag.Colorize = GetTeamPrimaryColor(FlagCarrierTeam);
 
+				/* Flag Carrier */
+				LabelFlagCarrier.TextPrefix = "$" ^ CL::RgbToHex3(GetTeamPrimaryColor(FlagCarrierTeam));
+				LabelFlagCarrier.Value = Net_FlagCarrierName;
+				
+				/* Override in special cases */
 				switch(Net_GameplayPhase) {
 					case {{{FlagRush_Common::C_GameplayPhase_Warmup}}}: {	
-						LabelTimeLimit.TextPrefix = "$f90";
-						LabelTimeLimit.Value = RoundTimeLeftText;
-											
+						LabelTimeLimit.TextPrefix = "$f90";		
 						LabelFlagCarrier.TextPrefix = "$f90";
 						LabelFlagCarrier.Value = "WarmUp";
 						QuadCenterFlag.Colorize = {{{FlagRush_Common::C_DefaultNeutralColor}}};
@@ -138,15 +167,8 @@ Text GetManialink() {
 					case {{{FlagRush_Common::C_GameplayPhase_Overtime}}}: {
 						LabelTimeLimit.TextPrefix = "$f90";
 						LabelTimeLimit.Value = "Overtime";
-						FrameTimeLimit.Visible = True;
-					}
-					default: {
-						LabelTimeLimit.TextPrefix = "$fff";
-						LabelTimeLimit.Value = RoundTimeLeftText;
-						
-						LabelFlagCarrier.TextPrefix = "$" ^ CL::RgbToHex3(GetTeamPrimaryColor(Team));
-						LabelFlagCarrier.Value = Net_FlagCarrierName;
-						QuadCenterFlag.Colorize = GetTeamPrimaryColor(Team);
+						LabelTimeLimit.Visible = True;
+						QuadCenterFlag.Visible = False;
 					}
 				}
 				
@@ -154,32 +176,34 @@ Text GetManialink() {
 				LabelTeam1Score.Value = TL::ToText(Net_Team1RoundScore);
 				LabelTeam2Score.Value = TL::ToText(Net_Team2RoundScore);
 				
-				/* Match score */
-				
-				// If only one map is played or value is invalid, hide mapscores
-				if(Net_NbMapsToWinMatch < 2) {
-					FrameMapScores.Visible = False;
-				} else {
-					FrameMapScores.Visible = True;
+				/* Map score */				
+				declare Boolean ShowRoundWins = Net_NbRoundsToWinMap >= 2;
+				FrameMapScores.Visible = ShowRoundWins;
+				FrameMain.RelativePosition_V3.Y = 3.5;
+				if(ShowRoundWins) {
+					FrameMain.RelativePosition_V3.Y = 0.;
 					
 					// Gauge grading				
-					declare GradingRatio = 1. / Net_NbMapsToWinMatch;
+					declare Real GradingRatio = 1. / Net_NbRoundsToWinMap;
 					
-					GaugeMapScoreTeam1.Size = <4.*Net_NbMapsToWinMatch, 3.>;
+					declare Real GaugeWidth = ML::Min(4. * Net_NbRoundsToWinMap, 25.);
+					GaugeMapScoreTeam1.Size = <GaugeWidth, 3.>;
 					GaugeMapScoreTeam1.GradingRatio = GradingRatio;
 
-					GaugeMapScoreTeam1Background.Size = <4.*Net_NbMapsToWinMatch, 3.>;
+					GaugeMapScoreTeam1Background.Size = <GaugeWidth, 3.>;
 					GaugeMapScoreTeam1Background.GradingRatio = GradingRatio;
 
-					GaugeMapScoreTeam2.Size = <4.*Net_NbMapsToWinMatch, 3.>;
+					GaugeMapScoreTeam2.Size = <GaugeWidth, 3.>;
 					GaugeMapScoreTeam2.GradingRatio = GradingRatio;
 					
-					GaugeMapScoreTeam2Background.Size = <4.*Net_NbMapsToWinMatch, 3.>;												
+					GaugeMapScoreTeam2Background.Size = <GaugeWidth, 3.>;												
 					GaugeMapScoreTeam2Background.GradingRatio = GradingRatio;
 						
 					// Gauge Ratio
-					GaugeMapScoreTeam1.Ratio = (0. + Net_Team1MapScore) / Net_NbMapsToWinMatch;
-					GaugeMapScoreTeam2.Ratio = (0. + Net_Team2MapScore) / Net_NbMapsToWinMatch;
+					declare GaugeRatioTeam1 = ML::Min((0. + Net_Team1MapScore) / Net_NbRoundsToWinMap, 1.);
+					declare GaugeRatioTeam2 = ML::Min((0. + Net_Team2MapScore) / Net_NbRoundsToWinMap, 1.);
+					GaugeMapScoreTeam1.Ratio = GaugeRatioTeam1;
+					GaugeMapScoreTeam2.Ratio = GaugeRatioTeam2;
 				}
 			}
 		}

@@ -24,6 +24,7 @@
 
 #Const C_Event_Type_PlayerReadyChanged	"PlayerReadyChanged"
 #Const C_Event_Type_TimeoutStart				"TimeoutStart"
+#Const C_Event_Type_TimeoutUpdate				"TimeoutUpdate"
 #Const C_Event_Type_TimeoutAbort				"TimeoutAbort"
 #Const C_Event_Type_TimeoutEnd					"TimeoutEnd"
 
@@ -101,6 +102,7 @@ Void Private_StartTimeout(Text State, Integer Timeout) {
 Void Private_UpdateTimeout(Text State, Integer RemainingTime) {
 	G_TimeoutState.State = State;
 	EndTime = Now + RemainingTime;
+	Private_AddEvent(C_Event_Type_TimeoutUpdate, [TL::ToText(RemainingTime)]);
 }
 
 /**

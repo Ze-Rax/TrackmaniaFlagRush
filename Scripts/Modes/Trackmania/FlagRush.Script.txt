@@ -223,7 +223,11 @@ UIManager.UIAll.SendChat("""Please report game mode bugs: $3af$l[https://discord
 MB_Sleep(C_BigMessage_Duration);
 
 StartTime = Now;
-SetEndTime(Now + S_RoundTimeLimitSeconds * 1000 + C_SpawnAnimDuration);
+if(S_RoundTimeLimitSeconds > 0) {
+	SetEndTime(Now + S_RoundTimeLimitSeconds * 1000 + C_SpawnAnimDuration);
+} else {
+	SetEndTime(-1);
+}
 ***
 
 // --------------------------------------------------
@@ -979,10 +983,10 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 	Net_Team2RoundScore = Scores::GetClanRoundPoints(2);
 	
 	declare netwrite Integer Net_Team1MapScore for UI;
-	Net_Team1MapScore = TeamPointsProgression::GetClanMapsWon(1);
+	Net_Team1MapScore = TeamPointsProgression::GetClanRoundsWon(1);
 	
 	declare netwrite Integer Net_Team2MapScore for UI;
-	Net_Team2MapScore = TeamPointsProgression::GetClanMapsWon(2);
+	Net_Team2MapScore = TeamPointsProgression::GetClanRoundsWon(2);
 	
 	/* Scores Table */		
 	declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for UI;
@@ -1575,6 +1579,15 @@ Void HandleWarmUpEvents() {
 				InitPlayer(Event.Player);				
 				UpdateUIForPlayer(Event.Player);				
 			}						
+		}
+	}
+
+	// Refrech EndTime net variable when it's updated by WURU
+	foreach (WuruEvent in WarmUpReadyUp::GetPendingEvents()) {
+		if(WuruEvent.Type == WarmUpReadyUp::C_Event_Type_TimeoutStart
+			|| WuruEvent.Type == WarmUpReadyUp::C_Event_Type_TimeoutUpdate
+			|| WuruEvent.Type == WarmUpReadyUp::C_Event_Type_TimeoutAbort) {
+			SetEndTime(EndTime);
 		}
 	}
 }

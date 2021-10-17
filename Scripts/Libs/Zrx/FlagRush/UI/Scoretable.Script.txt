@@ -3,6 +3,7 @@
 #Include	"MathLib" as ML
 #Include	"ColorLib" as CL
 #Include	"Libs/Zrx/FlagRush/UI/Shared.Script.txt" as Shared
+#Include "Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 
 #Const		C_ScoresTable_FlagsScoredKey				"flags-scored"
 #Const		C_ScoresTable_FlagsScoredRoundKey			"flags-scored-round"
@@ -248,6 +249,8 @@ Text GetManialink(Integer _PlayersPerPage) {
 		declare netread Integer[Text][Text][Integer] Net_ScoresTableData for UI;
 		declare netread Text[Text] Net_ScoresTableNames for UI;
 		declare netread Text Net_FooterText for UI;
+		declare netread Boolean[Text] Net_WarmUpReadyStates for UI;
+		declare netread Integer Net_GameplayPhase for UI;
 		
 		/* Scoreboard control Variables */
 		
@@ -357,6 +360,16 @@ Text GetManialink(Integer _PlayersPerPage) {
 					if (Player.User != Null) {
 						QuadPlayerAvatar.ImageUrl = Player.User.CountryFlagUrl;																
 						LabelPlayerName.Value = Player.User.Name;
+					}
+					
+					if (Net_GameplayPhase == {{{FlagRush_Common::C_GameplayPhase_Warmup}}}) {
+						if (Net_WarmUpReadyStates.existskey(Player.User.Login)) {
+							if (Net_WarmUpReadyStates[Player.User.Login]) {
+								BackgroundColor = <0.1, 0.7, 0.1>;
+							} else {
+								BackgroundColor = <0., 0., 0.>;
+							}
+						}
 					}
 					
 					QuadPlayerBackground.Colorize = BackgroundColor;

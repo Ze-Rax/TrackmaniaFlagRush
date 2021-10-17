@@ -11,6 +11,8 @@
 #Include "MathLib" as ML
 #Include "ColorLib" as CL
 
+#Include "Libs/Zrx/WarmUpReadyUp.Script.txt" as WarmUpReadyUp
+
 /* Additional dependencies from other extends */
 #Include "Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 #Include "Libs/Zrx/CylinderHitbox.Script.txt" as Hitbox
@@ -29,7 +31,6 @@
 #Include "Libs/Zrx/FlagRush/UI/Header.Script.txt" as FlagRush_UIHeader
 #Include "Libs/Zrx/FlagRush/UI/Markers.Script.txt" as FlagRush_UIMarkers
 #Include "Libs/Zrx/FlagRush/UI/Scoretable.Script.txt" as FlagRush_UIScoretable
-
 
 #Include "Libs/Zrx/ModeCommandsUI.Script.txt" as CommandsUI
 
@@ -66,37 +67,36 @@
 //////////////
 
 // Match progression
-#Setting S_WarmUpNb									1 	as _("Number of warm up")
-#Setting S_WarmUpTimeout							60	as _("Warm up timeout")
+#Setting S_UseWarmup								True	as _("Use warm up")
 
-#Setting S_NbMapsToWinMatch							1 	as "Number of maps to win a match"
-#Setting S_NbRoundsToWinMap							2 	as "Number of rounds to win a map"
-#Setting S_NbFlagsToWinRound						3	as "Number of flags scored to win a round"
-#Setting S_RoundTimeLimitSeconds					600 as "Round Timelimit (seconds)"
-#Setting S_UseTurns									False as "Use turns (Reset after a player scores a flag)"
-#Setting S_UseOvertime								True as _("Use overtime when round is tied")
+#Setting S_NbMapsToWinMatch							1 		as "Number of maps to win a match"
+#Setting S_NbRoundsToWinMap							2 		as "Number of rounds to win a map"
+#Setting S_NbFlagsToWinRound						3		as "Number of flags scored to win a round"
+#Setting S_RoundTimeLimitSeconds					600 	as "Round Timelimit (seconds)"
+#Setting S_UseTurns									False 	as "Use turns (Reset after a player scores a flag)"
+#Setting S_UseOvertime								True 	as _("Use overtime when round is tied")
 
 // Gameplay
-#Setting S_UseReversedBases							False as "<hidden>" // Switch team bases
-#Setting S_RandomizeFlagspawn						True as "Randomize flag spawn location"
-#Setting S_FlagInitialSpawnDelaySeconds				0. as "<hidden>" // Initial flag spawn delay (seconds)
-#Setting S_FlagRespawnDelaySeconds					0. as "<hidden>" // Flag respawn delay (seconds)
-#Setting S_FlagDropStateDurationSeconds				8. as "Flag drop state duration (seconds)"
-#Setting S_FlagStealResistDurationSeconds			1. as "<hidden>" // Flag steal resistance (seconds)
-#Setting S_FlagSameTeamSteal						False as "Team flag steal"
-#Setting S_FlagCarrierFragile						False as "Flag carrier becomes fragile"
-#Setting S_FlagCarrierAcceleration					0.8 as "Flag carrier acceleration (0.0 - 1.0)"
-#Setting S_FlagCarrierControl						1.0 as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
-#Setting S_FlagCarrierAdherence						1.0 as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
-#Setting S_CanJoinMidRound							True as "<hidden>" // Players can join in the middle of a round
-#Setting S_RespawnWhenStill							True as "Players can respawn only when being still"
-#Setting S_RespawnDelay								1.5 as "Respawn Delay (seconds)"
+#Setting S_UseReversedBases							False 	as "<hidden>" // Switch team bases
+#Setting S_RandomizeFlagspawn						True 	as "Randomize flag spawn location"
+#Setting S_FlagInitialSpawnDelaySeconds				0. 		as "<hidden>" // Initial flag spawn delay (seconds)
+#Setting S_FlagRespawnDelaySeconds					0. 		as "<hidden>" // Flag respawn delay (seconds)
+#Setting S_FlagDropStateDurationSeconds				8. 		as "Flag drop state duration (seconds)"
+#Setting S_FlagStealResistDurationSeconds			1. 		as "<hidden>" // Flag steal resistance (seconds)
+#Setting S_FlagSameTeamSteal						False 	as "Team flag steal"
+#Setting S_FlagCarrierFragile						False 	as "Flag carrier becomes fragile"
+#Setting S_FlagCarrierAcceleration					0.8 	as "Flag carrier acceleration (0.0 - 1.0)"
+#Setting S_FlagCarrierControl						1.0 	as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
+#Setting S_FlagCarrierAdherence						1.0 	as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
+#Setting S_CanJoinMidRound							True 	as "<hidden>" // Players can join in the middle of a round
+#Setting S_RespawnWhenStill							True 	as "Players can respawn only when being still"
+#Setting S_RespawnDelay								1.5 	as "Respawn Delay (seconds)"
 
 // Teams
-#Setting S_Team1Name 								"" as "Team 1 Name"
-#Setting S_Team2Name 								"" as "Team 2 Name"
-#Setting S_Team1Color 								"" as "Team 1 Color"
-#Setting S_Team2Color 								"" as "Team 2 Color"
+#Setting S_Team1Name 								"" 		as "Team 1 Name"
+#Setting S_Team2Name 								"" 		as "Team 2 Name"
+#Setting S_Team1Color 								"" 		as "Team 1 Color"
+#Setting S_Team2Color 								"" 		as "Team 2 Color"
 
 /////////////
 // Structs //
@@ -184,7 +184,7 @@ if(C_Debug) {
 FlagRush_Log("WarmUp Phase");
 Users_SetNbFakeUsers(C_Debug_NbFakeUsers.X, C_Debug_NbFakeUsers.Y);
 
-ExecWarmUp(S_WarmUpNb, S_WarmUpTimeout * 1000 + C_SpawnAnimDuration);
+ExecWarmUp();
 
 FlagRush_Log("Start Map");
 UIEventFeed::SendMessage("Start Map", "info");
@@ -197,6 +197,7 @@ MB_Sleep(5000);
 ***Match_InitRound***
 ***
 G_RoundValid = True;
+SwitchGameplayPhase(FlagRush_Common::C_GameplayPhase_Round);
 InitPlayers();
 InitMarkers();
 InitTeams();
@@ -216,7 +217,6 @@ foreach(Player in Players) {
 FlagRush_Log("Start Round");
 
 UIManager.UIAll.SendChat("""Please report game mode bugs: $3af$l[https://discord.gg/J6ApdyRqEZ]FlagRush Discord$l $fffat playtest channel!""");
-SwitchGameplayPhase(FlagRush_Common::C_GameplayPhase_Round);
 MB_Sleep(C_BigMessage_Duration);
 
 StartTime = Now;
@@ -457,8 +457,11 @@ Void SwitchGameplayPhase(Integer Phase) {
 			MessageDuration = 0;
 		}
 	}
-	UIEventFeed::SendMessage(Message, "info");
-	UIManager.UIAll.QueueMessage(MessageDuration, 1, CUIConfig::EMessageDisplay::Big, ColorText ^ Message, Sound, 0);
+
+	if(MessageDuration > 0) {
+		UIEventFeed::SendMessage(Message, "info");
+		UIManager.UIAll.QueueMessage(MessageDuration, 1, CUIConfig::EMessageDisplay::Big, ColorText ^ Message, Sound, 0);
+	}
 }
 
 /**
@@ -684,7 +687,9 @@ CSmPlayer GetFlagCarrier() {
 /**
 *	Creates Markers for the bases and the flag for each player.
 */
-Void InitMarkers(Boolean InitAllFlags) {
+Void InitMarkers() {
+	declare Boolean InitAllFlags = G_GameplayPhase == FlagRush_Common::C_GameplayPhase_Warmup;
+
 	// Clear old markers
 	UIManager.UIAll.ClearMarkers();
 	G_FlagMarker = Null;
@@ -775,10 +780,6 @@ Void InitMarkers(Boolean InitAllFlags) {
 			}
 		}
 	}
-}
-
-Void InitMarkers() {
-	InitMarkers(False);
 }
 
 // --------------------------------------------------
@@ -892,7 +893,7 @@ Void InitPlayer(CSmPlayer Player) {
 	
 	SetPlayerClan(Player, Player.RequestedClan);
 	if (Player.RequestedClan != PreviousClan) {		
-		InitMarkers(G_IsWarmUpActive);
+		InitMarkers();
 		UpdateFlagMarker(-1);
 	}
 	
@@ -997,8 +998,10 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 	/* Scores Table */		
 	declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for UI;
 	declare netwrite Text[Text] Net_ScoresTableNames for UI;
+	declare netwrite Boolean[Text] Net_WarmUpReadyStates for UI;
 	Net_ScoresTableData = ScoresTableData;
 	Net_ScoresTableNames = ScoresTableNames;
+	Net_WarmUpReadyStates = WarmUpReadyUp::GetPlayersReady();
 	
 	/* Timer */	
 	declare netwrite Integer Net_RoundTimeLeft for UI;
@@ -1590,76 +1593,38 @@ Void HandleWarmUpEvents() {
 	}
 }
 
+Void ExecWarmUp() {
+	FlagRush_Log("Start WarmUp");
 
-Void ExecWarmUp(Integer NbOfWarmUp, Integer TimeLimit) {
-	if (NbOfWarmUp <= 0 || TimeLimit <= 0) return;
-	Race::StopSkipOutroAll();	
 	InitPlayers();
 	InitTeams();
-	MB_Yield();
-	declare PrevUISequence = UIManager.UIAll.UISequence;
-	FlagRush_Log("Start WarmUp");
+	Race::StopSkipOutroAll();	
 	SwitchGameplayPhase(FlagRush_Common::C_GameplayPhase_Warmup);
 	MB_Sleep(C_BigMessage_Duration);
-	
-	declare WarmUpPlayedNb = 0;
 
-	InitMarkers(True);	
-	G_IsWarmUpActive = True;
-	
-	StartTime = Now;	
-	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
-	
-	while (WarmUpPlayedNb < NbOfWarmUp && !ServerShutdownRequested && !MatchEndRequested) {		
-		declare EndRoundRequested = False;		
-		EndTime = Now + TimeLimit;		
-		
-		while (!ServerShutdownRequested && !MatchEndRequested && !EndRoundRequested) {						
-			MB_Yield();	
-			UpdateUI();	
-			UpdateModeSettingValues();	
-			HandleWarmUpEvents();
-			
-			foreach (XmlRpcEvent in XmlRpc.PendingEvents) {		
-				switch (XmlRpcEvent.Type) {
-					case CXmlRpcEvent::EType::CallbackArray: {
-						switch (XmlRpcEvent.ParamArray1) {
-							case "Trackmania.ForceEndRound": {
-								EndRoundRequested = True;	
-							}
-							case "Trackmania.WarmUp.ForceStopRound": {
-								EndRoundRequested = True;	
-							}
-							case "Trackmania.WarmUp.ForceStop": {
-								EndRoundRequested = True;
-								MatchEndRequested = True;	
-							}
-						}			
-					}
-				}
-			}
-			
-			if (Now >= EndTime) {
-				EndRoundRequested = True;
-				MatchEndRequested = True;
-			}
-			
-		} // end warmup round loop
-		
-		WarmUpPlayedNb += 1;
-		
-		+++WarmUp_EndRound+++
-		
-		MB_Yield();
-	} // end warmup match loop
+	InitMarkers();	
+	StartTime = Now;			
 	EndTime = -1;
-	G_IsWarmUpActive = False;
-	UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
+
+	declare PrevUISequence = UIManager.UIAll.UISequence;
+	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
+
+	// Main WarmUp loop
+	WarmUpReadyUp::Start();
+	while(!WarmUpReadyUp::WarmUpShouldStop()) {
+		MB_Yield();
+		WarmUpReadyUp::Yield();
+		HandleWarmUpEvents();
+		UpdateUI();
+		UpdatePlayers();
+	}
+	
+	FlagRush_Log("End WarmUp");
 	declare Text Message = "WarmUp Ends";
 	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
 	MatchEndRequested = False;
-	+++Warmup_EndWarmUp+++			
-	FlagRush_Log("End WarmUp");
+	+++Warmup_EndWarmUp+++
+	UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
 	MB_Sleep(3000);
 	UIManager.UIAll.UISequence = PrevUISequence;
 	foreach(Player in Players) {

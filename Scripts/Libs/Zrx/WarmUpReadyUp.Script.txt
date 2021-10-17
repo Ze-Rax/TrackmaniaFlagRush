@@ -256,9 +256,9 @@ Void Yield() {
 	PendingEvents = [];
 	
 	Private_HandleXmlRpcEvents();
-	Private_HandleUIEvents();	
+	Private_HandleUIEvents();
 
-	if (Private_MatchCanStart()) {
+	if (Private_MatchCanStart() || MatchEndRequested) {
 		Stop();
 	}
 }

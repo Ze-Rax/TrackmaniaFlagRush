@@ -67,7 +67,7 @@
 //////////////
 
 // Match progression
-#Setting S_UseWarmup								True	as _("Use warm up")
+#Setting S_UseWarmUp								True	as _("Use warm up")
 
 #Setting S_NbMapsToWinMatch							1 		as "Number of maps to win a match"
 #Setting S_NbRoundsToWinMap							2 		as "Number of rounds to win a map"
@@ -181,15 +181,16 @@ if(C_Debug) {
 
 ***Match_StartMap***
 ***
-FlagRush_Log("WarmUp Phase");
 Users_SetNbFakeUsers(C_Debug_NbFakeUsers.X, C_Debug_NbFakeUsers.Y);
-
-ExecWarmUp();
 
 FlagRush_Log("Start Map");
 UIEventFeed::SendMessage("Start Map", "info");
 MB_Sleep(5000);
 
+if(S_UseWarmUp) {
+	FlagRush_Log("Warmup phase");
+	ExecWarmUp();
+}
 ***
 
 // --------------------------------------------------
@@ -215,7 +216,9 @@ foreach(Player in Players) {
 ***Match_StartRound***
 ***
 FlagRush_Log("Start Round");
-
+declare Text Message = "Round start";
+UIEventFeed::SendMessage(Message, "info");
+UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
 UIManager.UIAll.SendChat("""Please report game mode bugs: $3af$l[https://discord.gg/J6ApdyRqEZ]FlagRush Discord$l $fffat playtest channel!""");
 MB_Sleep(C_BigMessage_Duration);
 
@@ -293,6 +296,9 @@ if (G_RoundValid) {
 	UpdateUI();	// Update Scoreboard to show score changes
 	MB_Sleep(MessageDuration / 2);
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
+} else {
+	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 2, CUIConfig::EMessageDisplay::Big, "The round was skipped!", CUIConfig::EUISound::EndRound, 0);
+	MB_Sleep(C_BigMessage_Duration);
 }
 
 // Check if map is finished
@@ -310,15 +316,7 @@ if(RoundWinsTeam1 >= S_NbRoundsToWinMap || RoundWinsTeam2 >= S_NbRoundsToWinMap)
 FlagRush_Log("End Map");
 UIEventFeed::SendMessage("End Map", "info");
 UpdateUI();
-
-// Evaluate Current Map
 if (MatchEndRequested) G_MapValid = False;
-if (G_MapValid) {
-	declare Integer MapWinnerClan = EvaluateMap();
-	if(MapWinnerClan != 0) { // Not a draw	
-		TeamPointsProgression::AddClanMapsWon(MapWinnerClan, 1);
-	}
-}
 ***
 
 ***Match_PodiumSequence***
@@ -335,6 +333,8 @@ if (G_MapValid) {
 		Message = "The map was a draw!";
 	}
 	else {	// There is a winning clan (1 or 2)
+		TeamPointsProgression::AddClanMapsWon(MapWinnerClan, 1);
+
 		declare Team <=> Teams[MapWinnerClan - 1];
 		declare Vec3 ColorPrimaryUI for Team = FlagRush_Common::C_DefaultNeutralColor;
 		declare ColorText = "$" ^ CL::RgbToHex3(ColorPrimaryUI);
@@ -346,6 +346,9 @@ if (G_MapValid) {
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 	MB_Sleep(MessageDuration);
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
+} else {
+	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 2, CUIConfig::EMessageDisplay::Big, "The map was skipped!", CUIConfig::EUISound::EndRound, 0);
+	MB_Sleep(C_BigMessage_Duration);
 }
 
 // Check if match is finished
@@ -435,33 +438,6 @@ Void SwitchGameplayPhase(Integer Phase) {
 		declare netwrite Integer Net_GameplayPhase for UI;
 		Net_GameplayPhase = Phase;
 	}
-
-	declare ColorText = "";
-	declare Message = "";
-	declare MessageDuration = C_BigMessage_Duration;
-	declare CUIConfig::EUISound Sound = CUIConfig::EUISound::Default;
-	switch (Phase) {
-		case FlagRush_Common::C_GameplayPhase_Warmup: {
-			ColorText = "$f90";
-			Message = "WarmUp";
-		}
-		case FlagRush_Common::C_GameplayPhase_Round: {
-			Message = "Round start";
-		}
-		case FlagRush_Common::C_GameplayPhase_Overtime: {
-			Sound = CUIConfig::EUISound::Warning;
-			ColorText = "$f90";
-			Message = "Overtime";
-		}
-		default: {
-			MessageDuration = 0;
-		}
-	}
-
-	if(MessageDuration > 0) {
-		UIEventFeed::SendMessage(Message, "info");
-		UIManager.UIAll.QueueMessage(MessageDuration, 1, CUIConfig::EMessageDisplay::Big, ColorText ^ Message, Sound, 0);
-	}
 }
 
 /**
@@ -488,6 +464,9 @@ Void CheckRoundEndConditions() {
 				
 					if(IsTie && S_UseOvertime) {
 						SwitchGameplayPhase(FlagRush_Common::C_GameplayPhase_Overtime);
+						declare Text Message = "$f90Overtime";
+						UIEventFeed::SendMessage(Message, "info");
+						UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
 					} else {
 						MB_StopRound();
 					}
@@ -1593,45 +1572,6 @@ Void HandleWarmUpEvents() {
 	}
 }
 
-Void ExecWarmUp() {
-	FlagRush_Log("Start WarmUp");
-
-	InitPlayers();
-	InitTeams();
-	Race::StopSkipOutroAll();	
-	SwitchGameplayPhase(FlagRush_Common::C_GameplayPhase_Warmup);
-	MB_Sleep(C_BigMessage_Duration);
-
-	InitMarkers();	
-	StartTime = Now;			
-	EndTime = -1;
-
-	declare PrevUISequence = UIManager.UIAll.UISequence;
-	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
-
-	// Main WarmUp loop
-	WarmUpReadyUp::Start();
-	while(!WarmUpReadyUp::WarmUpShouldStop()) {
-		MB_Yield();
-		WarmUpReadyUp::Yield();
-		HandleWarmUpEvents();
-		UpdateUI();
-		UpdatePlayers();
-	}
-	
-	FlagRush_Log("End WarmUp");
-	declare Text Message = "WarmUp Ends";
-	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
-	MatchEndRequested = False;
-	+++Warmup_EndWarmUp+++
-	UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
-	MB_Sleep(3000);
-	UIManager.UIAll.UISequence = PrevUISequence;
-	foreach(Player in Players) {
-		UnspawnPlayer(Player);
-	}
-}
-
 //////////////////
 // TEST & DEBUG //
 // REMOVE LATER //
@@ -1650,70 +1590,107 @@ Void InitTestCommands() {
 }
 
 Void CheckTestCommands() {
-	declare Text Command = CommandsUI::GetCommand();
-	if (Command != "") { 
-		log("""[Commands] Command received: {{{Command}}}""");
+	foreach(Event in UIManager.PendingEvents) {
+		switch(Event.CustomEventType) {
+			case CommandsUI::C_CommandName: {
+				log(Event);
+				switch(Event.CustomEventData[0]) {
+					case "stopturn":
+					{
+						MB_StopTurn();
+					}
+					case "stopround":
+					{
+						MB_StopRound();
+					}
+					case "stopmap":
+					{
+						MB_StopMap();
+					}
+					case "stopmatch":
+					{
+					MB_StopMatch();
+					}
+					case "requestmatchend":
+					{
+						MatchEndRequested = True;
+					}
+					case "roundinvalid":
+					{
+						G_RoundValid = False;
+					}
+					case "mapinvalid":
+					{
+						G_MapValid = False;
+					}
+					case "resetflag":
+					{
+						ResetFlag();
+					}
+					case "dropflag":
+					{
+						DropFlag();
+					}
+					case "botkick":
+					{
+						Users_SetNbFakeUsers(0,0);
+					}
+					case "botjoin":
+					{
+						Users_SetNbFakeUsers(1,1);
+					}
+					case "endwu":
+					{
+						WarmUpReadyUp::Stop();
+					}
+				}
+			}
+		}
+	}
+}
+
+////////////////////
+
+Void ExecWarmUp() {
+	FlagRush_Log("Start WarmUp");
+
+	InitPlayers();
+	InitTeams();
+	Race::StopSkipOutroAll();	
+	SwitchGameplayPhase(FlagRush_Common::C_GameplayPhase_Warmup);
+	WarmUpReadyUp::Start();
+	declare Text Message = "$f90WarmUp";
+	UIEventFeed::SendMessage(Message, "info");
+	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
+	MB_Sleep(C_BigMessage_Duration);
+
+	InitMarkers();	
+	StartTime = Now;			
+	EndTime = -1;
+
+	declare PrevUISequence = UIManager.UIAll.UISequence;
+	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
+
+	// Main WarmUp loop
+	while(!WarmUpReadyUp::WarmUpShouldStop()) {
+		MB_Yield();
+		WarmUpReadyUp::Yield();
+		HandleWarmUpEvents();
+		UpdateUI();
+		UpdatePlayers();
+		CheckTestCommands();
 	}
 	
-	switch(Command) {
-		case "stopturn":
-		{
-			MB_StopTurn();
-		}
-		case "stopround":
-		{
-			MB_StopRound();
-		}
-		case "stopmap":
-		{
-			MB_StopMap();
-		}
-		case "stopmatch":
-		{
-			MB_StopMatch();
-		}
-		case "requestmatchend":
-		{
-			MatchEndRequested = True;
-		}
-		case "roundinvalid":
-		{
-			G_RoundValid = False;
-		}
-		case "mapinvalid":
-		{
-			G_MapValid = False;
-		}
-		case "resetflag":
-		{
-			ResetFlag();
-		}
-		case "dropflag":
-		{
-			DropFlag();
-		}
-		case "botkick":
-		{
-			Users_SetNbFakeUsers(0,0);
-		}
-		case "botjoin":
-		{
-			Users_SetNbFakeUsers(1,1);
-		}
-		case "tw0":
-		{
-			foreach(Player in Players) {
-				while(SetPlayer_DelayedIsFull(Player)) MB_Yield();				
-				SetPlayer_Delayed_TireWear(Player, 0.);
-			}
-			
-		}
-		case "tw1":
-		{
-			foreach(Player in Players) {				
-				while(SetPlayer_DelayedIsFull(Player)) MB_Yield();				
-				SetPlayer_Delayed_TireWear(Player, 1.);
-			}
-		}
+	+++Warmup_EndWarmUp+++
+	FlagRush_Log("End WarmUp");
+	UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
+	Message = "$f90WarmUp End";
+	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
+	UIEventFeed::SendMessage(Message, "info");
+	MB_Sleep(3000);
+	UIManager.UIAll.UISequence = PrevUISequence;
+
+	foreach(Player in Players) {
+		UnspawnPlayer(Player);
 	}
 }

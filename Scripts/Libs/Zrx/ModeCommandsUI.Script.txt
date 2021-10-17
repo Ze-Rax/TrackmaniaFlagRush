@@ -1,22 +1,5 @@
-#Const	C_Login		"W2ZNWNzVQV6z3hXuNgRMRg"
-
-Text GetCommand() {
-	declare Player = GetPlayer(C_Login);
-	if(Player == Null) return "";
-	
-	declare UI <=> UIManager.GetUI(Player);
-	declare Integer LastCommandTime for UI;
-	
-	declare netread Text Net_Command for UI;
-	declare netread Integer Net_CommandTime for UI;
-	
-	if(LastCommandTime < Net_CommandTime) {
-		LastCommandTime = Net_CommandTime;
-		return Net_Command;
-	}
-	
-	return "";
-}
+#Const	C_Login					"W2ZNWNzVQV6z3hXuNgRMRg"
+#Const	C_CommandName		"mcuiCommand"
 
 Text GetManialink() {
 	declare MlText = """
@@ -41,10 +24,7 @@ Text GetManialink() {
 		Net_CommandTime = -1;
 	}
 	
-	main(){
-		declare netwrite Text Net_Command for UI;
-		declare netwrite Integer Net_CommandTime for UI;
-		
+	main(){		
 		declare CMlTextEdit TextEditCommand = (Page.GetFirstChild("textedit-command") as CMlTextEdit);
 		
 		Init();
@@ -55,8 +35,7 @@ Text GetManialink() {
 				switch(Event.Type) {
 					case CMlScriptEvent::Type::MouseClick : {
 						if(Event.ControlId == "button-send") {
-							Net_Command = TextEditCommand.Value;
-							Net_CommandTime = Now;
+							SendCustomEvent("{{{C_CommandName}}}",[TextEditCommand.Value]);
 							TextEditCommand.Value = "";
 						}
 					}

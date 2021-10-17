@@ -1500,6 +1500,7 @@ Void HandleXmlRpcEvents() {
 			case CXmlRpcEvent::EType::CallbackArray: {
 				switch (XmlRpcEvent.ParamArray1) {
 					case "Trackmania.ForceEndRound": {
+						G_RoundValid = False;
 						MB_StopRound();	
 					}
 				}			

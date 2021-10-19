@@ -445,12 +445,8 @@ Void SetEndTime(Integer _EndTime) {
 */
 Void SwitchGameplayPhase(Integer Phase) {
 	G_GameplayPhase = Phase;
-	
-	foreach (Player in AllPlayers) {
-		declare CUIConfig UI = UIManager.GetUI(Player);
-		declare netwrite Integer Net_GameplayPhase for UI;
-		Net_GameplayPhase = Phase;
-	}
+	declare netwrite Integer Net_GameplayPhase for Teams[0];
+	Net_GameplayPhase = Phase;
 }
 
 /**
@@ -799,22 +795,8 @@ Void InitUI() {
 	InitMarkers();
 }
 
-
-Void UpdateFlagCarrier(CSmPlayer Player) {
-	declare UI = UIManager.GetUI(Player);	
-	declare FlagCarrier = GetFlagCarrier();	
-	
-	// Carrier Clan Index (for color)
-	declare netwrite Integer Net_FlagCarrierClan for UI;
-	if (FlagCarrier == Null) Net_FlagCarrierClan = 0;
-	else Net_FlagCarrierClan = FlagCarrier.CurrentClan;
-	
-	// Carrier name
-	declare netwrite Text Net_FlagCarrierName for UI;
-	if (FlagCarrier != Null && FlagCarrier.User != Null) Net_FlagCarrierName = FlagCarrier.User.Name;
-	else if (G_FlagState.Landmark == G_ActiveFlagSpawn) Net_FlagCarrierName = "Spawn";
-	else Net_FlagCarrierName = "Dropped";
-	
+Void UpdateDossard(CSmPlayer Player) {
+	declare FlagCarrier = GetFlagCarrier();
 	if (FlagCarrier != Null) {
 		if (FlagCarrier.Score.TeamNum == Player.CurrentClan) {
 			Player.Dossard_Trigram = "OWN";
@@ -830,37 +812,56 @@ Void UpdateFlagCarrier(CSmPlayer Player) {
 	}
 }
 
+Void UpdateFlagCarrier() {
+	declare FlagCarrier = GetFlagCarrier();
+	
+	// Carrier Clan Index (for color)
+	declare netwrite Integer Net_FlagCarrierClan for Teams[0];
+	if (FlagCarrier == Null) Net_FlagCarrierClan = 0;
+	else Net_FlagCarrierClan = FlagCarrier.CurrentClan;
+	
+	// Carrier name
+	declare netwrite Text Net_FlagCarrierName for Teams[0];
+	if (FlagCarrier != Null && FlagCarrier.User != Null) Net_FlagCarrierName = FlagCarrier.User.Name;
+	else if (G_FlagState.Landmark == G_ActiveFlagSpawn) Net_FlagCarrierName = "Spawn";
+	else Net_FlagCarrierName = "Dropped";
+
+	foreach(Player in Players) {
+		UpdateDossard(Player);
+	}
+}
+
 /**
 *	Updates the UI flag marker for a player.
 */
-Void UpdateFlagMarkerForPlayer(CSmPlayer Player, Integer GaugeDuration) {
-	declare FlagCarrier = GetFlagCarrier();	
-	declare ClampedGaugeDuration = GaugeDuration;
-	if (ClampedGaugeDuration < 0) ClampedGaugeDuration = 0;
-	
-	declare UI = UIManager.GetUI(Player);		
-	
+Void UpdateFlagMarkerForPlayer(CSmPlayer Player) {
 	// Hide marker for Carrier
+	declare FlagCarrier = GetFlagCarrier();
+	declare UI = UIManager.GetUI(Player);	
 	declare netwrite Boolean Net_HideFlagMarker for UI;
 	if (FlagCarrier == Player && !C_Debug) Net_HideFlagMarker = True;
 	else Net_HideFlagMarker = False;
-	
-	UpdateFlagCarrier(Player);
-	
-	// Timing for gauge
-	declare netwrite Integer Net_FlagGaugeStartServerDate for UI;
-	Net_FlagGaugeStartServerDate = Now;
-	declare netwrite Integer Net_FlagGaugeDuration for UI;
-	Net_FlagGaugeDuration = GaugeDuration;
 }
 
 /**
 *	Updates the UI flag marker for each player (Color, Gauge).
 *	Only in specific situations
 */
-Void UpdateFlagMarker(Integer GaugeDuration) {	
+Void UpdateFlagMarker(Integer GaugeDuration) {
+	// Timing for gauge
+	declare ClampedGaugeDuration = GaugeDuration;
+	if (ClampedGaugeDuration < 0) ClampedGaugeDuration = 0;
+	declare netwrite Integer Net_FlagGaugeStartServerDate for Teams[0];
+	Net_FlagGaugeStartServerDate = Now;
+	declare netwrite Integer Net_FlagGaugeDuration for Teams[0];
+	Net_FlagGaugeDuration = GaugeDuration;
+
+	// Flag Carrier
+	declare FlagCarrier = GetFlagCarrier();	
+	UpdateFlagCarrier();
+
 	foreach(Player in AllPlayers) {
-		UpdateFlagMarkerForPlayer(Player, GaugeDuration);
+		UpdateFlagMarkerForPlayer(Player);
 	}
 }
 
@@ -947,9 +948,9 @@ Integer[Text] GetPlayerScoresTableData(CSmScore Score) {
 // --------------------------------------------------
 
 /**
-*	Updates general UI for a player.
+*	Updates general UI for all players.
 */
-Void UpdateUIForPlayer(CSmPlayer Player) {
+Void UpdateUI() {
 	// Need to loop twice, once to get all scores data from all player
 	// before sending to each player individually
 	
@@ -965,47 +966,32 @@ Void UpdateUIForPlayer(CSmPlayer Player) {
 		ScoresTableNames[Score.User.Login] = Score.User.Name;
 	}
 	
-	declare UI <=> UIManager.GetUI(Player);
-	
 	/* Scores Header */
-	declare netwrite Integer Net_ScoreBoardUpdateStamp for UI;
+	declare netwrite Integer Net_ScoreBoardUpdateStamp for Teams[0];
 	Net_ScoreBoardUpdateStamp = Now;
 	
-	declare netwrite Integer Net_NbMapsToWinMatch for UI;
+	declare netwrite Integer Net_NbMapsToWinMatch for Teams[0];
 	Net_NbMapsToWinMatch = S_NbMapsToWinMatch;
 	
-	declare netwrite Integer Net_NbRoundsToWinMap for UI;
+	declare netwrite Integer Net_NbRoundsToWinMap for Teams[0];
 	Net_NbRoundsToWinMap = S_NbRoundsToWinMap;
 	
-	declare netwrite Integer Net_Team1RoundScore for UI;
-	Net_Team1RoundScore = Scores::GetClanRoundPoints(1);
-	declare netwrite Integer Net_Team2RoundScore for UI;
-	Net_Team2RoundScore = Scores::GetClanRoundPoints(2);
-	
-	declare netwrite Integer Net_Team1MapScore for UI;
-	Net_Team1MapScore = TeamPointsProgression::GetClanRoundsWon(1);
-	
-	declare netwrite Integer Net_Team2MapScore for UI;
-	Net_Team2MapScore = TeamPointsProgression::GetClanRoundsWon(2);
+	for(Clan, 1, 2) {
+		declare netwrite Integer Net_TeamRoundScore for Teams[Clan-1];
+		Net_TeamRoundScore = Scores::GetClanRoundPoints(Clan);
+		declare netwrite Integer Net_TeamMapScore for Teams[Clan-1];
+		Net_TeamMapScore = TeamPointsProgression::GetClanRoundsWon(Clan);		
+	}
 	
 	/* Scores Table */		
-	declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for UI;
-	declare netwrite Text[Text] Net_ScoresTableNames for UI;
-	declare netwrite Boolean[Text] Net_WarmUpReadyStates for UI;
+	declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for Teams[0];
+	declare netwrite Text[Text] Net_ScoresTableNames for Teams[0];
+	declare netwrite Boolean[Text] Net_WarmUpReadyStates for Teams[0];
 	Net_ScoresTableData = ScoresTableData;
 	Net_ScoresTableNames = ScoresTableNames;
 	Net_WarmUpReadyStates = WarmUpReadyUp::GetPlayersReady();
 }
 
-/**
-*	Updates general UI for all players.
-*/
-Void UpdateUI() {
-	// Send data
-	foreach(Player in AllPlayers) {
-		UpdateUIForPlayer(Player);
-	}
-}
 // --------------------------------------------------
 
 /**
@@ -1304,8 +1290,8 @@ Void SpawnPlayers() {
 					InitPlayer(Player);
 					if (SpawnDate <= Now) {							
 						SpawnPlayer(Player, Player.CurrentClan, 1, Spawn, Now + 2000);			
-						UpdateFlagCarrier(Player);						
-						UpdateFlagMarkerForPlayer(Player, -1);
+						UpdateDossard(Player);						
+						UpdateFlagMarkerForPlayer(Player);
 						SpawnDate = 0;
 					}
 				}
@@ -1478,7 +1464,7 @@ Void HandleEvents() {
 			
 			case CSmModeEvent::EType::OnPlayerAdded: 
 			{				
-				UpdateUIForPlayer(Event.Player);
+				UpdateUI();
 				InitMarkers();
 			}
 			
@@ -1577,7 +1563,7 @@ Void HandleWarmUpEvents() {
 			case CSmModeEvent::EType::OnPlayerAdded: 
 			{					
 				InitPlayer(Event.Player);				
-				UpdateUIForPlayer(Event.Player);				
+				UpdateUI();				
 			}						
 		}
 	}

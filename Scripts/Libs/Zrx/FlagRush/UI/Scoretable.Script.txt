@@ -236,21 +236,17 @@ Text GetManialink(Integer _PlayersPerPage) {
 		/* Netread variables */
 		
 		// Same as scores header
-		declare netread Integer Net_Team1RoundScore for UI;
-		declare netread Integer Net_Team2RoundScore for UI;
-		declare netread Integer Net_Team1MapScore for UI;			// Not used (yet)
-		declare netread Integer Net_Team2MapScore for UI;			// Not used (yet)
-		declare netread Integer Net_NbMapsToWinMatch for UI;		// Not used (yet)
-		declare netread Integer Net_ScoreBoardUpdateStamp for UI;
+		declare netread Integer Net_NbMapsToWinMatch for Teams[0];		// Not used (yet)
+		declare netread Integer Net_ScoreBoardUpdateStamp for Teams[0];
 		
 		// Scoreboard data
 		
 		// Looks scary, but: ClanIndex => [PlayerName => [ScoreFieldName => ScoreFieldValue]]
-		declare netread Integer[Text][Text][Integer] Net_ScoresTableData for UI;
-		declare netread Text[Text] Net_ScoresTableNames for UI;
-		declare netread Text Net_FooterText for UI;
-		declare netread Boolean[Text] Net_WarmUpReadyStates for UI;
-		declare netread Integer Net_GameplayPhase for UI;
+		declare netread Integer[Text][Text][Integer] Net_ScoresTableData for Teams[0];
+		declare netread Text[Text] Net_ScoresTableNames for Teams[0];
+		declare netread Text Net_FooterText for Teams[0];
+		declare netread Boolean[Text] Net_WarmUpReadyStates for Teams[0];
+		declare netread Integer Net_GameplayPhase for Teams[0];
 		
 		/* Scoreboard control Variables */
 		
@@ -280,8 +276,11 @@ Text GetManialink(Integer _PlayersPerPage) {
 			
 			/* Team specific Data	*/
 			
-			LabelTeam1Score.Value = TL::ToText(Net_Team1RoundScore);
-			LabelTeam2Score.Value = TL::ToText(Net_Team2RoundScore);
+			for (Clan, 1, 2) {
+				declare netread Integer Net_TeamRoundScore for Teams[Clan-1];
+				if (Clan == 1) LabelTeam1Score.Value = TL::ToText(Net_TeamRoundScore);
+				if (Clan == 2) LabelTeam2Score.Value = TL::ToText(Net_TeamRoundScore);
+			}
 			
 			/* Player specific Data */
 			

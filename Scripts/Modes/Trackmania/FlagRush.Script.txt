@@ -12,6 +12,7 @@
 #Include "ColorLib" as CL
 
 #Include "Libs/Zrx/WarmUpReadyUp.Script.txt" as WarmUpReadyUp
+#Include "Libs/Zrx/ModeCommands.Script.txt" as ModeCommands
 
 /* Additional dependencies from other extends */
 #Include "Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
@@ -32,16 +33,19 @@
 #Include "Libs/Zrx/FlagRush/UI/Markers.Script.txt" as FlagRush_UIMarkers
 #Include "Libs/Zrx/FlagRush/UI/Scoretable.Script.txt" as FlagRush_UIScoretable
 
-#Include "Libs/Zrx/ModeCommandsUI.Script.txt" as CommandsUI
-
 /* Constants */
 
 #Const	CompatibleMapTypes  "TrackMania\\FlagRushArena,FlagRushArena"
 #Const	Version				"2021-09-02"
 #Const	ScriptName			"Modes/TrackMania/FlagRush.Script.txt"
 
+#Const	C_SpawnAnimDuration					2000
 #Const	C_BigMessage_Duration				3000
 
+#Const	C_ModeCommand_EndWarmup				"EndWarmup"
+#Const	C_ModeCommand_Pause					"Pause"
+#Const	C_ModeCommand_Skip					"Skip"
+#Const	C_ModeCommand_ResetFlag				"ResetFlag"
 
 #Const	C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
 #Const	C_LayerName_ScoresHeader			"Layer_FlagRush_ScoresHeader"
@@ -49,18 +53,18 @@
 #Const	C_LayerName_Markers					"Layer_FlagRush_Markers"
 #Const 	C_LayerName_Feed					"Layer_FlagRush_Feed"
 #Const 	C_LayerName_Flash					"Layer_FlagRush_Flash"
+#Const	C_LayerName_ModeCommands			"Layer_ModeCommands"
 
 #Const	C_Telemetry_Key_FlagsScored			"FlagsScored"
 #Const	C_Telemetry_Key_FlagsStolen			"FlagsStolen"
 
 #Const	C_FlagHitbox_Diameter				6.
 #Const	C_FlagHitbox_Height					4.
+#Const 	C_RespawnSpeedLimitKmh 				30.
 
 #Const  C_Debug 							True
 #Const	C_Debug_MarkersLabels				True
 #Const	C_Debug_NbFakeUsers					<0, 0>
-#Const	C_SpawnAnimDuration					2000
-#Const 	C_RespawnSpeedLimitKmh 				30.
 
 //////////////
 // Settings //
@@ -153,6 +157,10 @@ UseClans = True;
 MB_Settings_UseDefaultHud = False;
 MB_Settings_UseDefaultPodiumSequence = False;
 
+ModeCommands::AddQuickCommand(C_ModeCommand_EndWarmup, "Icons64x64_1", "ArrowGreen");
+ModeCommands::AddQuickCommand(C_ModeCommand_Pause, "UICommon64_1", "Pause_light");
+ModeCommands::AddQuickCommand(C_ModeCommand_Skip, "UICommon64_1", "GoLastFrame_light");
+ModeCommands::AddQuickCommand(C_ModeCommand_ResetFlag, "UIConstruction_Buttons", "Validate");
 ***
 
 // --------------------------------------------------
@@ -176,10 +184,6 @@ Map::SetDefaultStart(G_SpawnTeam1);
 
 G_MapValid = True;
 G_FlagSpawnCounter = 0;
-
-if(C_Debug) { 
-	InitTestCommands();	
-}
 ***
 
 // --------------------------------------------------
@@ -421,7 +425,6 @@ HandleXmlRpcEvents();
 HandleCommands();
 
 CheckRoundEndConditions();
-if(C_Debug) CheckTestCommands();
 
 if(G_PauseRequested) {
 	MB_StopTurn();
@@ -810,6 +813,10 @@ Void InitUI() {
 	Layers::Create(C_LayerName_Flash, FlagRush_UIFlash::GetManialink());
 	Layers::SetType(C_LayerName_Flash, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Flash);
+	
+	Layers::Create(C_LayerName_ModeCommands, ModeCommands::GetManialink());
+	Layers::SetType(C_LayerName_ModeCommands, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_ModeCommands);
 	
 	InitMarkers();
 }
@@ -1609,90 +1616,29 @@ Void HandleCommands() {
 			}
 		}
 	}
-}
 
-//////////////////
-// TEST & DEBUG //
-// REMOVE LATER //
-//////////////////
-
-Void InitTestCommands() {
-	declare CSmPlayer Player = GetPlayer(CommandsUI::C_Login);
-	if(Player == Null) { 
-		return;
-	}
-	
-	declare Text MlText = CommandsUI::GetManialink();
-	Layers::Create("CommandsUI", MlText);
-	Layers::SetType("CommandsUI", CUILayer::EUILayerType::Normal);
-	Layers::Attach("CommandsUI", Player);
-}
-
-Void CheckTestCommands() {
-	foreach(Event in UIManager.PendingEvents) {
+	foreach (Event in UIManager.PendingEvents) {
 		switch(Event.CustomEventType) {
-			case CommandsUI::C_CommandName: {
-				log(Event);
-				switch(Event.CustomEventData[0]) {
-					case "stopturn":
-					{
-						MB_StopTurn();
-					}
-					case "stopround":
-					{
-						MB_StopRound();
-					}
-					case "stopmap":
-					{
-						MB_StopMap();
-					}
-					case "stopmatch":
-					{
-					MB_StopMatch();
-					}
-					case "requestmatchend":
-					{
-						MatchEndRequested = True;
-					}
-					case "roundinvalid":
-					{
-						G_RoundValid = False;
-					}
-					case "mapinvalid":
-					{
-						G_MapValid = False;
-					}
-					case "resetflag":
-					{
-						ResetFlag();
-					}
-					case "dropflag":
-					{
-						DropFlag();
-					}
-					case "botkick":
-					{
-						Users_SetNbFakeUsers(0,0);
-					}
-					case "botjoin":
-					{
-						Users_SetNbFakeUsers(1,1);
-					}
-					case "endwu":
-					{
+			case ModeCommands::C_EventType: {
+				if(Event.CustomEventData.count < 1) continue;
+				switch (Event.CustomEventData[0]) {
+					case C_ModeCommand_EndWarmup: {
 						WarmUpReadyUp::Stop();
 					}
-					case "pause":
-					{
+					case C_ModeCommand_Pause: {
 						G_PauseRequested = True;
+					}
+					case C_ModeCommand_Skip: {
+						MatchEndRequested = True;
+					}
+					case C_ModeCommand_ResetFlag: {
+						ResetFlag();
 					}
 				}
 			}
 		}
 	}
 }
-
-////////////////////
 
 Void ExecWarmUp() {
 	FlagRush_Log("Start WarmUp");
@@ -1720,9 +1666,9 @@ Void ExecWarmUp() {
 		MB_Yield();
 		WarmUpReadyUp::Yield();
 		HandleWarmUpEvents();
+		HandleCommands();
 		UpdateUI();
 		UpdatePlayers();
-		CheckTestCommands();
 	}
 	
 	+++Warmup_EndWarmUp+++

@@ -98,6 +98,12 @@
 #Setting S_Team1Color 								"" 		as "Team 1 Color"
 #Setting S_Team2Color 								"" 		as "Team 2 Color"
 
+//////////////
+// Commands //
+//////////////
+
+#Command Command_PauseRound (Boolean) as "Pause round"
+
 /////////////
 // Structs //
 /////////////
@@ -117,8 +123,8 @@
 
 declare Boolean G_RoundValid;
 declare Boolean G_MapValid;
-declare Boolean G_IsWarmUpActive;
 declare Integer G_GameplayPhase;
+declare Boolean G_PauseRequested;
 
 /* General mid round */
 
@@ -146,7 +152,6 @@ UsePvPCollisions = False;
 UseClans = True;
 MB_Settings_UseDefaultHud = False;
 MB_Settings_UseDefaultPodiumSequence = False;
-G_IsWarmUpActive = False;
 
 ***
 
@@ -235,6 +240,15 @@ if(S_RoundTimeLimitSeconds > 0) {
 ***Match_StartTurn***
 ***
 FlagRush_Log("Start Turn");
+
+if(G_PauseRequested) {
+	UIEventFeed::SendMessage("The round was paused", "info");
+	declare Integer RoundTimeLeft = EndTime - Now;
+	ExecWarmUp();
+	G_PauseRequested = False;
+	SetEndTime(Now + RoundTimeLeft + C_SpawnAnimDuration);
+}
+
 G_FlagSpawnCounter = 0;
 UIEventFeed::SendMessage("Start Turn", "info");
 ResetFlag(ML::NearestInteger(S_FlagInitialSpawnDelaySeconds * 1000 + C_SpawnAnimDuration), True);
@@ -404,9 +418,14 @@ UpdateFlag();
 SpawnPlayers();
 HandleEvents();
 HandleXmlRpcEvents();
+HandleCommands();
 
 CheckRoundEndConditions();
 if(C_Debug) CheckTestCommands();
+
+if(G_PauseRequested) {
+	MB_StopTurn();
+}
 ***
 
 
@@ -1578,6 +1597,20 @@ Void HandleWarmUpEvents() {
 	}
 }
 
+Void HandleCommands() {
+	foreach (Event in PendingEvents) {
+		if (Event.Type == CSmModeEvent::EType::OnCommand) {
+			switch (Event.CommandName) {
+				case "Command_PauseRound": {
+					if(Event.CommandValueBoolean) {
+						G_PauseRequested = True;
+					}
+				}
+			}
+		}
+	}
+}
+
 //////////////////
 // TEST & DEBUG //
 // REMOVE LATER //
@@ -1649,6 +1682,10 @@ Void CheckTestCommands() {
 					{
 						WarmUpReadyUp::Stop();
 					}
+					case "pause":
+					{
+						G_PauseRequested = True;
+					}
 				}
 			}
 		}
@@ -1662,7 +1699,8 @@ Void ExecWarmUp() {
 
 	InitPlayers();
 	InitTeams();
-	Race::StopSkipOutroAll();	
+	Race::StopSkipOutroAll();
+	declare Integer PreviousGameplayPhase = G_GameplayPhase;
 	SwitchGameplayPhase(FlagRush_Common::C_GameplayPhase_Warmup);
 	WarmUpReadyUp::Start();
 	declare Text Message = "$f90WarmUp";
@@ -1690,6 +1728,7 @@ Void ExecWarmUp() {
 	+++Warmup_EndWarmUp+++
 	FlagRush_Log("End WarmUp");
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
+	SwitchGameplayPhase(PreviousGameplayPhase);
 	Message = "$f90WarmUp End";
 	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
 	UIEventFeed::SendMessage(Message, "info");

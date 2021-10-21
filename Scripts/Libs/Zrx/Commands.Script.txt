@@ -1,0 +1,83 @@
+#Include "TextLib" as TL
+
+#Struct K_Command {
+	Text		Name;
+	Boolean	ValueBoolean;
+	Integer	ValueInteger;
+	Real		ValueReal;
+	Text		ValueText;
+	Vec2		ValueVec2;
+	Vec3		ValueVec3;
+	Int2		ValueInt2;
+	Int3		ValueInt3;
+}
+
+/**
+*		Transfroms a Text and Params into a Command
+*/
+K_Command FromNameAndParams(Text Name, Text[] Params) {
+	declare K_Command Command;
+	
+	Command.Name = Name;	
+	Command.ValueText			= TL::Join(" ", Params);
+	
+	switch(Params.count) {
+		case 1: {
+			Command.ValueBoolean	= Params[0] == "True";
+			Command.ValueInteger	= TL::ToInteger(Params[0]);
+			Command.ValueReal			= TL::ToReal(Params[0]);
+		}
+		case 2: {
+			Command.ValueVec2.X		= TL::ToReal(Params[0]);
+			Command.ValueVec2.Y		= TL::ToReal(Params[1]);
+			Command.ValueInt2.X		= TL::ToInteger(Params[0]);
+			Command.ValueInt2.Y		= TL::ToInteger(Params[1]);
+		}
+		case 3: {
+			Command.ValueVec3.X		= TL::ToReal(Params[0]);
+			Command.ValueVec3.Y		= TL::ToReal(Params[1]);
+			Command.ValueVec3.Z		= TL::ToReal(Params[2]);
+			Command.ValueInt3.X		= TL::ToInteger(Params[0]);
+			Command.ValueInt3.Y		= TL::ToInteger(Params[1]);
+			Command.ValueInt3.Z		= TL::ToInteger(Params[2]);
+		}
+	}
+	
+	return Command;
+}
+
+/**
+*		Transforms a Text into a Command
+*/
+K_Command FromText(Text CommandText) {
+	declare K_Command Command;
+	declare Text[] CommandSplit = TL::Split(" ", CommandText);
+	if(CommandSplit.count >= 1) {
+		Command = FromNameAndParams(CommandSplit[0], CommandSplit.slice(1, CommandSplit.count - 1));
+	}
+	return Command;
+}
+
+/**
+*		Transforms a CSmModeEvent into a Command struct
+*/
+K_Command FromEvent(CSmModeEvent Event) {
+	return K_Command {
+		Name					= Event.CommandName,
+		ValueBoolean	= Event.CommandValueBoolean,
+		ValueInteger	= Event.CommandValueInteger,
+		ValueReal			= Event.CommandValueReal,
+		ValueText			= Event.CommandValueText,
+		ValueVec2			= Event.CommandValueVec2,
+		ValueVec3			= Event.CommandValueVec3,
+		ValueInt2			= Event.CommandValueInt2,
+		ValueInt3			= Event.CommandValueInt3
+	};
+}
+
+/**
+*		Transforms a CUIConfigEvent into a Command struct
+*/
+K_Command FromEvent(CUIConfigEvent Event) {
+	return FromNameAndParams(Event.CustomEventType, Event.CustomEventData);
+}

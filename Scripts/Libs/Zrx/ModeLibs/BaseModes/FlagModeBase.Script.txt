@@ -8,8 +8,8 @@
 // Includes //
 //////////////
 
-#Include "Libs/Zrx/Collision.Script.txt" as Collision
-#Include "Libs/Zrx/PlayerTelemetry.Script.txt" as Telemetry
+#Include "Libs/Zrx/ModeLibs/Common/Collision/Collision.Script.txt" as Collision
+#Include "Libs/Zrx/ModeLibs/Common/PlayerTelemetry.Script.txt" as Telemetry
 
 ///////////
 // Plugs //

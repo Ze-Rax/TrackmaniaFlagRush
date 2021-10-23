@@ -1,4 +1,4 @@
-#Include "Libs/Zrx/CylinderHitbox.Script.txt" as Hitbox
+#Include "Libs/Zrx/ModeLibs/Common/Collision/CylinderHitbox.Script.txt" as Hitbox
 
 /////////////
 // Structs //

@@ -1,42 +1,45 @@
 // #RequireContext CSmMode
 
 /**
-*	FlagRush
-*	Gamemode by Ze-Rax
-*/
+ * FlagRush
+ * Gamemode by Ze-Rax
+ */
 
-#Extends "Libs/Zrx/TeamFlagModeBase.Script.txt"
+#Extends "Libs/Zrx/ModeLibs/BaseModes/TeamFlagModeBase.Script.txt"
+
+/* Common Libs */
 
 #Include "TextLib" as TL
 #Include "MathLib" as ML
 #Include "ColorLib" as CL
 
-#Include "Libs/Zrx/WarmUpReadyUp.Script.txt" as WarmUpReadyUp
+#Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt" as WarmUpReadyUp
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt" as ModeCommands
 #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt" as CommandUtils
+#Include "Libs/Zrx/ModeLibs/Common/ClubTagUtils.Script.txt" as ClubTagUtils
+#Include "Libs/Zrx/ModeLibs/Common/Collision/CylinderHitbox.Script.txt" as Hitbox
 
-/* Additional dependencies from other extends */
-#Include "Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
-#Include "Libs/Zrx/CylinderHitbox.Script.txt" as Hitbox
-#Include "Libs/Zrx/ClubTagUtil.Script.txt" as ClubTagUtil
+/* FlagRush Libs */
 
-/* Additional dependencies from other extends */
-
-#Include "Libs/Zrx/Collision.Script.txt" as Collision
-#Include "Libs/Zrx/PlayerTelemetry.Script.txt" as Telemetry
-#Include "Libs/Zrx/TeamPointsProgression.Script.txt" as TeamPointsProgression
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 
 /* UI */
 
-#Include "Libs/Zrx/FlagRush/UI/Feed.Script.txt" as UIEventFeed
-#Include "Libs/Zrx/FlagRush/UI/Flash.Script.txt" as FlagRush_UIFlash
-#Include "Libs/Zrx/FlagRush/UI/Header.Script.txt" as FlagRush_UIHeader
-#Include "Libs/Zrx/FlagRush/UI/Markers.Script.txt" as FlagRush_UIMarkers
-#Include "Libs/Zrx/FlagRush/UI/Scoretable.Script.txt" as FlagRush_UIScoretable
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Feed.Script.txt" as UIEventFeed
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Flash.Script.txt" as FlagRush_UIFlash
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Header.Script.txt" as FlagRush_UIHeader
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Markers.Script.txt" as FlagRush_UIMarkers
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Scoretable.Script.txt" as FlagRush_UIScoretable
+
+/* Additional dependencies from other extends */
+
+#Include "Libs/Zrx/ModeLibs/Common/Collision/Collision.Script.txt" as Collision
+#Include "Libs/Zrx/ModeLibs/Common/PlayerTelemetry.Script.txt" as Telemetry
+#Include "Libs/Zrx/ModeLibs/Common/TeamPointsProgression.Script.txt" as TeamPointsProgression
 
 /* Constants */
 
-#Const	CompatibleMapTypes						"TrackMania\\FlagRushArena,FlagRushArena"
+#Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
 #Const	Version												"2021-09-02"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
@@ -462,8 +465,8 @@ ModeCommands::Yield();
 // --------------------------------------------------
 
 /**
-* Prefixed log.
-*/
+ * Prefixed log.
+ */
 Void FlagRush_Log(Text Message) {
 	if (C_Debug) log("[FlagRush] " ^ Message);
 }
@@ -477,8 +480,8 @@ Void Flagrush_Chat(Text Message) {
 // --------------------------------------------------
 
 /**
-*	Sets the EndTime but also sends it to the clients over netwrite
-*/
+ * Sets the EndTime but also sends it to the clients over netwrite
+ */
 Void SetEndTime(Integer _EndTime) {
 	EndTime = _EndTime;
 	declare netwrite Integer Net_EndTime for Teams[0];
@@ -486,8 +489,8 @@ Void SetEndTime(Integer _EndTime) {
 }
 
 /**
-*	Changes the current gameplay phase and reacts accordingly,
-*/
+ * Changes the current gameplay phase and reacts accordingly,
+ */
 Void SwitchGameplayPhase(Integer Phase) {
 	G_GameplayPhase = Phase;
 	declare netwrite Integer Net_GameplayPhase for Teams[0];
@@ -495,8 +498,8 @@ Void SwitchGameplayPhase(Integer Phase) {
 }
 
 /**
-*	Checks if the conditions to end a round is met.
-*/
+ * Checks if the conditions to end a round is met.
+ */
 Void CheckRoundEndConditions() {
 	declare Integer RoundPointsTeam1 = Scores::GetClanRoundPoints(1);
 	declare Integer RoundPointsTeam2 = Scores::GetClanRoundPoints(2);
@@ -539,12 +542,11 @@ Void CheckRoundEndConditions() {
 // --------------------------------------------------
 
 /**
-* valutates the current round and determines the winner
-* @return Integer
-* 0 Draw
-* 1,2... for WinnerClan number  
-* 
-*/
+ * Evalutates the current round and determines the winner
+ * @return Integer
+ * 0 Draw
+ * 1,2... for WinnerClan number
+ */
 Integer EvaluateRound() {
 	declare Integer RoundPointsTeam1 = Scores::GetClanRoundPoints(1);
 	declare Integer RoundPointsTeam2 = Scores::GetClanRoundPoints(2);
@@ -560,11 +562,11 @@ Integer EvaluateRound() {
 // --------------------------------------------------
 
 /**
-* Evalutates the current map and determines the winner
-* @return Integer
-* 0 for Draw
-* 1,2... for WinnerClan number 
-*/
+ * Evalutates the current map and determines the winner
+ * @return Integer
+ * 0 for Draw
+ * 1,2... for WinnerClan number
+ */
 Integer EvaluateMap() {
 	declare Integer MapPointsTeam1 = TeamPointsProgression::GetClanRoundsWon(1);
 	declare Integer MapPointsTeam2 = TeamPointsProgression::GetClanRoundsWon(2);
@@ -578,11 +580,11 @@ Integer EvaluateMap() {
 }
 
 /**
-* Evalutates the current match and determines the winner
-* @return Integer
-* 0 for Draw
-* 1,2... for WinnerClan number 
-*/
+ * Evalutates the current match and determines the winner
+ * @return Integer
+ * 0 for Draw
+ * 1,2... for WinnerClan number
+ */
 Integer EvaluateMatch() {
 	declare Integer MatchPointsTeam1 = TeamPointsProgression::GetClanMapsWon(1);
 	declare Integer MatchPointsTeam2 = TeamPointsProgression::GetClanMapsWon(2);
@@ -599,22 +601,22 @@ Integer EvaluateMatch() {
 // Initialisation functions for StartTurn/Round/Map
 // --------------------------------------------------
 
-ClubTagUtil::K_TeamConfig[] GetTeamConfigs() {
+ClubTagUtils::K_TeamConfig[] GetTeamConfigs() {
 	declare Text G_Team1Name for This;
 	declare Text G_Team1Color for This;
 	declare Text G_Team2Name for This;
 	declare Text G_Team2Color for This;
 	
 	// Get TeamConfigs from ClubTags
-	declare ClubTagUtil::K_TeamConfig[] TeamConfigs; // = ClubTagUtil::GetTeamConfigs();
-	TeamConfigs.add(ClubTagUtil::GetTeamConfig(1));
-	TeamConfigs.add(ClubTagUtil::GetTeamConfig(2));
+	declare ClubTagUtils::K_TeamConfig[] TeamConfigs; // = ClubTagUtils::GetTeamConfigs();
+	TeamConfigs.add(ClubTagUtils::GetTeamConfig(1));
+	TeamConfigs.add(ClubTagUtils::GetTeamConfig(2));
 	
 	// Overwrite empty values or forced values
 	if (TeamConfigs[0].Name == "" || G_Team1Name != "") TeamConfigs[0].Name = FlagRush_Common::GetDefaultTeamName(0);
-	if (TeamConfigs[0].Color == ClubTagUtil::C_InvalidColor || G_Team1Color != "") TeamConfigs[0].Color = FlagRush_Common::GetDefaultTeamColor(0);
+	if (TeamConfigs[0].Color == ClubTagUtils::C_InvalidColor || G_Team1Color != "") TeamConfigs[0].Color = FlagRush_Common::GetDefaultTeamColor(0);
 	if (TeamConfigs[1].Name == "" || G_Team2Name != "") TeamConfigs[1].Name = FlagRush_Common::GetDefaultTeamName(1);
-	if (TeamConfigs[1].Color == ClubTagUtil::C_InvalidColor || G_Team2Color != "") TeamConfigs[1].Color = FlagRush_Common::GetDefaultTeamColor(1);
+	if (TeamConfigs[1].Color == ClubTagUtils::C_InvalidColor || G_Team2Color != "") TeamConfigs[1].Color = FlagRush_Common::GetDefaultTeamColor(1);
 	
 	// Adjust colors to avoid hue overlap
 	// Only adjust if at least one team color is not forced by settings
@@ -633,11 +635,11 @@ ClubTagUtil::K_TeamConfig[] GetTeamConfigs() {
 }
 
 /**
-*	Prepares the teams by setting default values
-*/
+ * Prepares the teams by setting default values
+ */
 Void InitTeams() {	
 	// Get TeamConfigs by ClubTag
-	declare ClubTagUtil::K_TeamConfig[] TeamConfigs = GetTeamConfigs();
+	declare ClubTagUtils::K_TeamConfig[] TeamConfigs = GetTeamConfigs();
 	
 	// 0 is Team1, 1 is Team2 ("Team X" = Clan X = Teams[X-1])
 	for(I, 0, 1) {
@@ -660,8 +662,8 @@ Void InitTeams() {
 // --------------------------------------------------
 
 /**
-*	Looks through all the landmarks on the map and set the global variables accordingly.
-*/
+ * Looks through all the landmarks on the map and set the global variables accordingly.
+ */
 Void InitLandmarks() {
 	FlagRush_Log("Initialising Landmarks...");
 	G_FlagSpawnCounter = 0;
@@ -708,9 +710,9 @@ Void InitLandmarks() {
 // --------------------------------------------------
 
 /**
-*	Gets the current flag carrier CSmPlayer by login.
-*	Null if login not found.
-*/
+ * Gets the current flag carrier CSmPlayer by login.
+ * Null if login not found.
+ */
 CSmPlayer GetFlagCarrier() {
 	return GetPlayer(G_FlagState.CarrierLogin);
 }
@@ -718,8 +720,8 @@ CSmPlayer GetFlagCarrier() {
 // --------------------------------------------------
 
 /**
-*	Creates Markers for the bases and the flag for each player.
-*/
+ * Creates Markers for the bases and the flag for each player.
+ */
 Void InitMarkers() {
 	declare Boolean InitAllFlags = G_GameplayPhase == FlagRush_Common::C_GameplayPhase_Warmup;
 
@@ -804,7 +806,7 @@ Void InitMarkers() {
 				if (CurrentPlayer.CurrentClan == UIPlayer.CurrentClan) {
 					Marker.Label = UIPlayer.User.Name;				
 					Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
-				} 
+				}
 				// Their Team
 				else {					
 					Marker.Label = UIPlayer.User.Name;					
@@ -817,8 +819,8 @@ Void InitMarkers() {
 
 // --------------------------------------------------
 /**
-*	Creates the UI for each player
-*/
+ * Creates the UI for each player
+ */
 Void InitUI() {
 	Layers::Create(C_LayerName_ScoresHeader, FlagRush_UIHeader::GetManialink());
 	Layers::SetType(C_LayerName_ScoresHeader, CUILayer::EUILayerType::Normal);
@@ -857,7 +859,7 @@ Void UpdateDossard(CSmPlayer Player) {
 	}
 	
 	if (FlagCarrier != Null && FlagCarrier == Player) {			
-		Player.Dossard_Trigram = "FLG"; // 
+		Player.Dossard_Trigram = "FLG";
 	}
 }
 
@@ -881,8 +883,8 @@ Void UpdateFlagCarrier() {
 }
 
 /**
-*	Updates the UI flag marker for a player.
-*/
+ * Updates the UI flag marker for a player.
+ */
 Void UpdateFlagMarkerForPlayer(CSmPlayer Player) {
 	// Hide marker for Carrier
 	declare FlagCarrier = GetFlagCarrier();
@@ -893,9 +895,9 @@ Void UpdateFlagMarkerForPlayer(CSmPlayer Player) {
 }
 
 /**
-*	Updates the UI flag marker for each player (Color, Gauge).
-*	Only in specific situations
-*/
+ * Updates the UI flag marker for each player (Color, Gauge).
+ * Only in specific situations
+ */
 Void UpdateFlagMarker(Integer GaugeDuration) {
 	// Timing for gauge
 	declare ClampedGaugeDuration = GaugeDuration;
@@ -915,8 +917,8 @@ Void UpdateFlagMarker(Integer GaugeDuration) {
 }
 
 /**
-*	Updates the UI flag marker for each player.
-*/
+ * Updates the UI flag marker for each player.
+ */
 Void UpdateFlagMarker() {
 	UpdateFlagMarker(-1);
 }
@@ -927,8 +929,8 @@ Void UpdateFlagMarker() {
 // --------------------------------------------------
 
 /**
-* Prepares players before rounds.
-*/
+ * Prepares players before rounds.
+ */
 Void InitPlayer(CSmPlayer Player) {	
 	Player.TrustClientSimu = True;
 	Player.UseCrudeExtrapolation = True;
@@ -948,9 +950,9 @@ Void InitPlayer(CSmPlayer Player) {
 }
 
 /**
-* Inits all players. 
-* @see InitPlayer(CSmPlayer Player)
-*/
+ * Inits all players.
+ * @see InitPlayer(CSmPlayer Player)
+ */
 Void InitPlayers() {
 	foreach (Player in Players) InitPlayer(Player);
 }
@@ -962,8 +964,8 @@ Void InitPlayers() {
 // --------------------------------------------------
 
 /**
-*	Gets the right spawn for a given player.
-*/
+ * Gets the right spawn for a given player.
+ */
 CMapSpawn GetPlayerSpawn(CSmPlayer Player) {
 	if (Player == Null) return Null;
 	
@@ -981,8 +983,8 @@ CMapSpawn GetPlayerSpawn(CSmPlayer Player) {
 // --------------------------------------------------
 
 /**
-* Get the player scores
-*/
+ * Get the player scores
+ */
 Integer[Text] GetPlayerScoresTableData(CSmScore Score) {
 	declare Integer[Text] PlayerScoresTableData;
 	PlayerScoresTableData[FlagRush_UIScoretable::C_ScoresTable_FlagsScoredKey] = Telemetry::GetPlayerMapInteger(Score, C_Telemetry_Key_FlagsScored);
@@ -997,8 +999,8 @@ Integer[Text] GetPlayerScoresTableData(CSmScore Score) {
 // --------------------------------------------------
 
 /**
-*	Updates general UI for all players.
-*/
+ * Updates general UI for all players.
+ */
 Void UpdateUI() {
 	// Need to loop twice, once to get all scores data from all player
 	// before sending to each player individually
@@ -1044,8 +1046,8 @@ Void UpdateUI() {
 // --------------------------------------------------
 
 /**
-* Randomly choose a new flag spawn to activate if enabled.
-*/
+ * Randomly choose a new flag spawn to activate if enabled.
+ */
 Void PickNewFlagSpawn() {	
 	
 	if (G_FlagSpawnCounter == 0) {
@@ -1114,8 +1116,8 @@ Void SetFlagPosition(Vec3 Position, Integer PickupableDate) {
 
 // --------------------------------------------------
 /**
-*	Resets the flag to the flagspawn.
-*/
+ * Resets the flag to the flagspawn.
+ */
 Void ResetFlag(Integer RespawnDelay, Boolean Silent) {
 	FlagRush_Log("The flag was reset!");
 	
@@ -1152,8 +1154,8 @@ Void ResetFlag() {
 // --------------------------------------------------
 
 /**
-*	Applies all handicaps for a player
-*/
+ * Applies all handicaps for a player
+ */
 Void ApplyHandicaps(CSmPlayer Player) {
 	
 	if (S_FlagCarrierControl != 1.) {		
@@ -1178,8 +1180,8 @@ Void ApplyHandicaps(CSmPlayer Player) {
 }
 
 /**
-*	Reset all handicaps from a player
-*/
+ * Reset all handicaps from a player
+ */
 Void ResetHandicaps() {
 	foreach (Player in Players) {
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();			
@@ -1189,13 +1191,13 @@ Void ResetHandicaps() {
 
 // --------------------------------------------------
 /**
-*	Set a player as flag carrier. If player is Null, reset flag instead.
-*/
+ * Set a player as flag carrier. If player is Null, reset flag instead.
+ */
 Void SetFlagCarrier(CSmPlayer Player) {
 	if(Player == Null) {
 		ResetFlag();
 		return;
-	} 
+	}
 	
 	FlagRush_Log("""{{{Player.User.Name}}} got the flag!""");
 	
@@ -1224,8 +1226,8 @@ Void SetFlagCarrier(CSmPlayer Player) {
 // --------------------------------------------------
 
 /**
-*	Drops the flag at the current position of the carrier
-*/
+ * Drops the flag at the current position of the carrier
+ */
 Void DropFlag() {
 	declare FlagCarrier = GetFlagCarrier();
 	if(FlagCarrier == Null) return;
@@ -1259,8 +1261,8 @@ Void DropFlag() {
 // --------------------------------------------------
 
 /**
-*	Handles what happens if a player scored a flag.
-*/
+ * Handles what happens if a player scored a flag.
+ */
 Void ScoreFlag(CSmPlayer Player) {
 	if(Player == Null) return;
 	if(Player.CurrentClan < 1) return;
@@ -1289,8 +1291,8 @@ Void ScoreFlag(CSmPlayer Player) {
 // --------------------------------------------------
 
 /**
-*	Handles what happen if a player steals the flag of another player
-*/
+ * Handles what happen if a player steals the flag of another player
+ */
 Void StealFlag(CSmPlayer NewCarrier, CSmPlayer OldCarrier) {
 	if (NewCarrier == Null || OldCarrier == Null) return;
 	
@@ -1317,8 +1319,8 @@ Void StealFlag(CSmPlayer NewCarrier, CSmPlayer OldCarrier) {
 // --------------------------------------------------
 
 /**
-*	Spawns all players.
-*/
+ * Spawns all players.
+ */
 Void SpawnPlayers() {	
 	foreach (Player in Players) {
 		if (Player.Armor <= 0) {		// If Player has no armor, unspawn first (for example Offzone hit)
@@ -1352,15 +1354,15 @@ Void SpawnPlayers() {
 // --------------------------------------------------
 
 /**
-*	Updates the state of the flag every playloop if necessary
-*/
+ * Updates the state of the flag every playloop if necessary
+ */
 Void UpdateFlag() {
 	declare FlagIsDropped = GetFlagCarrier() == Null && G_FlagState.Landmark == Null;
 	
 	if (FlagIsDropped) {
 		if (G_FlagState.PickupableDate < Now) {
 			ResetFlag();
-		} 
+		}
 		else {
 			declare FlagHitbox = Hitbox::Struct_Hitbox {
 				Center = G_FlagState.DropLocation,
@@ -1381,8 +1383,8 @@ Void UpdateFlag() {
 // --------------------------------------------------
 
 /**
-* Updates ui and related things, if modeSetting changes
-*/
+ * Updates ui and related things, if modeSetting changes
+ */
 Void UpdateModeSettingValues() {
 	// Handle Team color and name changes
 	declare Text G_Team1Color for This;
@@ -1417,8 +1419,8 @@ Void UpdateModeSettingValues() {
 }
 
 /**
-*	Updates the players if ther state changed (Change team, ...).
-*/
+ * Updates the players if ther state changed (Change team, ...).
+ */
 Void UpdatePlayers() {
 	// Update Clan
 	foreach (Player in Players) {
@@ -1436,8 +1438,8 @@ Void UpdatePlayers() {
 // --------------------------------------------------
 
 /**
-*	Make sure a player does not spawn mid round if setting is disabled
-*/
+ * Make sure a player does not spawn mid round if setting is disabled
+ */
 Void UpdateSpectators() {
 	foreach (Spectator in Spectators)
 	{
@@ -1462,8 +1464,8 @@ Void FlashRespawn(CSmPlayer Player) {
 }
 
 /**
-* Loops though all events and reacts accordingly
-*/
+ * Loops though all events and reacts accordingly
+ */
 Void HandleEvents() {
 	
 	// Standard game events
@@ -1511,7 +1513,7 @@ Void HandleEvents() {
 				}
 			}
 			
-			case CSmModeEvent::EType::OnPlayerAdded: 
+			case CSmModeEvent::EType::OnPlayerAdded:
 			{				
 				UpdateUI();
 				InitMarkers();
@@ -1533,7 +1535,7 @@ Void HandleEvents() {
 				declare FlagCarrier = GetFlagCarrier();				
 				if (FlagCarrier == Event.Player1) StealFlag(Event.Player2, Event.Player1);
 				else if (FlagCarrier == Event.Player2) StealFlag(Event.Player1, Event.Player2);
-			} 
+			}
 		}
 	}
 }
@@ -1555,8 +1557,8 @@ Void HandleXmlRpcEvents() {
 }
 
 /**
-* Loops though all events and reacts accordingly
-*/
+ * Loops though all events and reacts accordingly
+ */
 Void HandleWarmUpEvents() {	
 	foreach (Player in AllPlayers) {
 		if (Player.Armor <= 0) {		// If Player has no armor, unspawn first (for example Offzone hit)			
@@ -1609,7 +1611,7 @@ Void HandleWarmUpEvents() {
 				UnspawnPlayer(Event.Player);			
 			}
 			
-			case CSmModeEvent::EType::OnPlayerAdded: 
+			case CSmModeEvent::EType::OnPlayerAdded:
 			{					
 				InitPlayer(Event.Player);				
 				UpdateUI();				
@@ -1628,8 +1630,8 @@ Void HandleWarmUpEvents() {
 }
 
 /**
-*		Handles a single command
-*/
+ * Handles a single command
+ */
 Void HandleModeCommand(CommandUtils::K_Command Command) {
 	switch(Command.Name) {
 		case CommandUtils::C_CommandPrefix ^ C_Command_EndWarmup: {
@@ -1648,8 +1650,8 @@ Void HandleModeCommand(CommandUtils::K_Command Command) {
 }
 
 /**
-*		Handles (mode) commands, send either through XmlRpc or UIEvents
-*/
+ * Handles (mode) commands, send either through XmlRpc or UIEvents
+ */
 Void HandleCommands() {
 	foreach (Event in PendingEvents) {
 		if (Event.Type == CSmModeEvent::EType::OnCommand) {

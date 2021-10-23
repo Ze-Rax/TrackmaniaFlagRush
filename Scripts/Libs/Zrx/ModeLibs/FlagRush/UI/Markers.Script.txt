@@ -1,6 +1,6 @@
 //#RequireContext CMlScriptIngame
 
-#Include	"Libs/Zrx/FlagRush/UI/Shared.Script.txt" as Shared
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 Text GetManialink(Integer NbBasesPerTeam, Integer TotalFlagAmount) {
 	
@@ -38,7 +38,7 @@ Text GetManialink(Integer NbBasesPerTeam, Integer TotalFlagAmount) {
 
 		<script><!--
 			
-			{{{Shared::GetTeamColorNetreadFunctions()}}}
+			{{{UIShared::GetTeamColorNetreadFunctions()}}}
 		
 			main() {
 				for(I, 0, {{{NbBasesPerTeam-1}}}) {

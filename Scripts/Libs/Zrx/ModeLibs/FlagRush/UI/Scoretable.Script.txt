@@ -2,8 +2,8 @@
 
 #Include	"MathLib" as ML
 #Include	"ColorLib" as CL
-#Include	"Libs/Zrx/FlagRush/UI/Shared.Script.txt" as Shared
-#Include "Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include	"Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 
 #Const		C_ScoresTable_FlagsScoredKey				"flags-scored"
 #Const		C_ScoresTable_FlagsScoredRoundKey			"flags-scored-round"
@@ -168,7 +168,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 	#Include "MathLib" as ML
 	#Include "ColorLib" as CL
 	
-	{{{Shared::GetTeamColorNetreadFunctions()}}}
+	{{{UIShared::GetTeamColorNetreadFunctions()}}}
 	
 	
 	CSmPlayer GetPlayer(Text Login) {

@@ -3,9 +3,7 @@
  *	Based on Cyclinder Hitbox Lib by domino54
  *	https://github.com/domino54/title-packs/blob/master/Scripts/Libs/domino54/TrackMania/CylinderHitbox.Script.txt
  *	Adjusted for TM2020 by Ze-Rax
- */
-
-/**
+ *
  *	This library allows to create virtual cylinder hitbox for
  *	the cars, adjust cylinder diameter and height from player
  *	rotation and car model size. Allows to check if hitboxes
@@ -31,14 +29,14 @@
 // Constants
 // ---------------------------------- //
 #Const C_DetectionDistance		8.		///< Computes only if distance is smaller than this value
-#Const C_VerticalSizeSub		.25		///< Short cylinder diameter to make it more accurate at car longer side
+#Const C_VerticalSizeSub			.25		///< Short cylinder diameter to make it more accurate at car longer side
 
 /// Sizes of visible player car models
 #Const C_CarModelSizes [
-	"CanyonCar" => <4.25, 1.125, 2.>,		// Leftover from TM2
-	"StadiumCar" => <4., 1., 1.75>,			// Leftover from TM2
-	"ValleyCar" => <4.25, 1.25, 2.25>,		// Leftover from TM2
-	"CarSport" => <4., 1., 1.75>
+	"CanyonCar"		=> <4.25, 1.125, 2.>,		// Leftover from TM2
+	"StadiumCar"	=> <4., 1., 1.75>,			// Leftover from TM2
+	"ValleyCar"		=> <4.25, 1.25, 2.25>,	// Leftover from TM2
+	"CarSport"		=> <4., 1., 1.75>
 ]
 
 // ---------------------------------- //
@@ -217,9 +215,9 @@ Boolean AreTouching(CSmPlayer _Player1, CSmPlayer _Player2) {
  */
 Struct_Hitbox GetHitbox(CSmPlayer _Player) {
 	// Check if player is valid
-	if (_Player == Null 
-				|| !IsSpawned(_Player) 
-				|| _Player.Position == <0., 0., 0.> 
+	if (_Player == Null
+				|| !IsSpawned(_Player)
+				|| _Player.Position == <0., 0., 0.>
 				|| !C_CarModelSizes.existskey(MapPlayerModelName)
 	) return Struct_Hitbox{Center = <0., 0., 0.>, Diameter = 0., Height = 0.};
 	

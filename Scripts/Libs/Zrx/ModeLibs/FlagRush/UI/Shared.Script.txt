@@ -1,4 +1,4 @@
-#Include	"Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRushCommon
+#Include	"Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRushCommon
 
 /**
  *	Common Functions to embed in multiple manialink

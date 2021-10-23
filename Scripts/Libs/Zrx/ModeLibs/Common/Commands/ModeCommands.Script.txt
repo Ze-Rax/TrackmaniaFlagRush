@@ -10,9 +10,9 @@
 #Const C_InternalCommand_RemovePermittedUser			"RemovePermissions"
 
 #Struct K_QuickCommand {
-    Text Command;
-    Text IconStyle;
-    Text IconSubstyle;
+	Text Command;
+	Text IconStyle;
+	Text IconSubstyle;
 }
 
 declare K_QuickCommand[] G_QuickCommands;
@@ -21,8 +21,8 @@ declare Text[] G_PermittedUserLogins;
 declare CommandUtils::K_Command[] G_PendingCommands;
 
 /**
-*		Sends the changed users to the UIs and saves them persistently for the server.
-*/
+ * Sends the changed users to the UIs and saves them persistently for the server.
+ */
 Void Private_OnPermissionsUpdate() {
 	// Send the permitted users to the UIs
 	declare netwrite Text[] Net_ModeCommands_PermittedUserLogins for Teams[0];
@@ -36,28 +36,28 @@ Void Private_OnPermissionsUpdate() {
 }
 
 /**
-*		Gets the manialink to send to the clients as Layer.
-*/
+ * Gets the manialink to send to the clients as Layer.
+ */
 Text GetManialink() {
-    declare Text FrameInstancesXml;
-    for(I, 0, G_QuickCommands.count - 1) {
-        FrameInstancesXml ^= """<frameinstance modelid="model-quick-command" pos="{{{12.5 * I}}}" id="quick-command-{{{I}}}"/>""";
-    }
+	declare Text FrameInstancesXml;
+	for(I, 0, G_QuickCommands.count - 1) {
+		FrameInstancesXml ^= """<frameinstance modelid="model-quick-command" pos="{{{12.5 * I}}}" id="quick-command-{{{I}}}"/>""";
+	}
 
-    declare Text QuickCommandReferences;
-    for(I, 0, G_QuickCommands.count - 1) {
-        QuickCommandReferences ^= """{
+	declare Text QuickCommandReferences;
+	for(I, 0, G_QuickCommands.count - 1) {
+		QuickCommandReferences ^= """{
 					declare CMlFrame FrameQuickCommand = (Page.GetFirstChild("quick-command-{{{I}}}") as CMlFrame);
 					declare CMlQuad Icon = (FrameQuickCommand.GetFirstChild("icon") as CMlQuad);
 					declare CMlLabel Label = (FrameQuickCommand.GetFirstChild("label") as CMlLabel);
-		    	Icon.Style = "{{{G_QuickCommands[I].IconStyle}}}";
-		    	Icon.Substyle = "{{{G_QuickCommands[I].IconSubstyle}}}";
-		    	Label.Value = "{{{G_QuickCommands[I].Command}}}";
+				Icon.Style = "{{{G_QuickCommands[I].IconStyle}}}";
+				Icon.Substyle = "{{{G_QuickCommands[I].IconSubstyle}}}";
+				Label.Value = "{{{G_QuickCommands[I].Command}}}";
 					QuickCommands[Icon] = Label;
-		    }""";
+			}""";
 	}
 
-    return """
+	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="ModeCommands">
 <framemodel id="model-quick-command">
@@ -122,7 +122,7 @@ main() {
 	declare netread Text[] Net_ModeCommands_PermittedUserLogins for Teams[0];
 	
 	declare CMlLabel[CMlQuad] QuickCommands;
-    {{{QuickCommandReferences}}}	
+	{{{QuickCommandReferences}}}
 	
 	FrameMain.RelativePosition_V3 = <155., {{{C_UIPosition_Y}}}>;
 	MenuState = False;
@@ -170,44 +170,44 @@ main() {
 }
 --></script>
 </manialink>
-    """;
+	""";
 }
 
 /**
-*		Adds a new quick command button with given icon style and substyle.
-*/
+ * Adds a new quick command button with given icon style and substyle.
+ */
 Void AddQuickCommand(Text Name, Text IconStyle, Text IconSubstyle) {
-    declare K_QuickCommand Command;
-    Command.Command = Name;
-    Command.IconStyle = IconStyle;
-    Command.IconSubstyle = IconSubstyle;
-    G_QuickCommands.add(Command);
+	declare K_QuickCommand Command;
+	Command.Command = Name;
+	Command.IconStyle = IconStyle;
+	Command.IconSubstyle = IconSubstyle;
+	G_QuickCommands.add(Command);
 }
 
 /**
-*		Clears all quick commands.
-*/
+ * Clears all quick commands.
+ */
 Void ClearQuickCommands() {
 	G_QuickCommands.clear();
 }
 
 /**
-*		Gets a list of all user logins that are permitted to use mode commands.
-*/
+ * Gets a list of all user logins that are permitted to use mode commands.
+ */
 Text[] GetPermittedUserLogins() {
 	return G_PermittedUserLogins;
 }
 
 /**
-*		Checks if a given user login has permissions to use mode commands.
-*/
+ * Checks if a given user login has permissions to use mode commands.
+ */
 Boolean IsPermittedUser(Text Login) {
 	return G_PermittedUserLogins.exists(Login);
 }
 
 /**
-*		Grants permissions for a given user login to use mode commands.
-*/
+ * Grants permissions for a given user login to use mode commands.
+ */
 Void AddPermittedUser(Text Login) {
 	if(!IsPermittedUser(Login)) {
 		G_PermittedUserLogins.add(Login);
@@ -216,8 +216,8 @@ Void AddPermittedUser(Text Login) {
 }
 
 /**
-*		Removes permissions for a given user login to use mode commands.
-*/
+ * Removes permissions for a given user login to use mode commands.
+ */
 Void RemovePermittedUser(Text Login) {
 	G_PermittedUserLogins.remove(Login);
 	G_AdminLogins.remove(Login);
@@ -225,8 +225,8 @@ Void RemovePermittedUser(Text Login) {
 }
 
 /**
-*		Removes permissions for all users to use mode commands.
-*/
+ * Removes permissions for all users to use mode commands.
+ */
 Void ClearPermittedUsers() {
 	G_PermittedUserLogins.clear();
 	G_AdminLogins.clear();
@@ -234,23 +234,23 @@ Void ClearPermittedUsers() {
 }
 
 /**
-*		Get a list of all admin logins for mode commands.
-*/
+ * Get a list of all admin logins for mode commands.
+ */
 Text[] GetAdminLogins() {
 	return G_AdminLogins;
 }
 
 /**
-*		Checks if a given user login has admin permissions.
-*/
+ * Checks if a given user login has admin permissions.
+ */
 Boolean IsAdmin(Text Login) {
 	return G_AdminLogins.exists(Login);
 }
 
 /**
-*		Grants admin permissions for a given user login.
-*		Also adds the login to the list of permitted user logins.
-*/
+ * Grants admin permissions for a given user login.
+ * Also adds the login to the list of permitted user logins.
+ */
 Void AddAdmin(Text Login) {
 	if(!IsAdmin(Login)) {
 		G_AdminLogins.add(Login);
@@ -262,31 +262,31 @@ Void AddAdmin(Text Login) {
 }
 
 /**
-*		Removes admin permissions from a given user login.
-*/
+ * Removes admin permissions from a given user login.
+ */
 Void RemoveAdmin(Text Login) {
 	G_AdminLogins.remove(Login);
 	Private_OnPermissionsUpdate();
 }
 
 /**
-*		Removes permissions for all users to use mode commands.
-*/
+ * Removes permissions for all users to use mode commands.
+ */
 Void ClearAdmins() {
 	G_AdminLogins.clear();
 	Private_OnPermissionsUpdate();
 }
 
 /**
-*		Gets a list of all pending Commands.
-*/
+ * Gets a list of all pending Commands.
+ */
 CommandUtils::K_Command[] GetPendingCommands() {
 	return G_PendingCommands;
 }
 
 /**
-*		Handles commands that manage the lib itself.
-*/
+ * Handles commands that manage the lib itself.
+ */
 Void Private_HandleInternalCommand(CommandUtils::K_Command Command) {
 	switch (Command.Name) {
 		case CommandUtils::C_CommandPrefix ^ C_InternalCommandPrefix ^ C_InternalCommand_AddAdmin: {
@@ -311,8 +311,8 @@ Void Private_HandleInternalCommand(CommandUtils::K_Command Command) {
 }
 
 /**
-*		Loads persistent settings from the server.
-*/
+ * Loads persistent settings from the server.
+ */
 Void Load() {	
 	declare persistent Text[] Persistent_ModeCommands_AdminLogins for This;
 	G_AdminLogins = Persistent_ModeCommands_AdminLogins;
@@ -323,8 +323,8 @@ Void Load() {
 }
 
 /**
-*		Executes all necessarry procedures during a yield.
-*/
+ * Executes all necessarry procedures during a yield.
+ */
 Void Yield() {
 	G_PendingCommands.clear();
 	

@@ -2,7 +2,7 @@
 #Include "ColorLib" as CL
 #Include "MathLib" as ML
 
-#Include "Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 
 #Const C_RegexPattern_NameHex3Color "\\$[0-9a-fA-F]{3}"
 #Const C_RegexPattern_TextFormat "(\\$[0-9a-fA-F]{3})|(\\$[wWtTzZiIoOsSgGnNmM])|(\\$[hHlL](\\[.*\\])?)"

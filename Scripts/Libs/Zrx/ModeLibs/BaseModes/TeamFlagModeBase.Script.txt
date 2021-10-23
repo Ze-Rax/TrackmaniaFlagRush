@@ -1,13 +1,13 @@
 /**
 *	Base mode for team and flag based gamemodes, like FlagRush
 */
-#Extends "Libs/Zrx/FlagModeBase.Script.txt"
+#Extends "Libs/Zrx/ModeLibs/BaseModes/FlagModeBase.Script.txt"
 
 //////////////
 // Includes //
 //////////////
 
-#Include "Libs/Zrx/TeamPointsProgression.Script.txt" as TeamPointsProgression
+#Include "Libs/Zrx/ModeLibs/Common/TeamPointsProgression.Script.txt" as TeamPointsProgression
 
 ///////////
 // Plugs //

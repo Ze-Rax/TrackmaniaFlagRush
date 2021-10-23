@@ -1,7 +1,7 @@
 // #RequireContext CSmMode
 
-#Include	"Libs/Zrx/FlagRush/UI/Shared.Script.txt" as Shared
-#Include	"Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include	"Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 
 Text GetManialink() {	
 	return """
@@ -50,7 +50,7 @@ Text GetManialink() {
 		#Include "TextLib" as TL	
 		#Include "ColorLib" as CL
 			
-		{{{Shared::GetTeamColorNetreadFunctions()}}}
+		{{{UIShared::GetTeamColorNetreadFunctions()}}}
 		
 		main() {
 			/* MlControl references */

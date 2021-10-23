@@ -19,7 +19,7 @@
 
 #Include "TextLib" as TL
 
-#Include "Libs/Zrx/WarmUpReadyUp_UI.Script.txt" as WarmUpReadyUp_UI
+#Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp_UI.Script.txt" as WarmUpReadyUp_UI
 #Include "Libs/Nadeo/ModeLibs/Legacy/Layers2.Script.txt" as Layers
 
 #Const C_Event_Type_PlayerReadyChanged	"PlayerReadyChanged"

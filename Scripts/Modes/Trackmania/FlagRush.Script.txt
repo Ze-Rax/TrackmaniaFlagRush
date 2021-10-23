@@ -5,38 +5,41 @@
 *	Gamemode by Ze-Rax
 */
 
-#Extends "Libs/Zrx/TeamFlagModeBase.Script.txt"
+#Extends "Libs/Zrx/ModeLibs/BaseModes/TeamFlagModeBase.Script.txt"
+
+/* Common Libs */
 
 #Include "TextLib" as TL
 #Include "MathLib" as ML
 #Include "ColorLib" as CL
 
-#Include "Libs/Zrx/WarmUpReadyUp.Script.txt" as WarmUpReadyUp
+#Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt" as WarmUpReadyUp
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt" as ModeCommands
 #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt" as CommandUtils
+#Include "Libs/Zrx/ModeLibs/Common/ClubTagUtils.Script.txt" as ClubTagUtils
+#Include "Libs/Zrx/ModeLibs/Common/Collision/CylinderHitbox.Script.txt" as Hitbox
 
-/* Additional dependencies from other extends */
-#Include "Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
-#Include "Libs/Zrx/CylinderHitbox.Script.txt" as Hitbox
-#Include "Libs/Zrx/ClubTagUtil.Script.txt" as ClubTagUtil
+/* FlagRush Libs */
 
-/* Additional dependencies from other extends */
-
-#Include "Libs/Zrx/Collision.Script.txt" as Collision
-#Include "Libs/Zrx/PlayerTelemetry.Script.txt" as Telemetry
-#Include "Libs/Zrx/TeamPointsProgression.Script.txt" as TeamPointsProgression
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 
 /* UI */
 
-#Include "Libs/Zrx/FlagRush/UI/Feed.Script.txt" as UIEventFeed
-#Include "Libs/Zrx/FlagRush/UI/Flash.Script.txt" as FlagRush_UIFlash
-#Include "Libs/Zrx/FlagRush/UI/Header.Script.txt" as FlagRush_UIHeader
-#Include "Libs/Zrx/FlagRush/UI/Markers.Script.txt" as FlagRush_UIMarkers
-#Include "Libs/Zrx/FlagRush/UI/Scoretable.Script.txt" as FlagRush_UIScoretable
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Feed.Script.txt" as UIEventFeed
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Flash.Script.txt" as FlagRush_UIFlash
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Header.Script.txt" as FlagRush_UIHeader
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Markers.Script.txt" as FlagRush_UIMarkers
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Scoretable.Script.txt" as FlagRush_UIScoretable
+
+/* Additional dependencies from other extends */
+
+#Include "Libs/Zrx/ModeLibs/Common/Collision/Collision.Script.txt" as Collision
+#Include "Libs/Zrx/ModeLibs/Common/PlayerTelemetry.Script.txt" as Telemetry
+#Include "Libs/Zrx/ModeLibs/Common/TeamPointsProgression.Script.txt" as TeamPointsProgression
 
 /* Constants */
 
-#Const	CompatibleMapTypes						"TrackMania\\FlagRushArena,FlagRushArena"
+#Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
 #Const	Version												"2021-09-02"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
@@ -599,22 +602,22 @@ Integer EvaluateMatch() {
 // Initialisation functions for StartTurn/Round/Map
 // --------------------------------------------------
 
-ClubTagUtil::K_TeamConfig[] GetTeamConfigs() {
+ClubTagUtils::K_TeamConfig[] GetTeamConfigs() {
 	declare Text G_Team1Name for This;
 	declare Text G_Team1Color for This;
 	declare Text G_Team2Name for This;
 	declare Text G_Team2Color for This;
 	
 	// Get TeamConfigs from ClubTags
-	declare ClubTagUtil::K_TeamConfig[] TeamConfigs; // = ClubTagUtil::GetTeamConfigs();
-	TeamConfigs.add(ClubTagUtil::GetTeamConfig(1));
-	TeamConfigs.add(ClubTagUtil::GetTeamConfig(2));
+	declare ClubTagUtils::K_TeamConfig[] TeamConfigs; // = ClubTagUtils::GetTeamConfigs();
+	TeamConfigs.add(ClubTagUtils::GetTeamConfig(1));
+	TeamConfigs.add(ClubTagUtils::GetTeamConfig(2));
 	
 	// Overwrite empty values or forced values
 	if (TeamConfigs[0].Name == "" || G_Team1Name != "") TeamConfigs[0].Name = FlagRush_Common::GetDefaultTeamName(0);
-	if (TeamConfigs[0].Color == ClubTagUtil::C_InvalidColor || G_Team1Color != "") TeamConfigs[0].Color = FlagRush_Common::GetDefaultTeamColor(0);
+	if (TeamConfigs[0].Color == ClubTagUtils::C_InvalidColor || G_Team1Color != "") TeamConfigs[0].Color = FlagRush_Common::GetDefaultTeamColor(0);
 	if (TeamConfigs[1].Name == "" || G_Team2Name != "") TeamConfigs[1].Name = FlagRush_Common::GetDefaultTeamName(1);
-	if (TeamConfigs[1].Color == ClubTagUtil::C_InvalidColor || G_Team2Color != "") TeamConfigs[1].Color = FlagRush_Common::GetDefaultTeamColor(1);
+	if (TeamConfigs[1].Color == ClubTagUtils::C_InvalidColor || G_Team2Color != "") TeamConfigs[1].Color = FlagRush_Common::GetDefaultTeamColor(1);
 	
 	// Adjust colors to avoid hue overlap
 	// Only adjust if at least one team color is not forced by settings
@@ -637,7 +640,7 @@ ClubTagUtil::K_TeamConfig[] GetTeamConfigs() {
 */
 Void InitTeams() {	
 	// Get TeamConfigs by ClubTag
-	declare ClubTagUtil::K_TeamConfig[] TeamConfigs = GetTeamConfigs();
+	declare ClubTagUtils::K_TeamConfig[] TeamConfigs = GetTeamConfigs();
 	
 	// 0 is Team1, 1 is Team2 ("Team X" = Clan X = Teams[X-1])
 	for(I, 0, 1) {

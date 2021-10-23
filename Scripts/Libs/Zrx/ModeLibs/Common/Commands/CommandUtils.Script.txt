@@ -1,5 +1,7 @@
 #Include "TextLib" as TL
 
+#Const 	C_CommandPrefix		"Command_"
+
 #Struct K_Command {
 	Text		Name;
 	Boolean	ValueBoolean;
@@ -10,15 +12,17 @@
 	Vec3		ValueVec3;
 	Int2		ValueInt2;
 	Int3		ValueInt3;
+	Text		Source;
 }
 
 /**
 *		Transfroms a Text and Params into a Command
 */
-K_Command FromNameAndParams(Text Name, Text[] Params) {
+K_Command FromNameAndParams(Text Name, Text[] Params, Text Source) {
 	declare K_Command Command;
 	
-	Command.Name = Name;	
+	Command.Name = Name;
+	Command.Source = Source;
 	Command.ValueText			= TL::Join(" ", Params);
 	
 	switch(Params.count) {
@@ -49,11 +53,11 @@ K_Command FromNameAndParams(Text Name, Text[] Params) {
 /**
 *		Transforms a Text into a Command
 */
-K_Command FromText(Text CommandText) {
+K_Command FromText(Text CommandText, Text Source) {
 	declare K_Command Command;
 	declare Text[] CommandSplit = TL::Split(" ", CommandText);
 	if(CommandSplit.count >= 1) {
-		Command = FromNameAndParams(CommandSplit[0], CommandSplit.slice(1, CommandSplit.count - 1));
+		Command = FromNameAndParams(CommandSplit[0], CommandSplit.slice(1, CommandSplit.count - 1), Source);
 	}
 	return Command;
 }
@@ -71,7 +75,8 @@ K_Command FromEvent(CSmModeEvent Event) {
 		ValueVec2			= Event.CommandValueVec2,
 		ValueVec3			= Event.CommandValueVec3,
 		ValueInt2			= Event.CommandValueInt2,
-		ValueInt3			= Event.CommandValueInt3
+		ValueInt3			= Event.CommandValueInt3,
+		Source				= "CSmModeEvent"
 	};
 }
 
@@ -79,5 +84,9 @@ K_Command FromEvent(CSmModeEvent Event) {
 *		Transforms a CUIConfigEvent into a Command struct
 */
 K_Command FromEvent(CUIConfigEvent Event) {
-	return FromNameAndParams(Event.CustomEventType, Event.CustomEventData);
+	declare Text Source;
+	if(Event.UI != Null) {	// Apparently that can happen somehow... (said Boss Bravo)
+		Source = GetPlayer(Event.UI).User.Login;
+	}
+	return FromNameAndParams(Event.CustomEventType, Event.CustomEventData, Source);
 }

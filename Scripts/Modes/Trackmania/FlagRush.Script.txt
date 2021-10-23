@@ -12,8 +12,8 @@
 #Include "ColorLib" as CL
 
 #Include "Libs/Zrx/WarmUpReadyUp.Script.txt" as WarmUpReadyUp
-#Include "Libs/Zrx/ModeCommands.Script.txt" as ModeCommands
-#Include "Libs/Zrx/Commands.Script.txt" as Commands
+#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt" as ModeCommands
+#Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt" as CommandUtils
 
 /* Additional dependencies from other extends */
 #Include "Libs/Zrx/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
@@ -36,89 +36,90 @@
 
 /* Constants */
 
-#Const	CompatibleMapTypes  "TrackMania\\FlagRushArena,FlagRushArena"
-#Const	Version				"2021-09-02"
-#Const	ScriptName			"Modes/TrackMania/FlagRush.Script.txt"
+#Const	CompatibleMapTypes						"TrackMania\\FlagRushArena,FlagRushArena"
+#Const	Version												"2021-09-02"
+#Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
-#Const	C_SpawnAnimDuration					2000
-#Const	C_BigMessage_Duration				3000
+#Const	C_SpawnAnimDuration						2000
+#Const	C_BigMessage_Duration					3000
 
 #Const	C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
 #Const	C_LayerName_ScoresHeader			"Layer_FlagRush_ScoresHeader"
-#Const	C_LayerName_RoundUI					"Layer_FlagRush_RoundUI"
-#Const	C_LayerName_Markers					"Layer_FlagRush_Markers"
-#Const 	C_LayerName_Feed					"Layer_FlagRush_Feed"
-#Const 	C_LayerName_Flash					"Layer_FlagRush_Flash"
+#Const	C_LayerName_RoundUI						"Layer_FlagRush_RoundUI"
+#Const	C_LayerName_Markers						"Layer_FlagRush_Markers"
+#Const 	C_LayerName_Feed							"Layer_FlagRush_Feed"
+#Const 	C_LayerName_Flash							"Layer_FlagRush_Flash"
 #Const	C_LayerName_ModeCommands			"Layer_ModeCommands"
 
-#Const	C_Telemetry_Key_FlagsScored			"FlagsScored"
-#Const	C_Telemetry_Key_FlagsStolen			"FlagsStolen"
+#Const	C_Telemetry_Key_FlagsScored		"FlagsScored"
+#Const	C_Telemetry_Key_FlagsStolen		"FlagsStolen"
 
-#Const	C_FlagHitbox_Diameter				6.
-#Const	C_FlagHitbox_Height					4.
+#Const	C_FlagHitbox_Diameter					6.
+#Const	C_FlagHitbox_Height						4.
 #Const 	C_RespawnSpeedLimitKmh 				30.
 
-#Const  C_Debug 							True
-#Const	C_Debug_MarkersLabels				True
-#Const	C_Debug_NbFakeUsers					<0, 0>
+#Const  C_Debug 											True
+#Const	C_Debug_MarkersLabels					True
+#Const	C_Debug_NbFakeUsers						<0, 0>
 
 //////////////
 // Settings //
 //////////////
 
 // Match progression
-#Setting S_UseWarmUp								True	as _("Use warm up")
+#Setting S_UseWarmUp												True		as _("Use warm up")
 
-#Setting S_NbMapsToWinMatch							1 		as "Number of maps to win a match"
-#Setting S_NbRoundsToWinMap							2 		as "Number of rounds to win a map"
-#Setting S_NbFlagsToWinRound						3		as "Number of flags scored to win a round"
-#Setting S_RoundTimeLimitSeconds					600 	as "Round Timelimit (seconds)"
-#Setting S_UseTurns									False 	as "Use turns (Reset after a player scores a flag)"
-#Setting S_UseOvertime								True 	as _("Use overtime when round is tied")
+#Setting S_NbMapsToWinMatch									1 			as "Number of maps to win a match"
+#Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"
+#Setting S_NbFlagsToWinRound								3				as "Number of flags scored to win a round"
+#Setting S_RoundTimeLimitSeconds						600 		as "Round Timelimit (seconds)"
+#Setting S_UseTurns													False 	as "Use turns (Reset after a player scores a flag)"
+#Setting S_UseOvertime											True 		as _("Use overtime when round is tied")
 
 // Gameplay
-#Setting S_UseReversedBases							False 	as "<hidden>" // Switch team bases
-#Setting S_RandomizeFlagspawn						True 	as "Randomize flag spawn location"
-#Setting S_FlagInitialSpawnDelaySeconds				0. 		as "<hidden>" // Initial flag spawn delay (seconds)
-#Setting S_FlagRespawnDelaySeconds					0. 		as "<hidden>" // Flag respawn delay (seconds)
-#Setting S_FlagDropStateDurationSeconds				8. 		as "Flag drop state duration (seconds)"
-#Setting S_FlagStealResistDurationSeconds			1. 		as "<hidden>" // Flag steal resistance (seconds)
-#Setting S_FlagSameTeamSteal						False 	as "Team flag steal"
-#Setting S_FlagCarrierFragile						False 	as "Flag carrier becomes fragile"
-#Setting S_FlagCarrierAcceleration					0.8 	as "Flag carrier acceleration (0.0 - 1.0)"
-#Setting S_FlagCarrierControl						1.0 	as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
-#Setting S_FlagCarrierAdherence						1.0 	as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
-#Setting S_CanJoinMidRound							True 	as "<hidden>" // Players can join in the middle of a round
-#Setting S_RespawnWhenStill							True 	as "Players can respawn only when being still"
-#Setting S_RespawnDelay								1.5 	as "Respawn Delay (seconds)"
+#Setting S_UseReversedBases									False 	as "<hidden>" // Switch team bases
+#Setting S_RandomizeFlagspawn								True 		as "Randomize flag spawn location"
+#Setting S_FlagInitialSpawnDelaySeconds			0. 			as "<hidden>" // Initial flag spawn delay (seconds)
+#Setting S_FlagRespawnDelaySeconds					0. 			as "<hidden>" // Flag respawn delay (seconds)
+#Setting S_FlagDropStateDurationSeconds			8. 			as "Flag drop state duration (seconds)"
+#Setting S_FlagStealResistDurationSeconds		1. 			as "<hidden>" // Flag steal resistance (seconds)
+#Setting S_FlagSameTeamSteal								False 	as "Team flag steal"
+#Setting S_FlagCarrierFragile								False 	as "Flag carrier becomes fragile"
+#Setting S_FlagCarrierAcceleration					0.8 		as "Flag carrier acceleration (0.0 - 1.0)"
+#Setting S_FlagCarrierControl								1.0 		as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
+#Setting S_FlagCarrierAdherence							1.0 		as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
+#Setting S_CanJoinMidRound									True 		as "<hidden>" // Players can join in the middle of a round
+#Setting S_RespawnWhenStill									True 		as "Players can respawn only when being still"
+#Setting S_RespawnDelay											1.5 		as "Respawn Delay (seconds)"
 
 // Teams
-#Setting S_Team1Name 								"" 		as "Team 1 Name"
-#Setting S_Team2Name 								"" 		as "Team 2 Name"
-#Setting S_Team1Color 								"" 		as "Team 1 Color"
-#Setting S_Team2Color 								"" 		as "Team 2 Color"
+#Setting S_Team1Name 												"" 			as "Team 1 Name"
+#Setting S_Team2Name 												"" 			as "Team 2 Name"
+#Setting S_Team1Color 											"" 			as "Team 1 Color"
+#Setting S_Team2Color 											"" 			as "Team 2 Color"
+
+// ModeCommands
+#Setting S_ModeCommands_AdminLoginsCsv 			"" 			as "<hidden>" // Admin logins for the mode commands ui
 
 //////////////
 // Commands //
 //////////////
 
 // Constants are used for Commands from other sources, like UI Events.
-// Constants value has to be the same as the respective command.
-// Commands and Constant Values have to start with "Command_"
+// Constants value has to be the same as the name of the respective command without the Command_ prefix.
 // The Parameter for the Command has to be sent with the Event in the Params array.
 // In case of Vec2/Vec3/Int2/Int3 commands, X, Y & Z each take a seperate entry in the params array.
-
 #Command	Command_PauseRound		(Boolean) as	"Pause round"
-#Const		C_Command_Pause											"Command_PauseRound"
+#Const		C_Command_Pause											"PauseRound"
 
 #Command	Command_EndWarmup			(Boolean) as 	"End warmup"
-#Const		C_Command_EndWarmup									"Command_EndWarmup"
+#Const		C_Command_EndWarmup									"EndWarmup"
 
 // #Command	Command_SkipMap				(Boolean) as	"Skip map"
-#Const		C_Command_SkipMap										"Command_SkipMap"
+#Const		C_Command_SkipMap										"SkipMap"
 
 #Command	Command_ResetFlag			(Boolean) as	"Reset flag"
-#Const		C_Command_ResetFlag									"Command_ResetFlag"
+#Const		C_Command_ResetFlag									"ResetFlag"
 
 /////////////
 // Structs //
@@ -169,6 +170,11 @@ UseClans = True;
 MB_Settings_UseDefaultHud = False;
 MB_Settings_UseDefaultPodiumSequence = False;
 
+ModeCommands::Load();
+declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
+foreach(Login in ModeCommandsAdminLogins) {
+	ModeCommands::AddAdmin(Login);
+}
 ModeCommands::AddQuickCommand(C_Command_EndWarmup, "Icons64x64_1", "ArrowGreen");
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
@@ -443,6 +449,11 @@ if(G_PauseRequested) {
 }
 ***
 
+// There's no public yield, so just use the private one
+***MB_Private_Yield***
+***
+ModeCommands::Yield();
+***
 
 ///////////////
 // Functions //
@@ -1619,18 +1630,18 @@ Void HandleWarmUpEvents() {
 /**
 *		Handles a single command
 */
-Void HandleCommand(Commands::K_Command Command) {
+Void HandleModeCommand(CommandUtils::K_Command Command) {
 	switch(Command.Name) {
-		case C_Command_EndWarmup: {
+		case CommandUtils::C_CommandPrefix ^ C_Command_EndWarmup: {
 			WarmUpReadyUp::Stop();
 		}
-		case C_Command_Pause: {
+		case CommandUtils::C_CommandPrefix ^ C_Command_Pause: {
 			G_PauseRequested = True;
 		}
-		case C_Command_SkipMap: {
+		case CommandUtils::C_CommandPrefix ^ C_Command_SkipMap: {
 			MatchEndRequested = True;
 		}
-		case C_Command_ResetFlag: {
+		case CommandUtils::C_CommandPrefix ^ C_Command_ResetFlag: {
 			ResetFlag();
 		}
 	}
@@ -1642,14 +1653,12 @@ Void HandleCommand(Commands::K_Command Command) {
 Void HandleCommands() {
 	foreach (Event in PendingEvents) {
 		if (Event.Type == CSmModeEvent::EType::OnCommand) {
-			HandleCommand(Commands::FromEvent(Event));
+			HandleModeCommand(CommandUtils::FromEvent(Event));
 		}
 	}
 
-	foreach (Event in UIManager.PendingEvents) {
-		if(Event.CustomEventType != "" && TL::StartsWith("Command_", Event.CustomEventType)) {
-			HandleCommand(Commands::FromEvent(Event));
-		}
+	foreach (Command in ModeCommands::GetPendingCommands()) {
+		HandleModeCommand(Command);
 	}
 }
 

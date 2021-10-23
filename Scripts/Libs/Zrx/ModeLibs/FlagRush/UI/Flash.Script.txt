@@ -1,37 +1,37 @@
 //#RequireContext CMlScriptIngame
 
 Text GetManialink() {
-    return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-    <manialink version="3" name="FlagRush_Flash">
-    <frame id="respawn">
-        <label pos="0 10" z-index="0" size="30 20" text="" halign="center" valign="center2" textsize="19" opacity="0" />
-        <label pos="0 -3" z-index="0" size="120 6" text="Respawn restricted!" textfont="GameFontBlack" halign="center" valign="center2" opacity="0"/>
-        <label pos="0 -9" z-index="0" size="120 6" textsize="1.5" text="You must be still to respawn." textfont="GameFontRegular" halign="center" valign="center2" opacity="0"/>
-    </frame>
-    <script><!--
-    
-    Void FlashRespawn() {
-        declare CMlFrame frame = (Page.GetFirstChild("respawn") as CMlFrame);
-        foreach (elem in frame.Controls) {
-            declare CMlLabel label = (elem as CMlLabel);
-            label.Opacity = 1.;
-            AnimMgr.Add(label, "<elem opacity=\"0\" />", 1500,  CAnimManager::EAnimManagerEasing::CubicIn);
-        }
-    }
-    
-    main() {        
-        declare netread Integer Net_RespawnStamp for UI;
-        declare Integer lastUpdate = Net_RespawnStamp;
+	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3" name="FlagRush_Flash">
+	<frame id="respawn">
+		<label pos="0 10" z-index="0" size="30 20" text="" halign="center" valign="center2" textsize="19" opacity="0" />
+		<label pos="0 -3" z-index="0" size="120 6" text="Respawn restricted!" textfont="GameFontBlack" halign="center" valign="center2" opacity="0"/>
+		<label pos="0 -9" z-index="0" size="120 6" textsize="1.5" text="You must be still to respawn." textfont="GameFontRegular" halign="center" valign="center2" opacity="0"/>
+	</frame>
+	<script><!--
+	
+	Void FlashRespawn() {
+		declare CMlFrame frame = (Page.GetFirstChild("respawn") as CMlFrame);
+		foreach (elem in frame.Controls) {
+			declare CMlLabel label = (elem as CMlLabel);
+			label.Opacity = 1.;
+			AnimMgr.Add(label, "<elem opacity=\"0\" />", 1500,  CAnimManager::EAnimManagerEasing::CubicIn);
+		}
+	}
+	
+	main() {
+		declare netread Integer Net_RespawnStamp for UI;
+		declare Integer lastUpdate = Net_RespawnStamp;
 
-        while(True) {
-            yield;
-            if (Net_RespawnStamp > lastUpdate) {
-                lastUpdate = Net_RespawnStamp;
-                FlashRespawn();
-            }
-        }
-    }
-    --></script>
-    </manialink>
-    """;
+		while(True) {
+			yield;
+			if (Net_RespawnStamp > lastUpdate) {
+				lastUpdate = Net_RespawnStamp;
+				FlashRespawn();
+			}
+		}
+	}
+	--></script>
+	</manialink>
+	""";
 }

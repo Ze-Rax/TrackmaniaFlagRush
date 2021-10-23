@@ -2,11 +2,11 @@
 
 // this must be exact same as in manialink, remember to change it if you edit here.
 #Struct K_FeedMessage {
-    Text Message;
-    Text IconStyle;
-    Text IconSubstyle;
-    Vec3 IconColor;
-    Integer Stamp;
+	Text Message;
+	Text IconStyle;
+	Text IconSubstyle;
+	Vec3 IconColor;
+	Integer Stamp;
 }
 
 #Const C_FeedMessageAmount 8
@@ -15,164 +15,164 @@ declare K_FeedMessage[] G_FeedMessages;
 
 
 Void ClearMessages() {
-    G_FeedMessages.clear();
-    foreach(Player in AllPlayers) {
-        declare CUIConfig UI = UIManager.GetUI(Player);
-        if (UI != Null) {
-            declare netwrite K_FeedMessage[] EventFeed for UI;
-            declare netwrite Integer EventFeedUpdate for UI;
-            EventFeed = G_FeedMessages;
-            EventFeedUpdate = Now;
-        } 
-    }
+	G_FeedMessages.clear();
+	foreach(Player in AllPlayers) {
+		declare CUIConfig UI = UIManager.GetUI(Player);
+		if (UI != Null) {
+			declare netwrite K_FeedMessage[] EventFeed for UI;
+			declare netwrite Integer EventFeedUpdate for UI;
+			EventFeed = G_FeedMessages;
+			EventFeedUpdate = Now;
+		}
+	}
 }
 
 /**
-* Adds Message to event Feed
-* @param string:Text = main message, displayed in white without colorcodes, supports game colorcodes syntax  
-* @param Style:Text = Style of the quad
-* @param Substyle:Text = Substyle of the quad
-* @param Color:Text = Color of the quad
-*/
+ * Adds Message to event Feed
+ * @param string:Text = main message, displayed in white without colorcodes, supports game colorcodes syntax
+ * @param Style:Text = Style of the quad
+ * @param Substyle:Text = Substyle of the quad
+ * @param Color:Text = Color of the quad
+ */
 Void SendMessage(Text string, Text Style, Text Substyle, Vec3 Color) {
-    declare LikeNow = Now;
-    G_FeedMessages.addfirst(K_FeedMessage{Message=string, IconStyle=Style, IconSubstyle=Substyle, IconColor=Color, Stamp=LikeNow});
-    G_FeedMessages = G_FeedMessages.slice(0, C_FeedMessageAmount);
-    
-    foreach(Player in AllPlayers) {
-        declare CUIConfig UI = UIManager.GetUI(Player);
-        if (UI != Null) {
-            declare netwrite K_FeedMessage[] EventFeed for UI;
-            declare netwrite Integer EventFeedUpdate for UI;
-            EventFeedUpdate = LikeNow;
-            EventFeed = G_FeedMessages;
-        }
-    }
+	declare LikeNow = Now;
+	G_FeedMessages.addfirst(K_FeedMessage{Message=string, IconStyle=Style, IconSubstyle=Substyle, IconColor=Color, Stamp=LikeNow});
+	G_FeedMessages = G_FeedMessages.slice(0, C_FeedMessageAmount);
+	
+	foreach(Player in AllPlayers) {
+		declare CUIConfig UI = UIManager.GetUI(Player);
+		if (UI != Null) {
+			declare netwrite K_FeedMessage[] EventFeed for UI;
+			declare netwrite Integer EventFeedUpdate for UI;
+			EventFeedUpdate = LikeNow;
+			EventFeed = G_FeedMessages;
+		}
+	}
 }
 
 /**
-* Adds Message to event Feed
-* @param string:Text = main message, displayed in white without colorcodes, supports game colorcodes syntax
-* @param icon:Text = icon to show
-* @param Color:Vec3
-*/
+ * Adds Message to event Feed
+ * @param string:Text = main message, displayed in white without colorcodes, supports game colorcodes syntax
+ * @param icon:Text = icon to show
+ * @param Color:Vec3
+ */
 Void SendMessage(Text String, Text Icon, Vec3 Color) {
-    declare color = Color;
-    if (color == <0., 0., 0.>) color = <1., 1., 1.>;
-    
-    switch (Icon) {
-        case "base": SendMessage(String, "ManiaPlanetMainMenu", "IconHome", color);
-        case "flag": SendMessage(String, "UIConstruction_Buttons", "Validate", color);
-        case "info": SendMessage(String, "UICommon64_1", "Info_light", color);
-        default: SendMessage(String, "", "", color);
-    }
+	declare color = Color;
+	if (color == <0., 0., 0.>) color = <1., 1., 1.>;
+	
+	switch (Icon) {
+		case "base": SendMessage(String, "ManiaPlanetMainMenu", "IconHome", color);
+		case "flag": SendMessage(String, "UIConstruction_Buttons", "Validate", color);
+		case "info": SendMessage(String, "UICommon64_1", "Info_light", color);
+		default: SendMessage(String, "", "", color);
+	}
 }
 
 Void SendMessage(Text String, Text Icon) {
-    SendMessage(String, Icon, <1., 1., 1.>);
+	SendMessage(String, Icon, <1., 1., 1.>);
 }
 
-Void SendMessage(Text string) {  
-    SendMessage(string, "", "", <1., 1., 1.>);
+Void SendMessage(Text string) {
+	SendMessage(string, "", "", <1., 1., 1.>);
 }
 
 Text GetManialink(Integer feedSize) {
-    declare Text entries = "";
-    for (i, 0, feedSize) {
-        entries ^= """<frameinstance modelid="message"/> """ ^ "\n";        
-    }
-        
-    return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-    <manialink version="3" name="FlagRush Events">
-    <framemodel id="message">
-        <quad size="3 3" pos="0 -1.5" halign="center" valign="center"/>
-        <label size="60 3" pos="1.5 -1.5" text="" textsize="1" textfont="GameFontSemiBold" halign="left" valign="center" opacity="0" textemboss="1" />
-    </framemodel>
-    <frame id="Events" pos="-158 10" >
-        {{{ entries }}}
-    </frame>
-    <script><!--
-    #Include "MathLib" as ML
-    
-    #Const size {{{ feedSize-1 }}}
+	declare Text entries = "";
+	for (i, 0, feedSize) {
+		entries ^= """<frameinstance modelid="message"/> """ ^ "\n";
+	}
+		
+	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3" name="FlagRush Events">
+	<framemodel id="message">
+		<quad size="3 3" pos="0 -1.5" halign="center" valign="center"/>
+		<label size="60 3" pos="1.5 -1.5" text="" textsize="1" textfont="GameFontSemiBold" halign="left" valign="center" opacity="0" textemboss="1" />
+	</framemodel>
+	<frame id="Events" pos="-158 10" >
+		{{{ entries }}}
+	</frame>
+	<script><!--
+	#Include "MathLib" as ML
+	
+	#Const size {{{ feedSize-1 }}}
 
-    #Struct K_FeedMessage {
-        Text Message;
-        Text IconStyle;
-        Text IconSubstyle;
-        Vec3 IconColor;
-        Integer Stamp;
-    }
-   
-    declare Integer counter;
-    declare Integer LastUpdate;
-    
-    Void addMessage(K_FeedMessage Message) {
-        declare CMlFrame frame = (Page.GetFirstChild("Events") as CMlFrame);
-        declare idx = counter%size;
-        
-        for (i,0,size) {
-            declare key = (idx + i) % size;			
-            frame.Controls[key].RelativePosition_V3.Y = -i * 4.;
-        }
-        
-        if (frame.Controls.existskey(idx)) {
-            declare CMlFrame elem = frame.Controls[idx] as CMlFrame;	
-            declare CMlLabel label = elem.Controls[1] as CMlLabel;
-            
-            label.Value = Message.Message;	
-            label.Scale= 1.2;
-            label.Opacity = 0.;
-            
-            AnimMgr.Flush(label);         
-            AnimMgr.Add(label, "<label scale=\"1\" opacity=\"1\" pos=\"1.5 "^label.RelativePosition_V3.Y ^"\" />", 750, CAnimManager::EAnimManagerEasing::CircOut);
-            AnimMgr.Add(label, "<label opacity=\"0\" scale=\"1.1\"/>", Now+5500, 1000, CAnimManager::EAnimManagerEasing::CircOut);
-            
-            declare CMlQuad quad = elem.Controls[0] as CMlQuad;
-            quad.Scale= 1.2;
-            quad.Opacity = 0.;
-            quad.Style = Message.IconStyle;
-            quad.Substyle = Message.IconSubstyle;
-            quad.Colorize = Message.IconColor;
-            AnimMgr.Flush(quad);
-            AnimMgr.Add(quad, "<label scale=\"1\" opacity=\"1\" pos=\"0 "^label.RelativePosition_V3.Y ^"\" />", 750, CAnimManager::EAnimManagerEasing::CircOut);
-            AnimMgr.Add(quad, "<label opacity=\"0\" scale=\"1.1\"/>", Now+5500, 1000, CAnimManager::EAnimManagerEasing::CircOut);
-            
-            
-        }
-        
-        counter+=1;
-    }
-    
-    Void processMessage(Integer stamp) {
-        declare netread K_FeedMessage[] EventFeed for UI;  
-        
-        foreach (Message in EventFeed) {
-            if (Message.Stamp >= stamp) {
-                addMessage(Message);
-            }
-        }
-    }
-    
-    
-    main() {
-        
-        declare netread Integer EventFeedUpdate for UI;
-        declare CMlFrame frame = (Page.GetFirstChild("Events") as CMlFrame);
-        LastUpdate = 0;
-        counter = 0;
-        
-        while(True) {
-            yield;
-            
-            if (EventFeedUpdate > LastUpdate) {
-                LastUpdate = EventFeedUpdate;
-                processMessage(EventFeedUpdate);                    
-            }
-            
-        }
-    }
-    --></script>
-    </manialink>
-    """;
+	#Struct K_FeedMessage {
+		Text Message;
+		Text IconStyle;
+		Text IconSubstyle;
+		Vec3 IconColor;
+		Integer Stamp;
+	}
+
+	declare Integer counter;
+	declare Integer LastUpdate;
+	
+	Void addMessage(K_FeedMessage Message) {
+		declare CMlFrame frame = (Page.GetFirstChild("Events") as CMlFrame);
+		declare idx = counter%size;
+		
+		for (i,0,size) {
+			declare key = (idx + i) % size;
+			frame.Controls[key].RelativePosition_V3.Y = -i * 4.;
+		}
+		
+		if (frame.Controls.existskey(idx)) {
+			declare CMlFrame elem = frame.Controls[idx] as CMlFrame;
+			declare CMlLabel label = elem.Controls[1] as CMlLabel;
+			
+			label.Value = Message.Message;
+			label.Scale= 1.2;
+			label.Opacity = 0.;
+			
+			AnimMgr.Flush(label);
+			AnimMgr.Add(label, "<label scale=\"1\" opacity=\"1\" pos=\"1.5 "^label.RelativePosition_V3.Y ^"\" />", 750, CAnimManager::EAnimManagerEasing::CircOut);
+			AnimMgr.Add(label, "<label opacity=\"0\" scale=\"1.1\"/>", Now+5500, 1000, CAnimManager::EAnimManagerEasing::CircOut);
+			
+			declare CMlQuad quad = elem.Controls[0] as CMlQuad;
+			quad.Scale= 1.2;
+			quad.Opacity = 0.;
+			quad.Style = Message.IconStyle;
+			quad.Substyle = Message.IconSubstyle;
+			quad.Colorize = Message.IconColor;
+			AnimMgr.Flush(quad);
+			AnimMgr.Add(quad, "<label scale=\"1\" opacity=\"1\" pos=\"0 "^label.RelativePosition_V3.Y ^"\" />", 750, CAnimManager::EAnimManagerEasing::CircOut);
+			AnimMgr.Add(quad, "<label opacity=\"0\" scale=\"1.1\"/>", Now+5500, 1000, CAnimManager::EAnimManagerEasing::CircOut);
+			
+			
+		}
+		
+		counter+=1;
+	}
+	
+	Void processMessage(Integer stamp) {
+		declare netread K_FeedMessage[] EventFeed for UI;
+		
+		foreach (Message in EventFeed) {
+			if (Message.Stamp >= stamp) {
+				addMessage(Message);
+			}
+		}
+	}
+	
+	
+	main() {
+		
+		declare netread Integer EventFeedUpdate for UI;
+		declare CMlFrame frame = (Page.GetFirstChild("Events") as CMlFrame);
+		LastUpdate = 0;
+		counter = 0;
+		
+		while(True) {
+			yield;
+			
+			if (EventFeedUpdate > LastUpdate) {
+				LastUpdate = EventFeedUpdate;
+				processMessage(EventFeedUpdate);
+			}
+			
+		}
+	}
+	--></script>
+	</manialink>
+	""";
 }

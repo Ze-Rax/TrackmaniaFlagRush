@@ -1,21 +1,21 @@
 /**
-*   WarmUp Library with infinite time and ready up mechanic.
-*   
-*   Players need to ready up before the warmup end.
-*   At least one player in every clan must be ready.
-*   Warmup can be force stopped by calling Stop()
-*
-*   When used in mode, at the place where warmup should be executed:
-*
-*   // Your code to do before warmup
-*   WarmUpReadyUp::Start();
-*   while(!WarmUpReadyUp::WarmUpShouldStop()) {
-*       MB_Yield();
-*       WarmUpReadyUp::Yield();
-*       // Your code to execute during warmup; Can contains WarmUpReadyUp::Stop()
-*   }
-*   // Your code to do after warmup
-*/
+ * WarmUp Library with infinite time and ready up mechanic.
+ *	
+ * Players need to ready up before the warmup end.
+ * At least one player in every clan must be ready.
+ * Warmup can be force stopped by calling Stop()
+ *
+ * When used in mode, at the place where warmup should be executed:
+ *
+ *	// Your code to do before warmup
+ *	WarmUpReadyUp::Start();
+ *	while(!WarmUpReadyUp::WarmUpShouldStop()) {
+ *		MB_Yield();
+ *		WarmUpReadyUp::Yield();
+ *		// Your code to execute during warmup; Can contains WarmUpReadyUp::Stop()
+ *	}
+ *	// Your code to do after warmup
+ */
 
 #Include "TextLib" as TL
 
@@ -58,37 +58,37 @@ declare Boolean[Text] G_PlayersReady;
 declare K_TimeoutState G_TimeoutState;
 
 /**
-*   Getter for if warmup should stop.
-*/
+ * Getter for if warmup should stop.
+ */
 Boolean WarmUpShouldStop() {
 	return G_WarmUpShouldStop;
 }
 
 /**
-*		Getter for PendingEvents
-*/
+ * Getter for PendingEvents
+ */
 K_WarmUpReadyUpEvent[] GetPendingEvents() {
 	return PendingEvents;
 }
 
 /**
-*		Getter for PlayersReady
-*/
+ * Getter for PlayersReady
+ */
 Boolean[Text] GetPlayersReady() {
 	return G_PlayersReady;
 }
 
 /**
-*		Adds an Event to the PendingEvents
-*/
+ * Adds an Event to the PendingEvents
+ */
 Void Private_AddEvent(Text Type, Text[] Params) {
 	declare K_WarmUpReadyUpEvent Event = K_WarmUpReadyUpEvent{Type = Type, Params = Params};
 	PendingEvents.add(Event);
 }
 
 /**
-*		Start the timeout
-*/
+ * Start the timeout
+ */
 Void Private_StartTimeout(Text State, Integer Timeout) {
 	G_TimeoutState.State = State;
 	G_TimeoutState.StartTime = Now;
@@ -97,8 +97,8 @@ Void Private_StartTimeout(Text State, Integer Timeout) {
 }
 
 /**
-*		Update the Timeout
-*/
+ * Update the Timeout
+ */
 Void Private_UpdateTimeout(Text State, Integer RemainingTime) {
 	G_TimeoutState.State = State;
 	EndTime = Now + RemainingTime;
@@ -106,8 +106,8 @@ Void Private_UpdateTimeout(Text State, Integer RemainingTime) {
 }
 
 /**
-*		Abort the timeout
-*/
+ * Abort the timeout
+ */
 Void Private_AbortTimeout() {
 	G_TimeoutState.State = C_Timeout_State_NotStarted;
 	G_TimeoutState.StartTime = -1;
@@ -116,19 +116,19 @@ Void Private_AbortTimeout() {
 }
 
 /**
-*		Checks the conditions to update the timeout end time accordingly:
-*		
-*		If the timeout was not started yet but all players or at least one player is ready,
-*			then start it.
-*		If the timeout was started when at least one player in each clan was ready but now all players are ready,
-*			then reduce timer.
-*		If the itmeout was started when all players where ready but now only one player in each team is ready,
-*			then extend the timer to the remaining time.
-*		If the timeout was start but now not every clan has a player,
-*			then abort the timeout.
-*
-*		This was pain! Please fix this if someone know an easier solution!
-*/
+ * Checks the conditions to update the timeout end time accordingly:
+ *
+ * If the timeout was not started yet but all players or at least one player is ready,
+ * 	then start it.
+ * If the timeout was started when at least one player in each clan was ready but now all players are ready,
+ * 	then reduce timer.
+ * If the itmeout was started when all players where ready but now only one player in each team is ready,
+ * 	then extend the timer to the remaining time.
+ * If the timeout was start but now not every clan has a player,
+ * 	then abort the timeout.
+ *
+ * This was pain! Please fix this if someone know an easier solution!
+ */
 Void Private_UpdateWarmUpEndTime(Boolean AllClansAtLeastOnePlayerReady, Boolean AllClansAllPlayersReady) {
 	if (AllClansAllPlayersReady) {
 		if (G_TimeoutState.State == C_Timeout_State_NotStarted) {
@@ -150,8 +150,8 @@ Void Private_UpdateWarmUpEndTime(Boolean AllClansAtLeastOnePlayerReady, Boolean 
 }
 
 /**
-*   Checks if the match can start: At least two clans and one ready player in each clan.
-*/
+ * Checks if the match can start: At least two clans and one ready player in each clan.
+ */
 Boolean Private_MatchCanStart() {
 	// Check players and clans
 	declare K_ClanReadyState[Integer] ClanReadyStates;
@@ -172,7 +172,7 @@ Boolean Private_MatchCanStart() {
 		return False;
 	}
 
-		// Check if all or at least one players are ready in all clans
+	// Check if all or at least one players are ready in all clans
 	declare Boolean AllClansAtLeastOnePlayerReady = True;
 	declare Boolean AllClansAllPlayersReady = True;
 	foreach (Clan => ReadyState in ClanReadyStates) {
@@ -193,8 +193,8 @@ Boolean Private_MatchCanStart() {
 }
 
 /**
-*   Starts the warmup.
-*/
+ * Starts the warmup.
+ */
 Void Start() {
 	G_WarmUpShouldStop = False;
 	PendingEvents = [];
@@ -206,8 +206,8 @@ Void Start() {
 }
 
 /**
-*   Stops the warmup
-*/
+ * Stops the warmup
+ */
 Void Stop() {
 	G_WarmUpShouldStop = True;
 	PendingEvents = [];
@@ -215,8 +215,8 @@ Void Stop() {
 }
 
 /**
-*   Checks for XmlRpc events that would stop the warmup.
-*/
+ * Checks for XmlRpc events that would stop the warmup.
+ */
 Void Private_HandleXmlRpcEvents() {
 	foreach (XmlRpcEvent in XmlRpc.PendingEvents) {		
 		switch (XmlRpcEvent.Type) {
@@ -238,8 +238,8 @@ Void Private_HandleXmlRpcEvents() {
 }
 
 /**
-*		Handle UI Events coming from the warmup interface
-*/
+ * Handle UI Events coming from the warmup interface
+ */
 Void Private_HandleUIEvents() {
 	foreach (Event in UIManager.PendingEvents) {
 		if(Event.CustomEventType == WarmUpReadyUp_UI::C_ReadyEvent_Type) {
@@ -252,8 +252,8 @@ Void Private_HandleUIEvents() {
 }
 
 /**
-*   Does everything necessary during a frame of the script. Does not yield the mode!
-*/
+ * Does everything necessary during a frame of the script. Does not yield the mode!
+ */
 Void Yield() {
 	PendingEvents = [];
 	

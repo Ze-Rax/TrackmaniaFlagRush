@@ -1,5 +1,3 @@
-#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/Shared.Script.txt" as Shared
-
 #Const C_ReadyEvent_Type	"ready"
 #Const C_ManialinkName		"WarmUpReadyUp"
 

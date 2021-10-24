@@ -1,6 +1,6 @@
 // #RequireContext CSmMode
 
-#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
 #Include	"Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 
 Text GetManialink() {	
@@ -90,37 +90,37 @@ Text GetManialink() {
 			declare netread Integer Net_FlagCarrierClan for Teams[0];
 			declare netread Text Net_FlagCarrierName for Teams[0];
 			declare netread Integer Net_EndTime for Teams[0];
-			declare netread Integer Net_GameplayPhase for Teams[0];
-
-			/* Set initial values */
-			declare Vec3 ColorTeam1 = GetTeamPrimaryColor(Teams[0]);
-			declare Vec3 ColorTeam2 = GetTeamPrimaryColor(Teams[1]);
-			declare Vec3 ColorTeam1Dark = CL::RgbToHsv(ColorTeam1);
-			ColorTeam1Dark.Z /= 3;
-			ColorTeam1Dark = CL::HsvToRgb(ColorTeam1Dark);
-			declare Vec3 ColorTeam2Dark = CL::RgbToHsv(ColorTeam2);
-			ColorTeam2Dark.Z /= 3;
-			ColorTeam2Dark = CL::HsvToRgb(ColorTeam2Dark);
-
-			QuadTeam1ScoreBackground.Colorize = ColorTeam1;
-			QuadTeam2ScoreBackground.Colorize = ColorTeam2;
-
-			QuadTeam1ScoreBackground2.Colorize = ColorTeam1Dark;
-			QuadTeam2ScoreBackground2.Colorize = ColorTeam2Dark;
-			QuadTeam1MapScoreBackground.Colorize = ColorTeam1Dark;
-			QuadTeam2MapScoreBackground.Colorize = ColorTeam2Dark;
-			
-			GaugeMapScoreTeam1.Color = GetTeamPrimaryColor(Teams[0]);
-			GaugeMapScoreTeam2.Color = GetTeamPrimaryColor(Teams[1]);		
+			declare netread Integer Net_GameplayPhase for Teams[0];	
 
 			/* Main Loop */
 			while(True) {
 				yield;
-				/* Sync Team Name */
+				
+				/* Team names and colors */
 				LabelTeam1Name.Value = Teams[0].Name;
 				LabelTeam2Name.Value = Teams[1].Name;
+
+				declare Vec3 ColorTeam1 = GetTeamPrimaryColor(Teams[0]);
+				declare Vec3 ColorTeam2 = GetTeamPrimaryColor(Teams[1]);
+				declare Vec3 ColorTeam1Dark = CL::RgbToHsv(ColorTeam1);
+				ColorTeam1Dark.Z /= 3;
+				ColorTeam1Dark = CL::HsvToRgb(ColorTeam1Dark);
+				declare Vec3 ColorTeam2Dark = CL::RgbToHsv(ColorTeam2);
+				ColorTeam2Dark.Z /= 3;
+				ColorTeam2Dark = CL::HsvToRgb(ColorTeam2Dark);
+	
+				QuadTeam1ScoreBackground.Colorize = ColorTeam1;
+				QuadTeam2ScoreBackground.Colorize = ColorTeam2;
+	
+				QuadTeam1ScoreBackground2.Colorize = ColorTeam1Dark;
+				QuadTeam2ScoreBackground2.Colorize = ColorTeam2Dark;
+				QuadTeam1MapScoreBackground.Colorize = ColorTeam1Dark;
+				QuadTeam2MapScoreBackground.Colorize = ColorTeam2Dark;
 				
-				/* Flag Carrier */
+				GaugeMapScoreTeam1.Color = GetTeamPrimaryColor(Teams[0]);
+				GaugeMapScoreTeam2.Color = GetTeamPrimaryColor(Teams[1]);	
+
+				/* General */
 				declare CTeam FlagCarrierTeam = Null;
 				if (Net_FlagCarrierClan > 0) FlagCarrierTeam <=> Teams[Net_FlagCarrierClan - 1];
 				

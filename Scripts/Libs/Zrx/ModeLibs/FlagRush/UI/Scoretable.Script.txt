@@ -2,7 +2,7 @@
 
 #Include	"MathLib" as ML
 #Include	"ColorLib" as CL
-#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
 #Include	"Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 
 #Const		C_ScoresTable_FlagsScoredKey				"flags-scored"
@@ -103,62 +103,63 @@ Text GetManialink(Integer _PlayersPerPage) {
 	4x player-card-team2 (Frameinstance)
 	-->
 	<frame id="scoreboard-main" scale="1.4" pos="0 43" valign="bottom">
-	<frame id="body" pos="0 0">
-	<frame id="header">
-	<frame id="logo" pos="0 -4" size="280 15" scale="0.5" valign="center" halign="center" z-index="-1">
-	<!-- logo -->
-	<frame id="text" pos="0 -0.5">
-	<label pos="-2 -4" z-index="0" size="20 10" text="$iRUSH" textemboss="1" textfont="RobotoCondensedBold" halign="left" valign="center2" textsize="6"/>
-	<quad pos="0 1" z-index="0" size="18.1 18.1"  style="UIConstruction_Buttons" substyle="Validate" halign="center" valign="center" rot="-17"/>
-	<label pos="2 0" z-index="0" size="20 10" text="$iFLAG" halign="right" valign="center2" textsize="6" textemboss="1" textfont="RobotoCondensedBold"/>
-	</frame>
-	<!-- background -->
-	<frame id="background" rot="71" valign="center" halign="center">
-	<quad pos="0 0" size="0.5 300" bgcolor="000" opacity="1" halign="center" valign="center"/>
-	<quad pos="35 0" size="70 400" bgcolor="900" opacity="0.7" halign="center" valign="center" id="team2-score-background2"/>
-	<quad pos="-35 0" size="70 400" bgcolor="00b" opacity="0.7" halign="center" valign="center" id="team1-score-background2"/>
-	</frame>
-	</frame>
-	<quad id="team1-score-background" pos="-18 0" z-index="0" size="12 8" style="UICommon64_1" substyle="BgFrame1" colorize="000" halign="center" valign="top" opacity="0.5"/>
-	<quad id="team2-score-background" pos="20 0" z-index="0" size="12 8" halign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000" opacity="0.5"/>
-	<label pos="-18 -4" z-index="2" size="12 8" text="0" halign="center" valign="center2" textsize="	5" id="team1-score" textfont="GameFontBlack" />
-	<label pos="20 -4" z-index="2" size="12 10" text="0" halign="center" valign="center2" textsize="5" id="team2-score" textfont="GameFontBlack"/>
-	<label pos="-47 -4" z-index="1" size="46 8" text="Team 1" halign="center" textsize="4" id="team1-name" textfont="GameFontRegular" valign="center2"/>
-	<label pos="46 -4" z-index="1" size="48 10" text="Team 2" valign="center2" halign="center" textsize="4" id="team2-name" textfont="GameFontRegular"/>				
-	</frame>
-	<frame id="column-legend" pos="0 -10">
-	<frame id="team1" pos="-68 0">
-	<label class="legend" pos="42 0" z-index="1" size="10 5" text="Points"  valign="center" halign="center" textsize="0.1" />
-	<label class="legend" pos="51 0" z-index="1" size="10 5" text="  Scored" valign="center" halign="center" textsize="0.1"/>
-	<label class="legend" pos="60 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
-	</frame>
-	<frame id="team2" pos="5 0">
-	<label class="legend" pos="42 0" z-index="1" size="10 5" text="Points" valign="center" halign="center" textsize="0.1" />
-	<label class="legend" pos="51 0" z-index="1" size="10 5" text="  Scored" valign="center" halign="center" textsize="0.1" />
-	<label class="legend" pos="60 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
-	</frame>
-	</frame>
-	<!-- column legend -->
-	<frame id="page-controls" pos="0 -53" z-index="2">
-	<quad pos="0 0" z-index="1" size="3 3" halign="right" valign="center" style="UICommon64_2" substyle="ArrowUpSlim_light" scriptevents="1" id="page-previous"/>
-	<quad pos="0 0" z-index="1" size="3 3" halign="left" style="UICommon64_2" substyle="ArrowDownSlim_light" scriptevents="1" id="page-next" valign="center"/>
-	<quad pos="0 1.5" z-index="0" size="280 6" bgcolor="000" opacity="0.4" halign="center" valign="top" style="UICommon64_1" substyle="BgFrame1" colorize="000" scale="0.5"/>
-	</frame>
-	<frame id="playergrid" pos="0 -9">
-	{{{PlayerCardFrameInstancesXml}}}
-	</frame>			
-	<frame valign="top" halign="center" size="140 42" pos="0 -9">				
-	<quad id="team2-background" pos="1 0" size="0.5 50" bgcolor="000" opacity="0.6" halign="left" />	
-	<quad pos="1 0" size="70 50"  bgcolor="000a" halign="left" />
-	
-	<quad id="team1-background" pos="-1 0" size="0.5 50" bgcolor="000" opacity="0.6" halign="right" />				
-	<quad pos="-1 0" size="70 50" bgcolor="000a" halign="right" />
-	</frame>
-	</frame>
-	<!-- body -->
-	<frame id="footer" pos="0 {{{- (16 + (PlayersPerPage * 6.5))}}}">
-	<label pos="0 -1.5" z-index="0" size="140 4" text="FooterText" halign="center" valign="center2" textsize="1" textfont="GameFontRegular" id="text"/>			
-	</frame>
+		<frame id="body" pos="0 0">
+			<frame id="header">
+				<frame id="logo" pos="0 -4" size="280 15" scale="0.5" valign="center" halign="center" z-index="-1">
+					<frame id="text" pos="0 -0.5">
+						<label pos="-2 -4" z-index="0" size="20 10" text="$iRUSH" textemboss="1" textfont="RobotoCondensedBold" halign="left" valign="center2" textsize="6"/>
+						<quad pos="0 1" z-index="0" size="18.1 18.1"  style="UIConstruction_Buttons" substyle="Validate" halign="center" valign="center" rot="-17"/>
+						<label pos="2 0" z-index="0" size="20 10" text="$iFLAG" halign="right" valign="center2" textsize="6" textemboss="1" textfont="RobotoCondensedBold"/>
+					</frame>
+					<frame id="background" rot="71" valign="center" halign="center">
+						<quad pos="0 0" size="0.5 300" bgcolor="000" opacity="1" halign="center" valign="center"/>
+						<quad pos="35 0" size="70 400" bgcolor="900" opacity="0.7" halign="center" valign="center" id="team2-background-header"/>
+						<quad pos="-35 0" size="70 400" bgcolor="00b" opacity="0.7" halign="center" valign="center" id="team1-background-header"/>
+					</frame>
+				</frame>
+				
+				<quad id="team1-score-background" pos="-18 0" z-index="0" size="12 8" style="UICommon64_1" substyle="BgFrame1" colorize="000" halign="center" valign="top" opacity="0.5"/>
+				<quad id="team2-score-background" pos="20 0" z-index="0" size="12 8" halign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000" opacity="0.5"/>
+				<label pos="-18 -4" z-index="2" size="12 8" text="0" halign="center" valign="center2" textsize="	5" id="team1-score" textfont="GameFontBlack" />
+				<label pos="20 -4" z-index="2" size="12 10" text="0" halign="center" valign="center2" textsize="5" id="team2-score" textfont="GameFontBlack"/>
+				<label pos="-47 -4" z-index="1" size="46 8" text="Team 1" halign="center" textsize="4" id="team1-name" textfont="GameFontRegular" valign="center2"/>
+				<label pos="46 -4" z-index="1" size="48 10" text="Team 2" valign="center2" halign="center" textsize="4" id="team2-name" textfont="GameFontRegular"/>				
+			</frame>
+
+			<frame id="column-legend" pos="0 -10">
+				<frame id="team1" pos="-68 0">
+					<label class="legend" pos="42 0" z-index="1" size="10 5" text="Points"  valign="center" halign="center" textsize="0.1" />
+					<label class="legend" pos="51 0" z-index="1" size="10 5" text="  Scored" valign="center" halign="center" textsize="0.1"/>
+					<label class="legend" pos="60 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
+				</frame>
+				<frame id="team2" pos="5 0">
+					<label class="legend" pos="42 0" z-index="1" size="10 5" text="Points" valign="center" halign="center" textsize="0.1" />
+					<label class="legend" pos="51 0" z-index="1" size="10 5" text="  Scored" valign="center" halign="center" textsize="0.1" />
+					<label class="legend" pos="60 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
+				</frame>
+			</frame>
+
+			<frame id="page-controls" pos="0 -53" z-index="2">
+				<quad pos="0 0" z-index="1" size="3 3" halign="right" valign="center" style="UICommon64_2" substyle="ArrowUpSlim_light" scriptevents="1" id="page-previous"/>
+				<quad pos="0 0" z-index="1" size="3 3" halign="left" style="UICommon64_2" substyle="ArrowDownSlim_light" scriptevents="1" id="page-next" valign="center"/>
+				<quad pos="0 1.5" z-index="0" size="280 6" bgcolor="000" opacity="0.4" halign="center" valign="top" style="UICommon64_1" substyle="BgFrame1" colorize="000" scale="0.5"/>
+			</frame>
+
+			<frame id="playergrid" pos="0 -9">
+				{{{PlayerCardFrameInstancesXml}}}
+			</frame>			
+			<frame valign="top" halign="center" size="140 42" pos="0 -9">				
+				<quad id="team2-center-divider" pos="1 0" size="0.5 50" bgcolor="000" opacity="0.6" halign="left" />	
+				<quad pos="1 0" size="70 50"  bgcolor="000a" halign="left" />
+
+				<quad id="team1-center-divider" pos="-1 0" size="0.5 50" bgcolor="000" opacity="0.6" halign="right" />				
+				<quad pos="-1 0" size="70 50" bgcolor="000a" halign="right" />
+			</frame>
+
+		</frame>
+		<frame id="footer" pos="0 {{{- (16 + (PlayersPerPage * 6.5))}}}">
+			<label pos="0 -1.5" z-index="0" size="140 4" text="FooterText" halign="center" valign="center2" textsize="1" textfont="GameFontRegular" id="text"/>			
+		</frame>
 	</frame>
 	
 	<!-- Script to handle the scoreboard -->
@@ -167,6 +168,18 @@ Text GetManialink(Integer _PlayersPerPage) {
 	#Include "TextLib" as TL
 	#Include "MathLib" as ML
 	#Include "ColorLib" as CL
+
+	
+	declare CMlQuad QuadTeam1ScoreBackground;
+	declare CMlQuad QuadTeam2ScoreBackground;
+	declare CMlQuad QuadTeam1CenterDivider;
+	declare CMlQuad QuadTeam2CenterDivider;
+	declare CMlQuad QuadTeam1BackgroundHeader;
+	declare CMlQuad QuadTeam2BackgroundHeader;
+	declare CMlLabel LabelTeam1Score;
+	declare CMlLabel LabelTeam2Score;
+	declare CMlLabel LabelTeam1Name;
+	declare CMlLabel LabelTeam2Name;
 	
 	{{{UIShared::GetTeamColorNetreadFunctions()}}}
 	
@@ -187,21 +200,40 @@ Text GetManialink(Integer _PlayersPerPage) {
 		return False;
 	}
 
+	Void UpdateTeamNamesAndColors() {
+		declare Vec3 BgColor1 = CL::RgbToHsv(GetTeamPrimaryColor(Teams[0]));			
+		declare Vec3 BgColor2 = CL::RgbToHsv(GetTeamPrimaryColor(Teams[1]));
+		BgColor1.Z /= 3;
+		BgColor2.Z /= 3;
+		BgColor1 = CL::HsvToRgb(BgColor1);
+		BgColor2 = CL::HsvToRgb(BgColor2);
+		
+		LabelTeam1Name.Value = Teams[0].Name;
+		LabelTeam2Name.Value = Teams[1].Name;	
+		QuadTeam1BackgroundHeader.BgColor = BgColor1;
+		QuadTeam2BackgroundHeader.BgColor = BgColor2;
+		QuadTeam1ScoreBackground.Colorize = GetTeamPrimaryColor(Teams[0]);
+		QuadTeam2ScoreBackground.Colorize = GetTeamPrimaryColor(Teams[1]);	
+
+		QuadTeam1CenterDivider.BgColor = GetTeamPrimaryColor(Teams[0]);
+		QuadTeam2CenterDivider.BgColor = GetTeamPrimaryColor(Teams[1]);
+	}
+
 	main() {
 		
 		/* CMlControl references */
 		
 		// Header
-		declare CMlQuad QuadTeam1ScoreBackground = (Page.GetFirstChild("team1-score-background") as CMlQuad);
-		declare CMlQuad QuadTeam2ScoreBackground = (Page.GetFirstChild("team2-score-background") as CMlQuad);
-		declare CMlQuad QuadTeam1ScoreBackground2 = (Page.GetFirstChild("team1-score-background2") as CMlQuad);
-		declare CMlQuad QuadTeam2ScoreBackground2 = (Page.GetFirstChild("team2-score-background2") as CMlQuad);
-		declare CMlQuad QuadTeam1Background = (Page.GetFirstChild("team1-background") as CMlQuad);
-		declare CMlQuad QuadTeam2Background = (Page.GetFirstChild("team2-background") as CMlQuad);
-		declare CMlLabel LabelTeam1Score = (Page.GetFirstChild("team1-score") as CMlLabel);
-		declare CMlLabel LabelTeam2Score = (Page.GetFirstChild("team2-score") as CMlLabel);
-		declare CMlLabel LabelTeam1Name = (Page.GetFirstChild("team1-name") as CMlLabel);
-		declare CMlLabel LabelTeam2Name = (Page.GetFirstChild("team2-name") as CMlLabel);
+		QuadTeam1ScoreBackground = (Page.GetFirstChild("team1-score-background") as CMlQuad);
+		QuadTeam2ScoreBackground = (Page.GetFirstChild("team2-score-background") as CMlQuad);
+		QuadTeam1CenterDivider = (Page.GetFirstChild("team1-center-divider") as CMlQuad);
+		QuadTeam2CenterDivider = (Page.GetFirstChild("team2-center-divider") as CMlQuad);
+		QuadTeam1BackgroundHeader = (Page.GetFirstChild("team1-background-header") as CMlQuad);
+		QuadTeam2BackgroundHeader = (Page.GetFirstChild("team2-background-header") as CMlQuad);
+		LabelTeam1Score = (Page.GetFirstChild("team1-score") as CMlLabel);
+		LabelTeam2Score = (Page.GetFirstChild("team2-score") as CMlLabel);
+		LabelTeam1Name = (Page.GetFirstChild("team1-name") as CMlLabel);
+		LabelTeam2Name = (Page.GetFirstChild("team2-name") as CMlLabel);
 		
 		// Body
 		declare CMlFrame[] PlayerCardFramesTeam1 = {{{PlayerCardFramesTeam1ScriptList}}};
@@ -215,29 +247,11 @@ Text GetManialink(Integer _PlayersPerPage) {
 		declare CMlFrame FrameFooter = (Page.GetFirstChild("footer") as CMlFrame);
 		declare CMlLabel LabelFooter = (FrameFooter.GetFirstChild("text") as CMlLabel);
 		
-		/* Init some controls */
-		
-		LabelTeam1Name.Value = Teams[0].Name;
-		LabelTeam2Name.Value = Teams[1].Name;
-		QuadTeam1ScoreBackground.Colorize = GetTeamPrimaryColor(Teams[0]);
-		QuadTeam2ScoreBackground.Colorize = GetTeamPrimaryColor(Teams[1]);
-		
-		declare Vec3 BgColor1 = CL::RgbToHsv(GetTeamPrimaryColor(Teams[0]));			
-		declare Vec3 BgColor2 = CL::RgbToHsv(GetTeamPrimaryColor(Teams[1]));
-		BgColor1.Z /= 3;
-		BgColor2.Z /= 3;
-		
-		QuadTeam1ScoreBackground2.BgColor = CL::HsvToRgb(BgColor1);
-		QuadTeam2ScoreBackground2.BgColor = CL::HsvToRgb(BgColor2);
-		
-		QuadTeam1Background.BgColor = GetTeamPrimaryColor(Teams[0]);
-		QuadTeam2Background.BgColor = GetTeamPrimaryColor(Teams[1]);
-		
 		/* Netread variables */
 		
 		// Same as scores header
 		declare netread Integer Net_NbMapsToWinMatch for Teams[0];		// Not used (yet)
-		declare netread Integer Net_ScoreBoardUpdateStamp for Teams[0];
+		declare netread Integer Net_FlagRush_ScoresUpdateStamp for Teams[0];
 		
 		// Scoreboard data
 		
@@ -256,8 +270,10 @@ Text GetManialink(Integer _PlayersPerPage) {
 		while(True) {
 			yield;
 			
-			if (LastUpdate == Net_ScoreBoardUpdateStamp) continue;					
-			LastUpdate = Net_ScoreBoardUpdateStamp;
+			UpdateTeamNamesAndColors();
+
+			if (LastUpdate == Net_FlagRush_ScoresUpdateStamp) continue;				
+			LastUpdate = Net_FlagRush_ScoresUpdateStamp;
 			
 			/* Update state (CurrentPageIndex) */					
 			declare Integer NbPlayersTeam1 = Net_ScoresTableData.get(1, []).count;
@@ -362,12 +378,10 @@ Text GetManialink(Integer _PlayersPerPage) {
 					}
 					
 					if (Net_GameplayPhase == {{{FlagRush_Common::C_GameplayPhase_Warmup}}}) {
-						if (Net_WarmUpReadyStates.existskey(Player.User.Login)) {
-							if (Net_WarmUpReadyStates[Player.User.Login]) {
-								BackgroundColor = <0.1, 0.7, 0.1>;
-							} else {
-								BackgroundColor = <0., 0., 0.>;
-							}
+						if (Net_WarmUpReadyStates.existskey(Player.User.Login) && Net_WarmUpReadyStates[Player.User.Login]) {
+							BackgroundColor = <0.1, 0.7, 0.1>;
+						} else {
+							BackgroundColor = <0., 0., 0.>;
 						}
 					}
 					

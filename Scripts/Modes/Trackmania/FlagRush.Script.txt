@@ -1584,6 +1584,7 @@ Void HandleCommands() {
 			}
 			case CSmModeEvent::EType::OnPlayerRequestRespawn:
 			{
+				if(Event.Player == Null) continue;
 				declare Boolean FlagRush_WarmUp_HasFlag for Event.Player;
 				FlagRush_WarmUp_HasFlag = False;
 				ResetHandicaps();

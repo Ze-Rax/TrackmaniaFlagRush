@@ -251,7 +251,6 @@ Text GetManialink(Integer _PlayersPerPage) {
 		
 		// Same as scores header
 		declare netread Integer Net_NbMapsToWinMatch for Teams[0];		// Not used (yet)
-		declare netread Integer Net_FlagRush_ScoresUpdateStamp for Teams[0];
 		
 		// Scoreboard data
 		
@@ -270,10 +269,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 		while(True) {
 			yield;
 			
-			UpdateTeamNamesAndColors();
-
-			if (LastUpdate == Net_FlagRush_ScoresUpdateStamp) continue;				
-			LastUpdate = Net_FlagRush_ScoresUpdateStamp;
+			UpdateTeamNamesAndColors();			
 			
 			/* Update state (CurrentPageIndex) */					
 			declare Integer NbPlayersTeam1 = Net_ScoresTableData.get(1, []).count;
@@ -282,7 +278,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 			CurrentPageIndex = ML::Clamp(CurrentPageIndex, 0, NbPages - 1);
 			
 			// hide Framecontrols if page is less then one
-			if (NbPages <= 1) FramePageControls.Visible = False;			
+			if (NbPages <= 1) FramePageControls.Visible = False;
 			// Hide buttons when can't go next or previous
 			if (CurrentPageIndex <= 0) QuadPagePrevious.Visible = False;
 			else QuadPagePrevious.Visible = True;
@@ -305,15 +301,18 @@ Text GetManialink(Integer _PlayersPerPage) {
 				declare CSmPlayer[] TeamPlayers = [];
 				foreach (Login => PlayerScoresTableData in Net_ScoresTableData[TeamIndex]) {
 					declare CSmPlayer _Player <=> GetPlayer(Login);
-					if (_Player == Null) continue;
-					if (_Player.RequestsSpectate || !isConnected(Login)) {
-						if (PlayerScoresTableData.get("{{{C_ScoresTable_PointsKey}}}", 0) != 0) {
+					if (!isConnected(Login) || (_Player != Null && _Player.RequestsSpectate)) {
+						declare Integer PlayerPoints = 
+							PlayerScoresTableData.get("{{{C_ScoresTable_PointsRoundKey}}}", 0) + 
+							PlayerScoresTableData.get("{{{C_ScoresTable_PointsKey}}}", 0);
+						
+						if (PlayerPoints != 0) {
 							AllScoresTableData.add(PlayerScoresTableData);
-							TeamPlayers.add(_Player);								
+							TeamPlayers.add(_Player);
 						}
 					} else {
 						AllScoresTableData.add(PlayerScoresTableData);
-						TeamPlayers.add(_Player);					
+						TeamPlayers.add(_Player);
 					}
 				}
 				
@@ -326,6 +325,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 					declare PlayerIndex = CurrentPageIndex * {{{PlayersPerPage}}} + PlayerCardIndex;
 					
 					// Card Visibility
+					PlayerCard.Visible = True;
 					if (PlayerIndex >= AllScoresTableData.count) {
 						PlayerCard.Visible = False;
 						continue;
@@ -398,9 +398,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 					LabelPlayerFlagsStolen.Value
 					= TL::ToText(PlayerScoresTableData.get("{{{C_ScoresTable_FlagsStolenKey}}}", 0));
 					LabelPlayerFlagsStolenAdd.Value
-					= TL::ToText(PlayerScoresTableData.get("{{{C_ScoresTable_FlagsStolenRoundKey}}}", 0));
-					
-					PlayerCard.Visible = True;											
+					= TL::ToText(PlayerScoresTableData.get("{{{C_ScoresTable_FlagsStolenRoundKey}}}", 0));												
 				} //Player CardIndex
 			} // TeamIndex
 			

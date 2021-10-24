@@ -627,19 +627,7 @@ Void UpdateScoresData() {
 
 	// Write each score into the array
 	foreach (Score in Scores) {
-		/* 24.10.2021: TODO FIX WHEN POSSIBLE
-		 * Scores can have slighty (one yield) outdated TeamNums.
-		 * This is bad if we want to update the scoresdata when a player changes the team.
-		 * In that case the player would be shown on the wrong side of the scorestable until the next update.
-		 * Workaround for now: Get the player and use Player.CurrentClan if available, else use Score.TeamNum
-		 */
-		declare Integer TeamNum = Score.TeamNum;
-		declare CSmPlayer Player = GetPlayer(Score.User.Login);
-		if(Player != Null) {
-			TeamNum = Player.CurrentClan;
-		}
-
-		ScoresTableData[TeamNum][Score.User.Login] = GetPlayerScoresTableData(Score);
+		ScoresTableData[Score.TeamNum][Score.User.Login] = GetPlayerScoresTableData(Score);
 		ScoresTableNames[Score.User.Login] = Score.User.Name;
 	}
 
@@ -655,10 +643,6 @@ Void UpdateScoresData() {
 		declare netwrite Boolean[Text] Net_WarmUpReadyStates for Teams[0];
 		Net_WarmUpReadyStates = WarmUpReadyUp::GetPlayersReadyStates();
 	}
-	
-	// Tell clients when the scores were updated the last time
-	declare netwrite Integer Net_FlagRush_ScoresUpdateStamp for Teams[0];
-	Net_FlagRush_ScoresUpdateStamp = Now;
 }
 
 /**
@@ -1168,11 +1152,9 @@ Void ApplyHandicaps(CSmPlayer Player) {
 /**
  * Reset all handicaps from a player
  */
-Void ResetHandicaps() {
-	foreach (Player in Players) {
-		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
-		SetPlayer_Delayed_Reset(Player);
-	}
+Void ResetHandicaps(CSmPlayer Player) {
+	while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
+	SetPlayer_Delayed_Reset(Player);
 }
 
 /**
@@ -1211,7 +1193,7 @@ Void SetFlagCarrier(CSmPlayer Player) {
  * Drops the flag at the current position of the carrier
  */
 Void DropFlag() {
-	declare FlagCarrier = GetFlagCarrier();
+	declare CSmPlayer FlagCarrier = GetFlagCarrier();
 	if(FlagCarrier == Null) return;
 	
 	FlagRush_Log("""{{{FlagCarrier.User.Name}}} dropped the flag!""");
@@ -1237,7 +1219,7 @@ Void DropFlag() {
 	UpdateFlagMarker(ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000));
 	
 	// Reset Carrier handicaps
-	ResetHandicaps();
+	ResetHandicaps(FlagCarrier);
 }
 
 /**
@@ -1264,7 +1246,7 @@ Void ScoreFlag(CSmPlayer Player) {
 	Telemetry::AddPlayerRoundInteger(Player.Score, C_Telemetry_Key_FlagsScored, 1);
 	UpdateScoresData();
 	
-	ResetHandicaps();
+	ResetHandicaps(Player);
 	ResetFlag(True);
 	if(S_UseTurns) MB_StopTurn();
 }
@@ -1288,7 +1270,7 @@ Void StealFlag(CSmPlayer NewCarrier, CSmPlayer OldCarrier) {
 	}
 	
 	// Reset old flag carrier handicaps
-	ResetHandicaps();
+	ResetHandicaps(OldCarrier);
 	
 	// Set the new flag carrier
 	SetFlagCarrier(NewCarrier);
@@ -1324,15 +1306,6 @@ Void SpawnPlayers() {
 			}
 		}
 	}
-}
-
-/**
- * Flahes the respawn restriction UI for a given player.
- */
-Void FlashRespawn(CSmPlayer Player) {
-	declare UI = UIManager.GetUI(Player);
-	declare netwrite Integer Net_FlagRush_RespawnStamp for UI;
-	Net_FlagRush_RespawnStamp = Now;
 }
 
 /**
@@ -1467,7 +1440,7 @@ Void HandleEvents() {
 						UnspawnPlayer(Event.Player);
 						if(FlagCarrier == Event.Player) DropFlag();
 					} else {
-						FlashRespawn(Event.Player);
+						FlagRush_UIFlash::FlashRespawn(Event.Player);
 					}
 				} else {
 					SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
@@ -1532,6 +1505,8 @@ Void HandleCommand(CommandUtils::K_Command Command) {
 			MatchEndRequested = True;
 		}
 		case CommandUtils::C_CommandPrefix ^ C_Command_ResetFlag: {
+			declare CSmPlayer FlagCarrier = GetPlayer(G_FlagState.CarrierLogin);
+			if(FlagCarrier != Null) ResetHandicaps(FlagCarrier);
 			ResetFlag();
 		}
 		case CommandUtils::C_CommandPrefix ^ "update": {
@@ -1565,6 +1540,8 @@ Void HandleCommands() {
  Void HandleWarmUpEvents() {
 	// Mode Events
 	foreach(Event in PendingEvents) {
+		declare CSmPlayer EventPlayer = Event.Player; // UnspawnPlayer Async? PendingEvents[X] reference becomes Null
+		
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				declare Vec3 Color = FlagRush_Common::GetDefaultTeamColor(Event.Player.CurrentClan);
@@ -1572,23 +1549,23 @@ Void HandleCommands() {
 					declare Boolean FlagRush_WarmUp_HasFlag for Event.Player = False;
 					if (G_FlagSpawns.exists(Event.Landmark) && !FlagRush_WarmUp_HasFlag) {
 						FlagRush_WarmUp_HasFlag = True;
-						ApplyHandicaps(Event.Player);
+						ApplyHandicaps(EventPlayer);
 					} else if (G_BasesTeam1.exists(Event.Landmark) && Event.Player.CurrentClan == 2) {
 						FlagRush_WarmUp_HasFlag = False;
-						ResetHandicaps();
+						ResetHandicaps(EventPlayer);
 					} else if (G_BasesTeam2.exists(Event.Landmark) && Event.Player.CurrentClan == 1) {
 						FlagRush_WarmUp_HasFlag = False;
-						ResetHandicaps();
+						ResetHandicaps(EventPlayer);
 					}
 				}
 			}
 			case CSmModeEvent::EType::OnPlayerRequestRespawn:
 			{
-				if(Event.Player == Null) continue;
+				
 				declare Boolean FlagRush_WarmUp_HasFlag for Event.Player;
 				FlagRush_WarmUp_HasFlag = False;
-				ResetHandicaps();
-				UnspawnPlayer(Event.Player);
+				ResetHandicaps(EventPlayer);
+				UnspawnPlayer(EventPlayer);
 			}
 			case CSmModeEvent::EType::OnPlayerAdded:
 			{

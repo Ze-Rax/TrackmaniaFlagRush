@@ -281,9 +281,10 @@ foreach(Player in Players) {
 	UnspawnPlayer(Player);
 }
 
-declare SleepDuration = 3000;
-MB_Sleep(SleepDuration);
-SetEndTime(EndTime + SleepDuration);
+declare Integer PreviousEndTime = EndTime;
+SetEndTime(-1);
+MB_Sleep(C_BigMessage_Duration);
+SetEndTime(EndTime + C_BigMessage_Duration);
 ***
 
 ***Match_EndRound***
@@ -292,6 +293,7 @@ FlagRush_Log("End Round");
 EventFeed::SendMessage("End Round", "info");
 UpdateScoresData();
 
+SetEndTime(-1);
 MB_ClearAllMessages();
 
 // Evaluate Current Round
@@ -663,6 +665,8 @@ Void UpdateScoresData() {
  * Updaates the dossard for a specific player.
  */
  Void UpdateDossard(CSmPlayer Player) {
+	if (Player.CurrentClan <= 0) return;
+
 	// Color
 	declare Vec3 ColorPrimaryUI for Teams[Player.CurrentClan-1];
 	Player.Dossard_Color = ColorPrimaryUI;

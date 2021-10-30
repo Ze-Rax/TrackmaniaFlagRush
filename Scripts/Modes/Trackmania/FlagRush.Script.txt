@@ -8,7 +8,6 @@
 #Extends "Libs/Zrx/ModeLibs/BaseModes/TeamFlagModeBase.Script.txt"
 
 /* Common Libs */
-
 #Include "TextLib" as TL
 #Include "MathLib" as ML
 #Include "ColorLib" as CL
@@ -20,11 +19,9 @@
 #Include "Libs/Zrx/ModeLibs/Common/Collision/CylinderHitbox.Script.txt" as Hitbox
 
 /* FlagRush Libs */
-
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 
 /* UI */
-
 #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt" as EventFeed
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Flash.Script.txt" as FlagRush_UIFlash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Header.Script.txt" as FlagRush_UIHeader
@@ -32,13 +29,11 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/ScoresTable.Script.txt" as FlagRush_UIScoresTable
 
 /* Additional dependencies from other extends */
-
 #Include "Libs/Zrx/ModeLibs/Common/Collision/Collision.Script.txt" as Collision
 #Include "Libs/Zrx/ModeLibs/Common/PlayerTelemetry.Script.txt" as Telemetry
 #Include "Libs/Zrx/ModeLibs/Common/TeamPointsProgression.Script.txt" as TeamPointsProgression
 
 /* Constants */
-
 #Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
 #Const	Version												"2021-09-02"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
@@ -1606,6 +1601,7 @@ Void ExecWarmUp() {
 		SpawnPlayers();
 		HandleWarmUpEvents();
 		HandleCommands();
+		UpdateModeSettingValues();
 	}
 	
 	// End warmup

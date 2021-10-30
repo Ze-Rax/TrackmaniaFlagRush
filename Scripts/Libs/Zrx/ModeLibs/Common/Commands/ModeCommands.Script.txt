@@ -66,7 +66,7 @@ Text GetManialink() {
 	<label pos="5 -6" z-index="0" size="50 5" text="myLabelasdasdasd" textemboss="1" id="label" halign="right" valign="top" hidden="1"/>
 </framemodel>
 
-<frame id="commands-ui" pos="170 {{{C_UIPosition_Y}}}">
+<frame id="commands-ui" pos="170 {{{C_UIPosition_Y}}}" z-index="50">
 	<quad  z-index="0" size="10 10" bgcolor="FFF" style="Icons128x128_1" substyle="BackFocusable" scriptevents="1" halign="center" valign="center" id="toggle-menu"/>
 	
 	<label  z-index="0" size="65 7.5" text="Mode Commands" halign="left" valign="center" pos="7.5 9" textfont="GameFontBlack" textsize="4" textemboss="1"/>

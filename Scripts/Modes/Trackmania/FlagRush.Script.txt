@@ -29,7 +29,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Flash.Script.txt" as FlagRush_UIFlash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Header.Script.txt" as FlagRush_UIHeader
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Markers.Script.txt" as FlagRush_UIMarkers
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Scoretable.Script.txt" as FlagRush_UIScoretable
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/ScoresTable.Script.txt" as FlagRush_UIScoresTable
 
 /* Additional dependencies from other extends */
 
@@ -208,9 +208,11 @@ G_FlagSpawnCounter = 0;
 
 ***Match_StartMap***
 ***
+FlagRush_Log("Start Map");
 Users_SetNbFakeUsers(C_Debug_NbFakeUsers.X, C_Debug_NbFakeUsers.Y);
 
-FlagRush_Log("Start Map");
+UpdateScores();
+
 EventFeed::SendMessage("Start Map", "info");
 MB_Sleep(5000);
 
@@ -237,6 +239,9 @@ foreach(Player in Players) {
 ***Match_StartRound***
 ***
 FlagRush_Log("Start Round");
+
+UpdateScores();
+
 declare Text Message = "Round start";
 EventFeed::SendMessage(Message, "info");
 UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
@@ -254,6 +259,8 @@ if(S_RoundTimeLimitSeconds > 0) {
 ***Match_StartTurn***
 ***
 FlagRush_Log("Start Turn");
+
+UpdateScores();
 
 if(G_PauseRequested) {
 	EventFeed::SendMessage("The round was paused", "info");
@@ -274,7 +281,6 @@ SpawnPlayers();
 ***
 FlagRush_Log("End Turn");
 EventFeed::SendMessage("End Turn", "info");
-UpdateScoresData();
 UpdateFlagMarker(-1);
 
 foreach(Player in Players) {
@@ -291,7 +297,6 @@ SetEndTime(EndTime + C_BigMessage_Duration);
 ***
 FlagRush_Log("End Round");
 EventFeed::SendMessage("End Round", "info");
-UpdateScoresData();
 
 SetEndTime(-1);
 MB_ClearAllMessages();
@@ -317,13 +322,13 @@ if (G_RoundValid) {
 	
 	UIManager.UIAll.QueueMessage(MessageDuration, 2, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
 	EventFeed::SendMessage(Message, "info");
-	// Update Scores & Telemetry
-	Telemetry::AffectPlayersRoundToMapAndMatchTelemetry();
-	Scores::AffectPlayersRoundToMapAndMatchPoints();
 	
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 	MB_Sleep(MessageDuration / 2);
-	UpdateScoresData();	// Update scores with delay to show score changes on scoreboard and header
+	// Update Scores & Telemetry with delay to show update in scoreboard
+	Telemetry::AffectPlayersRoundToMapAndMatchTelemetry();
+	Scores::AffectPlayersRoundToMapAndMatchPoints();
+	UpdateScores();
 	MB_Sleep(MessageDuration / 2);
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 } else {
@@ -343,14 +348,11 @@ if(RoundWinsTeam1 >= S_NbRoundsToWinMap || RoundWinsTeam2 >= S_NbRoundsToWinMap)
 ***
 FlagRush_Log("End Map");
 EventFeed::SendMessage("End Map", "info");
-UpdateScoresData();
 if (MatchEndRequested) G_MapValid = False;
 ***
 
 ***Match_PodiumSequence***
 ***
-UpdateScoresData();
-
 // Evaluate Current Map
 if (G_MapValid) {
 	declare MessageDuration = S_ChatTime * 1000;
@@ -585,23 +587,24 @@ Integer EvaluateMatch() {
 // --------------------------------------------------
 
 /**
- * Get the player scores
+ * Updates the netwrite/read values for a specific score
  */
- Integer[Text] GetPlayerScoresTableData(CSmScore Score) {
-	declare Integer[Text] PlayerScoresTableData;
-	PlayerScoresTableData[FlagRush_UIScoretable::C_ScoresTable_FlagsScoredKey] = Telemetry::GetPlayerMapInteger(Score, C_Telemetry_Key_FlagsScored);
-	PlayerScoresTableData[FlagRush_UIScoretable::C_ScoresTable_FlagsScoredRoundKey] = Telemetry::GetPlayerRoundInteger(Score, C_Telemetry_Key_FlagsScored);
-	PlayerScoresTableData[FlagRush_UIScoretable::C_ScoresTable_FlagsStolenKey] = Telemetry::GetPlayerMapInteger(Score, C_Telemetry_Key_FlagsStolen);
-	PlayerScoresTableData[FlagRush_UIScoretable::C_ScoresTable_FlagsStolenRoundKey] = Telemetry::GetPlayerRoundInteger(Score, C_Telemetry_Key_FlagsStolen);
-	PlayerScoresTableData[FlagRush_UIScoretable::C_ScoresTable_PointsKey] = Scores::GetPlayerMapPoints(Score);
-	PlayerScoresTableData[FlagRush_UIScoretable::C_ScoresTable_PointsRoundKey] = Scores::GetPlayerRoundPoints(Score);
-	return PlayerScoresTableData;
+Void UpdateScore(CSmScore Score) {
+	declare netwrite Integer Net_FlagRush_FlagsScored for Score;
+	declare netwrite Integer Net_FlagRush_FlagsScored_Round for Score;
+	declare netwrite Integer Net_FlagRush_FlagsStolen for Score;
+	declare netwrite Integer Net_FlagRush_FlagsStolen_Round for Score;
+
+	Net_FlagRush_FlagsScored				= Telemetry::GetPlayerMapInteger(Score, C_Telemetry_Key_FlagsScored);
+	Net_FlagRush_FlagsScored_Round	= Telemetry::GetPlayerRoundInteger(Score, C_Telemetry_Key_FlagsScored);
+	Net_FlagRush_FlagsStolen				= Telemetry::GetPlayerMapInteger(Score, C_Telemetry_Key_FlagsStolen);
+	Net_FlagRush_FlagsStolen_Round	= Telemetry::GetPlayerRoundInteger(Score, C_Telemetry_Key_FlagsStolen);
 }
 
 /**
  * Collects scores table and header data and sends it to the clients via netwrite.
  */
-Void UpdateScoresData() {
+Void UpdateTeamScores() {
 	/* General */
 	declare netwrite Integer Net_NbMapsToWinMatch for Teams[0];
 	Net_NbMapsToWinMatch = S_NbMapsToWinMatch;
@@ -615,34 +618,14 @@ Void UpdateScoresData() {
 		declare netwrite Integer Net_TeamMapScore for Teams[Clan-1];
 		Net_TeamMapScore = TeamPointsProgression::GetClanRoundsWon(Clan);
 	}
+}
 
-	/* Scores Table */
-
-	// Looks scary, but: ClanIndex => [PlayerLogin => [ScoreFieldName => ScoreFieldValue]]
-	declare Integer[Text][Text][Integer] ScoresTableData;
-	declare Text[Text] ScoresTableNames = [];
-
-	// Make sure no Index out of bounds error occurs
-	for (I, 0, 2) ScoresTableData[I] = [];
-
-	// Write each score into the array
-	foreach (Score in Scores) {
-		ScoresTableData[Score.TeamNum][Score.User.Login] = GetPlayerScoresTableData(Score);
-		ScoresTableNames[Score.User.Login] = Score.User.Name;
-	}
-
-	// Send the data over netwrite
-	// TODO: Is ScoresTableNames actually necessary? Could do login-to-name-conversion on client side; Reduces amount of netwrites/reads to manage
-	declare netwrite Integer[Text][Text][Integer] Net_ScoresTableData for Teams[0];
-	declare netwrite Text[Text] Net_ScoresTableNames for Teams[0];
-	Net_ScoresTableData = ScoresTableData;
-	Net_ScoresTableNames = ScoresTableNames;
-	
-	// Only update player ready states when in warmup
-	if (G_GameplayPhase == FlagRush_Common::C_GameplayPhase_Warmup) {
-		declare netwrite Boolean[Text] Net_WarmUpReadyStates for Teams[0];
-		Net_WarmUpReadyStates = WarmUpReadyUp::GetPlayersReadyStates();
-	}
+/**
+ * Updates all player scores and team scores.
+ */
+Void UpdateScores() {
+	UpdateTeamScores();
+	foreach (Score in Scores) UpdateScore(Score);
 }
 
 /**
@@ -741,8 +724,6 @@ Void UpdateTeams() {
 		declare netwrite Vec3 Net_PrimaryColor for Teams[I];
 		Net_PrimaryColor = PrimaryColor;
 	}
-
-	UpdateScoresData();
 	UpdateDossards();
 }
 
@@ -958,7 +939,7 @@ Void InitUI() {
 	Layers::Attach(C_LayerName_ScoresHeader);
 	
 	// Scores table
-	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoretable::GetManialink(6));
+	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoresTable::GetManialink(6));
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
 	
@@ -1244,7 +1225,8 @@ Void ScoreFlag(CSmPlayer Player) {
 	Scores::AddClanRoundPoints(Player.CurrentClan, 1);
 	Scores::AddPlayerRoundPoints(Player.Score, FlagRush_Common::C_PointsValue_ScoreFlag);
 	Telemetry::AddPlayerRoundInteger(Player.Score, C_Telemetry_Key_FlagsScored, 1);
-	UpdateScoresData();
+	UpdateScore(Player.Score);
+	UpdateTeamScores();
 	
 	ResetHandicaps(Player);
 	ResetFlag(True);
@@ -1266,7 +1248,7 @@ Void StealFlag(CSmPlayer NewCarrier, CSmPlayer OldCarrier) {
 		// Add the points only if the flag carrier is at different team!
 		Scores::AddPlayerRoundPoints(NewCarrier.Score, FlagRush_Common::C_PointsValue_StealFlag);
 		Telemetry::AddPlayerRoundInteger(NewCarrier.Score, C_Telemetry_Key_FlagsStolen, 1);
-		UpdateScoresData();
+		UpdateScore(NewCarrier.Score);
 	}
 	
 	// Reset old flag carrier handicaps
@@ -1509,9 +1491,6 @@ Void HandleCommand(CommandUtils::K_Command Command) {
 			if(FlagCarrier != Null) ResetHandicaps(FlagCarrier);
 			ResetFlag();
 		}
-		case CommandUtils::C_CommandPrefix ^ "update": {
-			UpdateScoresData();
-		}
 	}
 }
 
@@ -1582,7 +1561,8 @@ Void HandleCommands() {
 			|| WuruEvent.Type == WarmUpReadyUp::C_Event_Type_TimeoutAbort) {
 			SetEndTime(EndTime);
 		} else if (WuruEvent.Type == WarmUpReadyUp::C_Event_Type_PlayerReadyChanged) {
-			UpdateScoresData();
+			declare netwrite Boolean[Text] Net_WarmUpReadyStates for Teams[0];
+			Net_WarmUpReadyStates = WarmUpReadyUp::GetPlayersReadyStates();
 		}
 	}
 }

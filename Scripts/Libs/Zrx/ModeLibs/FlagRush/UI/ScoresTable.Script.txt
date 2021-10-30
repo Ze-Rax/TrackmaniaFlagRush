@@ -376,7 +376,8 @@ Text GetManialink(Integer _PlayersPerPage) {
 			for(PlayerCardIndex, 0, {{{PlayersPerPage - 1}}}) {
 				declare CMlFrame PlayerCard <=> GetPlayerCardByClanAndIndex(Clan, PlayerCardIndex);
 				declare Integer PlayerIndex = CurrentPageIndex * {{{PlayersPerPage}}} + PlayerCardIndex;	// Offset by page
-				declare CSmScore Score <=> GetScoreByClanAndIndex(Clan, PlayerIndex);				
+				declare CSmScore Score <=> GetScoreByClanAndIndex(Clan, PlayerIndex);
+				if(Score.User.Name == "Ze-Rax") log(Score.TeamNum);	
 				UpdatePlayerCardContet(PlayerCard, Score);
 			}
 		}

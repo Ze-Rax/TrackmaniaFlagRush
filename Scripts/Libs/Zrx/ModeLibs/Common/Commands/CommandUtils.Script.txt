@@ -85,7 +85,7 @@ K_Command FromEvent(CSmModeEvent Event) {
 */
 K_Command FromEvent(CUIConfigEvent Event) {
 	declare Text Source;
-	if(Event.UI != Null) {	// Apparently that can happen somehow... (said Boss Bravo)
+	if(Event.UI != Null && Event.UI.User != Null) {	// Apparently that can happen somehow... (said Boss Bravo)
 		Source = GetPlayer(Event.UI).User.Login;
 	}
 	return FromNameAndParams(Event.CustomEventType, Event.CustomEventData, Source);

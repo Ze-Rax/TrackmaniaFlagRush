@@ -27,6 +27,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Header.Script.txt" as FlagRush_UIHeader
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Markers.Script.txt" as FlagRush_UIMarkers
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/ScoresTable.Script.txt" as FlagRush_UIScoresTable
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Spectator.Script.txt" as FlagRush_UISpectator
 
 /* Additional dependencies from other extends */
 #Include "Libs/Zrx/ModeLibs/Common/Collision/Collision.Script.txt" as Collision
@@ -43,6 +44,7 @@
 
 #Const	C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
 #Const	C_LayerName_ScoresHeader			"Layer_FlagRush_ScoresHeader"
+#Const	C_LayerName_Spectator					"Layer_FlagRush_Spectator"
 #Const	C_LayerName_RoundUI						"Layer_FlagRush_RoundUI"
 #Const	C_LayerName_Markers						"Layer_FlagRush_Markers"
 #Const 	C_LayerName_Feed							"Layer_FlagRush_Feed"
@@ -57,7 +59,7 @@
 #Const 	C_RespawnSpeedLimitKmh 				30.
 
 #Const  C_Debug 											True
-#Const	C_Debug_NbFakeUsers						<0, 0>
+#Const	C_Debug_NbFakeUsers						<1, 1>
 
 //////////////
 // Settings //
@@ -176,6 +178,8 @@ UIManager.UIAll.TeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
 UIManager.UIAll.TeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenInFrustum;
 UIManager.UIAll.OpposingTeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
 UIManager.UIAll.OpposingTeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenVisible;
+UIManager.UIAll.OverlayHideSpectatorInfos = True;
+UIManager.UIAll.OverlayHideSpectatorControllers = True;
 
 // Register mode commands
 ModeCommands::Load();
@@ -735,7 +739,7 @@ Void UpdateTeams() {
  * Sends the current flag carrier name and clan to UI clients
  */
 Void UpdateFlagCarrier() {
-	declare FlagCarrier = GetFlagCarrier();
+	declare CSmPlayer FlagCarrier = GetFlagCarrier();
 	
 	// Carrier Clan Index (for color)
 	declare netwrite Integer Net_FlagRush_FlagCarrierClan for Teams[0];
@@ -744,7 +748,12 @@ Void UpdateFlagCarrier() {
 	
 	// Carrier name
 	declare netwrite Text Net_FlagRush_FlagCarrierName for Teams[0];
-	if (FlagCarrier != Null && FlagCarrier.User != Null) Net_FlagRush_FlagCarrierName = FlagCarrier.User.Name;
+	declare netwrite Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+	Net_FlagRush_FlagCarrierLogin = "";
+	if (FlagCarrier != Null && FlagCarrier.User != Null)  {
+		Net_FlagRush_FlagCarrierName = FlagCarrier.User.Name;
+		Net_FlagRush_FlagCarrierLogin = FlagCarrier.User.Login;
+	}
 	else if (G_FlagState.Landmark == G_ActiveFlagSpawn) Net_FlagRush_FlagCarrierName = "Spawn";
 	else Net_FlagRush_FlagCarrierName = "Dropped";
 
@@ -909,6 +918,10 @@ Void InitUI() {
 	Layers::SetType(C_LayerName_ModeCommands, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_ModeCommands);
 	
+	Layers::Create(C_LayerName_Spectator, FlagRush_UISpectator::GetManialink());
+	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Spectator);
+
 	InitMarkers();
 }
 
@@ -1306,7 +1319,7 @@ Void UpdateModeSettingValues() {
 }
 
 /**
- * Updates the players if ther state changed (Change team, ...).
+ * Updates the players if their state changed (Change team, ...).
  */
 Void UpdatePlayers() {
 	// Update Clan
@@ -1325,9 +1338,9 @@ Void UpdatePlayers() {
 Void UpdateSpectators() {
 	foreach (Spectator in Spectators)
 	{
-		if (G_FlagState.CarrierLogin == Spectator.User.Login) DropFlag();
+		if (G_FlagState.CarrierLogin == Spectator.User.Login) DropFlag();		
 		declare Boolean PlayerCanSpawnMidRound for Spectator;
-		PlayerCanSpawnMidRound = False;
+		PlayerCanSpawnMidRound = False;		
 	}
 }
 
@@ -1397,7 +1410,7 @@ Void HandleEvents() {
 			{
 				UpdateTeams();
 			}
-			
+
 			case CSmModeEvent::EType::OnPlayerRemoved:
 			{
 				// Event.Player is Null; Only User available

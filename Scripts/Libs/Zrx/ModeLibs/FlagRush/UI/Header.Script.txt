@@ -84,13 +84,13 @@ Text GetManialink() {
 			declare CMlLabel LabelFlagCarrier = (FrameFlagCarrier.GetFirstChild("value") as CMlLabel);
 			
 			/* Netread variables */
-			declare netread Integer Net_NbMapsToWinMatch for Teams[0];
-			declare netread Integer Net_NbRoundsToWinMap for Teams[0];
+			declare netread Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
+			declare netread Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
 			
-			declare netread Integer Net_FlagCarrierClan for Teams[0];
-			declare netread Text Net_FlagCarrierName for Teams[0];
-			declare netread Integer Net_EndTime for Teams[0];
-			declare netread Integer Net_GameplayPhase for Teams[0];	
+			declare netread Integer Net_FlagRush_FlagCarrierClan for Teams[0];
+			declare netread Text Net_FlagRush_FlagCarrierName for Teams[0];
+			declare netread Integer Net_FlagRush_EndTime for Teams[0];
+			declare netread Integer Net_FlagRush_GameplayPhase for Teams[0];	
 
 			/* Main Loop */
 			while(True) {
@@ -122,10 +122,10 @@ Text GetManialink() {
 
 				/* General */
 				declare CTeam FlagCarrierTeam = Null;
-				if (Net_FlagCarrierClan > 0) FlagCarrierTeam <=> Teams[Net_FlagCarrierClan - 1];
+				if (Net_FlagRush_FlagCarrierClan > 0) FlagCarrierTeam <=> Teams[Net_FlagRush_FlagCarrierClan - 1];
 				
 				/* Timer */
-				declare Integer RoundTimeLeft = Net_EndTime - GameTime;
+				declare Integer RoundTimeLeft = Net_FlagRush_EndTime - GameTime;
 				declare Boolean IsTimeLeft = RoundTimeLeft > 0;
 				LabelTimeLimit.Visible = IsTimeLeft;
 
@@ -150,10 +150,10 @@ Text GetManialink() {
 
 				/* Flag Carrier */
 				LabelFlagCarrier.TextPrefix = "$" ^ CL::RgbToHex3(GetTeamPrimaryColor(FlagCarrierTeam));
-				LabelFlagCarrier.Value = Net_FlagCarrierName;
+				LabelFlagCarrier.Value = Net_FlagRush_FlagCarrierName;
 				
 				/* Override in special cases */
-				switch(Net_GameplayPhase) {
+				switch(Net_FlagRush_GameplayPhase) {
 					case {{{FlagRush_Common::C_GameplayPhase_Warmup}}}: {	
 						LabelTimeLimit.TextPrefix = "$f90";		
 						LabelFlagCarrier.TextPrefix = "$f90";
@@ -170,22 +170,22 @@ Text GetManialink() {
 				
 				/* Round score */
 				for (Clan, 1, 2) {
-					declare netread Integer Net_TeamRoundScore for Teams[Clan-1];
-					if (Clan == 1) LabelTeam1Score.Value = TL::ToText(Net_TeamRoundScore);
-					if (Clan == 2) LabelTeam2Score.Value = TL::ToText(Net_TeamRoundScore);
+					declare netread Integer Net_FlagRush_TeamRoundScore for Teams[Clan-1];
+					if (Clan == 1) LabelTeam1Score.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
+					if (Clan == 2) LabelTeam2Score.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
 				}
 				
 				/* Map score */				
-				declare Boolean ShowRoundWins = Net_NbRoundsToWinMap >= 2;
+				declare Boolean ShowRoundWins = Net_FlagRush_NbRoundsToWinMap >= 2;
 				FrameMapScores.Visible = ShowRoundWins;
 				FrameMain.RelativePosition_V3.Y = 3.5;
 				if(ShowRoundWins) {
 					FrameMain.RelativePosition_V3.Y = 0.;
 					
 					// Gauge grading				
-					declare Real GradingRatio = 1. / Net_NbRoundsToWinMap;
+					declare Real GradingRatio = 1. / Net_FlagRush_NbRoundsToWinMap;
 					
-					declare Real GaugeWidth = ML::Min(4. * Net_NbRoundsToWinMap, 25.);
+					declare Real GaugeWidth = ML::Min(4. * Net_FlagRush_NbRoundsToWinMap, 25.);
 					GaugeMapScoreTeam1.Size = <GaugeWidth, 3.>;
 					GaugeMapScoreTeam1.GradingRatio = GradingRatio;
 
@@ -200,8 +200,8 @@ Text GetManialink() {
 						
 					// Gauge Ratio
 					for (Clan, 1, 2) {
-						declare netread Integer Net_TeamMapScore for Teams[Clan-1];
-						declare GaugeRatioTeam = ML::Min((0. + Net_TeamMapScore) / Net_NbRoundsToWinMap, 1.);
+						declare netread Integer Net_FlagRush_TeamMapScore for Teams[Clan-1];
+						declare GaugeRatioTeam = ML::Min((0. + Net_FlagRush_TeamMapScore) / Net_FlagRush_NbRoundsToWinMap, 1.);
 						if (Clan == 1) GaugeMapScoreTeam1.Ratio = GaugeRatioTeam;
 						if (Clan == 2) GaugeMapScoreTeam2.Ratio = GaugeRatioTeam;
 					}

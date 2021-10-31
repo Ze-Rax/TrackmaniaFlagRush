@@ -37,6 +37,7 @@ Text GetManialink(Integer NbBasesPerTeam, Integer TotalFlagAmount) {
 		{{{FlagsFrameInstancesXml}}}
 
 		<script><!--
+			#Include "MathLib" as ML
 			
 			{{{UIShared::GetTeamColorNetreadFunctions()}}}
 		
@@ -56,32 +57,19 @@ Text GetManialink(Integer NbBasesPerTeam, Integer TotalFlagAmount) {
 				declare CMlGauge GaugeMarkerFlag = (FrameMarkerFlag.GetFirstChild("gauge-flag") as CMlGauge);
 				QuadMarkerFlag.Colorize = GetTeamPrimaryColor(Null);
 				
-				declare netread Integer Net_FlagCarrierClan for Teams[0];
-				declare netread Boolean Net_HideFlagMarker for UI;
+				declare netread Integer Net_FlagRush_FlagCarrierClan for Teams[0];
 				
-				declare netread Integer Net_FlagGaugeStartServerDate for Teams[0];
-				declare netread Integer Net_FlagGaugeDuration for Teams[0];
-				declare Integer LastFlagGaugeStartServerDate;
-				declare Integer FlagGaugeStartDate;
+				declare netread Integer Net_FlagRush_FlagGaugeStartDate for Teams[0];
+				declare netread Integer Net_FlagRush_FlagGaugeDuration for Teams[0];
 							
 				while(True) {
 					yield;
-					
-					/* Hide when requested */
-					
-					if (Net_HideFlagMarker) {
-						GaugeMarkerFlag.Visible = False;
-						QuadMarkerFlag.Visible = False;
-						continue;
-					}
-					
-					QuadMarkerFlag.Visible = True;
 					
 					/* Colors */
 					
 					// Get the right color for the flag
 					declare Vec3 FlagColor = GetTeamPrimaryColor(Null);
-					if (Net_FlagCarrierClan > 0) FlagColor = GetTeamPrimaryColor(Teams[Net_FlagCarrierClan - 1]);
+					if (Net_FlagRush_FlagCarrierClan > 0) FlagColor = GetTeamPrimaryColor(Teams[Net_FlagRush_FlagCarrierClan - 1]);
 					
 					// Apply colors
 					QuadMarkerFlag.Colorize = FlagColor;
@@ -96,16 +84,11 @@ Text GetManialink(Integer NbBasesPerTeam, Integer TotalFlagAmount) {
 					
 					/* Gauge animation */
 					
-					// Server CSmMode.Now is not Client CMlScript.Now (?), Get local timing equivalents
-					if(Net_FlagGaugeStartServerDate > LastFlagGaugeStartServerDate) {
-						LastFlagGaugeStartServerDate = Net_FlagGaugeStartServerDate;
-						FlagGaugeStartDate = Now;
-					}
-					
 					// Flag gauge end in future
-					if (FlagGaugeStartDate + Net_FlagGaugeDuration > Now) {
-						declare Ratio = (0. + Net_FlagGaugeDuration - (Now - FlagGaugeStartDate)) / Net_FlagGaugeDuration;
-						GaugeMarkerFlag.Ratio = 0.2 + Ratio * 0.8;
+					if (Net_FlagRush_FlagGaugeStartDate + Net_FlagRush_FlagGaugeDuration > GameTime) {
+						declare Ratio = (0. + Net_FlagRush_FlagGaugeDuration - (GameTime - Net_FlagRush_FlagGaugeStartDate)) / Net_FlagRush_FlagGaugeDuration;
+						declare AdjustedRatio = ML::Clamp(0.2 + Ratio * 0.8, 0.2, 1.0);	// Somehow the gauge ends at 0.2? Also clamp, as we had an exception before
+						GaugeMarkerFlag.Ratio = AdjustedRatio;
 						GaugeMarkerFlag.Visible = True;
 						QuadMarkerFlag.Opacity = 0.5;
 					}

@@ -90,21 +90,21 @@ Text GetManialink(Integer _PlayersPerPage) {
 		<quad pos="60 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
 		<quad pos="36 0" id="info-icon" z-index="2" size="3 3" halign="center" valign="center" style="Icons64x64_2" substyle="Disconnected" hidden="1" /> <!-- Style="UICommon64_1" SubStyle="Camera_light" -->
 	</framemodel>
-	<!-- Actual scoreboard -->
+	<!-- Actual scores table -->
 	<!--
 	Structure:
 	
-	scoreboard-main (Frame)
+	scorestable-main (Frame)
 	teamscores-round (Frame)
 	for each team: team name, roundscore, colored score background
 	divider
 	playerscores (Frame)
 	column-legend (Frame)
 	playergrid (Frame)
-	4x player-card-team1 (Frameinstance)
-	4x player-card-team2 (Frameinstance)
+	n times player-card-team1 (Frameinstance)
+	n times player-card-team2 (Frameinstance)
 	-->
-	<frame id="scoreboard-main" scale="1.4" pos="0 43" valign="bottom">
+	<frame id="scorestable-main" scale="1.4" pos="0 43" valign="bottom">
 		<frame id="body" pos="0 0">
 			<frame id="header">
 				<frame id="logo" pos="0 -4" size="280 15" scale="0.5" valign="center" halign="center" z-index="-1">
@@ -164,7 +164,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 		</frame>
 	</frame>
 	
-	<!-- Script to handle the scoreboard -->
+	<!-- Script to handle the scores table -->
 	
 	<script><!--
 	// ------------------------------ //
@@ -200,7 +200,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 	declare CMlQuad QuadPagePrevious;
 	declare CMlQuad QuadPageNext;
 
-	/* Scoreboard control Variables */
+	/* Scores table control Variables */
 	declare Integer CurrentPageIndex;
 
 	// ------------------------------ //
@@ -208,6 +208,10 @@ Text GetManialink(Integer _PlayersPerPage) {
 	// ------------------------------ //	
 	{{{UIShared::GetTeamColorNetreadFunctions()}}}
 
+	/**
+	 * Gets the player object for a given login.
+	 * Returns Null if the player was not found.
+	 */
 	CSmPlayer GetPlayer(Text Login) {
 		foreach (Player in Players) {
 			if (Player.User.Login == Login) {
@@ -216,16 +220,10 @@ Text GetManialink(Integer _PlayersPerPage) {
 		}
 		return Null;
 	}
-
-	CSmScore GetScore(Text Login) {
-		foreach (Score in Scores) {
-			if(Score.User.Login == Login) {
-				return Score;
-			}
-		}
-		return Null;
-	}
 	
+	/**
+	 * Checks if a player with given login is connected.
+	 */
 	Boolean IsConnected(Text Login) {
 		foreach (Player in Players) {
 			if (Player.User.Login == Login) return True;
@@ -233,12 +231,12 @@ Text GetManialink(Integer _PlayersPerPage) {
 		return False;
 	}
 
-	Void UpdatePageState() {
+	/**
+	 * Determines the amount of pages, clamps the current page index and shows and hides the page controls accordingly.
+	 */
+	Void UpdatePageState(CSmScore[][Integer] ScoresToDisplay) {
 		// Determine the amount of pages and clamp the current page
-		declare Integer[Integer] NbPlayersPerClan;
-		for(Clan, 1, 2) NbPlayersPerClan[Clan] = 0;
-		foreach(Score in Scores) NbPlayersPerClan[Score.TeamNum] += 1;
-		declare Integer NbPages	= ML::Max(NbPlayersPerClan[1], NbPlayersPerClan[2]) / {{{PlayersPerPage}}} + 1;
+		declare Integer NbPages	= (ML::Max(ScoresToDisplay[1].count, ScoresToDisplay[2].count) / ({{{PlayersPerPage}}} + 1)) + 1;
 		CurrentPageIndex = ML::Clamp(CurrentPageIndex, 0, NbPages - 1);
 		
 		// Show page controls if there is more than one page
@@ -247,6 +245,9 @@ Text GetManialink(Integer _PlayersPerPage) {
 		QuadPageNext.Visible = CurrentPageIndex < NbPages - 1;
 	}
 
+	/**
+	 * Updates the displayed names and colors for both teams.
+	 */
 	Void UpdateTeamNamesAndColors() {
 		declare Vec3 BgColor1 = CL::RgbToHsv(GetTeamPrimaryColor(Teams[0]));			
 		declare Vec3 BgColor2 = CL::RgbToHsv(GetTeamPrimaryColor(Teams[1]));
@@ -266,14 +267,22 @@ Text GetManialink(Integer _PlayersPerPage) {
 		QuadTeam2CenterDivider.BgColor = GetTeamPrimaryColor(Teams[1]);
 	}
 
+	/**
+	 * Updates the displayed scores for both teams.
+	 */
 	Void UpdateTeamScores() {
 		for (Clan, 1, 2) {
-			declare netread Integer Net_TeamRoundScore for Teams[Clan-1];
-			if (Clan == 1) LabelTeam1Score.Value = TL::ToText(Net_TeamRoundScore);
-			if (Clan == 2) LabelTeam2Score.Value = TL::ToText(Net_TeamRoundScore);
+			declare netread Integer Net_FlagRush_TeamRoundScore for Teams[Clan-1];
+			if (Clan == 1) LabelTeam1Score.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
+			if (Clan == 2) LabelTeam2Score.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
 		}
 	}
 
+	/**
+	 * Updates the content of a given playercard with a given Score.
+	 * Does nothing if the given card is Null.
+	 * Hides the card if the given score is Null.
+	 */
 	Void UpdatePlayerCardContet(CMlFrame PlayerCard, CSmScore Score) {
 		if(PlayerCard == Null) return;
 		/* Visibility */
@@ -320,10 +329,10 @@ Text GetManialink(Integer _PlayersPerPage) {
 
 		/* Background */
 		declare Vec3 BackgroundColor;
-		declare netread Integer Net_GameplayPhase for Teams[0];
-		declare netread Boolean[Text] Net_WarmUpReadyStates for Teams[0];
-		if (Net_GameplayPhase == {{{FlagRush_Common::C_GameplayPhase_Warmup}}}) {
-			if (Net_WarmUpReadyStates.get(Score.User.Login, False)) {
+		declare netread Integer Net_FlagRush_GameplayPhase for Teams[0];
+		declare netread Boolean[Text] Net_FlagRush_WarmUpReadyStates for Teams[0];
+		if (Net_FlagRush_GameplayPhase == {{{FlagRush_Common::C_GameplayPhase_Warmup}}}) {
+			if (Net_FlagRush_WarmUpReadyStates.get(Score.User.Login, False)) {
 				BackgroundColor = <0.1, 0.7, 0.1>;
 			} else {
 				BackgroundColor = <0., 0., 0.>;
@@ -350,49 +359,79 @@ Text GetManialink(Integer _PlayersPerPage) {
 		LabelPlayerFlagsStolenAdd.Value = TL::ToText(Net_FlagRush_FlagsStolen_Round);	
 	}
 
+	/**
+	 * Gets the player card for a given clan and index.
+	 * Returns null if the clan or index is out of bounds.
+	 */
 	CMlFrame GetPlayerCardByClanAndIndex(Integer Clan, Integer Index) {
-		if(Index >= {{{PlayersPerPage}}}) return Null;
+		if(Index >= {{{PlayersPerPage}}} || Index < 0) return Null;
 		
 		if(Clan == 1) return PlayerCardFramesTeam1[Index];
 		else if(Clan == 2) return PlayerCardFramesTeam2[Index];
 		return Null;
 	}
 
-	CSmScore GetScoreByClanAndIndex(Integer Clan, Integer Index) {
-		declare Integer IndexForClan = 0;
+	/**
+	 * Filters out scores that should not be displayed:
+	 *     - Do not display disconnected players or spectators with less than one point.
+	 *     - Do not display disconnected players or spectators in warmup, regardless of points.
+	 * Scores are returned in an array with the clan number as key.
+	 */
+	CSmScore[][Integer] FilterScoresToDisplay() {
+		declare netread Integer Net_FlagRush_GameplayPhase for Teams[0];
+		declare Boolean IsWarmup = Net_FlagRush_GameplayPhase == {{{FlagRush_Common::C_GameplayPhase_Warmup}}};
+
+		declare CSmScore[][Integer] ScoresToDisplay = [0 => [], 1 => [], 2 => []];
 		foreach (Score in Scores) {
-			if(Score.TeamNum == Clan) {
-				if(IndexForClan == Index) {
-					return Score;
-				}
-				IndexForClan += 1;
-			}
+			declare Boolean PlayerHasPoints = Score.Points + Score.RoundPoints > 0;
+			declare Boolean PlayerIsConnected = IsConnected(Score.User.Login);
+			declare Boolean PlayerIsSpectating = PlayerIsConnected && GetPlayer(Score.User.Login).RequestsSpectate;
+
+			// In warmup, do not show disonnected or spectating players
+			// Outside of warmup, do not show disconnected or spectating players with no points
+			if((!PlayerIsConnected || PlayerIsSpectating) && (IsWarmup || !PlayerHasPoints)) continue;
+			ScoresToDisplay[Score.TeamNum].add(Score);
 		}
-		return Null;
+		return ScoresToDisplay;
 	}
 
-	Void UpdatePagePlayerCards() {
+	/**
+	 * Updates the player cards for the current page with the given scores (sorted by team).
+	 */
+	Void UpdatePagePlayerCards(CSmScore[][Integer] ScoresToDisplay) {
 		for(Clan, 1, 2) {
 			for(PlayerCardIndex, 0, {{{PlayersPerPage - 1}}}) {
 				declare CMlFrame PlayerCard <=> GetPlayerCardByClanAndIndex(Clan, PlayerCardIndex);
 				declare Integer PlayerIndex = CurrentPageIndex * {{{PlayersPerPage}}} + PlayerCardIndex;	// Offset by page
-				declare CSmScore Score <=> GetScoreByClanAndIndex(Clan, PlayerIndex);
+				declare CSmScore Score;
+				if(PlayerIndex < ScoresToDisplay[Clan].count) Score <=> ScoresToDisplay[Clan][PlayerIndex];
 				UpdatePlayerCardContet(PlayerCard, Score);
 			}
 		}
 	}
 
+	/**
+	 * Updates the content of the current scorestable page
+	 */
 	Void UpdateCurrentPage() {
-		UpdatePageState();
-		UpdatePagePlayerCards();
+		declare CSmScore[][Integer] ScoresToDisplay = FilterScoresToDisplay();
+		UpdatePageState(ScoresToDisplay);
+		UpdatePagePlayerCards(ScoresToDisplay);
 	}
 
+	/**
+	 * Updates the footer text using the text sent by the gamemode.
+	 */
 	Void UpdateFooter() {
-		declare netread Text Net_FooterText for Teams[0];
-		FrameFooter.Visible = Net_FooterText != "";
-		LabelFooter.Value = Net_FooterText;
+		declare netread Text Net_FlagRush_ScoresTable_FooterText for Teams[0];
+		FrameFooter.Visible = Net_FlagRush_ScoresTable_FooterText != "";
+		LabelFooter.Value = Net_FlagRush_ScoresTable_FooterText;
 	}
 
+	/**
+	 * Handles manialink event:
+	 *     - Page navigation
+	 */
 	Void HandleEvents() {
 		foreach(Event in PendingEvents) {						
 			switch(Event.Type) {
@@ -423,6 +462,9 @@ Text GetManialink(Integer _PlayersPerPage) {
 	// ------------------------------ //
 	// Init & Main
 	// ------------------------------ //
+	/**
+	 * Assigns the references to the relevant CMlControls to the respective global variables.
+	 */
 	Void AssignMlControlReferences() {
 		// Header
 		QuadTeam1ScoreBackground = (Page.GetFirstChild("team1-score-background") as CMlQuad);
@@ -447,6 +489,9 @@ Text GetManialink(Integer _PlayersPerPage) {
 		QuadPageNext = (Page.GetFirstChild("page-next") as CMlQuad);
 	}
 
+	/**
+	 * Initialises the scores table.
+	 */
 	Void Init() {
 		AssignMlControlReferences();
 		CurrentPageIndex = 0;
@@ -454,7 +499,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 
 	main() {		
 		Init();
-
+		
 		while(True) {
 			yield;
 

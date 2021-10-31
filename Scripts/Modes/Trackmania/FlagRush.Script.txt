@@ -127,6 +127,7 @@
 	CMapLandmark Landmark;
 	Text CarrierLogin;
 	Vec3 DropLocation;
+	Integer LastDropDate;
 	Integer PickupableDate;
 }
 
@@ -1146,6 +1147,7 @@ Void DropFlag() {
 	
 	FlagPosition.Y += Hitbox::GetCarSize(MapPlayerModelName).Y / 2;
 	SetFlagPosition(FlagCarrier.Position, Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000));
+	G_FlagState.LastDropDate = Now;
 	UpdateFlagMarker(ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000));
 	
 	// Reset Carrier handicaps
@@ -1258,8 +1260,8 @@ Void UpdateFlag() {
 			
 			foreach (Player in Players) {
 				if (Hitbox::CheckOverlap(FlagHitbox, Hitbox::GetHitbox(Player))) {
-					declare Integer FlagRush_LastDropFlagDate for Player = -1;
-					if(Now - FlagRush_LastDropFlagDate > ML::NearestInteger(S_DropFlagPickupPenalty * 1000)) {
+					declare Integer FlagRush_LastFlagDropDate for Player = -1;
+					if(FlagRush_LastFlagDropDate != G_FlagState.LastDropDate || Now - FlagRush_LastFlagDropDate > ML::NearestInteger(S_DropFlagPickupPenalty * 1000)) {
 						SetFlagCarrier(Player);
 						break;
 					}
@@ -1371,8 +1373,8 @@ Void HandleEvents() {
 				declare Boolean PlayerIsFlagCarrier = FlagCarrier != Null && FlagCarrier == Event.Player;
 				if(PlayerIsFlagCarrier) {
 					DropFlag();
-					declare Integer FlagRush_LastDropFlagDate for FlagCarrier;
-					FlagRush_LastDropFlagDate = Now;
+					declare Integer FlagRush_LastFlagDropDate for FlagCarrier;
+					FlagRush_LastFlagDropDate = Now;
 				} else {
 					declare Integer SpawnDate for Event.Player;
 					if (S_RespawnWhenStill) {

@@ -88,6 +88,7 @@
 #Setting S_CanJoinMidRound									True 		as "<hidden>" // Players can join in the middle of a round
 #Setting S_RespawnWhenStill									True 		as "Players can respawn only when being still"
 #Setting S_RespawnDelay											1.5 		as "Respawn Delay (seconds)"
+#Setting S_DropFlagPickupPenalty						3.			as "Flag pickup cooldown after dropping (seconds)"
 
 // Teams
 #Setting S_Team1Name 												"" 			as "Team 1 Name"
@@ -1257,8 +1258,11 @@ Void UpdateFlag() {
 			
 			foreach (Player in Players) {
 				if (Hitbox::CheckOverlap(FlagHitbox, Hitbox::GetHitbox(Player))) {
-					SetFlagCarrier(Player);
-					break;
+					declare Integer FlagRush_LastDropFlagDate for Player = -1;
+					if(Now - FlagRush_LastDropFlagDate > ML::NearestInteger(S_DropFlagPickupPenalty * 1000)) {
+						SetFlagCarrier(Player);
+						break;
+					}
 				}
 			}
 		}
@@ -1363,19 +1367,27 @@ Void HandleEvents() {
 			
 			case CSmModeEvent::EType::OnPlayerRequestRespawn:
 			{
-				declare Integer SpawnDate for Event.Player;
-				if (S_RespawnWhenStill) {
-					if (Event.Player.Speed < C_RespawnSpeedLimitKmh / 3.6) {
+				declare CSmPlayer FlagCarrier <=> GetFlagCarrier();
+				declare Boolean PlayerIsFlagCarrier = FlagCarrier != Null && FlagCarrier == Event.Player;
+				if(PlayerIsFlagCarrier) {
+					DropFlag();
+					declare Integer FlagRush_LastDropFlagDate for FlagCarrier;
+					FlagRush_LastDropFlagDate = Now;
+				} else {
+					declare Integer SpawnDate for Event.Player;
+					if (S_RespawnWhenStill) {
+						if (Event.Player.Speed < C_RespawnSpeedLimitKmh / 3.6) {
+							SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+							UnspawnPlayer(Event.Player);
+							if(FlagCarrier == Event.Player) DropFlag();
+						} else {
+							FlagRush_UIFlash::FlashRespawn(Event.Player);
+						}
+					} else {
 						SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
 						UnspawnPlayer(Event.Player);
 						if(FlagCarrier == Event.Player) DropFlag();
-					} else {
-						FlagRush_UIFlash::FlashRespawn(Event.Player);
 					}
-				} else {
-					SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
-					UnspawnPlayer(Event.Player);
-					if(FlagCarrier == Event.Player) DropFlag();
 				}
 			}
 			

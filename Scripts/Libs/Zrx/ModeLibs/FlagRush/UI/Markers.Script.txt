@@ -1,6 +1,6 @@
 //#RequireContext CMlScriptIngame
 
-#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
 
 Text GetManialink(Integer NbBasesPerTeam, Integer TotalFlagAmount) {
 	
@@ -37,18 +37,19 @@ Text GetManialink(Integer NbBasesPerTeam, Integer TotalFlagAmount) {
 		{{{FlagsFrameInstancesXml}}}
 
 		<script><!--
+			#Include "MathLib" as ML
 			
 			{{{UIShared::GetTeamColorNetreadFunctions()}}}
 		
 			main() {
+				declare CMlFrame[] Team1BaseMarkerFrames;
+				declare CMlFrame[] Team2BaseMarkerFrames;
 				for(I, 0, {{{NbBasesPerTeam-1}}}) {
 					declare CMlFrame FrameMarkerBase1 = (Page.GetFirstChild("marker-base-team1-" ^ I) as CMlFrame);
-					declare CMlQuad QuadMarkerBase1 = (FrameMarkerBase1.GetFirstChild("quad-base") as CMlQuad);
-					QuadMarkerBase1.Colorize = GetTeamPrimaryColor(Teams[0]);
+					Team1BaseMarkerFrames.add(FrameMarkerBase1);
 					
 					declare CMlFrame FrameMarkerBase2 = (Page.GetFirstChild("marker-base-team2-" ^ I) as CMlFrame);
-					declare CMlQuad QuadMarkerBase2 = (FrameMarkerBase2.GetFirstChild("quad-base") as CMlQuad);
-					QuadMarkerBase2.Colorize = GetTeamPrimaryColor(Teams[1]);
+					Team2BaseMarkerFrames.add(FrameMarkerBase2);
 				}
 				
 				declare CMlFrame FrameMarkerFlag = (Page.GetFirstChild("marker-flag") as CMlFrame);
@@ -56,49 +57,38 @@ Text GetManialink(Integer NbBasesPerTeam, Integer TotalFlagAmount) {
 				declare CMlGauge GaugeMarkerFlag = (FrameMarkerFlag.GetFirstChild("gauge-flag") as CMlGauge);
 				QuadMarkerFlag.Colorize = GetTeamPrimaryColor(Null);
 				
-				declare netread Integer Net_FlagCarrierClan for Teams[0];
-				declare netread Boolean Net_HideFlagMarker for UI;
+				declare netread Integer Net_FlagRush_FlagCarrierClan for Teams[0];
 				
-				declare netread Integer Net_FlagGaugeStartServerDate for Teams[0];
-				declare netread Integer Net_FlagGaugeDuration for Teams[0];
-				declare Integer LastFlagGaugeStartServerDate;
-				declare Integer FlagGaugeStartDate;
+				declare netread Integer Net_FlagRush_FlagGaugeStartDate for Teams[0];
+				declare netread Integer Net_FlagRush_FlagGaugeDuration for Teams[0];
 							
 				while(True) {
 					yield;
 					
-					/* Hide when requested */
-					
-					if (Net_HideFlagMarker) {
-						GaugeMarkerFlag.Visible = False;
-						QuadMarkerFlag.Visible = False;
-						continue;
-					}
-					
-					QuadMarkerFlag.Visible = True;
-					
 					/* Colors */
 					
-					// Get the right color
-					declare Vec3 CurrentColor = GetTeamPrimaryColor(Null);
-					if (Net_FlagCarrierClan > 0) CurrentColor = GetTeamPrimaryColor(Teams[Net_FlagCarrierClan - 1]);
+					// Get the right color for the flag
+					declare Vec3 FlagColor = GetTeamPrimaryColor(Null);
+					if (Net_FlagRush_FlagCarrierClan > 0) FlagColor = GetTeamPrimaryColor(Teams[Net_FlagRush_FlagCarrierClan - 1]);
 					
-					// Apply color
-					QuadMarkerFlag.Colorize = CurrentColor;
-					GaugeMarkerFlag.Color = CurrentColor;
+					// Apply colors
+					QuadMarkerFlag.Colorize = FlagColor;
+					GaugeMarkerFlag.Color = FlagColor;
+
+					foreach (MarkerFrame in Team1BaseMarkerFrames) {
+						(MarkerFrame.GetFirstChild("quad-base") as CMlQuad).Colorize = GetTeamPrimaryColor(Teams[0]);
+					}
+					foreach (MarkerFrame in Team2BaseMarkerFrames) {
+						(MarkerFrame.GetFirstChild("quad-base") as CMlQuad).Colorize = GetTeamPrimaryColor(Teams[1]);
+					}
 					
 					/* Gauge animation */
 					
-					// Server CSmMode.Now is not Client CMlScript.Now (?), Get local timing equivalents
-					if(Net_FlagGaugeStartServerDate > LastFlagGaugeStartServerDate) {
-						LastFlagGaugeStartServerDate = Net_FlagGaugeStartServerDate;
-						FlagGaugeStartDate = Now;
-					}
-					
 					// Flag gauge end in future
-					if (FlagGaugeStartDate + Net_FlagGaugeDuration > Now) {
-						declare Ratio = (0. + Net_FlagGaugeDuration - (Now - FlagGaugeStartDate)) / Net_FlagGaugeDuration;
-						GaugeMarkerFlag.Ratio = 0.2 + Ratio * 0.8;
+					if (Net_FlagRush_FlagGaugeStartDate + Net_FlagRush_FlagGaugeDuration > GameTime) {
+						declare Ratio = (0. + Net_FlagRush_FlagGaugeDuration - (GameTime - Net_FlagRush_FlagGaugeStartDate)) / Net_FlagRush_FlagGaugeDuration;
+						declare AdjustedRatio = ML::Clamp(0.2 + Ratio * 0.8, 0.2, 1.0);	// Somehow the gauge ends at 0.2? Also clamp, as we had an exception before
+						GaugeMarkerFlag.Ratio = AdjustedRatio;
 						GaugeMarkerFlag.Visible = True;
 						QuadMarkerFlag.Opacity = 0.5;
 					}

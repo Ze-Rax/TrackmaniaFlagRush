@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "Scripts"
+		}
+	],
+	"settings": {
+		"editor.tabSize": 2,
+		"editor.detectIndentation": false,
+		"editor.insertSpaces": false
+	},
+	"extensions": {
+		"recommendations": [
+			"aessi.vscode-mslint",
+			"reaby.maniascript-support",
+			"redhat.vscode-xml"
+		]
+	}
+}

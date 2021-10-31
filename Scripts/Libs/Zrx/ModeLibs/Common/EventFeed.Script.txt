@@ -19,10 +19,10 @@ Void ClearMessages() {
 	foreach(Player in AllPlayers) {
 		declare CUIConfig UI = UIManager.GetUI(Player);
 		if (UI != Null) {
-			declare netwrite K_FeedMessage[] EventFeed for UI;
-			declare netwrite Integer EventFeedUpdate for UI;
-			EventFeed = G_FeedMessages;
-			EventFeedUpdate = Now;
+			declare netwrite K_FeedMessage[] Net_EventFeed_Messages for UI;
+			declare netwrite Integer Net_EventFeed_Update for UI;
+			Net_EventFeed_Messages = G_FeedMessages;
+			Net_EventFeed_Update = Now;
 		}
 	}
 }
@@ -42,10 +42,10 @@ Void SendMessage(Text string, Text Style, Text Substyle, Vec3 Color) {
 	foreach(Player in AllPlayers) {
 		declare CUIConfig UI = UIManager.GetUI(Player);
 		if (UI != Null) {
-			declare netwrite K_FeedMessage[] EventFeed for UI;
-			declare netwrite Integer EventFeedUpdate for UI;
-			EventFeedUpdate = LikeNow;
-			EventFeed = G_FeedMessages;
+			declare netwrite K_FeedMessage[] Net_EventFeed_Messages for UI;
+			declare netwrite Integer Net_EventFeed_Update for UI;
+			Net_EventFeed_Update = LikeNow;
+			Net_EventFeed_Messages = G_FeedMessages;
 		}
 	}
 }
@@ -83,7 +83,7 @@ Text GetManialink(Integer feedSize) {
 	}
 		
 	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-	<manialink version="3" name="FlagRush Events">
+	<manialink version="3" name="EventFeed">
 	<framemodel id="message">
 		<quad size="3 3" pos="0 -1.5" halign="center" valign="center"/>
 		<label size="60 3" pos="1.5 -1.5" text="" textsize="1" textfont="GameFontSemiBold" halign="left" valign="center" opacity="0" textemboss="1" />
@@ -145,9 +145,9 @@ Text GetManialink(Integer feedSize) {
 	}
 	
 	Void processMessage(Integer stamp) {
-		declare netread K_FeedMessage[] EventFeed for UI;
+		declare netread K_FeedMessage[] Net_EventFeed_Messages for UI;
 		
-		foreach (Message in EventFeed) {
+		foreach (Message in Net_EventFeed_Messages) {
 			if (Message.Stamp >= stamp) {
 				addMessage(Message);
 			}
@@ -157,7 +157,7 @@ Text GetManialink(Integer feedSize) {
 	
 	main() {
 		
-		declare netread Integer EventFeedUpdate for UI;
+		declare netread Integer Net_EventFeed_Update for UI;
 		declare CMlFrame frame = (Page.GetFirstChild("Events") as CMlFrame);
 		LastUpdate = 0;
 		counter = 0;
@@ -165,9 +165,9 @@ Text GetManialink(Integer feedSize) {
 		while(True) {
 			yield;
 			
-			if (EventFeedUpdate > LastUpdate) {
-				LastUpdate = EventFeedUpdate;
-				processMessage(EventFeedUpdate);
+			if (Net_EventFeed_Update > LastUpdate) {
+				LastUpdate = Net_EventFeed_Update;
+				processMessage(Net_EventFeed_Update);
 			}
 			
 		}

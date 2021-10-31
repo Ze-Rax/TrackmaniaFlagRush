@@ -1,5 +1,3 @@
-#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/Shared.Script.txt" as Shared
-
 #Const C_ReadyEvent_Type	"ready"
 #Const C_ManialinkName		"WarmUpReadyUp"
 
@@ -12,7 +10,7 @@ Text GetManialink() {
 
 			<quad pos="15 0" z-index="1" size="10 10" id="button-ready-background" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" colorize="fff"/>
 			<label pos="15 0" z-index="2" size="10 10" id="button-ready-icon" text="" halign="center" valign="center" style="Default" textfont="GameFontBlack" textsize="4"/>
-			<quad pos="15 0" z-index="3" size="10 10" id="button-ready-activator" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" opacity="0" scriptevents="1"/>
+			<quad pos="0 0" z-index="3" size="40 10" id="button-ready-activator" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" opacity="0" scriptevents="1"/>
 
 			<label pos="-5 0" z-index="5" size="30 8" text="Ready" halign="center" valign="center" textsize="4" style="Default" textfont="GameFontSemiBold"/>
 		</frame>

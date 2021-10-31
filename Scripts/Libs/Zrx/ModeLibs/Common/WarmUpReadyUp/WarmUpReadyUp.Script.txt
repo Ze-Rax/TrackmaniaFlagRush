@@ -74,7 +74,7 @@ K_WarmUpReadyUpEvent[] GetPendingEvents() {
 /**
  * Getter for PlayersReady
  */
-Boolean[Text] GetPlayersReady() {
+Boolean[Text] GetPlayersReadyStates() {
 	return G_PlayersReady;
 }
 

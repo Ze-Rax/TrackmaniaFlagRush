@@ -1,5 +1,17 @@
 //#RequireContext CMlScriptIngame
 
+/**
+ * Flahes the respawn restriction UI for a given player.
+ */
+ Void FlashRespawn(CSmPlayer Player) {
+	declare UI = UIManager.GetUI(Player);
+	declare netwrite Integer Net_FlagRush_RespawnStamp for UI;
+	Net_FlagRush_RespawnStamp = Now;
+}
+
+/**
+ * Gets the manialink
+ */
 Text GetManialink() {
 	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_Flash">
@@ -20,13 +32,13 @@ Text GetManialink() {
 	}
 	
 	main() {
-		declare netread Integer Net_RespawnStamp for UI;
-		declare Integer lastUpdate = Net_RespawnStamp;
+		declare netread Integer Net_FlagRush_RespawnStamp for UI;
+		declare Integer LastUpdate = Net_FlagRush_RespawnStamp;
 
 		while(True) {
 			yield;
-			if (Net_RespawnStamp > lastUpdate) {
-				lastUpdate = Net_RespawnStamp;
+			if (Net_FlagRush_RespawnStamp > LastUpdate) {
+				LastUpdate = Net_FlagRush_RespawnStamp;
 				FlashRespawn();
 			}
 		}

@@ -86,7 +86,7 @@ Text GetManialink(Integer NbBasesPerTeam, Integer TotalFlagAmount) {
 					
 					// Flag gauge end in future
 					declare Boolean IsEndInFuture = Net_FlagRush_FlagGaugeStartDate + Net_FlagRush_FlagGaugeDuration > GameTime;
-					if (IsEndInFuture && !(Net_FlagRush_FlagGaugeDuration <= 0)) {
+					if (IsEndInFuture && Net_FlagRush_FlagGaugeDuration > 0) {
 						declare Ratio = (0. + Net_FlagRush_FlagGaugeDuration - (GameTime - Net_FlagRush_FlagGaugeStartDate)) / Net_FlagRush_FlagGaugeDuration;
 						declare AdjustedRatio = ML::Clamp(0.2 + Ratio * 0.8, 0.2, 1.0);	// Somehow the gauge ends at 0.2? Also clamp, as we had an exception before
 						GaugeMarkerFlag.Ratio = AdjustedRatio;

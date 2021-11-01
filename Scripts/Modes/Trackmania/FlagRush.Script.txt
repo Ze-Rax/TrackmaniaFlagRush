@@ -88,6 +88,7 @@
 #Setting S_CanJoinMidRound									True 		as "<hidden>" // Players can join in the middle of a round
 #Setting S_RespawnWhenStill									True 		as "Players can respawn only when being still"
 #Setting S_RespawnDelay											1.5 		as "Respawn Delay (seconds)"
+#Setting S_DropFlagPickupPenalty						3.			as "Flag pickup cooldown after dropping (seconds)"
 
 // Teams
 #Setting S_Team1Name 												"" 			as "Team 1 Name"
@@ -124,8 +125,9 @@
 
 #Struct Struct_FlagState {
 	CMapLandmark Landmark;
-	Text CarrierLogin;
-	Vec3 DropLocation;
+	CUser Carrier;
+	Vec3 Location;
+	Integer LastDropDate;
 	Integer PickupableDate;
 }
 
@@ -285,7 +287,7 @@ SpawnPlayers();
 ***
 FlagRush_Log("Turn End");
 EventFeed::SendMessage("Turn End", "info");
-UpdateFlagMarker(-1);
+UpdateFlagUI(-1);
 
 foreach(Player in Players) {
 	UnspawnPlayer(Player);
@@ -462,8 +464,16 @@ Void FlagRush_Log(Text Message) {
  * Gets the current flag carrier CSmPlayer by login.
  * Null if login not found.
  */
- CSmPlayer GetFlagCarrier() {
-	return GetPlayer(G_FlagState.CarrierLogin);
+CSmPlayer GetFlagCarrierPlayer() {
+	if(G_FlagState.Carrier == Null) return Null;
+	return GetPlayer(G_FlagState.Carrier.Login);
+}
+
+CSmScore GetScore(Text Login) {
+	foreach(Score in Scores) {
+		if(Score.User.Login == Login) return Score;
+	}
+	return Null;
 }
 
 // --------------------------------------------------
@@ -607,7 +617,6 @@ Void UpdateScore(CSmScore Score) {
  * Collects scores table and header data and sends it to the clients via netwrite.
  */
 Void UpdateTeamScores() {
-	/* General */
 	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
 	Net_FlagRush_NbMapsToWinMatch = S_NbMapsToWinMatch;
 	
@@ -631,7 +640,7 @@ Void UpdateScores() {
 }
 
 /**
- * Updaates the dossard for a specific player.
+ * Updates the dossard for a specific player.
  */
  Void UpdateDossard(CSmPlayer Player) {
 	if (Player.CurrentClan <= 0) return;
@@ -642,19 +651,17 @@ Void UpdateScores() {
 	Player.Dossard_Number = "0" ^ Player.CurrentClan;
 
 	// Text
-	declare FlagCarrier = GetFlagCarrier();
-	if (FlagCarrier != Null) {
-		if (FlagCarrier.Score.TeamNum == Player.CurrentClan) {
+	declare FlagCarrierPlayer = GetFlagCarrierPlayer();
+	if (FlagCarrierPlayer != Null) {
+		if(FlagCarrierPlayer == Player) {
+			Player.Dossard_Trigram = "FLG";
+		} else if (FlagCarrierPlayer.CurrentClan == Player.CurrentClan) {
 			Player.Dossard_Trigram = "OWN";
 		} else {
 			Player.Dossard_Trigram = "OPP";
 		}
 	} else {
 		Player.Dossard_Trigram = "   ";
-	}
-	
-	if (FlagCarrier != Null && FlagCarrier == Player) {
-		Player.Dossard_Trigram = "FLG";
 	}
 }
 
@@ -668,7 +675,7 @@ Void UpdateDossards() {
 }
 
 /**
- * Generated team configs for both teams based on the team settings and clubtags.
+ * Generates team configs for both teams based on the team settings and clubtags.
  */
 ClubTagUtils::K_TeamConfig[] GetTeamConfigs() {
 	declare Text G_Team1Name for This;
@@ -730,31 +737,11 @@ Void UpdateTeams() {
 }
 
 /**
- * Sends the current flag carrier name and clan to UI clients
- */
-Void UpdateFlagCarrier() {
-	declare FlagCarrier = GetFlagCarrier();
-	
-	// Carrier Clan Index (for color)
-	declare netwrite Integer Net_FlagRush_FlagCarrierClan for Teams[0];
-	if (FlagCarrier == Null) Net_FlagRush_FlagCarrierClan = 0;
-	else Net_FlagRush_FlagCarrierClan = FlagCarrier.CurrentClan;
-	
-	// Carrier name
-	declare netwrite Text Net_FlagRush_FlagCarrierName for Teams[0];
-	if (FlagCarrier != Null && FlagCarrier.User != Null) Net_FlagRush_FlagCarrierName = FlagCarrier.User.Name;
-	else if (G_FlagState.Landmark == G_ActiveFlagSpawn) Net_FlagRush_FlagCarrierName = "Spawn";
-	else Net_FlagRush_FlagCarrierName = "Dropped";
-
-	UpdateDossards();
-}
-
-/**
  * Updates the UI flag marker for each player (Color, Gauge).
  * Only in specific situations
  */
-Void UpdateFlagMarker(Integer GaugeDuration) {
-	// Timing for gauge
+Void UpdateFlagUI(Integer GaugeDuration) {
+	/* Gauge timing */
 	declare ClampedGaugeDuration = GaugeDuration;
 	if (ClampedGaugeDuration < 0) ClampedGaugeDuration = 0;
 	declare netwrite Integer Net_FlagRush_FlagGaugeStartDate for Teams[0];
@@ -762,9 +749,21 @@ Void UpdateFlagMarker(Integer GaugeDuration) {
 	declare netwrite Integer Net_FlagRush_FlagGaugeDuration for Teams[0];
 	Net_FlagRush_FlagGaugeDuration = GaugeDuration;
 
-	// Flag Carrier
-	declare FlagCarrier = GetFlagCarrier();
-	UpdateFlagCarrier();
+	/* Flag Carrier */
+	declare FlagCarrierPlayer = GetFlagCarrierPlayer();
+	
+	// Carrier Clan Index (for color)
+	declare netwrite Integer Net_FlagRush_FlagCarrierClan for Teams[0];
+	if (FlagCarrierPlayer == Null) Net_FlagRush_FlagCarrierClan = 0;
+	else Net_FlagRush_FlagCarrierClan = FlagCarrierPlayer.CurrentClan;
+	
+	// Carrier name
+	declare netwrite Text Net_FlagRush_FlagCarrierName for Teams[0];
+	if (FlagCarrierPlayer != Null && FlagCarrierPlayer.User != Null) Net_FlagRush_FlagCarrierName = FlagCarrierPlayer.User.Name;
+	else if (G_FlagState.Landmark == G_ActiveFlagSpawn) Net_FlagRush_FlagCarrierName = "Spawn";
+	else Net_FlagRush_FlagCarrierName = "Dropped";
+
+	UpdateDossards();
 }
 
 // --------------------------------------------------
@@ -856,14 +855,14 @@ Void InitMarkers() {
 			Marker.Box = <0., 3.3, 0.>;
 		}
 	} else {
-		declare CSmPlayer FlagCarrier = GetFlagCarrier();
-		if (FlagCarrier != Null) {
-			if (G_FlagState.DropLocation != <0., 0., 0.>) {
-				G_FlagMarker = UIManager.UIAll.AddMarker(G_FlagState.DropLocation);
+		declare CSmPlayer FlagCarrierPlayer = GetFlagCarrierPlayer();
+		if (FlagCarrierPlayer != Null) {
+			if (G_FlagState.Location != <0., 0., 0.>) {
+				G_FlagMarker = UIManager.UIAll.AddMarker(G_FlagState.Location);
 				G_FlagMarker.ManialinkFrameId = "marker-flag";
 				G_FlagMarker.Box = <0., 0., 0.>;
 			} else {
-				G_FlagMarker = UIManager.UIAll.AddMarker(FlagCarrier);
+				G_FlagMarker = UIManager.UIAll.AddMarker(FlagCarrierPlayer);
 				G_FlagMarker.ManialinkFrameId = "marker-flag";
 				G_FlagMarker.Box = <0., 1., 0.>;
 			}
@@ -978,8 +977,8 @@ Void SetFlagPositionAtSpawn(Integer PickupableDate) {
 	// Update FlagState
 	G_FlagState.Landmark = G_ActiveFlagSpawn;
 	G_FlagState.PickupableDate = PickupableDate;
-	G_FlagState.CarrierLogin = "";
-	G_FlagState.DropLocation = <0., 0., 0.>;
+	G_FlagState.Carrier = Null;
+	G_FlagState.Location = G_ActiveFlagSpawn.Position;
 	
 	// Update flag marker
 	if (G_FlagMarker != Null) {
@@ -990,14 +989,16 @@ Void SetFlagPositionAtSpawn(Integer PickupableDate) {
 	G_FlagMarker.ManialinkFrameId = "marker-flag";
 	G_FlagMarker.Box = <0., 3., 0.>;
 	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+	
+	UpdateFlagUI(PickupableDate - Now);
 }
 
 Void SetFlagPosition(CSmPlayer Player, Integer PickupableDate) {
 	// Update FlagState
 	G_FlagState.Landmark = Null;
 	G_FlagState.PickupableDate = PickupableDate;
-	G_FlagState.CarrierLogin = Player.User.Login;
-	G_FlagState.DropLocation = <0., 0., 0.>;
+	G_FlagState.Carrier = Player.User;
+	G_FlagState.Location = Player.Position;
 	
 	// Update flag marker
 	UIManager.UIAll.RemoveMarker(G_FlagMarker);
@@ -1005,14 +1006,16 @@ Void SetFlagPosition(CSmPlayer Player, Integer PickupableDate) {
 	G_FlagMarker.ManialinkFrameId = "marker-flag";
 	G_FlagMarker.Box = <0., 1., 0.>;
 	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+	
+	UpdateFlagUI(PickupableDate - Now);
 }
 
 Void SetFlagPosition(Vec3 Position, Integer PickupableDate) {
 	// Update FlagState
 	G_FlagState.Landmark = Null;
 	G_FlagState.PickupableDate = PickupableDate;
-	G_FlagState.CarrierLogin = "";
-	G_FlagState.DropLocation = Position;
+	G_FlagState.Carrier = Null;
+	G_FlagState.Location = Position;
 	
 	// Update flag marker
 	UIManager.UIAll.RemoveMarker(G_FlagMarker);
@@ -1020,6 +1023,8 @@ Void SetFlagPosition(Vec3 Position, Integer PickupableDate) {
 	G_FlagMarker.ManialinkFrameId = "marker-flag";
 	G_FlagMarker.Box = <0., 0., 0.>;
 	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+	
+	UpdateFlagUI(PickupableDate - Now);
 }
 
 /**
@@ -1037,7 +1042,6 @@ Void ResetFlag(Integer RespawnDelay, Boolean Silent) {
 	
 	PickNewFlagSpawn();
 	SetFlagPositionAtSpawn(Now + RespawnDelay);
-	UpdateFlagMarker(RespawnDelay);
 }
 
 Void ResetFlag(Integer RespawnDelay) {
@@ -1082,6 +1086,7 @@ Void ApplyHandicaps(CSmPlayer Player) {
  * Reset all handicaps from a player
  */
 Void ResetHandicaps(CSmPlayer Player) {
+	if(Player == Null) return;
 	while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 	SetPlayer_Delayed_Reset(Player);
 }
@@ -1112,43 +1117,52 @@ Void SetFlagCarrier(CSmPlayer Player) {
 	
 	// Update the flag carrier
 	SetFlagPosition(Player, Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
-	UpdateFlagMarker(ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
 	
 	// Apply handicaps
 	ApplyHandicaps(Player);
 }
 
 /**
- * Drops the flag at the current position of the carrier
+ * Drops the flag at the position of the current carrier
  */
 Void DropFlag() {
-	declare CSmPlayer FlagCarrier = GetFlagCarrier();
-	if(FlagCarrier == Null) return;
-	
-	FlagRush_Log("""{{{FlagCarrier.User.Name}}} dropped the flag!""");
-	
+	// If there's no carrier, it can't be dropped
+	if(G_FlagState.Carrier == Null) return;
+
+	FlagRush_Log("""{{{G_FlagState.Carrier.Name}}} dropped the flag!""");
+
 	// Display a message to all players
+	declare CSmScore CarrierScore <=> GetScore(G_FlagState.Carrier.Login);
 	declare Vec3 Color = FlagRush_Common::C_DefaultNeutralColor;
-	if(FlagCarrier.CurrentClan > 0)
+	if(CarrierScore != Null && CarrierScore.TeamNum > 0)
 	{
-		declare Team <=> Teams[FlagCarrier.CurrentClan - 1];
+		declare Team <=> Teams[CarrierScore.TeamNum - 1];
 		declare Vec3 ColorPrimaryUI for Team;
 		Color = ColorPrimaryUI;
 	}
 	declare ColorText = "$" ^ CL::RgbToHex3(Color);
-	declare Message = """{{{ColorText}}}{{{FlagCarrier.User.Name}}}$z dropped the {{{ColorText}}}flag$z!""";
+	declare Message = """{{{ColorText}}}{{{G_FlagState.Carrier.Name}}}$z dropped the {{{ColorText}}}flag$z!""";
 	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
 	EventFeed::SendMessage(Message, "flag", Color);
-	
-	// Set the flag to the players position
-	declare FlagPosition = FlagCarrier.Position;
-	
+
+	// Adjust the drop position
+	declare FlagPosition = G_FlagState.Location;
 	FlagPosition.Y += Hitbox::GetCarSize(MapPlayerModelName).Y / 2;
-	SetFlagPosition(FlagCarrier.Position, Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000));
-	UpdateFlagMarker(ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000));
-	
+
+	// Set the new flag position
+	SetFlagPosition(FlagPosition, Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000));
+	G_FlagState.LastDropDate = Now;
+
 	// Reset Carrier handicaps
-	ResetHandicaps(FlagCarrier);
+	ResetHandicaps(GetFlagCarrierPlayer());
+}
+
+/**
+ * Unspawns a player and drops the flag if the player is the current flag carrier.
+ */
+Void FlagRush_UnspawnPlayer(CSmPlayer Player) {
+	if(Player.User == G_FlagState.Carrier) DropFlag();
+	UnspawnPlayer(Player);
 }
 
 /**
@@ -1187,9 +1201,9 @@ Void ScoreFlag(CSmPlayer Player) {
 Void StealFlag(CSmPlayer NewCarrier, CSmPlayer OldCarrier) {
 	if (NewCarrier == Null || OldCarrier == Null) return;
 	
-	declare FlagCarrier = GetFlagCarrier();
+	declare FlagCarrierPlayer = GetFlagCarrierPlayer();
 	
-	if (FlagCarrier != OldCarrier) return;
+	if (FlagCarrierPlayer != OldCarrier) return;
 	FlagRush_Log("""{{{NewCarrier.User.Name}}} stole the flag from {{{OldCarrier.User.Name}}}!""");
 	
 	if (NewCarrier.CurrentClan != OldCarrier.CurrentClan) {
@@ -1212,11 +1226,7 @@ Void StealFlag(CSmPlayer NewCarrier, CSmPlayer OldCarrier) {
 Void SpawnPlayers() {
 	foreach (Player in Players) {
 		if (Player.Armor <= 0) {		// If Player has no armor, unspawn first (for example Offzone hit)
-			if (Player.User.Login == G_FlagState.CarrierLogin)
-			{
-				DropFlag();
-			}
-			UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null
+			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null
 		}
 		
 		// Spawn unspawned players
@@ -1242,23 +1252,31 @@ Void SpawnPlayers() {
  * Updates the state of the flag every playloop if necessary
  */
 Void UpdateFlag() {
-	declare FlagIsDropped = GetFlagCarrier() == Null && G_FlagState.Landmark == Null;
+	declare CSmPlayer FlagCarrierPlayer = GetFlagCarrierPlayer();
+	declare Boolean FlagIsDropped = FlagCarrierPlayer == Null && G_FlagState.Landmark == Null;
+
+	if(FlagCarrierPlayer != Null) G_FlagState.Location = FlagCarrierPlayer.Position;
 	
-	if (FlagIsDropped) {
+	if(G_FlagState.Carrier != Null && FlagCarrierPlayer == Null) { // Player left
+		DropFlag();
+	} else if (FlagIsDropped) {
 		if (G_FlagState.PickupableDate < Now) {
 			ResetFlag();
 		}
 		else {
 			declare FlagHitbox = Hitbox::Struct_Hitbox {
-				Center = G_FlagState.DropLocation,
+				Center = G_FlagState.Location,
 				Diameter = C_FlagHitbox_Diameter,
 				Height = C_FlagHitbox_Height
 			};
 			
 			foreach (Player in Players) {
 				if (Hitbox::CheckOverlap(FlagHitbox, Hitbox::GetHitbox(Player))) {
-					SetFlagCarrier(Player);
-					break;
+					declare Integer FlagRush_LastFlagDropDate for Player = -1;
+					if(FlagRush_LastFlagDropDate != G_FlagState.LastDropDate || Now - FlagRush_LastFlagDropDate > ML::NearestInteger(S_DropFlagPickupPenalty * 1000)) {
+						SetFlagCarrier(Player);
+						break;
+					}
 				}
 			}
 		}
@@ -1306,8 +1324,7 @@ Void UpdatePlayers() {
 	// Update Clan
 	foreach (Player in Players) {
 		if (Player.RequestedClan != Player.CurrentClan) {
-			if (Player.User.Login == G_FlagState.CarrierLogin) DropFlag();
-			UnspawnPlayer(Player);
+			FlagRush_UnspawnPlayer(Player);
 			InitPlayer(Player);
 		}
 	}
@@ -1319,7 +1336,7 @@ Void UpdatePlayers() {
 Void UpdateSpectators() {
 	foreach (Spectator in Spectators)
 	{
-		if (G_FlagState.CarrierLogin == Spectator.User.Login) DropFlag();
+		if (G_FlagState.Carrier == Spectator.User) DropFlag();
 		declare Boolean PlayerCanSpawnMidRound for Spectator;
 		PlayerCanSpawnMidRound = False;
 	}
@@ -1338,44 +1355,50 @@ Void HandleEvents() {
 	foreach(Event in PendingEvents) {
 		// FlagRush_Log("Event: CSmModeEvent" ^ Event.Type);
 		
-		declare CSmPlayer FlagCarrier = GetFlagCarrier();
+		declare CSmPlayer FlagCarrierPlayer = GetFlagCarrierPlayer();
 		
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				if (Event.Landmark == G_ActiveFlagSpawn) {
-					if (Event.Player != Null && FlagCarrier == Null && Now > G_FlagState.PickupableDate) {
+					if (Event.Player != Null && FlagCarrierPlayer == Null && Now > G_FlagState.PickupableDate) {
 						SetFlagCarrier(Event.Player);
 					}
 				} else if (G_BasesTeam1.exists(Event.Landmark)) {
 					if (S_UseReversedBases) {
-						if (Event.Player == FlagCarrier && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
+						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
 					} else {
-						if (Event.Player == FlagCarrier && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
+						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
 					}
 				} else if (G_BasesTeam2.exists(Event.Landmark)) {
 					if (S_UseReversedBases) {
-						if (Event.Player == FlagCarrier && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
+						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
 					} else {
-						if (Event.Player == FlagCarrier && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
+						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
 					}
 				}
 			}
 			
 			case CSmModeEvent::EType::OnPlayerRequestRespawn:
 			{
-				declare Integer SpawnDate for Event.Player;
-				if (S_RespawnWhenStill) {
-					if (Event.Player.Speed < C_RespawnSpeedLimitKmh / 3.6) {
-						SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
-						UnspawnPlayer(Event.Player);
-						if(FlagCarrier == Event.Player) DropFlag();
-					} else {
-						FlagRush_UIFlash::FlashRespawn(Event.Player);
-					}
+				declare CSmPlayer FlagCarrierPlayer <=> GetFlagCarrierPlayer();
+				declare Boolean PlayerIsFlagCarrier = FlagCarrierPlayer != Null && FlagCarrierPlayer == Event.Player;
+				if(PlayerIsFlagCarrier) {
+					DropFlag();
+					declare Integer FlagRush_LastFlagDropDate for FlagCarrierPlayer;
+					FlagRush_LastFlagDropDate = Now;
 				} else {
-					SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
-					UnspawnPlayer(Event.Player);
-					if(FlagCarrier == Event.Player) DropFlag();
+					declare Integer SpawnDate for Event.Player;
+					if (S_RespawnWhenStill) {
+						if (Event.Player.Speed < C_RespawnSpeedLimitKmh / 3.6) {
+							SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+							FlagRush_UnspawnPlayer(Event.Player);
+						} else {
+							FlagRush_UIFlash::FlashRespawn(Event.Player);
+						}
+					} else {
+						SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+						FlagRush_UnspawnPlayer(Event.Player);
+					}
 				}
 			}
 			
@@ -1388,7 +1411,7 @@ Void HandleEvents() {
 			{
 				// Event.Player is Null; Only User available
 				// This is the reason why Carrier in FlagState is not CSmPlayer
-				if(G_FlagState.CarrierLogin == Event.User.Login) DropFlag();
+				if(G_FlagState.Carrier == Event.User) DropFlag();
 				UpdateTeams();
 			}
 		}
@@ -1398,9 +1421,9 @@ Void HandleEvents() {
 	foreach (Event in Collision::GetPendingEvents()) {
 		if (G_FlagState.PickupableDate < Now) {
 			if (Event.Player1.CurrentClan != Event.Player2.CurrentClan || S_FlagSameTeamSteal) {
-				declare FlagCarrier = GetFlagCarrier();
-				if (FlagCarrier == Event.Player1) StealFlag(Event.Player2, Event.Player1);
-				else if (FlagCarrier == Event.Player2) StealFlag(Event.Player1, Event.Player2);
+				declare FlagCarrierPlayer = GetFlagCarrierPlayer();
+				if (FlagCarrierPlayer == Event.Player1) StealFlag(Event.Player2, Event.Player1);
+				else if (FlagCarrierPlayer == Event.Player2) StealFlag(Event.Player1, Event.Player2);
 			}
 		}
 	}
@@ -1435,8 +1458,8 @@ Void HandleCommand(CommandUtils::K_Command Command) {
 			MatchEndRequested = True;
 		}
 		case CommandUtils::C_CommandPrefix ^ C_Command_ResetFlag: {
-			declare CSmPlayer FlagCarrier = GetPlayer(G_FlagState.CarrierLogin);
-			if(FlagCarrier != Null) ResetHandicaps(FlagCarrier);
+			declare CSmPlayer FlagCarrierPlayer = GetFlagCarrierPlayer();
+			ResetHandicaps(FlagCarrierPlayer);
 			ResetFlag();
 		}
 	}

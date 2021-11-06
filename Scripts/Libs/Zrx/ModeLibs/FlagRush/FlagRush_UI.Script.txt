@@ -1,0 +1,255 @@
+#Include "Libs/Nadeo/ModeLibs/Legacy/Layers2.Script.txt"							as Layers
+#Include "Libs/Nadeo/TMxSM/Race/Scores.Script.txt"										as Scores
+
+#Include "Libs/Zrx/ModeLibs/Common/GameplayPhase.Script.txt"					as GameplayPhase
+#Include "Libs/Zrx/ModeLibs/Common/PlayerTelemetry.Script.txt"				as Telemetry
+#Include "Libs/Zrx/ModeLibs/Common/ClubTagUtils.Script.txt"						as ClubTagUtils
+#Include "Libs/Zrx/ModeLibs/Common/TeamPointsProgression.Script.txt"	as TeamPointsProgression
+
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"					as FlagRush_Map
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"		as FlagState
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"				as FlagRush_Teams
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"			as FlagRush_Common
+
+/* UI Modules */
+#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"							as EventFeed
+#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"	as ModeCommands
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Flash.Script.txt"							as FlagRush_UIFlash
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Header.Script.txt"						as FlagRush_UIHeader
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Markers.Script.txt"						as FlagRush_UIMarkers
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
+
+#Const C_LayerName_ScoresTable		"Layer_FlagRush_ScoresTable"
+#Const C_LayerName_ScoresHeader		"Layer_FlagRush_ScoresHeader"
+#Const C_LayerName_RoundUI				"Layer_FlagRush_RoundUI"
+#Const C_LayerName_Markers				"Layer_FlagRush_Markers"
+#Const C_LayerName_Feed						"Layer_FlagRush_Feed"
+#Const C_LayerName_Flash					"Layer_FlagRush_Flash"
+#Const C_LayerName_ModeCommands		"Layer_ModeCommands"
+
+#Const C_FlagCarrierName_Dropped 	"Dropped"
+#Const C_FlagCarrierName_Spawn		"Spawn"
+
+#Const C_Trigram_FlagCarrier			"FLG"
+#Const C_Trigram_FlagOwnTeam 			"OWN"
+#Const C_Trigram_FlagOpponent			"OPP"
+#Const C_Trigram_FlagNoCarrier		"   "
+
+#Const C_FlagMarker_Box_Player		<0., 1., 0.>
+#Const C_FlagMarker_Box_Landmark	<0., 3., 0.>
+#Const C_FlagMarker_Box_Position	<0., 0., 0.>
+
+#Const C_TeamBase_Box	<0., 8., 0.>
+
+declare CUIConfigMarker G_FlagMarker;
+
+/**
+ * Puts a marker above every flag spawn.
+ */
+Void InitFlagSpawnMarkers() {
+	// Create a marker for each spawn
+	foreach(I => FlagSpawn in FlagRush_Map::GetFlagSpawns()) {
+		declare Marker = UIManager.UIAll.AddMarker(FlagSpawn);
+		Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
+		Marker.ManialinkFrameId = "marker-flag-spawn-"^I;
+		Marker.Box = <0., 3.3, 0.>;
+	}
+}
+
+/**
+ * Destroys the old flag marker and places a new one at the corresponding location.
+ */
+ Void InitFlagMarker() {
+	// Create a new marker
+	declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
+	if (FlagCarrierPlayer != Null) {
+		G_FlagMarker = UIManager.UIAll.AddMarker(FlagCarrierPlayer);
+		G_FlagMarker.Box = C_FlagMarker_Box_Player;	
+	} else if (FlagState::Get().Landmark != Null) {
+		G_FlagMarker = UIManager.UIAll.AddMarker(FlagState::Get().Landmark);
+		G_FlagMarker.Box = C_FlagMarker_Box_Landmark;
+	} else {
+		G_FlagMarker = UIManager.UIAll.AddMarker(FlagState::Get().Position);
+		G_FlagMarker.Box = C_FlagMarker_Box_Position;
+	}
+	
+	G_FlagMarker.ManialinkFrameId = "marker-flag";
+	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;	
+}
+
+/**
+ * Updates the flag marker and puts it at the right position.
+ * Actually does the same as InitFlagMarker.
+ * This exists to prevent confusion when InitFlagMarker would be called in the middle of a round/event.
+ */
+Void UpdateFlagMarker() { InitFlagMarker(); }
+
+/**
+ * Send data about the flag carrier, i.e. name and clan to the UIs via netwrite
+ */
+ Void UpdateFlagCarrierNetData() {
+	declare FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
+	
+	// Carrier Clan Index (for color)
+	declare netwrite Integer Net_FlagRush_FlagCarrierClan for Teams[0];
+	if (FlagCarrierPlayer == Null) Net_FlagRush_FlagCarrierClan = 0;
+	else Net_FlagRush_FlagCarrierClan = FlagCarrierPlayer.CurrentClan;
+	
+	// Carrier name
+	declare netwrite Text Net_FlagRush_FlagCarrierName for Teams[0];
+	if (FlagCarrierPlayer != Null) Net_FlagRush_FlagCarrierName = FlagCarrierPlayer.User.Name;
+	else if (FlagState::Get().Landmark != Null) Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Spawn;
+	else Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Dropped;
+}
+
+/**
+ * Creates Markers for the bases and the flag for each player.
+ */
+Void InitMarkers() {
+	declare Boolean IsWarmup = GameplayPhase::Get() == GameplayPhase::C_Warmup;
+
+	// Clear old markers
+	UIManager.UIAll.ClearMarkers();
+	
+	// Create Layer for all UIs	
+	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
+	Layers::SetType(C_LayerName_Markers, CUILayer::EUILayerType::Markers);
+	Layers::Attach(C_LayerName_Markers);
+	
+	// Create Markers for the Bases
+	for(Clan, 1, 2) {
+		for(BaseIndex, 0, FlagRush_Map::GetBases(Clan).count -1) {
+			declare MarkerBase = UIManager.UIAll.AddMarker(FlagRush_Map::GetBases(Clan)[BaseIndex]);
+			MarkerBase.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
+			MarkerBase.ManialinkFrameId = """marker-base-team{{{Clan}}}-{{{BaseIndex}}}""";
+			MarkerBase.Box = C_TeamBase_Box;
+		}
+	}
+
+	// Create Markers for the flag and flagspawns
+	if (IsWarmup) {
+		InitFlagSpawnMarkers();
+	} else {
+		InitFlagMarker();
+	}
+}
+
+/**
+ * Creates the UI Layers and initializes the markers for each player.
+ */
+Void Init() {
+	// Scores header
+	Layers::Create(C_LayerName_ScoresHeader, FlagRush_UIHeader::GetManialink());
+	Layers::SetType(C_LayerName_ScoresHeader, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_ScoresHeader);
+	
+	// Scores table
+	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoresTable::GetManialink(6));
+	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
+	Layers::Attach(C_LayerName_ScoresTable);
+	
+	// Event Feed
+	EventFeed::ClearMessages();
+	Layers::Create(C_LayerName_Feed, EventFeed::GetManialink(10));
+	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Feed);
+	
+	// Flash
+	Layers::Create(C_LayerName_Flash, FlagRush_UIFlash::GetManialink());
+	Layers::SetType(C_LayerName_Flash, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Flash);
+	
+	// ModeCommands
+	Layers::Create(C_LayerName_ModeCommands, ModeCommands::GetManialink());
+	Layers::SetType(C_LayerName_ModeCommands, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_ModeCommands);
+	
+	// Markers
+	InitMarkers();
+}
+
+/**
+ * Updates the dossard for a specific player.
+ */
+ Void UpdateDossard(CSmPlayer Player) {
+	if (Player.CurrentClan <= 0) return;
+
+	// Color
+	declare Vec3 ColorPrimaryUI for Teams[Player.CurrentClan-1];
+	Player.Dossard_Color = ColorPrimaryUI;
+	Player.Dossard_Number = "0" ^ Player.CurrentClan;
+
+	// Text
+	declare FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
+	if (FlagCarrierPlayer != Null) {
+		if(FlagCarrierPlayer == Player) {
+			Player.Dossard_Trigram = C_Trigram_FlagCarrier;
+		} else if (FlagCarrierPlayer.CurrentClan == Player.CurrentClan) {
+			Player.Dossard_Trigram = C_Trigram_FlagOwnTeam;
+		} else {
+			Player.Dossard_Trigram = C_Trigram_FlagOpponent;
+		}
+	} else {
+		Player.Dossard_Trigram = C_Trigram_FlagNoCarrier;
+	}
+}
+
+/**
+ * Updates the dossard for all players.
+ */
+Void UpdateDossards() {
+	foreach (Player in Players) {
+		UpdateDossard(Player);
+	}
+}
+
+/**
+ * Updates the netwrite/read values for a specific team score
+ */
+Void UpdateTeamScores() {
+	for(Clan, 1, 2) {
+		declare netwrite Integer Net_FlagRush_TeamRoundScore for Teams[Clan-1];
+		Net_FlagRush_TeamRoundScore = Scores::GetClanRoundPoints(Clan);
+		declare netwrite Integer Net_FlagRush_TeamMapScore for Teams[Clan-1];
+		Net_FlagRush_TeamMapScore = TeamPointsProgression::GetClanRoundsWon(Clan);
+	}
+}
+
+/**
+ * Updates the netwrite/read values for a specific score
+ */
+Void UpdateScore(CSmScore Score) {
+	declare netwrite Integer Net_FlagRush_FlagsScored for Score;
+	declare netwrite Integer Net_FlagRush_FlagsScored_Round for Score;
+	declare netwrite Integer Net_FlagRush_FlagsStolen for Score;
+	declare netwrite Integer Net_FlagRush_FlagsStolen_Round for Score;
+
+	Net_FlagRush_FlagsScored
+		= Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored);
+	Net_FlagRush_FlagsScored_Round
+		= Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored);
+	Net_FlagRush_FlagsStolen
+		= Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen);
+	Net_FlagRush_FlagsStolen_Round
+		= Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen);
+}
+
+/**
+ * Updates all player and team scores.
+ */
+Void UpdateScores() {
+	UpdateTeamScores();
+	foreach (Score in Scores) UpdateScore(Score);
+}
+
+
+/**
+ * Sends relevant mode settings values to the clients via netwrite.
+ */
+Void UpdateModeSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap) {
+	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
+	Net_FlagRush_NbMapsToWinMatch = NbMapsToWinMatch;
+	
+	declare netwrite Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
+	Net_FlagRush_NbRoundsToWinMap = NbRoundsToWinMap;
+}

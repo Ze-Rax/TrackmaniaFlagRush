@@ -1,7 +1,8 @@
 // #RequireContext CSmMode
 
 #Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
-#Include	"Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
+#Include	"Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
+#Include	"Libs/Zrx/ModeLibs/Common/GameplayPhase.Script.txt" as GameplayPhase
 
 Text GetManialink() {	
 	return """
@@ -90,7 +91,7 @@ Text GetManialink() {
 			declare netread Integer Net_FlagRush_FlagCarrierClan for Teams[0];
 			declare netread Text Net_FlagRush_FlagCarrierName for Teams[0];
 			declare netread Integer Net_FlagRush_EndTime for Teams[0];
-			declare netread Integer Net_FlagRush_GameplayPhase for Teams[0];	
+			declare netread Integer Net_GameplayPhase for Teams[0];	
 
 			/* Main Loop */
 			while(True) {
@@ -153,14 +154,14 @@ Text GetManialink() {
 				LabelFlagCarrier.Value = Net_FlagRush_FlagCarrierName;
 				
 				/* Override in special cases */
-				switch(Net_FlagRush_GameplayPhase) {
-					case {{{FlagRush_Common::C_GameplayPhase_Warmup}}}: {	
+				switch(Net_GameplayPhase) {
+					case {{{GameplayPhase::C_Warmup}}}: {	
 						LabelTimeLimit.TextPrefix = "$f90";		
 						LabelFlagCarrier.TextPrefix = "$f90";
 						LabelFlagCarrier.Value = "WarmUp";
-						QuadCenterFlag.Colorize = {{{FlagRush_Common::C_DefaultNeutralColor}}};
+						QuadCenterFlag.Colorize = {{{FlagRush_Teams::C_DefaultNeutralColor}}};
 					}
-					case {{{FlagRush_Common::C_GameplayPhase_Overtime}}}: {
+					case {{{GameplayPhase::C_Overtime}}}: {
 						LabelTimeLimit.TextPrefix = "$f90";
 						LabelTimeLimit.Value = "Overtime";
 						LabelTimeLimit.Visible = True;

@@ -26,9 +26,9 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as MatchEvaluation
 
 /* UI */
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI.Script.txt"	as FlagRush_UI
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Flash.Script.txt"			as FlagRush_UIFlash
-#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"			as EventFeed
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI.Script.txt"			as FlagRush_UI
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"	as FlagRush_UIFlash
+#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"					as EventFeed
 
 /* Constants */
 #Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
@@ -146,6 +146,8 @@ UIManager.UIAll.TeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
 UIManager.UIAll.TeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenInFrustum;
 UIManager.UIAll.OpposingTeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
 UIManager.UIAll.OpposingTeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenVisible;
+UIManager.UIAll.OverlayHideSpectatorInfos = True;
+UIManager.UIAll.OverlayHideSpectatorControllers = True;
 
 // Register mode commands
 ModeCommands::Load();
@@ -473,7 +475,7 @@ Void CheckRoundEndConditions() {
 			if (FlagLimitReached()) MB_StopRound();
 
 			// Check Timelimit
-			if (TimeLimitReached()) {			
+			if (TimeLimitReached()) {
 				if(MatchEvaluation::RoundIsTied() && S_UseOvertime) {
 					GameplayPhase::Set(GameplayPhase::C_Overtime);
 					declare Text Message = "$f90Overtime";
@@ -485,7 +487,7 @@ Void CheckRoundEndConditions() {
 			}
 		}
 		case GameplayPhase::C_Overtime: {
-			// Check flags scores	
+			// Check flags scores
 			if(!MatchEvaluation::RoundIsTied()) {
 				MB_StopRound();
 			}
@@ -631,7 +633,7 @@ Void ResetHandicaps(CSmPlayer Player) {
 /**
  * Set a player as flag carrier. If player is Null, reset flag instead.
  */
-Void SetFlagCarrier(CSmPlayer Player) {	
+Void SetFlagCarrier(CSmPlayer Player) {
 	FlagRush_Common::Log("""{{{Player.User.Name}}} got the flag!""");
 	
 	// Display a message to all players
@@ -834,14 +836,14 @@ Void UpdateCriticalSettings() {
 /**
  * Keeps track of critical mode setting and reacts on changes.
  */
-Void HandleModeSettingsUpdate() {	
+Void HandleModeSettingsUpdate() {
 	if(G_LastSettings_RoundTimeLimitSeconds != S_RoundTimeLimitSeconds) {
 		SetEndTime(StartTime + S_RoundTimeLimitSeconds * 1000);
 	}
 	
-	declare Boolean NeedsRestartTurn = G_LastSettings_UseReversedBases != S_UseReversedBases;	
+	declare Boolean NeedsRestartTurn = G_LastSettings_UseReversedBases != S_UseReversedBases;
 	
-	declare Boolean NeedsReinitTeamConfigs = 
+	declare Boolean NeedsReinitTeamConfigs =
 		G_LastSettigns_Team1ForcedName != S_Team1Name
 		|| G_LastSettigns_Team1ForcedColor != S_Team1Color
 		|| G_LastSettigns_Team2ForcedName != S_Team2Name
@@ -862,7 +864,7 @@ Void HandleModeSettingsUpdate() {
 }
 
 /**
- * Updates the players if ther state changed (Change team, ...).
+ * Updates the players if their state changed (Change team, ...).
  */
 Void UpdatePlayers() {
 	// Update Clan
@@ -949,7 +951,7 @@ Void HandleEvents() {
 				FlagRush_Teams::Init();
 				FlagRush_UI::UpdateDossards();
 			}
-			
+
 			case CSmModeEvent::EType::OnPlayerRemoved:
 			{
 				// Event.Player is Null; Only User available

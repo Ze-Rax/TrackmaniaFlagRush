@@ -14,10 +14,11 @@
 /* UI Modules */
 #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"							as EventFeed
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"	as ModeCommands
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Flash.Script.txt"							as FlagRush_UIFlash
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Header.Script.txt"						as FlagRush_UIHeader
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Markers.Script.txt"						as FlagRush_UIMarkers
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt"						as FlagRush_UIHeader
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_UIMarkers
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Spectator.Script.txt"					as FlagRush_UISpectator
 
 #Const C_LayerName_ScoresTable		"Layer_FlagRush_ScoresTable"
 #Const C_LayerName_ScoresHeader		"Layer_FlagRush_ScoresHeader"
@@ -25,6 +26,7 @@
 #Const C_LayerName_Markers				"Layer_FlagRush_Markers"
 #Const C_LayerName_Feed						"Layer_FlagRush_Feed"
 #Const C_LayerName_Flash					"Layer_FlagRush_Flash"
+#Const	C_LayerName_Spectator			"Layer_FlagRush_Spectator"
 #Const C_LayerName_ModeCommands		"Layer_ModeCommands"
 
 #Const C_FlagCarrierName_Dropped 	"Dropped"
@@ -64,7 +66,7 @@ Void InitFlagSpawnMarkers() {
 	declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
 	if (FlagCarrierPlayer != Null) {
 		G_FlagMarker = UIManager.UIAll.AddMarker(FlagCarrierPlayer);
-		G_FlagMarker.Box = C_FlagMarker_Box_Player;	
+		G_FlagMarker.Box = C_FlagMarker_Box_Player;
 	} else if (FlagState::Get().Landmark != Null) {
 		G_FlagMarker = UIManager.UIAll.AddMarker(FlagState::Get().Landmark);
 		G_FlagMarker.Box = C_FlagMarker_Box_Landmark;
@@ -74,7 +76,7 @@ Void InitFlagSpawnMarkers() {
 	}
 	
 	G_FlagMarker.ManialinkFrameId = "marker-flag";
-	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;	
+	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
 }
 
 /**
@@ -95,9 +97,14 @@ Void UpdateFlagMarker() { InitFlagMarker(); }
 	if (FlagCarrierPlayer == Null) Net_FlagRush_FlagCarrierClan = 0;
 	else Net_FlagRush_FlagCarrierClan = FlagCarrierPlayer.CurrentClan;
 	
-	// Carrier name
+	// Carrier name and login
 	declare netwrite Text Net_FlagRush_FlagCarrierName for Teams[0];
-	if (FlagCarrierPlayer != Null) Net_FlagRush_FlagCarrierName = FlagCarrierPlayer.User.Name;
+	declare netwrite Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+	Net_FlagRush_FlagCarrierLogin = "";
+	if (FlagCarrierPlayer != Null) {
+		Net_FlagRush_FlagCarrierName = FlagCarrierPlayer.User.Name;
+		Net_FlagRush_FlagCarrierLogin = FlagCarrierPlayer.User.Login;
+	}
 	else if (FlagState::Get().Landmark != Null) Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Spawn;
 	else Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Dropped;
 }
@@ -111,7 +118,7 @@ Void InitMarkers() {
 	// Clear old markers
 	UIManager.UIAll.ClearMarkers();
 	
-	// Create Layer for all UIs	
+	// Create Layer for all UIs
 	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
 	Layers::SetType(C_LayerName_Markers, CUILayer::EUILayerType::Markers);
 	Layers::Attach(C_LayerName_Markers);
@@ -163,6 +170,11 @@ Void Init() {
 	Layers::Create(C_LayerName_ModeCommands, ModeCommands::GetManialink());
 	Layers::SetType(C_LayerName_ModeCommands, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_ModeCommands);
+
+	// Spectator controls
+	Layers::Create(C_LayerName_Spectator, FlagRush_UISpectator::GetManialink());
+	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Spectator);
 	
 	// Markers
 	InitMarkers();

@@ -1,21 +1,23 @@
 //#RequireContext CMlScriptIngame
 
-#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt"	as UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"	as FlagRush_Map
 
-Text GetManialink(Integer NbBasesPerTeam, Integer TotalFlagAmount) {
+Text GetManialink() {
 	
 	declare Text BasesFrameInstancesXml;
+	declare Integer NbBasesPerTeam = FlagRush_Map::GetBases(1).count;
 	for(I, 0, NbBasesPerTeam-1) {
 		BasesFrameInstancesXml ^= """
-		<frameinstance modelid="model-marker-base" id="marker-base-team1-{{{I}}}" hidden="1"/>
-		<frameinstance modelid="model-marker-base" id="marker-base-team2-{{{I}}}" hidden="1"/>
+		<frameinstance modelid="model-marker-base" id="marker-base-team1-{{{I}}}"/>
+		<frameinstance modelid="model-marker-base" id="marker-base-team2-{{{I}}}"/>
 		""";
 	}
 
-	declare Text FlagsFrameInstancesXml;
-	for(I, 0, TotalFlagAmount-1) {
-		FlagsFrameInstancesXml ^= """
-		<frameinstance modelid="model-marker-flag" id="marker-flag-{{{I}}}" scale="0.7"/>		
+	declare Text FlagSpawnMarkerFrameInstancesXml;
+	for(I, 0, FlagRush_Map::GetFlagSpawns().count - 1) {
+		FlagSpawnMarkerFrameInstancesXml ^= """
+		<frameinstance modelid="model-marker-flag" id="marker-flag-spawn-{{{I}}}" scale="0.7"/>		
 		""";
 	}
 	
@@ -23,18 +25,18 @@ Text GetManialink(Integer NbBasesPerTeam, Integer TotalFlagAmount) {
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_Markers">
 		
-		<framemodel id="model-marker-base">
+		<framemodel id="model-marker-base" hidden="1">
 			<quad pos="0 0" z-index="1" size="10 10" bgcolor="FFFA" style="ManiaPlanetMainMenu" substyle="IconHome" halign="center" valign="center" colorize="fff" id="quad-base"/>
 		</framemodel>
 
-		<framemodel id="model-marker-flag">
+		<framemodel id="model-marker-flag" hidden="1">
 			<quad pos="0 0" z-index="2" size="10 10" bgcolor="FFFA" halign="center" valign="center" style="UIConstruction_Buttons" substyle="Validate" id="quad-flag"/>
 			<gauge pos="0 7.5" z-index="0" size="20 7.5" valign="center" halign="center" clan="0" style="EnergyBar" drawbg="0" id="gauge-flag" hidden="1"/>
 		</framemodel>
 
 		{{{BasesFrameInstancesXml}}}
-		<frameinstance modelid="model-marker-flag" id="marker-flag" hidden="1"/>
-		{{{FlagsFrameInstancesXml}}}
+		<frameinstance modelid="model-marker-flag" id="marker-flag"/>
+		{{{FlagSpawnMarkerFrameInstancesXml}}}
 
 		<script><!--
 			#Include "MathLib" as ML

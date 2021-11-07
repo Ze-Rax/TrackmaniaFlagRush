@@ -1,8 +1,7 @@
-#Include "TextLib" as TL
-#Include "ColorLib" as CL
-#Include "MathLib" as ML
+#Include "TextLib"	as TL
+#Include "ColorLib"	as CL
 
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
+#Include "Libs/Zrx/Common/ColorUtils.Script.txt"	as ColorUtils
 
 #Const C_RegexPattern_NameHex3Color			"\\$[0-9a-fA-F]{3}"
 #Const C_RegexPattern_TextFormat				"(\\$[0-9a-fA-F]{3})|(\\$[wWtTzZiIoOsSgGnNmM])|(\\$[hHlL](\\[.*\\])?)"
@@ -55,7 +54,7 @@ Vec3 ClubTagToColor(Text ClubTag) {
 	if (ValidColors.count < 1) return C_InvalidColor;
 
 	declare Vec3 TeamColor = Private_ChooseColor(ValidColors);
-	return FlagRush_Common::ColorToMinSaturationAndValue(TeamColor, C_TeamColorMinSaturation, C_TeamColorMinValue);
+	return ColorUtils::ColorToMinSaturationAndValue(TeamColor, C_TeamColorMinSaturation, C_TeamColorMinValue);
 }
 
 K_TeamConfig GetTeamConfig(Integer Clan) {

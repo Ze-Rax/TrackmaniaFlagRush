@@ -3,7 +3,7 @@
 #Include	"MathLib" as ML
 #Include	"ColorLib" as CL
 #Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
-#Include	"Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
+#Include	"Libs/Zrx/ModeLibs/Common/GameplayPhase.Script.txt" as GameplayPhase
 
 #Const		C_ScoresTable_FlagsScoredKey						"flags-scored"
 #Const		C_ScoresTable_FlagsScoredRoundKey				"flags-scored-round"
@@ -329,9 +329,9 @@ Text GetManialink(Integer _PlayersPerPage) {
 
 		/* Background */
 		declare Vec3 BackgroundColor;
-		declare netread Integer Net_FlagRush_GameplayPhase for Teams[0];
+		declare netread Integer Net_GameplayPhase for Teams[0];
 		declare netread Boolean[Text] Net_FlagRush_WarmUpReadyStates for Teams[0];
-		if (Net_FlagRush_GameplayPhase == {{{FlagRush_Common::C_GameplayPhase_Warmup}}}) {
+		if (Net_GameplayPhase == {{{GameplayPhase::C_Warmup}}}) {
 			if (Net_FlagRush_WarmUpReadyStates.get(Score.User.Login, False)) {
 				BackgroundColor = <0.1, 0.7, 0.1>;
 			} else {
@@ -378,8 +378,8 @@ Text GetManialink(Integer _PlayersPerPage) {
 	 * Scores are returned in an array with the clan number as key.
 	 */
 	CSmScore[][Integer] FilterScoresToDisplay() {
-		declare netread Integer Net_FlagRush_GameplayPhase for Teams[0];
-		declare Boolean IsWarmup = Net_FlagRush_GameplayPhase == {{{FlagRush_Common::C_GameplayPhase_Warmup}}};
+		declare netread Integer Net_GameplayPhase for Teams[0];
+		declare Boolean IsWarmup = Net_GameplayPhase == {{{GameplayPhase::C_Warmup}}};
 
 		declare CSmScore[][Integer] ScoresToDisplay = [0 => [], 1 => [], 2 => []];
 		foreach (Score in Scores) {

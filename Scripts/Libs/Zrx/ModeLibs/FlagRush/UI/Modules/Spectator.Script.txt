@@ -49,22 +49,22 @@ Text GetManialink() {
 		declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
 		declare login = Net_FlagRush_FlagCarrierLogin;
 		
-		if (autoFollow) {	
+		if (autoFollow) {
 			// spectate specific player
 			if (login != "") {
 				declare CSmPlayer Player <=> GetPlayer(login);
-				if (Player != Null) { 
-					ClientUI.Spectator_SetForcedTarget_Entity(Player);					
+				if (Player != Null) {
+					ClientUI.Spectator_SetForcedTarget_Entity(Player);
 					ClientUI.SpectatorForceCameraType = 1;
 				}
-			} else {				
+			} else {
 				//spectate full map
 				ClientUI.Spectator_SetForcedTarget_AllMap();
-				ClientUI.SpectatorForceCameraType = -1;				
-			}				
+				ClientUI.SpectatorForceCameraType = -1;
+			}
 		} else {
 			ClientUI.Spectator_SetForcedTarget_Clear();
-			ClientUI.SpectatorForceCameraType = -1;			
+			ClientUI.SpectatorForceCameraType = -1;
 		}
 	}
 	
@@ -78,7 +78,7 @@ Text GetManialink() {
 		declare CMlQuad toggleBg = (Page.GetFirstChild("button-ready-background") as CMlQuad);
 		declare CMlFrame frame <=> (Page.GetFirstChild("Spectator-frame") as CMlFrame);
 		declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
-		declare oldLogin = "";		
+		declare oldLogin = "";
 		autoFollow = False;
 		toggleBg.Colorize = C_Color_NoFollow;
 		
@@ -90,12 +90,12 @@ Text GetManialink() {
 					if (Event.ControlId == "button-ready-activator") {
 						declare Vec3 color = GetColor(autoFollow);
 						
-						if (Event.Type == CMlScriptEvent::Type::MouseOver) {						
-							toggleBg.Colorize = GetFocusColor(color);			
+						if (Event.Type == CMlScriptEvent::Type::MouseOver) {
+							toggleBg.Colorize = GetFocusColor(color);
 						}
 						
 						if (Event.Type == CMlScriptEvent::Type::MouseOut) {
-							toggleBg.Colorize = color;			
+							toggleBg.Colorize = color;
 						}
 						
 						if (Event.Type == CMlScriptEvent::Type::MouseClick) {

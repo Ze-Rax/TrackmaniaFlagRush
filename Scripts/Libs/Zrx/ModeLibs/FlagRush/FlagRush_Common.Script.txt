@@ -1,119 +1,15 @@
-#Include "TextLib" as TL
-#Include "MathLib" as ML
-#Include "ColorLib" as CL
-
-#Const	C_DefaultNeutralColor				<1., 1., 1.>
-#Const	C_DefaultTeamColors					[0 => <0.2, 0.2, 1.>	, 1 => <1., 0.2, 0.2>	]
-#Const	C_DefaultTeamNames					[0 => "Team Blue"			, 1 => "Team Red"			]
+#Const	C_LogPrefix	"[FlagRush]"
 
 #Const	C_PointsValue_ScoreFlag			3
 #Const	C_PointsValue_StealFlag			1
 
-#Const	C_HueOverlapThreshold				0.166
+#Const	C_Telemetry_Key_FlagsScored		"FlagsScored"
+#Const	C_Telemetry_Key_FlagsStolen		"FlagsStolen"
 
-#Const	C_GameplayPhase_Warmup			0
-#Const	C_GameplayPhase_Round				1
-#Const	C_GameplayPhase_Overtime		2
-
-Vec3 GetDefaultTeamColor(Integer Team) {
-	declare Text G_Team1Color for This;
-	declare Text G_Team2Color for This;
-	
-	switch (Team) {
-		case 0: {
-			if (G_Team1Color != "") return TL::ToColor(G_Team1Color);			
-		}
-		case 1: {
-			if (G_Team2Color != "") return TL::ToColor(G_Team2Color);			
-		}
-	}
-	if (C_DefaultTeamColors.existskey(Team)) return C_DefaultTeamColors[Team];
-	return C_DefaultNeutralColor;
-}
-
-Text GetDefaultTeamName(Integer Team) {
-	declare Text G_Team1Name for This;
-	declare Text G_Team2Name for This;
-	
-	switch (Team) {
-		case 0: {			
-			if (G_Team1Name != "")
-			return G_Team1Name;			
-		}
-		case 1: {			
-			if (G_Team2Name != "")
-			return G_Team2Name;
-		}
-	}
-	
-	if (C_DefaultTeamNames.existskey(Team)) return C_DefaultTeamNames[Team];			
-	return "Unknown";
-}
-
-Vec3 ColorToMinSaturationAndValue(Vec3 ColorRgb, Real MinSaturation, Real MinValue) {
-	// Turn to HSV
-	declare ColorHsv = CL::RgbToHsv(ColorRgb);
-	//Adjust S & V
-	ColorHsv.Y = ML::Max(ColorHsv.Y, MinSaturation);
-	ColorHsv.Z = ML::Max(ColorHsv.Z, MinValue);
-	// Turn back to Rgb
-	declare Result = CL::HsvToRgb(ColorHsv);
-	return Result;
-}
-
-Vec3 ColorToFullSaturationAndValue(Vec3 ColorRgb) {
-	return ColorToMinSaturationAndValue(ColorRgb, 1., 1.);
-}
-
-Real GetHueDifference(Real Hue1, Real Hue2) {
-	declare HueDifference = Hue2 - Hue1;
-	// Since hue is essentially a looping value in range [0.0, 1.0] we will have to check the loop in both directions
-	declare Real HueDifferenceLoop;
-	if(Hue1 > Hue2) {  // Need to check loop around upper bound
-		HueDifferenceLoop = (Hue2 + 1.) - Hue1;
-	} else {           // Need to check loop around lowerbound
-		HueDifferenceLoop = Hue2 - (Hue1 + 1.);
-	}
-	
-	// Final Difference is the one which absolute is lowest (but not the absolute!)
-	declare FinalHueDifference = HueDifference;
-	if (ML::Abs(HueDifferenceLoop) < ML::Abs(FinalHueDifference)) {
-		FinalHueDifference = HueDifferenceLoop;
-	}
-	
-	return FinalHueDifference;
-}
-
-Integer Sign(Real Value) {
-	if(Value >= 0) {
-		return 1;
-	}
-	return -1;
-}
-
-Vec3 GetTeam2ColorWithoutHueOverlap(Vec3 ColorTeam1, Vec3 RequestedColorTeam2) {
-		declare Vec3 ColorTeam1Hsv = CL::RgbToHsv(ColorTeam1);
-		declare Vec3 ColorTeam2Hsv = CL::RgbToHsv(RequestedColorTeam2);
-	
-	declare Real HueTeam1 = ColorTeam1Hsv.X;
-	declare Real HueTeam2 = ColorTeam2Hsv.X;
-	
-	// Check if the difference is below a threshold (in [0.0, 0.5]) = Needs adjustments
-	declare Real HueDifference = GetHueDifference(HueTeam1, HueTeam2);
-	if (ML::Abs(HueDifference) < C_HueOverlapThreshold) {
-		// Correct the hue of team 2 in the according direction
-		HueTeam2 = HueTeam1 + Sign(HueDifference) * C_HueOverlapThreshold;
-		
-		// Correct HueTeam2 if out of range [0.0, 1.0] (Hue is a loop in that range)
-		if (HueTeam2 < 0.) {
-			HueTeam2 += 1.;
-		} else if (HueTeam2 > 1.) {
-			HueTeam2 -= 1.;
-		}
-	}
-	
-	// Return the corrected color
-	declare Vec3 CorrectedColorTeam2Hsv = ColorTeam2Hsv;
-		CorrectedColorTeam2Hsv.X = HueTeam2;
-	return CL::HsvToRgb(CorrectedColorTeam2Hsv);
+/**
+ * Prefixed log.
+ */
+ Void Log(Text Message) {
+	declare Boolean FlagRush_Debug for This;
+	if(FlagRush_Debug) log(C_LogPrefix ^ " " ^ Message);
 }

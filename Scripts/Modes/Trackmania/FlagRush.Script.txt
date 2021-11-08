@@ -900,16 +900,29 @@ Void UpdateSpectators() {
 // --------------------------------------------------
 
 /**
+ *
+ */
+Boolean Valid(CSmModeEvent Event) {
+	switch (Event.Type) {
+		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
+			if(Event.Player == Null) return False;
+		}
+		case CSmModeEvent::EType::OnPlayerRequestRespawn: {
+			if(Event.Player == Null) return False;
+		}
+	}
+	return True;
+}
+
+/**
  * Loops though all events and reacts accordingly
  */
 Void HandleEvents() {
-	
 	// Standard game events
-	foreach(Event in PendingEvents) {
-		FlagRush_Common::Log("Event: CSmModeEvent" ^ Event.Type);
-		
-		declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
-		
+	foreach(Event in PendingEvents) {		
+		if (!Valid(Event)) continue;
+
+		declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();		
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				if (Event.Landmark == FlagState::Get().Landmark) {
@@ -931,8 +944,7 @@ Void HandleEvents() {
 				}
 			}
 			
-			case CSmModeEvent::EType::OnPlayerRequestRespawn:
-			{
+			case CSmModeEvent::EType::OnPlayerRequestRespawn: {
 				declare CSmPlayer FlagCarrierPlayer <=> FlagState::GetFlagCarrierPlayer();
 				declare Boolean PlayerIsFlagCarrier = FlagCarrierPlayer != Null && FlagCarrierPlayer == Event.Player;
 				if(PlayerIsFlagCarrier) {
@@ -955,14 +967,12 @@ Void HandleEvents() {
 				}
 			}
 			
-			case CSmModeEvent::EType::OnPlayerAdded:
-			{
+			case CSmModeEvent::EType::OnPlayerAdded: {
 				FlagRush_Teams::Init();
 				FlagRush_UI::UpdateDossards();
 			}
 
-			case CSmModeEvent::EType::OnPlayerRemoved:
-			{
+			case CSmModeEvent::EType::OnPlayerRemoved: {
 				// Event.Player is Null; Only User available
 				// This is the reason why Carrier in FlagState is not CSmPlayer
 				if(FlagState::Get().Carrier == Event.User) DropFlag();
@@ -1053,30 +1063,29 @@ Void HandleCommands() {
  Void HandleWarmUpEvents() {
 	// Mode Events
 	foreach(Event in PendingEvents) {
-		declare CSmPlayer EventPlayer = Event.Player; // UnspawnPlayer Async? PendingEvents[X] reference becomes Null
+		if (!Valid(Event)) continue;
 		
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
-				declare Vec3 Color = FlagRush_Teams::GetDefaultTeamColor(Event.Player.CurrentClan);
 				if (Event.Player != Null) {
 					declare Boolean FlagRush_WarmUp_HasFlag for Event.Player = False;
 					if (FlagRush_Map::GetFlagSpawns().exists(Event.Landmark) && !FlagRush_WarmUp_HasFlag) {
 						FlagRush_WarmUp_HasFlag = True;
-						ApplyHandicaps(EventPlayer);
+						ApplyHandicaps(Event.Player);
 					} else if (FlagRush_Map::GetBases(1).exists(Event.Landmark) && Event.Player.CurrentClan == 2) {
 						FlagRush_WarmUp_HasFlag = False;
-						ResetHandicaps(EventPlayer);
+						ResetHandicaps(Event.Player);
 					} else if (FlagRush_Map::GetBases(2).exists(Event.Landmark) && Event.Player.CurrentClan == 1) {
 						FlagRush_WarmUp_HasFlag = False;
-						ResetHandicaps(EventPlayer);
+						ResetHandicaps(Event.Player);
 					}
 				}
 			}
 			case CSmModeEvent::EType::OnPlayerRequestRespawn:
 			{
-				
 				declare Boolean FlagRush_WarmUp_HasFlag for Event.Player;
 				FlagRush_WarmUp_HasFlag = False;
+				declare CSmPlayer EventPlayer = Event.Player; // UnspawnPlayer Async? PendingEvents[X] reference becomes Null
 				ResetHandicaps(EventPlayer);
 				UnspawnPlayer(EventPlayer);
 			}

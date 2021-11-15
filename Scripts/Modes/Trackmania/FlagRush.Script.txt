@@ -1108,10 +1108,6 @@ Void ExecWarmUp() {
 	declare Integer PreviousGameplayPhase = GameplayPhase::Get();
 	GameplayPhase::Set(GameplayPhase::C_Warmup);
 
-	foreach(Player in AllPlayers) {
-		declare Boolean FlagRush_WarmUp_HasFlag for Player;
-		FlagRush_WarmUp_HasFlag = False;
-	}
 	InitPlayers();
 	FlagRush_Teams::Init();
 	FlagRush_UI::InitMarkers();

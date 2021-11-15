@@ -1068,7 +1068,10 @@ Void HandleCommands() {
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerRequestRespawn:
 			{
-				UnspawnPlayer(Event.Player);
+				declare CSmPlayer EventPlayer = Event.Player;
+				// Need a second variable to prevent a runtime exception
+				// where PendingEvents[X] becomes Null
+				UnspawnPlayer(EventPlayer); 
 			}
 			case CSmModeEvent::EType::OnPlayerAdded:
 			{

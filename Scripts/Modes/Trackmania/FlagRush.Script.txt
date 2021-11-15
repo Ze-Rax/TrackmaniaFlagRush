@@ -1066,27 +1066,9 @@ Void HandleCommands() {
 		if (!Valid(Event)) continue;
 		
 		switch(Event.Type) {
-			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
-				if (Event.Player != Null) {
-					declare Boolean FlagRush_WarmUp_HasFlag for Event.Player = False;
-					if (FlagRush_Map::GetFlagSpawns().exists(Event.Landmark) && !FlagRush_WarmUp_HasFlag) {
-						FlagRush_WarmUp_HasFlag = True;
-						ApplyHandicaps(Event.Player);
-					} else if (FlagRush_Map::GetBases(1).exists(Event.Landmark) && Event.Player.CurrentClan == 2) {
-						FlagRush_WarmUp_HasFlag = False;
-						ResetHandicaps(Event.Player);
-					} else if (FlagRush_Map::GetBases(2).exists(Event.Landmark) && Event.Player.CurrentClan == 1) {
-						FlagRush_WarmUp_HasFlag = False;
-						ResetHandicaps(Event.Player);
-					}
-				}
-			}
 			case CSmModeEvent::EType::OnPlayerRequestRespawn:
 			{
-				declare Boolean FlagRush_WarmUp_HasFlag for Event.Player;
-				FlagRush_WarmUp_HasFlag = False;
 				declare CSmPlayer EventPlayer = Event.Player; // UnspawnPlayer Async? PendingEvents[X] reference becomes Null
-				ResetHandicaps(EventPlayer);
 				UnspawnPlayer(EventPlayer);
 			}
 			case CSmModeEvent::EType::OnPlayerAdded:

@@ -1068,8 +1068,7 @@ Void HandleCommands() {
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerRequestRespawn:
 			{
-				declare CSmPlayer EventPlayer = Event.Player; // UnspawnPlayer Async? PendingEvents[X] reference becomes Null
-				UnspawnPlayer(EventPlayer);
+				UnspawnPlayer(Event.Player);
 			}
 			case CSmModeEvent::EType::OnPlayerAdded:
 			{

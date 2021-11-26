@@ -1,4 +1,4 @@
-![FlagRush Logo](Assets/flag_rush_logo.png)
+![FlagRush Logo](Assets/logo_nobackground.png)
 
 **FlagRush** is a Trackmania gamemode where two teams compete in an arena to capture a flag and bring it to the enemy base.
 

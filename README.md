@@ -6,7 +6,7 @@
 
 1. Setup Trackmania2020 dedicated server. ([Tutorial](https://forums.ubisoft.com/showthread.php/2242192-Tutorial-Trackmania-2020-Dedicated-Server))
 2. Download gamemode: [main.zip](https://github.com/Ze-Rax/TrackmaniaFlagRush/archive/refs/heads/main.zip), then extract the zip archive.
-   - or clone the repository, if you have `git` installed:
+   - or clone the repository, if you have `git` installed: \
   	`git clone https://github.com/Ze-Rax/TrackmaniaFlagRush`
 3. Place the contents of `DedicatedServer` folder into your dedicated server's `UserData` folder.
 4. Start the server:

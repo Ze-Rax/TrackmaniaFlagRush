@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<playlist>
+	<gameinfos>
+		<game_mode>0</game_mode>
+		<script_name>Trackmania/FlagRush</script_name>
+		<title>Trackmania</title>
+		<chat_time>10000</chat_time>
+		<finishtimeout>1</finishtimeout>
+		<allwarmupduration>0</allwarmupduration>
+		<disablerespawn>0</disablerespawn>
+		<forceshowallopponents>0</forceshowallopponents>
+	</gameinfos>
+
+	<hotseat>
+		<game_mode>0</game_mode>
+		<time_limit>300000</time_limit>
+		<rounds_count>5</rounds_count>
+	</hotseat>
+
+	<filter>
+		<is_lan>1</is_lan>
+		<is_internet>1</is_internet>
+		<is_solo>0</is_solo>
+		<is_hotseat>0</is_hotseat>
+		<sort_index>1000</sort_index>
+		<random_map_order>0</random_map_order>
+	</filter>
+
+	<mode_script_settings>
+		<!-- Default : <setting name="S_ChatTime" type="integer" value="10"/> -->
+		<!-- Default : <setting name="S_UseClublinks" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_UseClublinksSponsors" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_NeutralEmblemUrl" type="text" value=""/> -->
+		<!-- Default : <setting name="S_ScriptEnvironment" type="text" value="production"/> -->
+		<!-- Default : <setting name="S_IsChannelServer" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_DelayBeforeNextMap" type="integer" value="2000"/> -->
+		<!-- Default : <setting name="S_RespawnBehaviour" type="integer" value="0"/> -->
+		<!-- Default : <setting name="S_ForceLapsNb" type="integer" value="-1"/> -->
+		<!-- Default : <setting name="S_InfiniteLaps" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_SeasonIds" type="text" value=""/> -->
+		<!-- Default : <setting name="S_IsSplitScreen" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_DecoImageUrl_WhoAmIUrl" type="text" value="/api/club/room/:ServerLogin/whoami"/> -->
+		<!-- Default : <setting name="S_DecoImageUrl_Checkpoint" type="text" value=""/> -->
+		<!-- Default : <setting name="S_DecoImageUrl_DecalSponsor4x1" type="text" value=""/> -->
+		<!-- Default : <setting name="S_DecoImageUrl_Screen16x9" type="text" value=""/> -->
+		<!-- Default : <setting name="S_DecoImageUrl_Screen8x1" type="text" value=""/> -->
+		<!-- Default : <setting name="S_DecoImageUrl_Screen16x1" type="text" value=""/> -->
+		<!-- Default : <setting name="S_TrustClientSimu" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_UseCrudeExtrapolation" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_UseWarmUp" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_NbMapsToWinMatch" type="integer" value="1"/> -->
+		<!-- Default : <setting name="S_NbRoundsToWinMap" type="integer" value="2"/> -->
+		<!-- Default : <setting name="S_NbFlagsToWinRound" type="integer" value="3"/> -->
+		<!-- Default : <setting name="S_RoundTimeLimitSeconds" type="integer" value="600"/> -->
+		<!-- Default : <setting name="S_UseTurns" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_UseOvertime" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_UseReversedBases" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_RandomizeFlagspawn" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_FlagInitialSpawnDelaySeconds" type="real" value="0"/> -->
+		<!-- Default : <setting name="S_FlagRespawnDelaySeconds" type="real" value="0"/> -->
+		<!-- Default : <setting name="S_FlagDropStateDurationSeconds" type="real" value="8"/> -->
+		<!-- Default : <setting name="S_FlagStealResistDurationSeconds" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_FlagSameTeamSteal" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_FlagCarrierFragile" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_FlagCarrierAcceleration" type="real" value="0.8"/> -->
+		<!-- Default : <setting name="S_FlagCarrierControl" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_FlagCarrierAdherence" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_CanJoinMidRound" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_RespawnWhenStill" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_RespawnDelay" type="real" value="1.5"/> -->
+		<!-- Default : <setting name="S_DropFlagPickupPenalty" type="real" value="3"/> -->
+		<!-- Default : <setting name="S_Team1Name" type="text" value=""/> -->
+		<!-- Default : <setting name="S_Team2Name" type="text" value=""/> -->
+		<!-- Default : <setting name="S_Team1Color" type="text" value=""/> -->
+		<!-- Default : <setting name="S_Team2Color" type="text" value=""/> -->
+		<!-- Default : <setting name="S_ModeCommands_AdminLoginsCsv" type="text" value=""/> -->
+	</mode_script_settings>
+
+	<startindex>1</startindex>
+	<map>
+		<file>FlagRush\BlockFortClassic.Map.Gbx</file>
+	</map>
+	<map>
+		<file>FlagRush\Collided.Map.Gbx</file>
+	</map>	
+	<map>
+		<file>FlagRush\Goldleaf.Map.Gbx</file>
+	</map>	
+</playlist>

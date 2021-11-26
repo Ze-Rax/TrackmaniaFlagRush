@@ -1,17 +1,16 @@
 /**
- * Trackmania FlagRush
- *
- * Exactly one StartTeam1
- * Exactly one StartTeam2
- * At least one BaseTeam1 and same amount of BaseTeam2
- * At least one FlagSpawn
- */
+*  Trackmania FlagRush
+*
+*  Exactly one StartTeam1
+*  Exactly one StartTeam2
+*  At least one BaseTeam1 and same amount of BaseTeam2
+*  At least one FlagSpawn
+*/
 
 #RequireContext CSmMapType
-
-#Const Version 						"2021-09-26"
-#Const C_MapTypeVersion		1
-#Const ScriptName					"MapTypes/FlagRushArena.Script.txt"
+#Const Version "2021-09-26"
+#Const C_MapTypeVersion 1
+#Const ScriptName "MapTypes/FlagRushArena.Script.txt"
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Libraries

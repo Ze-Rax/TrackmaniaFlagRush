@@ -10,7 +10,7 @@
 	- Manual Download: [Download Link](https://github.com/Ze-Rax/TrackmaniaFlagRush/archive/refs/heads/main.zip), then extract the zip archive.
 3. Place the `Scripts` folder into your dedicated server's `UserData` folder.
 4. In `UserData/Maps/Campaigns/tracklist.txt` replace the `<gameinfos>` section to include the FlagRush gamemode:
-```
+```xml
 	<gameinfos>
 		<game_mode>0</game_mode>
 		<script_name>TrackMania/FlagRush.Script.txt</script_name>

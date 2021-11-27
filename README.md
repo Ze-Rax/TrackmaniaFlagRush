@@ -80,7 +80,7 @@ $s$44f「$fffFlagRush$f44」$z
 
 It is recommended to keep the map name after that clean (ie, not long and wide) so it can be read easily in game.
 
-## Community
+# Community
 
 Huge thanks to everyone who helped this project to become reality:
 

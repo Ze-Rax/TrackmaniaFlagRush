@@ -70,8 +70,8 @@ When you placed all required landmarks, go back to the `Edit Block Properties`-t
 
   - For `Checkpoints` that should be used as `Flag Spawns`, select `Flag`.
   - For `Start` blocks that should be used as `Spawn`, select the according team (`Team 1` or `Team 2`).
-	- For `Finish` blocks that should be used as `Bases`, select the according team (`Team 1` or `Team 2`).
-	- Every landmark is initialized in an `Unused`-state which makes the gamemode ignore it. You can reset a a landmark to that state with the `None` option in the respective property editing menu. The `Player Reset` item shoud be in the unused state.
+  - For `Finish` blocks that should be used as `Bases`, select the according team (`Team 1` or `Team 2`).
+  - Every landmark is initialized in an `Unused`-state which makes the gamemode ignore it. You can reset a a landmark to that state with the `None` option in the respective property editing menu. The `Player Reset` item shoud be in the unused state.
 
 ## 4. Validating
 

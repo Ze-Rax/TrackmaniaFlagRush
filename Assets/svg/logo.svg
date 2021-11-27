@@ -7,7 +7,7 @@
    viewBox="0 0 210 297"
    version="1.1"
    id="svg5"
-   sodipodi:docname="logo_bright.svg"
+   sodipodi:docname="logo.svg"
    inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -24,15 +24,15 @@
      inkscape:pagecheckerboard="true"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="1.28"
-     inkscape:cx="476.5625"
-     inkscape:cy="554.29688"
-     inkscape:window-width="2560"
-     inkscape:window-height="1377"
-     inkscape:window-x="1912"
+     inkscape:zoom="0.90509668"
+     inkscape:cx="155.23204"
+     inkscape:cy="558.50387"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g1428" />
+     inkscape:current-layer="layer2" />
   <defs
      id="defs2">
     <linearGradient
@@ -75,16 +75,6 @@
        x2="106.80411"
        y2="142.57737"
        gradientUnits="userSpaceOnUse" />
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient1195"
-       id="linearGradient7413"
-       x1="80.282791"
-       y1="130.17696"
-       x2="119.82762"
-       y2="162.19711"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.1338573,0,0,1.1338573,-9.8550038,-19.877801)" />
   </defs>
   <g
      inkscape:label="Background"
@@ -129,44 +119,10 @@
   </g>
   <g
      inkscape:groupmode="layer"
-     id="layer3"
-     inkscape:label="Logo1"
-     sodipodi:insensitive="true"
-     style="display:none">
-    <text
-       xml:space="preserve"
-       style="font-style:italic;font-variant:normal;font-weight:900;font-stretch:normal;font-size:22.4001px;line-height:2;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Heavy Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;letter-spacing:0px;word-spacing:0.00299999px;text-anchor:middle;mix-blend-mode:normal;fill:none;fill-opacity:1;stroke:#fefefe;stroke-width:0.850393;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-       x="104.9508"
-       y="147.85638"
-       id="text22581"><tspan
-         sodipodi:role="line"
-         id="tspan22579"
-         style="font-style:italic;font-variant:normal;font-weight:900;font-stretch:normal;font-size:22.4001px;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Heavy Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:none;fill-opacity:1;stroke:#fefefe;stroke-width:0.850393;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-         x="104.9508"
-         y="147.85638">FLAG</tspan></text>
-    <path
-       style="fill:url(#linearGradient7413);fill-opacity:1;stroke:#000000;stroke-width:0.7937;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
-       d="m 96.103972,179.47427 c -2.70755,-1.79609 4.189278,-12.36346 7.430918,-18.67143 2.68261,-5.22022 7.73738,-15.83208 7.73738,-15.83208 0.75225,-3.76586 -12.259578,-12.35836 -25.782368,-17.02555 -5.03742,-1.73868 -6.70153,-2.67807 -6.05985,-3.42106 0.20419,-0.23662 3.01502,-1.17343 6.24613,-2.08211 7.42883,-2.08925 26.288578,-3.50077 32.938508,-1.75993 5.48707,1.43635 4.34217,1.87042 6.28735,-1.15329 2.64213,-4.10705 7.27605,-2.11402 5.33797,2.18192 -0.75647,1.67667 -6.74143,14.02741 -23.90897,46.05245 -3.07448,5.73514 -7.631498,13.43298 -10.227018,11.71101 z"
-       id="path110"
-       sodipodi:nodetypes="sscssssssss"
-       clip-path="none" />
-    <text
-       xml:space="preserve"
-       style="font-style:italic;font-variant:normal;font-weight:900;font-stretch:normal;font-size:28.8px;line-height:2;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Heavy Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;letter-spacing:0px;word-spacing:0.00299999px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.850393;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       x="104.42344"
-       y="170.55205"
-       id="text22581-2"><tspan
-         sodipodi:role="line"
-         id="tspan22579-4"
-         style="font-style:italic;font-variant:normal;font-weight:900;font-stretch:normal;font-size:28.8px;font-family:'Segoe UI';-inkscape-font-specification:'Segoe UI, Heavy Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.850393;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         x="104.42344"
-         y="170.55205">RUSH</tspan></text>
-  </g>
-  <g
-     inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Logo2"
-     style="display:inline">
+     style="display:inline"
+     sodipodi:insensitive="true">
     <g
        id="g1428"
        transform="translate(0.63633323,3.52619)">

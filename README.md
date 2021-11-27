@@ -1,4 +1,4 @@
-![FlagRush Logo](Assets/logo_banner.png)
+![FlagRush Logo](Assets/png/mark.png)
 
 **`FlagRush`** is a Trackmania gamemode, where two teams compete in an arena to capture a flag and bring it to opposing team base. Mode plays best with a team size of 3 players per team.
 

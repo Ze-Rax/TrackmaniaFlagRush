@@ -42,7 +42,7 @@
 #Const	C_FlagHitbox_Height						4.
 #Const 	C_RespawnSpeedLimitKmh 				30.
 
-#Const  C_Debug 											True
+#Const  C_Debug 											False
 #Const	C_Debug_NbFakeUsers						<0, 0>
 
 //////////////

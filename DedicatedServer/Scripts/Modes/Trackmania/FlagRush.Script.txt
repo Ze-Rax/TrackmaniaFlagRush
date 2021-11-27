@@ -50,14 +50,14 @@
 //////////////
 
 // Match progression
-#Setting S_UseWarmUp												True		as _("Use warm up")
+#Setting S_UseWarmUp												True		as "Use warm up"
 
 #Setting S_NbMapsToWinMatch									1 			as "Number of maps to win a match"
 #Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"
-#Setting S_NbFlagsToWinRound								3				as "Number of flags scored to win a round"
+#Setting S_NbFlagsToWinRound								5				as "Number of flags scored to win a round"
 #Setting S_RoundTimeLimitSeconds						600 		as "Round Timelimit (seconds)"
-#Setting S_UseTurns													False 	as "Use turns (Reset after a player scores a flag)"
-#Setting S_UseOvertime											True 		as _("Use overtime when round is tied")
+#Setting S_UseTurns													False 	as <hidden> // "Use turns (Reset after a player scores a flag)"
+#Setting S_UseOvertime											True 		as "Use overtime when round is tied"
 
 // Gameplay
 #Setting S_UseReversedBases									False 	as "<hidden>" // Switch team bases
@@ -66,9 +66,9 @@
 #Setting S_FlagRespawnDelaySeconds					0. 			as "<hidden>" // Flag respawn delay (seconds)
 #Setting S_FlagDropStateDurationSeconds			8. 			as "Flag drop state duration (seconds)"
 #Setting S_FlagStealResistDurationSeconds		1. 			as "<hidden>" // Flag steal resistance (seconds)
-#Setting S_FlagSameTeamSteal								False 	as "Team flag steal"
-#Setting S_FlagCarrierFragile								False 	as "Flag carrier becomes fragile"
-#Setting S_FlagCarrierAcceleration					0.8 		as "Flag carrier acceleration (0.0 - 1.0)"
+#Setting S_FlagSameTeamSteal								True		as "Team flag steal"
+#Setting S_FlagCarrierFragile								True		as "Flag carrier becomes fragile"
+#Setting S_FlagCarrierAcceleration					0.7 		as "Flag carrier acceleration (0.0 - 1.0)"
 #Setting S_FlagCarrierControl								1.0 		as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
 #Setting S_FlagCarrierAdherence							1.0 		as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
 #Setting S_RespawnWhenStill									True 		as "Players can respawn only when being still"

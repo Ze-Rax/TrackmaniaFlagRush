@@ -54,9 +54,9 @@
 
 #Setting S_NbMapsToWinMatch									1 			as "Number of maps to win a match"
 #Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"
-#Setting S_NbFlagsToWinRound								5				as "Number of flags scored to win a round"
-#Setting S_RoundTimeLimitSeconds						600 		as "Round Timelimit (seconds)"
-#Setting S_UseTurns													False 	as <hidden> // "Use turns (Reset after a player scores a flag)"
+#Setting S_NbFlagsToWinRound								3				as "Number of flags scored to win a round"
+#Setting S_RoundTimeLimitSeconds						360 		as "Round Timelimit (seconds)"
+#Setting S_UseTurns													False 	as "<hidden>" // "Use turns (Reset after a player scores a flag)"
 #Setting S_UseOvertime											True 		as "Use overtime when round is tied"
 
 // Gameplay

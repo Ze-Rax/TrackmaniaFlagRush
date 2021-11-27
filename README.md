@@ -1,6 +1,6 @@
 ![FlagRush Logo](Assets/logo_banner.png)
 
-**FlagRush** is a Trackmania gamemode, where two teams compete in an arena to capture a flag and bring it to opposing team base. Mode plays best starting with 3 vs 3 players.
+**`FlagRush`** is a Trackmania gamemode, where two teams compete in an arena to capture a flag and bring it to opposing team base. Mode plays best with a team size of 3 players per team.
 
 # Server How-to
 
@@ -28,12 +28,12 @@ Rounds, etc. There are specific requirements that have to be met for the map to 
 
 ## Preparations
 
-Place the contents of `GameClient` folder into your gamedata folder usually located at `My Documents/Trackmania`, this installs the needed MapType-script and Items you need to craft maps for FlagRush.
+Place the contents of `GameClient` folder into your gamedata folder usually located at `My Documents/Trackmania`, this installs the needed MapType-script and items you need to create maps for FlagRush.
 
 ## 1. Setup map with according MapType-script
 
 1. Open `Advanced map editor`.
-2. At bottom right, select `Map options` to brind a popup menu
+2. At bottom right, select `Map Options` to open a popup menu. (Crossed wrench + screwdriver icon)
 3. Click the first button: `Set Map Type`
 4. Select `FlagRushArena` from the Map type-field
    - if the type is not at the list, select `Pick from file` and point to the `FlagRushArena.Script.txt` located at your computer.
@@ -49,25 +49,33 @@ Each team tries to **defend** flag scores at their `Team Base`, and **score** th
   - `Team 2` wants to stop `Team 1` from scoring at `Team 2` base
   
 
-Each team needs one `Team Spawn` (any Start block) and one or more `Team Base` (any Finish block). This means that the `Team 1` Base should be on the same side as the `Team 1` Spawn.
+Each team needs exactly one `Team Spawn` (any `Start` block) and one or more `Team Base` (any `Finish` block). This means that the `Team 1 Base` should be on the same side as the `Team 1 Spawn`.
 
-You need to assign each team the `Spawn` and the `Base` by using the `Edit Block Properties`-tool.
-
---- 
-
-The `Flag Spawn` is a semi-transparent ball with no collision is an item that marks the location of the flag at the start of a round. Multiple flag spawns are allowed. One needs to be the Default Flag Spawn.
-
-The `Default Flag Spawn` is required to be set on one flag spawn - if there’s just one spawn on the map, it still needs the marker. The mode has two options for flag spawns in-game; one will force only one spawn location to be used, and the other will choose randomly. If the former is selected, the Default Flag Spawn is used. Otherwise, it is ignored. 
+You need to assign each team the `Spawn` and the `Base` by using the `Edit Block Properties`-tool. (`Block with cogwheel` icon in the `map editor toolbar`)
 
 --- 
 
-The `Player Reset` is a smaller gold ball that is used to make sure player respawns work in a match. Just place exactly one somewhere near the middle of the map.
+The `Flag Spawn` is a green, semi-transparent, spehere-shaped item with no collision that marks the location of where the Flag may spawn. Multiple flag spawns are allowed but at least one has to be present. Additionally, one of the flag spawns needs to be set as the `Default Flag Spawn` using the `Edit Block Properties`-tool.
+Technically any `Checkpoint` block can be used as a `Flag Spawn`, but it's recommended to use the provided item for it's point-symmetrical nature which makes it accessible from each direction the same way.
 
-When you have these places, you got back to the `Edit Block Properties` menu and select the relevant option for each: `Flag` for the flag spawn, and `None` for the Players Reset item.
+The mode has two options for how flag spawns are chosen in-match; One will force only the `Default Flag Spawn` to be used, and the other will choose a random `Flag Spawn` among all `Flag Spawns` (including the `Default Flag Spawn`).
+
+--- 
+
+The `Player Reset` is a small, gold, sphere-shaped item that is used to make sure the gamemode can register a player crossing a `Flag Spawn` or `Base` at any time in the match. This has rather complicated techinical reasons. Just place exactly one somewhere roughly near the middle of the map.
+
+---
+
+When you placed all required landmarks, go back to the `Edit Block Properties`-tool and select the relevant options for each:
+
+  - For `Checkpoints` that should be used as `Flag Spawns`, select `Flag`.
+  - For `Start` blocks that should be used as `Spawn`, select the according team (`Team 1` or `Team 2`).
+	- For `Finish` blocks that should be used as `Bases`, select the according team (`Team 1` or `Team 2`).
+	- Every landmark is initialized in an `Unused`-state which makes the gamemode ignore it. You can reset a a landmark to that state with the `None` option in the respective property editing menu. The `Player Reset` item shoud be in the unused state.
 
 ## 4. Validating
 
-When you have placed all the required landmarks and configured them appropriatly, then the map will automatically be validated; There is no need to drive the map and clicking the green validation flag won’t even have any function. If you’re map is still invalid and you don’t know why, then you can click on the red flag in the bottom right; An error message should pop up, telling you requirements are not fullfilled.
+When you have placed all the required landmarks and configured them appropriatly, then the map will automatically be validated; There is no need to drive the map and clicking the green validation flag won’t even have any function. If you’re map is still invalid and you don’t know why, then you can click on the red flag in the bottom right; An error message should pop up, telling you what requirements are not fullfilled.
 
 
 ## 5. Optional FlagRush name tag
@@ -78,7 +86,7 @@ There’s a map name tag for your FlagRush maps - so they visually appear as Fla
 $s$44f「$fffFlagRush$f44」$z
 ```
 
-It is recommended to keep the map name after that clean (ie, not long and wide) so it can be read easily in game.
+It is recommended to keep the map name after that clean (i.e., not too long and wide) so it can be read easily in game.
 
 # Community
 

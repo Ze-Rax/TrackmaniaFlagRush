@@ -78,7 +78,7 @@
 
 	<startindex>1</startindex>
 	<map>
-		<file>FlagRush\BlockFortClassic.Map.Gbx</file>
+		<file>FlagRush\BlockFortAdvanced.Map.Gbx</file>
 	</map>
 	<map>
 		<file>FlagRush\Collided.Map.Gbx</file>

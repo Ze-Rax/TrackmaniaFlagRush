@@ -1,4 +1,4 @@
-/**
+/*
  *	Library to keep track of players activity in gamemodes; Inspired by Scores library
  */
 

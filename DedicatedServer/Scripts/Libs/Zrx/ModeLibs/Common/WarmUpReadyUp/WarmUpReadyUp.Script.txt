@@ -1,4 +1,4 @@
-/**
+/*
  * WarmUp Library with infinite time and ready up mechanic.
  *	
  * Players need to ready up before the warmup end.

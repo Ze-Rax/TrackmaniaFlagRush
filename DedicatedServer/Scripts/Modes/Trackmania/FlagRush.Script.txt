@@ -1,6 +1,6 @@
 // #RequireContext CSmMode
 
-/**
+/*
  * FlagRush
  * Gamemode by Ze-Rax, Reaby & Geekid
  */
@@ -32,7 +32,7 @@
 
 /* Constants */
 #Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version												"2021-09-02"
+#Const	Version												"2021-12-01"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
 #Const	C_SpawnAnimDuration						2000
@@ -176,6 +176,7 @@ EventFeed::SendMessage("Match Start", "info");
 ***
 FlagRush_Map::InitLandmarks();
 Map::SetDefaultStart(FlagRush_Map::GetSpawn(1));
+FlagState::SetAtLandmark(FlagRush_Map::GetDefaultFlagSpawn());
 
 FlagRush_UI::Init();
 InitPlayers();
@@ -222,7 +223,7 @@ FlagRush_UI::UpdateScores();
 declare Text Message = "Round Start";
 EventFeed::SendMessage(Message, "info");
 UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
-UIManager.UIAll.SendChat("""Please report game mode bugs: $3af$l[https://discord.gg/J6ApdyRqEZ]FlagRush Discord$l $fffat playtest channel!""");
+UIManager.UIAll.SendChat("""Welcome to $3af$l[https://discord.gg/J6ApdyRqEZ]FlagRush$l $fff{{{Version}}}!""");
 MB_Sleep(C_BigMessage_Duration);
 
 StartTime = Now;

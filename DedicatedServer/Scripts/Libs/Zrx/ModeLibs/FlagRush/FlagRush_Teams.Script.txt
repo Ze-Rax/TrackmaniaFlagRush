@@ -19,25 +19,28 @@
 
 declare K_TeamConfig[CTeam] G_TeamConfigs;
 
-declare Text G_Team1NameOverride;
-declare Text G_Team1ColorHexOverride;
-declare Text G_Team2NameOverride;
-declare Text G_Team2ColorHexOverride;
+declare Text[Integer] G_TeamNameOverrides;
+declare Text[Integer] G_TeamColorHexOverrides;
+declare Boolean G_UseClubTags;
 
 Void SetTeam1NameOverride(Text Name) {
-	G_Team1NameOverride = Name;
+	G_TeamNameOverrides[0] = Name;
 }
 
 Void SetTeam2NameOverride(Text Name) {
-	G_Team2NameOverride = Name;
+	G_TeamNameOverrides[1] = Name;
 }
 
 Void SetTeam1ColorHexOverride(Text ColorHex) {
-	G_Team1ColorHexOverride = ColorHex;
+	G_TeamColorHexOverrides[0] = ColorHex;
 }
 
 Void SetTeam2ColorHexOverride(Text ColorHex) {
-	G_Team2ColorHexOverride = ColorHex;
+	G_TeamColorHexOverrides[1] = ColorHex;
+}
+
+Void UseClubTags(Boolean UseClubTags) {
+	G_UseClubTags = UseClubTags;
 }
 
 /**
@@ -69,47 +72,81 @@ Text GetDefaultTeamName(Integer TeamNum) {
 }
 
 /**
- * Initialises the team configs.
+ * Creates team configs from the club tags of both teams.
  */
-Void Init() {	
+Void Private_Configs_InitFromClubTags() {
 	// Get TeamConfigs from ClubTags
 	declare ClubTagUtils::K_TeamConfig[] TeamConfigs = [
 		ClubTagUtils::GetTeamConfig(1),
 		ClubTagUtils::GetTeamConfig(2)
-	];
+	];	
 	
-	// Overwrite empty values or forced values
-	if (G_Team1NameOverride != "") TeamConfigs[0].Name = G_Team1NameOverride;					// Forced
-	else if (TeamConfigs[0].Name == "") TeamConfigs[0].Name = GetDefaultTeamName(1);	// Was Empty
-	
-	if (G_Team2NameOverride != "") TeamConfigs[1].Name = G_Team2NameOverride;
-	else if (TeamConfigs[1].Name == "") TeamConfigs[1].Name = GetDefaultTeamName(2);
-	
-	if (G_Team1ColorHexOverride != "") TeamConfigs[0].Color = CL::Hex3ToRgb(G_Team1ColorHexOverride);
-	else if (TeamConfigs[0].Color == ClubTagUtils::C_InvalidColor) TeamConfigs[0].Color = GetDefaultTeamColor(1);
-	
-	if (G_Team2ColorHexOverride != "") TeamConfigs[1].Color = CL::Hex3ToRgb(G_Team2ColorHexOverride);
-	else if (TeamConfigs[1].Color == ClubTagUtils::C_InvalidColor) TeamConfigs[1].Color = GetDefaultTeamColor(2);
-	
-	// Adjust colors to avoid hue overlap
-	// Only adjust if at least one team color is not forced by settings
-	if(G_Team1ColorHexOverride == "" || G_Team2ColorHexOverride == "") {
-		// If second is forced or second team uses ClubTag and first doesn't: Adjust first
-		if(G_Team2ColorHexOverride != "" || TeamConfigs[1].ClubTag != "" && TeamConfigs[0].ClubTag == "") {
-			TeamConfigs[0].Color = ColorUtils::AdjustHueOverlap(TeamConfigs[1].Color, TeamConfigs[0].Color, C_HueOverlapThreshold);
-		}
-		// If first is forced or first team uses ClubTag or none is forced or both use ClubTags: Adjust second
-		else {
-			TeamConfigs[1].Color = ColorUtils::AdjustHueOverlap(TeamConfigs[0].Color, TeamConfigs[1].Color, C_HueOverlapThreshold);
-		}
-	}
-	
-	// Put in global variable array and configure actual teams
-	for(TeamIndex, 0, 1) {
-		G_TeamConfigs[Teams[TeamIndex]] = TeamConfigs[TeamIndex];
+	// Right now: ClubTagUtils::K_TeamConfig is the same as FlagRush_Team::K_TeamConfig
+	// and can be assigned directly
+	G_TeamConfigs = [Teams[0] => TeamConfigs[0], Teams[1] => TeamConfigs[1]];
+}
 
-		Teams[TeamIndex].Name = TeamConfigs[TeamIndex].Name;
-		declare Vec3 PrimaryColor = TeamConfigs[TeamIndex].Color;
+/**
+ * Overrides empty fields in config with forced or default values.
+ */
+Void Private_Configs_OverrideEmptyFields() {
+	for(TeamIndex, 0, 1) {
+		declare Team <=> Teams[TeamIndex];
+		if (G_TeamNameOverrides.get(TeamIndex, "") != "")	// Forced
+			G_TeamConfigs[Team].Name = G_TeamNameOverrides[TeamIndex];
+		else if (G_TeamConfigs[Team].Name == "")					// Was empty
+			G_TeamConfigs[Team].Name = GetDefaultTeamName(TeamIndex + 1);
+			
+		if(G_TeamColorHexOverrides.get(TeamIndex, "") != "")
+			G_TeamConfigs[Team].Color = CL::Hex3ToRgb(G_TeamColorHexOverrides[TeamIndex]);
+		else if (G_TeamConfigs[Team].Color == ClubTagUtils::C_InvalidColor)
+			G_TeamConfigs[Team].Color = GetDefaultTeamColor(TeamIndex + 1);
+	}
+}
+
+/**
+ * Adjusts the colors of a team in the config to avoid hue overlap.
+ * The following table shows which team's color to adjust depending on the current settings.
+ *
+ * - ClubX: Team X color is defined by Club Tag
+ * - ForcedX: Team X color is defined by forced-setting
+ * - DefaultX: None of the above
+ * - Number in Grid: Team number (Index+1) to adjust the color of
+ *
+ *          | Default2 | Club2 | Forced2
+ * ---------+---------------------------
+ * Default1 |    2         1        1
+ * Club1    |    2         2        1
+ * Forced1  |    2         2      NONE
+ */
+Void Private_Configs_AdjustAvoidHueOverlap() {
+	declare Text Team1ColorOverride = G_TeamColorHexOverrides.get(0, "");
+	declare Text Team2ColorOverride = G_TeamColorHexOverrides.get(1, "");
+	
+	// Only adjust if at least one team color is not forced by settings
+	if (Team1ColorOverride == "" || Team2ColorOverride == "") {
+		// See table above
+		declare Boolean AdjustFirst = Team2ColorOverride != "" ||
+				(G_TeamConfigs[Teams[1]].ClubTag != "" && G_TeamConfigs[Teams[0]].ClubTag == "" && Team1ColorOverride == "");
+		
+		if (AdjustFirst) G_TeamConfigs[Teams[0]].Color = ColorUtils::AdjustHueOverlap(
+				G_TeamConfigs[Teams[1]].Color,
+				G_TeamConfigs[Teams[0]].Color,
+				C_HueOverlapThreshold);
+		else G_TeamConfigs[Teams[1]].Color = ColorUtils::AdjustHueOverlap(
+				G_TeamConfigs[Teams[0]].Color,
+				G_TeamConfigs[Teams[1]].Color,
+				C_HueOverlapThreshold);
+	}
+}
+
+/**
+ * Applies the TeamConfigs to the actual Team objects
+ */
+Void Private_Configs_ApplyToTeams() {
+	for(TeamIndex, 0, 1) {
+		Teams[TeamIndex].Name = G_TeamConfigs[Teams[TeamIndex]].Name;
+		declare Vec3 PrimaryColor = G_TeamConfigs[Teams[TeamIndex]].Color;
 		
 		// Teams have automatic change for colors; Need full saturation and value (HSV)
 		Teams[TeamIndex].ColorPrimary = ColorUtils::ColorToFullSaturationAndValue(PrimaryColor);
@@ -122,4 +159,15 @@ Void Init() {
 		declare netwrite Vec3 Net_FlagRush_PrimaryColor for Teams[TeamIndex];
 		Net_FlagRush_PrimaryColor = PrimaryColor;
 	}
+}
+
+/**
+ * Initializes the team configs.
+ */
+Void Init() {
+	if (G_UseClubTags) Private_Configs_InitFromClubTags();
+	else G_TeamConfigs = [Teams[0] => K_TeamConfig {}, Teams[1] => K_TeamConfig {}];
+	Private_Configs_OverrideEmptyFields();
+	Private_Configs_AdjustAvoidHueOverlap();
+	Private_Configs_ApplyToTeams();
 }

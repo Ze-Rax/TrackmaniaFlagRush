@@ -32,7 +32,7 @@
 
 /* Constants */
 #Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version												"2021-12-01"
+#Const	Version												"1.0.0"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
 #Const	C_SpawnAnimDuration						2000
@@ -148,6 +148,7 @@ UIManager.UIAll.TeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
 UIManager.UIAll.TeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenInFrustum;
 UIManager.UIAll.OpposingTeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
 UIManager.UIAll.OpposingTeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenVisible;
+UIManager.UIAll.LabelsVisibility = CUIConfig::EHudVisibility::Everything;
 UIManager.UIAll.OverlayHideSpectatorInfos = True;
 UIManager.UIAll.OverlayHideSpectatorControllers = True;
 
@@ -223,7 +224,6 @@ FlagRush_UI::UpdateScores();
 declare Text Message = "Round Start";
 EventFeed::SendMessage(Message, "info");
 UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
-UIManager.UIAll.SendChat("""Welcome to $3af$l[https://discord.gg/J6ApdyRqEZ]FlagRush$l $fff{{{Version}}}!""");
 MB_Sleep(C_BigMessage_Duration);
 
 StartTime = Now;
@@ -443,6 +443,14 @@ Void SetEndTime(Integer _EndTime) {
 	EndTime = _EndTime;
 	declare netwrite Integer Net_FlagRush_EndTime for Teams[0];
 	Net_FlagRush_EndTime = EndTime;
+}
+
+/**
+ * Send a welcome message to connecting players.
+ */
+Void SendWelcomeMessage(CSmPlayer Player) {
+	declare CUIConfig UI = UIManager.GetUI(Player);
+	UI.SendChat("""Welcome to $l[https://discord.gg/J6ApdyRqEZ]$44f「$fffFlagRush$f44」$l $fff[{{{Version}}}]!""");
 }
 
 // --------------------------------------------------
@@ -914,7 +922,6 @@ Boolean Valid(CSmModeEvent Event) {
 	}
 	return True;
 }
-
 /**
  * Loops though all events and reacts accordingly
  */
@@ -925,6 +932,9 @@ Void HandleEvents() {
 
 		declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();		
 		switch(Event.Type) {
+			case CSmModeEvent::EType::OnPlayerAdded: {
+				SendWelcomeMessage(Event.Player);				
+			}
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				if (Event.Landmark == FlagState::Get().Landmark) {
 					if (Event.Player != Null && FlagCarrierPlayer == Null && Now > FlagState::Get().PickupableDate) {
@@ -1067,6 +1077,9 @@ Void HandleCommands() {
 		if (!Valid(Event)) continue;
 		
 		switch(Event.Type) {
+			case CSmModeEvent::EType::OnPlayerAdded: {
+				SendWelcomeMessage(Event.Player);				
+			}
 			case CSmModeEvent::EType::OnPlayerRequestRespawn:
 			{
 				declare CSmPlayer EventPlayer = Event.Player;

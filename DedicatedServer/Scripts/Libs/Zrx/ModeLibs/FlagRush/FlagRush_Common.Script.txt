@@ -1,0 +1,15 @@
+#Const	C_LogPrefix	"[FlagRush]"
+
+#Const	C_PointsValue_ScoreFlag			3
+#Const	C_PointsValue_StealFlag			1
+
+#Const	C_Telemetry_Key_FlagsScored		"FlagsScored"
+#Const	C_Telemetry_Key_FlagsStolen		"FlagsStolen"
+
+/**
+ * Prefixed log.
+ */
+ Void Log(Text Message) {
+	declare Boolean FlagRush_Debug for This;
+	if(FlagRush_Debug) log(C_LogPrefix ^ " " ^ Message);
+}

@@ -1,0 +1,14 @@
+#Include	"Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
+
+/**
+ *	Common Functions to embed in multiple manialink
+ */
+ Text GetTeamColorNetreadFunctions() {
+	return """
+			Vec3 GetTeamPrimaryColor(CTeam Team) {
+				if (Team == Null) return {{{FlagRush_Teams::C_DefaultNeutralColor}}};
+				declare netread Vec3 Net_FlagRush_PrimaryColor for Team;
+				return Net_FlagRush_PrimaryColor;
+			}
+""";
+}

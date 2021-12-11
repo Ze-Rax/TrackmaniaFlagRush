@@ -1,0 +1,9 @@
+/**
+ * Returns the sign of a given Real.
+ */
+ Integer Sign(Real Value) {
+	if(Value >= 0) {
+		return 1;
+	}
+	return -1;
+}

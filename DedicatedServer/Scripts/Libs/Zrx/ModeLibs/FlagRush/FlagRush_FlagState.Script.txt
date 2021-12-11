@@ -1,0 +1,101 @@
+#Struct K_FlagState {
+	CMapLandmark Landmark;
+	CUser Carrier;
+	Vec3 Position;
+	Integer LastDropDate;
+	Integer PickupableDate;
+}
+
+declare K_FlagState G_FlagState;
+
+/**
+ * Gets the current flag carrier CSmPlayer.
+ * Null player not found.
+ */
+CSmPlayer GetFlagCarrierPlayer() {
+	if(G_FlagState.Carrier == Null) return Null;
+	return GetPlayer(G_FlagState.Carrier.Login);
+}
+
+/**
+ * Gets the current flag state.
+ */
+K_FlagState Get() {
+	return G_FlagState;
+}
+
+/**
+ * Sets the flag state to be at a landmark.
+ * Also updates the position, the marker and unsets the carrier
+ */
+Void SetAtLandmark(CMapLandmark Landmark) {
+	G_FlagState.Landmark = Landmark;
+	G_FlagState.Position = Landmark.Position;
+	G_FlagState.Carrier = Null;
+}
+
+/**
+ * Sets the flag state to be at a player.
+ * Also updates the position, the marker and unsets the landmark.
+ */
+Void SetAtCarrier(CSmPlayer Carrier) {
+	G_FlagState.Carrier = Carrier.User;
+	G_FlagState.Landmark = Null;
+	G_FlagState.Position = Carrier.Position;
+}
+
+/**
+ * Sets the flag state to be at the player of a user.
+ * Will do nothing if player was not found.
+ * Also updates the position, the marker and unsets the landmark.
+ */
+Void SetAtCarrier(CUser Carrier) {
+	declare CSmPlayer CarrierPlayer = GetPlayer(Carrier.Login);
+	if(CarrierPlayer != Null) {
+		SetAtCarrier(CarrierPlayer);
+	}
+}
+
+/**
+ * Sets the flag state to be at a position.
+ * Also updates the marker and unsets the landmark and the carrier.
+ */
+Void SetAtPosition(Vec3 Position) {
+	G_FlagState.Position = Position;
+	G_FlagState.Carrier = Null;
+	G_FlagState.Landmark = Null;
+}
+
+/**
+ * Sets the pickupable date of the flag and sets the respective net variables.
+ */
+Void SetPickupableDate(Integer Date) {
+	G_FlagState.PickupableDate = Date;
+	
+	/* Gauge timing */
+	declare FlooredGaugeDuration = Date - Now;
+	if (FlooredGaugeDuration < 0) FlooredGaugeDuration = 0;
+	declare netwrite Integer Net_FlagRush_FlagGaugeStartDate for Teams[0];
+	Net_FlagRush_FlagGaugeStartDate = Now;
+	declare netwrite Integer Net_FlagRush_FlagGaugeDuration for Teams[0];
+	Net_FlagRush_FlagGaugeDuration = FlooredGaugeDuration;
+}
+
+/**
+ * Sets the last drop date of the flag.
+ */
+Void SetLastDropDate(Integer Date) {
+	G_FlagState.LastDropDate = Date;
+}
+
+/**
+ * Updates the position of the flag when carried by a player.
+ */
+Void UpdatePosition() {
+	if(G_FlagState.Carrier != Null) {
+		declare CSmPlayer CarrierPlayer = GetFlagCarrierPlayer();
+		if(CarrierPlayer != Null) {
+			G_FlagState.Position = CarrierPlayer.Position;
+		}
+	}
+}

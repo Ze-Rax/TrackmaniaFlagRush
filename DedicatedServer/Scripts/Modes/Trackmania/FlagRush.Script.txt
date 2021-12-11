@@ -80,6 +80,7 @@
 #Setting S_Team1Color 											"" 			as "Force Team 1 Color"
 #Setting S_Team2Name 												"" 			as "Force Team 2 Name"
 #Setting S_Team2Color 											"" 			as "Force Team 2 Color"
+#Setting S_UseClubTags											False		as "Use club tags for team names & colors"
 
 // ModeCommands
 #Setting S_ModeCommands_AdminLoginsCsv 			"" 			as "<hidden>" // Admin logins for the mode commands ui
@@ -120,10 +121,11 @@ declare Integer G_LastSettings_NbRoundsToWinMap;
 
 declare Boolean G_LastSettings_UseReversedBases;
 
-declare Text G_LastSettigns_Team1ForcedName;
-declare Text G_LastSettigns_Team1ForcedColor;
-declare Text G_LastSettigns_Team2ForcedName;
-declare Text G_LastSettigns_Team2ForcedColor;
+declare Text G_LastSettings_Team1ForcedName;
+declare Text G_LastSettings_Team1ForcedColor;
+declare Text G_LastSettings_Team2ForcedName;
+declare Text G_LastSettings_Team2ForcedColor;
+declare Boolean G_LastSettings_UseClubTags;
 
 ///////////
 // Plugs //
@@ -835,10 +837,11 @@ Void UpdateCriticalSettings() {
 
 	G_LastSettings_UseReversedBases = S_UseReversedBases;
 
-	G_LastSettigns_Team1ForcedName = S_Team1Name;
-	G_LastSettigns_Team1ForcedColor = S_Team1Color;
-	G_LastSettigns_Team2ForcedName = S_Team2Name;
-	G_LastSettigns_Team2ForcedColor = S_Team2Color;
+	G_LastSettings_Team1ForcedName = S_Team1Name;
+	G_LastSettings_Team1ForcedColor = S_Team1Color;
+	G_LastSettings_Team2ForcedName = S_Team2Name;
+	G_LastSettings_Team2ForcedColor = S_Team2Color;
+	G_LastSettings_UseClubTags = S_UseClubTags;
 }
 
 /**
@@ -857,15 +860,17 @@ Void HandleModeSettingsUpdate() {
 	if(NeedsRestartTurn) if(MB_TurnIsRunning()) MB_StopTurn();
 	
 	declare Boolean NeedsReinitTeamConfigs =
-		G_LastSettigns_Team1ForcedName != S_Team1Name
-		|| G_LastSettigns_Team1ForcedColor != S_Team1Color
-		|| G_LastSettigns_Team2ForcedName != S_Team2Name
-		|| G_LastSettigns_Team2ForcedColor != S_Team2Color;
+		G_LastSettings_Team1ForcedName != S_Team1Name
+		|| G_LastSettings_Team1ForcedColor != S_Team1Color
+		|| G_LastSettings_Team2ForcedName != S_Team2Name
+		|| G_LastSettings_Team2ForcedColor != S_Team2Color
+		|| G_LastSettings_UseClubTags != S_UseClubTags;
 	if(NeedsReinitTeamConfigs) {
 		FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
 		FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
 		FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
 		FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
+		FlagRush_Teams::UseClubTags(S_UseClubTags);
 		FlagRush_Teams::Init();
 		FlagRush_UI::UpdateDossards();
 	}

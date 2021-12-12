@@ -363,7 +363,7 @@ if (G_MapValid) {
 
 // Check if match is finished
 declare MapWinsTeam1 = TeamPointsProgression::GetClanMapsWon(1);
-declare MapWinsTeam2 = TeamPointsProgression::GetClanMapsWon(1);
+declare MapWinsTeam2 = TeamPointsProgression::GetClanMapsWon(2);
 if(MapWinsTeam1 >= S_NbMapsToWinMatch || MapWinsTeam2 >= S_NbMapsToWinMatch)
 {
 	declare MessageDuration = S_ChatTime * 1000;

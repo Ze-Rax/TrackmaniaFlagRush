@@ -156,11 +156,6 @@ Text GetManialink() {
 				QuadCenterFlag.Visible = !IsTimeLeft;	
 				QuadCenterFlag.Colorize = GetTeamPrimaryColor(FlagCarrierTeam);
 
-				/* Low Time Color */
-				if (IsTimeLeft && RoundTimeLeft / 1000 < 30) {
-					LabelTimeLimit.TextPrefix = "$f00";
-				}
-
 				/* Flag Carrier */
 				LabelFlagCarrier.TextPrefix = "$" ^ CL::RgbToHex3(GetTeamPrimaryColor(FlagCarrierTeam));
 				LabelFlagCarrier.Value = Net_FlagRush_FlagCarrierName;
@@ -178,6 +173,12 @@ Text GetManialink() {
 						LabelTimeLimit.Value = "Overtime";
 						LabelTimeLimit.Visible = True;
 						QuadCenterFlag.Visible = False;
+					}
+					case {{{GameplayPhase::C_Round}}}: {
+						/* Low Time Color */
+						if (IsTimeLeft && RoundTimeLeft / 1000 < 30) {
+							LabelTimeLimit.TextPrefix = "$f00";
+						}
 					}
 				}
 				

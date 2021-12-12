@@ -15,7 +15,7 @@ declare K_TimeWarnings G_EnabledTimeWarnings;
  * Returns the time until the time limit is reached.
 */
 Integer GetTimeRemaining() {
-	return -(Now - EndTime);
+	return EndTime - Now;
 }
 
 /**

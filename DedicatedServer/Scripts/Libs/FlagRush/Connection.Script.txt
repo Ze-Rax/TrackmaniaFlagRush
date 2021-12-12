@@ -1,0 +1,99 @@
+/** @context CServerPlugin */
+#Include "ServerPlugin/FlagRush/Config.Script.txt" as Config
+
+#Include "TextLib" as TextLib
+#Include "MathLib" as MathLib
+#Include "TimeLib" as TimeLib
+
+#Struct sServerInfo {
+	Text Host;	
+	Integer StatusCode;
+	Text Token;
+	Integer LastUpdate;
+	Boolean IsConnected;
+	Integer UpdateInterval;
+}
+
+#Struct sServerAnswer {
+	Text Token;
+	Integer StatusCode;
+}
+
+declare sServerInfo ServerInfo;
+
+Text[Text] getPayLoad() {
+	return [
+		"name" => ServerAdmin.ServerInfo.ServerName,
+		"login" => ServerAdmin.ServerInfo.ServerLogin,
+		"joinLink" => ServerAdmin.ServerInfo.JoinLink,
+		"playersCount" => "" ^ ServerAdmin.ServerInfo.PlayerCount
+	];
+}
+
+CHttpRequest HttpGet(Text _address) {
+	return Http.CreateGet(_address, False);
+}
+
+CHttpRequest HttpPost(Text _address, Text[Text] _params) {
+	declare helper = _params;
+	if (ServerInfo.Token != "") {
+		helper["token"] = ServerInfo.Token;
+	}
+	
+	declare content = "";	
+	foreach (Key => Param in helper) {
+		content ^= Key ^ "=" ^ Param ^"&";
+	}
+	
+	declare len = TextLib::Length(content)-1;	
+	declare config = Config::Get();
+	return Http.CreatePost(_address, TextLib::SubString(content, 0,len), "authorization: "^TextLib::MLEncode(config.Secret)^"\nContent-Type: application/x-www-form-urlencoded");
+	
+}
+
+Text HttpPostSync(Text _address, Text[Text] _params) {
+	declare CHttpRequest req = HttpPost(_address, _params);	
+	wait(req.IsCompleted);
+	declare output = "";
+	if (req.StatusCode == 200) {
+		ServerInfo.LastUpdate = TextLib::ToInteger(TimeLib::GetCurrent());
+		ServerInfo.IsConnected = True;
+		output = req.Result;
+		Http.Destroy(req);
+		return output;
+	} 
+
+	ServerInfo.IsConnected = False;
+	return output;	
+}
+
+sServerAnswer ConnectServer(Text _address, Text _password, Integer UpdateInterval) {	
+	declare CHttpRequest req = HttpPost(_address^"/server/update", getPayLoad());
+	wait(req.IsCompleted);
+	ServerInfo.Host =_address;
+	ServerInfo.UpdateInterval = UpdateInterval;
+	declare sServerAnswer output = sServerAnswer{StatusCode=req.StatusCode};
+	ServerInfo.LastUpdate = TextLib::ToInteger(TimeLib::GetCurrent());
+
+	if (req.StatusCode == 200) {
+		declare sServerAnswer output;	
+		output.fromjson(req.Result);		
+		ServerInfo.Token = output.Token;		
+		output.StatusCode = req.StatusCode;
+		Http.Destroy(req);	
+		return output;
+	}
+
+	
+	Http.Destroy(req);	
+	return output;
+}
+
+Void SendUpdateRequest() {
+	ServerInfo.LastUpdate = TextLib::ToInteger(TimeLib::GetCurrent());	
+	HttpPostSync(ServerInfo.Host^"/server/update", getPayLoad());
+}
+
+sServerInfo GetInfo() {
+	return ServerInfo;
+}

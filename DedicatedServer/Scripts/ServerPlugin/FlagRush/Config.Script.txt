@@ -1,0 +1,24 @@
+// #RequireContext CServerPlugin
+#Include "Libs/FlagRush/File.Script.txt" as File
+
+#Struct ConfigJson {
+	Text Host;
+	Text Secret;
+}
+
+declare ConfigJson configuration;
+
+/** Initializes the module */
+ConfigJson Init() {
+	declare Text data = File::Read("FlagRush/config.json");
+	if (data == "") {
+		log("MatchMaking didn't find config.");
+		log("Did you remember to copy config.default.json to config.json ?");
+	}
+	configuration.fromjson(data);
+	return configuration;
+}
+
+ConfigJson Get() {
+	return configuration;
+}

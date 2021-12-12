@@ -1,0 +1,46 @@
+#RequireContext CServerPlugin
+#Include "TimeLib" as TimeLib
+#Include "TextLib" as TextLib
+#Include "ServerPlugin/FlagRush/Config.Script.txt" as Config
+#Include "Libs/FlagRush/Connection.Script.txt" as Connection
+
+#Struct Config::ConfigJson as ConfigJson
+#Struct Connection::sServerInfo as sServerInfo
+#Const C_UpdateInterval 60
+
+Void do_nothing() {}
+
+main() {
+	declare Boolean initialStartDone = False;    
+	declare ConfigJson config = Config::Init();	
+	log("starting...");
+	
+	while (True) {   
+		yield;
+		declare sServerInfo ServerInfo = Connection::GetInfo();
+		
+		if (initialStartDone == False && MapLoaded) {
+			initialStartDone = True;
+			log("""Connecting to backend...""");
+			Connection::ConnectServer(config.Host, config.Secret, C_UpdateInterval);
+		}
+		
+		if (ServerInfo.LastUpdate > 0 && TextLib::ToInteger(TimeLib::GetCurrent()) > ServerInfo.LastUpdate + C_UpdateInterval) {					
+			log("""Sending ping to matchmaking server after {{{C_UpdateInterval}}} seconds.""");
+			Connection::SendUpdateRequest();
+			continue;
+		}
+
+
+		foreach(Event in PendingEvents) {
+			switch (Event.Type) {
+				case CServerPluginEvent::EType::ClientConnected: {
+					if (ServerInfo.IsConnected) Connection::SendUpdateRequest();
+				}
+				case CServerPluginEvent::EType::ClientDisconnected: {
+					if (ServerInfo.IsConnected) Connection::SendUpdateRequest();
+				}
+			}
+		}		
+	}
+}

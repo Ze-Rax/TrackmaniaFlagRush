@@ -24,6 +24,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"					as FlagState
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as MatchEvaluation
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_TimeWarnings.Script.txt"			as TimeWarnings
 
 /* UI */
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI.Script.txt"			as FlagRush_UI
@@ -197,6 +198,7 @@ FlagRush_Common::Log("Start Map");
 Users_SetNbFakeUsers(C_Debug_NbFakeUsers.X, C_Debug_NbFakeUsers.Y);
 
 FlagRush_UI::UpdateScores();
+TimeWarnings::EnableAll();
 
 EventFeed::SendMessage("Map Start", "info");
 MB_Sleep(5000);
@@ -222,6 +224,7 @@ FlagRush_UI::UpdateDossards();
 FlagRush_Common::Log("Start Round");
 
 FlagRush_UI::UpdateScores();
+TimeWarnings::EnableWithTimelimit(S_RoundTimeLimitSeconds);
 
 declare Text Message = "Round Start";
 EventFeed::SendMessage(Message, "info");
@@ -410,6 +413,7 @@ HandleEvents();
 HandleCommands();
 HandleModeSettingsUpdate();
 
+TimeWarnings::Show();
 CheckRoundEndConditions();
 
 if(G_PauseRequested) {
@@ -1152,6 +1156,7 @@ Void ExecWarmUp() {
 		HandleWarmUpEvents();
 		HandleCommands();
 		HandleModeSettingsUpdate();
+		TimeWarnings::Show();
 	}
 	
 	// End WarmUp

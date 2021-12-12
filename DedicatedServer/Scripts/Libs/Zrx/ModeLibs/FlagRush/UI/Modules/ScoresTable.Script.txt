@@ -173,6 +173,8 @@ Text GetManialink(Integer _PlayersPerPage) {
 	#Include "TextLib" as TL
 	#Include "MathLib" as ML
 	#Include "ColorLib" as CL
+	
+	#Const C_UpdateInterval 100
 
 	// ------------------------------ //
 	// Global Variables
@@ -500,8 +502,13 @@ Text GetManialink(Integer _PlayersPerPage) {
 	main() {		
 		Init();
 		
+		declare Integer LastUpdate = -1;
+		
 		while(True) {
 			yield;
+			
+			if(Now - LastUpdate < C_UpdateInterval) continue;
+			LastUpdate = Now;
 
 			UpdateTeamNamesAndColors();		
 			UpdateTeamScores();

@@ -156,6 +156,11 @@ Text GetManialink() {
 				QuadCenterFlag.Visible = !IsTimeLeft;	
 				QuadCenterFlag.Colorize = GetTeamPrimaryColor(FlagCarrierTeam);
 
+				/* Low Time Color */
+				if (IsTimeLeft && RoundTimeLeft / 1000 < 30) {
+					LabelTimeLimit.TextPrefix = "$f00";
+				}
+
 				/* Flag Carrier */
 				LabelFlagCarrier.TextPrefix = "$" ^ CL::RgbToHex3(GetTeamPrimaryColor(FlagCarrierTeam));
 				LabelFlagCarrier.Value = Net_FlagRush_FlagCarrierName;

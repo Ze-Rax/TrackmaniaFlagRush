@@ -1018,6 +1018,7 @@ Void HandleEvents() {
 			if (Player == CarrierPlayer) continue;
 			if (Hitbox::AreTouching(CarrierPlayer, Player)) {
 				StealFlag(Player);
+				break;
 			}
 		}
 	}

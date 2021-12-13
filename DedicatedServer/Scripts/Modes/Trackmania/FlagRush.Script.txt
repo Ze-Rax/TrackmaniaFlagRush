@@ -1003,12 +1003,12 @@ Void HandleEvents() {
 	}
 	
 	// Collision detection using CylinderHitbox (based on Dommy's Lib)
-	foreach (Event in Collision::GetPendingEvents()) {
-		if (FlagState::Get().PickupableDate < Now) {
-			if (Event.Player1.CurrentClan != Event.Player2.CurrentClan || S_FlagSameTeamSteal) {
-				declare FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
-				if (FlagCarrierPlayer == Event.Player1) StealFlag(Event.Player2, Event.Player1);
-				else if (FlagCarrierPlayer == Event.Player2) StealFlag(Event.Player1, Event.Player2);
+	if (FlagState::Get().Carrier != Null && FlagState::Get().PickupableDate < Now) {
+		declare CSmPlayer CarrierPlayer = FlagState::GetFlagCarrierPlayer();
+		foreach (Player in Players) {
+			if (Player == CarrierPlayer) continue;
+			if (Hitbox::AreTouching(CarrierPlayer, Player)) {
+				StealFlag(Player, CarrierPlayer);
 			}
 		}
 	}

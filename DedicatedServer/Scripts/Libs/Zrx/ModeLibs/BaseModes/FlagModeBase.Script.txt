@@ -8,7 +8,6 @@
 // Includes //
 //////////////
 
-#Include "Libs/Zrx/ModeLibs/Common/Collision/Collision.Script.txt" as Collision
 #Include "Libs/Zrx/ModeLibs/Common/PlayerTelemetry.Script.txt" as Telemetry
 
 ///////////
@@ -43,11 +42,6 @@ Telemetry::StartMatch();
 ***MB_Private_AfterEndMatch***
 ***
 Telemetry::EndMatch();
-***
-
-***MB_Private_Yield***
-***
-Collision::Yield();
 ***
 
 // Empty dummy function because for some reason the compiler else throws an "Unexpected EOF" error

@@ -26,7 +26,7 @@
 #Const C_LayerName_Markers				"Layer_FlagRush_Markers"
 #Const C_LayerName_Feed						"Layer_FlagRush_Feed"
 #Const C_LayerName_Flash					"Layer_FlagRush_Flash"
-#Const	C_LayerName_Spectator			"Layer_FlagRush_Spectator"
+#Const C_LayerName_Spectator			"Layer_FlagRush_Spectator"
 #Const C_LayerName_ModeCommands		"Layer_ModeCommands"
 
 #Const C_FlagCarrierName_Dropped 	"Dropped"

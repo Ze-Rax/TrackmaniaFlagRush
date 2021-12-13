@@ -507,14 +507,15 @@ Text GetManialink(Integer _PlayersPerPage) {
 		while(True) {
 			yield;
 			
+			HandleEvents();
+
 			if(Now - LastUpdate < C_UpdateInterval) continue;
 			LastUpdate = Now;
-
 			UpdateTeamNamesAndColors();		
 			UpdateTeamScores();
 			UpdateCurrentPage();
 			UpdateFooter();
-			HandleEvents();
+			
 		}
 	}
 	--></script>

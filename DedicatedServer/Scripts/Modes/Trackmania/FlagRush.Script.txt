@@ -52,6 +52,7 @@
 
 // Match progression
 #Setting S_UseWarmUp												True		as "Use warm up"
+#Setting S_UseCollisions										False		as "Use collisions (experimental)"
 
 #Setting S_NbMapsToWinMatch									1 			as "Number of maps to win a match"
 #Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"
@@ -127,6 +128,7 @@ declare Text G_LastSettings_Team1ForcedColor;
 declare Text G_LastSettings_Team2ForcedName;
 declare Text G_LastSettings_Team2ForcedColor;
 declare Boolean G_LastSettings_UseClubTags;
+declare Boolean G_LastSettings_UseCollisions;
 
 ///////////
 // Plugs //
@@ -140,7 +142,7 @@ FlagRush_Debug = C_Debug;
 
 Race::UseCppRaceProgression(False);						// To make it possible to trigger checkpoints multiple times
 UsePvECollisions = True;											// To force player visibility
-UsePvPCollisions = False;
+UsePvPCollisions = S_UseCollisions;
 UseClans = True;															// 2 Clans -> Player.CurrentClan = 1 or 2, but refers to Teams[0 or 1]
 MB_Settings_UseDefaultHud = False;
 MB_Settings_UseDefaultPodiumSequence = False;
@@ -848,7 +850,7 @@ Void UpdateCriticalSettings() {
 	G_LastSettings_NbRoundsToWinMap = S_NbRoundsToWinMap;
 
 	G_LastSettings_UseReversedBases = S_UseReversedBases;
-
+	G_LastSettings_UseCollisions = S_UseCollisions;
 	G_LastSettings_Team1ForcedName = S_Team1Name;
 	G_LastSettings_Team1ForcedColor = S_Team1Color;
 	G_LastSettings_Team2ForcedName = S_Team2Name;
@@ -868,7 +870,13 @@ Void HandleModeSettingsUpdate() {
 		FlagRush_UI::UpdateModeSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap);
 	}
 	
-	declare Boolean NeedsRestartTurn = G_LastSettings_UseReversedBases != S_UseReversedBases;
+	if (G_LastSettings_UseCollisions != S_UseCollisions) {
+		UsePvPCollisions = S_UseCollisions;
+
+	}
+	
+	declare Boolean NeedsRestartTurn = (G_LastSettings_UseReversedBases != S_UseReversedBases) ||
+																		 (G_LastSettings_UseCollisions != S_UseCollisions);
 	if(NeedsRestartTurn) if(MB_TurnIsRunning()) MB_StopTurn();
 	
 	declare Boolean NeedsReinitTeamConfigs =

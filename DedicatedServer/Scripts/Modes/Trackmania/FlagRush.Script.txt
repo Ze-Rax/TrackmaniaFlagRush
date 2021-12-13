@@ -42,6 +42,7 @@
 #Const	C_FlagHitbox_Diameter					6.
 #Const	C_FlagHitbox_Height						4.
 #Const 	C_RespawnSpeedLimitKmh 				30.
+#Const	C_FlagPostStealDelay					1000
 
 #Const  C_Debug 											False
 #Const	C_Debug_NbFakeUsers						<0, 0>
@@ -67,7 +68,6 @@
 #Setting S_FlagInitialSpawnDelaySeconds			0. 			as "<hidden>" // Initial flag spawn delay (seconds)
 #Setting S_FlagRespawnDelaySeconds					0. 			as "<hidden>" // Flag respawn delay (seconds)
 #Setting S_FlagDropStateDurationSeconds			8. 			as "Flag drop state duration (seconds)"
-#Setting S_FlagStealResistDurationSeconds		1. 			as "<hidden>" // Flag steal resistance (seconds)
 #Setting S_FlagSameTeamSteal								True		as "Team flag steal"
 #Setting S_FlagCarrierFragile								True		as "Flag carrier becomes fragile"
 #Setting S_FlagCarrierAcceleration					0.7 		as "Flag carrier acceleration (0.0 - 1.0)"
@@ -669,7 +669,7 @@ Void SetFlagCarrier(CSmPlayer Player) {
 	EventFeed::SendMessage(Message, "flag", Color);
 	
 	// Update the flag carrier
-	SetFlagPosition(Player, Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
+	SetFlagPosition(Player, Now);
 	
 	// Apply handicaps
 	ApplyHandicaps(Player);
@@ -746,10 +746,17 @@ Void ScoreFlag(CSmPlayer Player) {
 Void StealFlag(CSmPlayer NewCarrier) {
 	declare CSmPlayer OldCarrier = FlagState::GetFlagCarrierPlayer();
 	if (NewCarrier == Null || OldCarrier == Null) return;
-	
-	declare FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
-	
-	if (FlagCarrierPlayer != OldCarrier) return;
+
+	{
+		declare Integer FlagRush_LastFlagStolenDate for NewCarrier;
+		if (Now - FlagRush_LastFlagStolenDate < C_FlagPostStealDelay) return;
+	}
+
+	{
+		declare Integer FlagRush_LastFlagStolenDate for OldCarrier;
+		FlagRush_LastFlagStolenDate = Now;
+	}
+
 	FlagRush_Common::Log("""{{{NewCarrier.User.Name}}} stole the flag from {{{OldCarrier.User.Name}}}!""");
 	
 	if (NewCarrier.CurrentClan != OldCarrier.CurrentClan) {
@@ -1012,7 +1019,7 @@ Void HandleEvents() {
 	}
 	
 	// Collision detection using CylinderHitbox (based on Dommy's Lib)
-	if (FlagState::Get().Carrier != Null && FlagState::Get().PickupableDate < Now) {
+	if (FlagState::Get().Carrier != Null) {
 		declare CSmPlayer CarrierPlayer = FlagState::GetFlagCarrierPlayer();
 		foreach (Player in Players) {
 			if (Player == CarrierPlayer) continue;

@@ -741,7 +741,8 @@ Void ScoreFlag(CSmPlayer Player) {
 /**
  * Handles what happen if a player steals the flag of another player
  */
-Void StealFlag(CSmPlayer NewCarrier, CSmPlayer OldCarrier) {
+Void StealFlag(CSmPlayer NewCarrier) {
+	declare CSmPlayer OldCarrier = FlagState::GetFlagCarrierPlayer();
 	if (NewCarrier == Null || OldCarrier == Null) return;
 	
 	declare FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
@@ -1008,7 +1009,7 @@ Void HandleEvents() {
 		foreach (Player in Players) {
 			if (Player == CarrierPlayer) continue;
 			if (Hitbox::AreTouching(CarrierPlayer, Player)) {
-				StealFlag(Player, CarrierPlayer);
+				StealFlag(Player);
 			}
 		}
 	}

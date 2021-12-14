@@ -501,6 +501,10 @@ Void CheckRoundEndConditions() {
 					EventFeed::SendMessage(Message, "info");
 					UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
 				} else {
+					// Round ends due to time out
+					declare Text Message = "Time is up!";
+					UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::VictoryPoint, 0);
+					EventFeed::SendMessage(Message, "chrono");
 					MB_StopRound();
 				}
 			}

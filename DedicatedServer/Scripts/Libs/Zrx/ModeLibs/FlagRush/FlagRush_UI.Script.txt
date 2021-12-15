@@ -20,6 +20,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Spectator.Script.txt"					as FlagRush_UISpectator
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Respawn.Script.txt"						as FlagRush_UIRespawn
 
 #Const C_LayerName_ScoresTable		"Layer_FlagRush_ScoresTable"
 #Const C_LayerName_ScoresHeader		"Layer_FlagRush_ScoresHeader"
@@ -28,6 +29,7 @@
 #Const C_LayerName_Feed						"Layer_FlagRush_Feed"
 #Const C_LayerName_Flash					"Layer_FlagRush_Flash"
 #Const C_LayerName_Spectator			"Layer_FlagRush_Spectator"
+#Const C_LayerName_Respawn				"Layer_FlagRush_Respawn"
 #Const C_LayerName_ModeCommands		"Layer_ModeCommands"
 #Const C_LayerName_Radar					"Layer_Radar"
 
@@ -190,6 +192,11 @@ Void Init() {
 	Layers::Create(C_LayerName_Spectator, FlagRush_UISpectator::GetManialink());
 	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Spectator);
+
+	// Respawn Bar
+	Layers::Create(C_LayerName_Respawn, FlagRush_UIRespawn::GetManialink());
+	Layers::SetType(C_LayerName_Respawn, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Respawn);
 	
 	// Markers
 	InitMarkers();

@@ -36,7 +36,7 @@
 #Const	Version												"1.0.0"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
-#Const	C_SpawnAnimDuration						2000
+#Const	C_SpawnAnimDuration						1500
 #Const	C_BigMessage_Duration					3000
 
 #Const	C_FlagHitbox_Diameter					6.
@@ -794,20 +794,20 @@ Void FlagRush_UnspawnPlayers() {
 Void SpawnPlayers() {
 	foreach (Player in Players) {
 		if (Player.Armor <= 0) {		// If Player has no armor, unspawn first (for example Offzone hit)
+			declare netwrite Integer Net_SpawnDate for Player;
+			Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
 			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null
 		}
 		
 		// Spawn unspawned players
-		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
-			declare CMapSpawn Spawn = FlagRush_Map::GetSpawn(Player).PlayerSpawn;
-			if (Spawn != Null) {
-				declare Integer SpawnDate for Player;
-				InitPlayer(Player);
-				if (SpawnDate <= Now) {
-					SpawnPlayer(Player, Player.CurrentClan, 1, Spawn, Now + 2000);
-					FlagRush_UI::UpdateDossard(Player);
-					SpawnDate = 0;
-				}
+		declare netwrite Integer Net_SpawnDate for Player;
+		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && Net_SpawnDate <= Now) {
+			InitPlayer(Player);
+			declare CMapLandmark SpawnLandmark = FlagRush_Map::GetSpawn(Player);
+			if (SpawnLandmark != Null) {
+				SpawnPlayer(Player, Player.CurrentClan, 1, SpawnLandmark.PlayerSpawn, Now + C_SpawnAnimDuration);
+				FlagRush_UI::UpdateDossard(Player);
+				Net_SpawnDate = 0;
 			}
 		}
 	}
@@ -983,17 +983,17 @@ Void HandleEvents() {
 					DropFlag();
 					declare Integer FlagRush_LastFlagDropDate for FlagCarrierPlayer;
 					FlagRush_LastFlagDropDate = Now;
-				} else {
-					declare Integer SpawnDate for Event.Player;
+				} else {					
+					declare netwrite Integer Net_SpawnDate for Event.Player;
 					if (S_RespawnWhenStill) {
 						if (Event.Player.Speed < C_RespawnSpeedLimitKmh / 3.6) {
-							SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+							Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
 							FlagRush_UnspawnPlayer(Event.Player);
 						} else {
 							FlagRush_UIFlash::FlashRespawn(Event.Player);
 						}
 					} else {
-						SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+						Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
 						FlagRush_UnspawnPlayer(Event.Player);
 					}
 				}
@@ -1020,13 +1020,17 @@ Void HandleEvents() {
 	// Collision detection using CylinderHitbox (based on Dommy's Lib)
 	if (FlagState::Get().Carrier != Null && FlagState::Get().PickupableDate < Now) {
 		declare CSmPlayer CarrierPlayer = FlagState::GetFlagCarrierPlayer();
+		declare CSmPlayer FlagStealer;
 		foreach (Player in Players) {
 			if (Player == CarrierPlayer) continue;
 			if (Hitbox::AreTouching(CarrierPlayer, Player)) {
-				StealFlag(Player);
-				break;
+				if(Player.CurrentClan != CarrierPlayer.CurrentClan || FlagStealer == Null) {
+					FlagStealer = Player;
+					if (Player.CurrentClan != CarrierPlayer.CurrentClan) break;
+				}
 			}
 		}
+		if (FlagStealer != Null) StealFlag(FlagStealer);
 	}
 
 	// XmlRpc

@@ -104,7 +104,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 	n times player-card-team1 (Frameinstance)
 	n times player-card-team2 (Frameinstance)
 	-->
-	<frame id="scorestable-main" scale="1.4" pos="0 43" valign="bottom">
+	<frame id="scorestable-main" scale="1.4" pos="0 43" valign="bottom" z-index="100">
 		<frame id="body" pos="0 0">
 			<frame id="header">
 				<frame id="logo" pos="0 -4" size="280 15" scale="0.5" valign="center" halign="center" z-index="-1">

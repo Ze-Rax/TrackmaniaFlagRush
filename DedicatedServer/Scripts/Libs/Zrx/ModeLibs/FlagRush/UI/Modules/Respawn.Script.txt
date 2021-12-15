@@ -5,7 +5,7 @@ Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_RespawnUI">
-		<frame pos="-40 -50" id="rs-frame">
+		<frame pos="-40 -50" id="rs-frame" hidden="1">
 			<label pos="40 -5" z-index="2" size="80 6" text="" halign="center" style="TextCardSmall" textsize="3" valign="center2" id="rs-label" textcolor="fff"/>
 			<frame id="rs-gauge-frame" size="80 10">
 				<quad pos="0 0" z-index="1" size="80 10" id="rs-gauge" style="UICommon64_1" substyle="BgFrame1" colorize="004" opacity="0.7"/>
@@ -23,7 +23,8 @@ Text GetManialink() {
 		declare CMlLabel RespawnLabel = (Page.GetFirstChild("rs-label") as CMlLabel);
 		declare CMlQuad  RespawnQuad = (Page.GetFirstChild("rs-gauge") as CMlQuad);
 		
-		
+		wait(InputPlayer != Null);
+
 		declare netread Integer Net_SpawnDate for InputPlayer;
 		declare Integer TotalRespawnTime = -1;
 		while (True) {
@@ -43,7 +44,10 @@ Text GetManialink() {
 			}
 			
 			GaugeFrame.Size.X = ML::Clamp(80. * Ratio, 0., 80.);
-			RespawnQuad.Colorize = GetTeamPrimaryColor(Teams[InputPlayer.CurrentClan-1]) * 0.5;			
+			declare Integer teamId = InputPlayer.CurrentClan-1;
+			if (Teams.existskey(teamId)) {
+				RespawnQuad.Colorize = GetTeamPrimaryColor(Teams[teamId]) * 0.5;			
+			}					
 			RespawnLabel.SetText("Respawning in " ^ (SecondsRemaining + 1) ^ "...");
 			
 		}

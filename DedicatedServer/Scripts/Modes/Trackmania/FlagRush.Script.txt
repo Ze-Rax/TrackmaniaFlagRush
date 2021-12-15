@@ -130,6 +130,8 @@ declare Text G_LastSettings_Team2ForcedColor;
 declare Boolean G_LastSettings_UseClubTags;
 declare Boolean G_LastSettings_UseCollisions;
 
+declare Integer G_LastSpectatorsCount;
+
 ///////////
 // Plugs //
 ///////////
@@ -949,14 +951,11 @@ Boolean Valid(CSmModeEvent Event) {
  */
 Void HandleEvents() {
 	// Standard game events
-	foreach(Event in PendingEvents) {		
+	foreach(Event in PendingEvents) {
 		if (!Valid(Event)) continue;
 
-		declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();		
+		declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
 		switch(Event.Type) {
-			case CSmModeEvent::EType::OnPlayerAdded: {
-				SendWelcomeMessage(Event.Player);				
-			}
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				if (Event.Landmark == FlagState::Get().Landmark) {
 					if (Event.Player != Null && FlagCarrierPlayer == Null && Now > FlagState::Get().PickupableDate) {
@@ -1001,8 +1000,10 @@ Void HandleEvents() {
 			}
 			
 			case CSmModeEvent::EType::OnPlayerAdded: {
+				SendWelcomeMessage(Event.Player);
 				FlagRush_Teams::Init();
 				FlagRush_UI::UpdateDossards();
+				FlagRush_UI::InitRadar();
 			}
 
 			case CSmModeEvent::EType::OnPlayerRemoved: {
@@ -1011,6 +1012,7 @@ Void HandleEvents() {
 				if(FlagState::Get().Carrier == Event.User) DropFlag();
 				FlagRush_Teams::Init();
 				FlagRush_UI::UpdateDossards();
+				FlagRush_UI::InitRadar();
 			}
 		}
 	}
@@ -1044,6 +1046,13 @@ Void HandleEvents() {
 			}
 		}
 	}
+	
+	// Spectator count change
+	if (Spectators.count != G_LastSpectatorsCount) {
+		FlagRush_UI::InitRadar();		
+	}
+	
+	G_LastSpectatorsCount = Spectators.count;
 }
 
 /**
@@ -1105,18 +1114,18 @@ Void HandleCommands() {
 		
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerAdded: {
-				SendWelcomeMessage(Event.Player);				
+				InitPlayer(Event.Player);
+				SendWelcomeMessage(Event.Player);
+				FlagRush_UI::InitRadar();
 			}
-			case CSmModeEvent::EType::OnPlayerRequestRespawn:
-			{
+			case CSmModeEvent::EType::OnPlayerRemoved: {
+				FlagRush_UI::InitRadar();
+			}
+			case CSmModeEvent::EType::OnPlayerRequestRespawn: {
 				declare CSmPlayer EventPlayer = Event.Player;
 				// Need a second variable to prevent a runtime exception
 				// where PendingEvents[X] becomes Null
 				UnspawnPlayer(EventPlayer); 
-			}
-			case CSmModeEvent::EType::OnPlayerAdded:
-			{
-				InitPlayer(Event.Player);
 			}
 		}
 	}

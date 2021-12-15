@@ -792,15 +792,16 @@ Void FlagRush_UnspawnPlayers() {
 Void SpawnPlayers() {
 	foreach (Player in Players) {
 		if (Player.Armor <= 0) {		// If Player has no armor, unspawn first (for example Offzone hit)
+			declare netwrite Integer Net_SpawnDate for Player;
+			Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
 			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null
 		}
 		
 		// Spawn unspawned players
 		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
 			declare CMapSpawn Spawn = FlagRush_Map::GetSpawn(Player).PlayerSpawn;
-			if (Spawn != Null) {
-				declare CUIConfig PlayerUI = UIManager.GetUI(Player);
-				declare netwrite Integer Net_SpawnDate for PlayerUI;
+			if (Spawn != Null) {				
+				declare netwrite Integer Net_SpawnDate for Player;
 				InitPlayer(Player);
 				if (Net_SpawnDate <= Now) {
 					SpawnPlayer(Player, Player.CurrentClan, 1, Spawn, Now + 2000);
@@ -985,9 +986,8 @@ Void HandleEvents() {
 					DropFlag();
 					declare Integer FlagRush_LastFlagDropDate for FlagCarrierPlayer;
 					FlagRush_LastFlagDropDate = Now;
-				} else {
-					declare CUIConfig PlayerUI = UIManager.GetUI(Event.Player);
-					declare netwrite Integer Net_SpawnDate for PlayerUI;
+				} else {					
+					declare netwrite Integer Net_SpawnDate for Event.Player;
 					if (S_RespawnWhenStill) {
 						if (Event.Player.Speed < C_RespawnSpeedLimitKmh / 3.6) {
 							Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);

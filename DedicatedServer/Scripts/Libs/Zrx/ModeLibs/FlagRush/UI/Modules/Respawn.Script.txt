@@ -24,7 +24,7 @@ Text GetManialink() {
 		declare CMlQuad  RespawnQuad = (Page.GetFirstChild("rs-gauge") as CMlQuad);
 		
 		
-		declare netread Integer Net_SpawnDate for UI;
+		declare netread Integer Net_SpawnDate for InputPlayer;
 		declare Integer TotalRespawnTime = -1;
 		while (True) {
 			yield;			

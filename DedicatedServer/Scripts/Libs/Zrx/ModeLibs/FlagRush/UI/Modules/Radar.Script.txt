@@ -77,7 +77,7 @@ Text GetManialink() {
 				declare Frame <=> (Minimap.GetFirstChild(C_MarkerFrameIds[MarkerId]) as CMlFrame);
 				declare QuadIcon <=> (Frame.GetFirstChild("Icon") as CMlQuad);
 
-				declare netwrite Vec3 Net_FlagRush_PrimaryColor for Teams[_Player.CurrentClan-1];
+				declare netread Vec3 Net_FlagRush_PrimaryColor for Teams[_Player.CurrentClan-1];
 				QuadIcon.Colorize = Net_FlagRush_PrimaryColor;
 
 				declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
@@ -110,7 +110,7 @@ Text GetManialink() {
 		if(GUIPlayer != Null) {
 			if(GUIPlayer.CurrentClan > 0) {
 				declare CMlQuad RadarBorder = (Page.GetFirstChild("radar-border") as CMlQuad);
-				declare netwrite Vec3 Net_FlagRush_PrimaryColor for Teams[GUIPlayer.CurrentClan-1];
+				declare netread Vec3 Net_FlagRush_PrimaryColor for Teams[GUIPlayer.CurrentClan-1];
 				RadarBorder.ModulateColor = Net_FlagRush_PrimaryColor;
 			}
 		}

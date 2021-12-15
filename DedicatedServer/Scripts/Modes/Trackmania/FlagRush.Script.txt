@@ -530,6 +530,7 @@ Void CheckRoundEndConditions() {
 Void InitPlayer(CSmPlayer Player) {
 	Player.TrustClientSimu = True;
 	Player.UseCrudeExtrapolation = False;
+	Player.Armor = 1;
 	declare Integer PreviousClan for Player;
 	
 	SetPlayerClan(Player, Player.RequestedClan);
@@ -796,7 +797,7 @@ Void SpawnPlayers() {
 		if (Player.Armor <= 0) {		// If Player has no armor, unspawn first (for example Offzone hit)
 			declare netwrite Integer Net_SpawnDate for Player;
 			Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
-			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null
+			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null			
 		}
 		
 		// Spawn unspawned players

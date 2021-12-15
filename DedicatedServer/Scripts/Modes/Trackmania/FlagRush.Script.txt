@@ -36,7 +36,7 @@
 #Const	Version												"1.0.0"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
-#Const	C_SpawnAnimDuration						2000
+#Const	C_SpawnAnimDuration						1500
 #Const	C_BigMessage_Duration					3000
 
 #Const	C_FlagHitbox_Diameter					6.
@@ -796,16 +796,14 @@ Void SpawnPlayers() {
 		}
 		
 		// Spawn unspawned players
-		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
-			declare CMapSpawn Spawn = FlagRush_Map::GetSpawn(Player).PlayerSpawn;
-			if (Spawn != Null) {
-				declare Integer SpawnDate for Player;
-				InitPlayer(Player);
-				if (SpawnDate <= Now) {
-					SpawnPlayer(Player, Player.CurrentClan, 1, Spawn, Now + 2000);
-					FlagRush_UI::UpdateDossard(Player);
-					SpawnDate = 0;
-				}
+		declare Integer SpawnDate for Player;
+		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && SpawnDate <= Now) {
+			InitPlayer(Player);
+			declare CMapLandmark SpawnLandmark = FlagRush_Map::GetSpawn(Player);
+			if (SpawnLandmark != Null) {
+				SpawnPlayer(Player, Player.CurrentClan, 1, SpawnLandmark.PlayerSpawn, Now + C_SpawnAnimDuration);
+				FlagRush_UI::UpdateDossard(Player);
+				SpawnDate = 0;
 			}
 		}
 	}

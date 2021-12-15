@@ -791,6 +791,7 @@ Void FlagRush_UnspawnPlayers() {
  */
 Void SpawnPlayers() {
 	foreach (Player in Players) {
+		log("Player armor:" ^ Player.Armor);
 		if (Player.Armor <= 0) {		// If Player has no armor, unspawn first (for example Offzone hit)
 			declare netwrite Integer Net_SpawnDate for Player;
 			Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
@@ -975,7 +976,8 @@ Void HandleEvents() {
 						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
 					}
 				} else if (FlagRush_Map::IsResetFlagTrigger(Event.Landmark)) {
-					Event.Player.Armor = 0;
+					
+					Entity_RemoveArmor (Event.Player, 500, Null, 0);
 				}
 			}
 			

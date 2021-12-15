@@ -974,6 +974,8 @@ Void HandleEvents() {
 					} else {
 						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
 					}
+				} else if (FlagRush_Map::IsResetFlagTrigger(Event.Landmark)) {
+					Event.Player.Armor = 0;
 				}
 			}
 			

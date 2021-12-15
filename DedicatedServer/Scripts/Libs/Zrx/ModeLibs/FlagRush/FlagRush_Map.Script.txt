@@ -7,6 +7,7 @@
 #Const C_LandmarkTag_BaseTeam2				"BaseTeam2"
 #Const C_LandmarkTag_FlagSpawn				"FlagSpawn"
 #Const C_LandmarkTag_DefaultFlagSpawn	"DefaultFlagSpawn"
+#Const C_LandmarkTag_FlagReset				"FlagReset"
 
 declare CMapLandmark						G_DefaultFlagSpawn;
 declare CMapLandmark[]					G_FlagSpawns;
@@ -54,6 +55,13 @@ CMapLandmark[] GetBases(Integer Clan) {
 CMapLandmark GetRandomFlagSpawn() {
 	declare Integer RandomIndex = ML::Rand(0, G_FlagSpawns.count - 1);
 	return G_FlagSpawns[RandomIndex];
+}
+
+/**
+ * Checks whether a landmark is a flag reset trigger.
+ */
+Boolean IsResetFlagTrigger(CMapLandmark Landmark) {
+	return Landmark.Tag == C_LandmarkTag_FlagReset;
 }
 
 /**

@@ -794,10 +794,11 @@ Void FlagRush_UnspawnPlayers() {
  */
 Void SpawnPlayers() {
 	foreach (Player in Players) {
-		log("Player armor:" ^ Player.Armor);
 		if (Player.Armor <= 0) {		// If Player has no armor, unspawn first (for example Offzone hit)
-			declare netwrite Integer Net_SpawnDate for Player;
-			Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+			if(GameplayPhase::Get() != GameplayPhase::C_Warmup) {
+				declare netwrite Integer Net_SpawnDate for Player;
+				Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+			}
 			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null			
 		}
 		
@@ -930,6 +931,36 @@ Void UpdateSpectators() {
 	}
 }
 
+/**
+ * Unspawns the player and resets the flag if player is flag carrier.
+ */
+Void OnPlayerDeath(CSmPlayer Player) {
+	// Display a Message
+	declare CTeam Team;
+	declare Text ColorText = "";
+	if (Teams.existskey(Player.CurrentClan - 1)) {
+		Team <=> Teams[Player.CurrentClan - 1];
+		declare Vec3 ColorPrimaryUI for Team = FlagRush_Teams::C_DefaultNeutralColor;
+		ColorText = "$" ^ CL::RgbToHex3(ColorPrimaryUI);
+	}
+	declare Text Message = """{{{ColorText}}}{{{Player.User.Name}}}$g went out of bounds!""";
+	EventFeed::SendMessage(Message, "info");
+
+	// Play a Sound for the dead player
+	declare CUIConfig UI = UIManager.GetUI(Player);
+	if(UI != Null) UI.QueueMessage(2000, 1, CUIConfig::EMessageDisplay::Small, "", CUIConfig::EUISound::Capture, 1);
+
+	// Reset Flag and Unspawn
+	if(Player == FlagState::GetFlagCarrierPlayer()) ResetFlag();
+	UnspawnPlayer(Player);
+
+	// No respawn timer in warmup
+	if(GameplayPhase::Get() != GameplayPhase::C_Warmup) {
+		declare netwrite Integer Net_SpawnDate for Player;
+		Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+	}
+}
+
 // --------------------------------------------------
 // Event Handling
 // --------------------------------------------------
@@ -976,8 +1007,7 @@ Void HandleEvents() {
 						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
 					}
 				} else if (FlagRush_Map::IsResetFlagTrigger(Event.Landmark)) {
-					
-					Entity_RemoveArmor (Event.Player, 500, Null, 0);
+					OnPlayerDeath(Event.Player);
 				}
 			}
 			
@@ -1131,6 +1161,11 @@ Void HandleCommands() {
 				// Need a second variable to prevent a runtime exception
 				// where PendingEvents[X] becomes Null
 				UnspawnPlayer(EventPlayer); 
+			}
+			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
+				if(FlagRush_Map::IsResetFlagTrigger(Event.Landmark)) {
+					OnPlayerDeath(Event.Player);
+				}
 			}
 		}
 	}

@@ -1,0 +1,48 @@
+//#RequireContext CMlScriptIngame
+
+Text GetManialink() {
+	return """
+	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3" name="FlagRush_RespawnUI">
+		<frame pos="-40 -50" id="rs-frame">
+			<label pos="40 -5" z-index="0" size="80 6" text="" halign="center" style="TextCardSmall" textsize="3" valign="center2" id="rs-label"/>
+			<gauge pos="0 0" z-index="0" size="80 10" style="BgCard" ratio="1" id="rs-gauge"/>
+		</frame>
+
+	<script><!--
+	#Include "MathLib" as ML
+
+	declare CMlFrame RespawnFrame = (Page.GetFirstChild("rs-frame") as CMlFrame);
+	declare CMlLabel RespawnLabel = (Page.GetFirstChild("rs-label") as CMlLabel);
+	declare CMlGauge RespawnGauge = (Page.GetFirstChild("rs-gauge") as CMlGauge);
+
+	declare netread Integer Net_SpawnDate for UI;
+	declare Integer TotalRespawnTime = -1;
+	while (True) {
+		yield;
+
+		if (Net_SpawnDate <= 0 || IsSpectator) {
+			RespawnFrame.Visible = False;
+			continue;
+		}
+
+		RespawnFrame.Visible = True;
+		declare Integer MillisRemaining = Net_SpawnDate - GameTime;
+		declare Integer SecondsRemaining = MillisRemaining / 1000 + 1;
+
+		if (TotalRespawnTime <= 0) {
+			TotalRespawnTime = MillisRemaining;
+		}
+		declare Real Ratio = ML::NearestReal(MillisRemaining) / TotalRespawnTime;
+
+		RespawnLabel.SetText("Respawning in " ^ SecondsRemaining ^ "...");
+
+		// Avoid an out of bounds exception
+		if (Ratio >= 0 && Ratio <= 1) {
+			RespawnGauge.Ratio = Ratio;
+		}
+	}
+	--></script>
+	</manialink>
+	""";
+}

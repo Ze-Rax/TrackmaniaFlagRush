@@ -222,11 +222,12 @@ Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _Backg
         """ ^ _StylesManialink ^ """
     </stylesheet>
     <frame halign="center" valign="center" pos="0 0">
-        <frame id="Minimap" halign="center" valign="center" pos="0 0" scale="0.4" size="100 100">
+        <frame id="Minimap" halign="center" valign="center" pos="0 0" scale="0.4" size="100 100" hidden="1">
             <frame id="MinimapBackground" z-index="-1" halign="center" valign="center" pos="0 0" size="100 100">
             """ ^ _BackgroundManialink ^ """
             </frame>
-        
+						<!-- border here -->
+						<quad halign="center" valign="center" pos="0 0" size="33.5 33.5" z-index="1000" style="Bgs1InRace" substyle="BgColorContour" scale="3" modulatecolor="fff" id="radar-border"/>
             """ ^ FramesManialink ^ """    
         </frame>
     </frame>
@@ -276,6 +277,7 @@ Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _Backg
         }
         
         while (True) {
+					yield;
             // Absolute set
             foreach (MarkerId in C_MarkerIds) {
                 declare Vec2 AbsPos;
@@ -348,8 +350,6 @@ Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _Backg
                 Frame.RelativePosition_V3 = FinalPositions[MarkerId] * 50. * MinimapZoom;
                 Frame.Visible = !Hidden[MarkerId];
             }
-            
-            yield;
         }
     }
     --></script>

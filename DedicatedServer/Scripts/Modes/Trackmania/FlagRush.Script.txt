@@ -1045,8 +1045,10 @@ Void HandleEvents() {
 	
 	// Spectator count change
 	if (Spectators.count != G_LastSpectatorsCount) {
-		FlagRush_UI::InitRadar();
+		FlagRush_UI::InitRadar();		
 	}
+	
+	G_LastSpectatorsCount = Spectators.count;
 }
 
 /**

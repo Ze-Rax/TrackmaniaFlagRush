@@ -19,6 +19,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_UIMarkers
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Spectator.Script.txt"					as FlagRush_UISpectator
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
 
 #Const C_LayerName_ScoresTable		"Layer_FlagRush_ScoresTable"
 #Const C_LayerName_ScoresHeader		"Layer_FlagRush_ScoresHeader"
@@ -28,6 +29,7 @@
 #Const C_LayerName_Flash					"Layer_FlagRush_Flash"
 #Const C_LayerName_Spectator			"Layer_FlagRush_Spectator"
 #Const C_LayerName_ModeCommands		"Layer_ModeCommands"
+#Const C_LayerName_Radar					"Layer_Radar"
 
 #Const C_FlagCarrierName_Dropped 	"Dropped"
 #Const C_FlagCarrierName_Spawn		"Spawn"
@@ -107,6 +109,10 @@ Void UpdateFlagMarker() { InitFlagMarker(); }
 	}
 	else if (FlagState::Get().Landmark != Null) Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Spawn;
 	else Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Dropped;
+	
+	// Flag Position
+	declare netwrite Vec3 Net_FlagRush_FlagPosition for Teams[0];
+	Net_FlagRush_FlagPosition = FlagState::Get().Position;
 }
 
 /**
@@ -139,6 +145,15 @@ Void InitMarkers() {
 	} else {
 		InitFlagMarker();
 	}
+}
+
+/**
+ * Creates the radar with markers for all players and bases.
+ */
+Void InitRadar() {
+	Layers::Create(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());
+	Layers::SetType(C_LayerName_Radar, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Radar);	
 }
 
 /**
@@ -178,6 +193,9 @@ Void Init() {
 	
 	// Markers
 	InitMarkers();
+	
+	// Radar
+	InitRadar();
 }
 
 /**

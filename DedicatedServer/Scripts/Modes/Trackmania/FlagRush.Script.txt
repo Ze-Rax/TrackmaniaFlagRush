@@ -1018,13 +1018,17 @@ Void HandleEvents() {
 	// Collision detection using CylinderHitbox (based on Dommy's Lib)
 	if (FlagState::Get().Carrier != Null && FlagState::Get().PickupableDate < Now) {
 		declare CSmPlayer CarrierPlayer = FlagState::GetFlagCarrierPlayer();
+		declare CSmPlayer FlagStealer;
 		foreach (Player in Players) {
 			if (Player == CarrierPlayer) continue;
 			if (Hitbox::AreTouching(CarrierPlayer, Player)) {
-				StealFlag(Player);
-				break;
+				if(Player.CurrentClan != CarrierPlayer.CurrentClan || FlagStealer == Null) {
+					FlagStealer = Player;
+					if (Player.CurrentClan != CarrierPlayer.CurrentClan) break;
+				}
 			}
 		}
+		if (FlagStealer != Null) StealFlag(FlagStealer);
 	}
 
 	// XmlRpc

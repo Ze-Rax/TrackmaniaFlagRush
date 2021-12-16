@@ -9,7 +9,7 @@
 /**
  * Prefixed log.
  */
- Void Log(Text Message) {
+Void Log(Text Message) {
 	declare Boolean FlagRush_Debug for This;
 	if(FlagRush_Debug) log(C_LogPrefix ^ " " ^ Message);
 }

@@ -4,7 +4,7 @@ Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_SpectatorUI">
-	<frame id="Spectator-frame" pos="140 -80" scale="0.75">
+	<frame id="Spectator-frame" pos="135 -40" scale="0.75">
 		<quad pos="0 0" z-index="0" size="50 10" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" colorize="000" opacity="0.75"/>
 		<quad pos="20 0" z-index="1" size="10 10" id="button-ready-background" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" colorize="000"/>
 		<label pos="20 0" z-index="2" size="10 10" id="button-ready-icon" text="" halign="center" valign="center" style="Default" textfont="GameFontBlack" textsize="4"/>

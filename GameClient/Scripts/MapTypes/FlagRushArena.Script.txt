@@ -32,19 +32,20 @@
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Constants
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-#Const C_StartTagPrefix				"SpawnTeam"
-#Const C_FinishTagPrefix			"BaseTeam"
-#Const C_FlagSpawnTag				"FlagSpawn"
-#Const C_DefaultFlagSpawnTag		"DefaultFlagSpawn"
+#Const C_StartTagPrefix						"SpawnTeam"
+#Const C_FinishTagPrefix					"BaseTeam"
+#Const C_FlagSpawnTag							"FlagSpawn"
+#Const C_DefaultFlagSpawnTag			"DefaultFlagSpawn"
+#Const C_FlagResetTag 						"FlagResetTrigger"
 
-#Const C_StartTagNoFunction			"Unused Start"
-#Const C_FinishTagNoFunction		"Unused Finish"
+#Const C_StartTagNoFunction				"Unused Start"
+#Const C_FinishTagNoFunction			"Unused Finish"
 #Const C_CheckpointTagNoFunction	"Unused Checkpoint"
 #Const C_MultilapTagNoFunction		"Unused Multilap"
 #Const C_LandmarkTagNoFunction		"Unused Landmark"
 
-#Const C_UI_BackgroundOpacity		0.75
-#Const C_UI_ButtonOpacity			0.75
+#Const C_UI_BackgroundOpacity			0.75
+#Const C_UI_ButtonOpacity					0.75
 
 #Const C_Dbg_ButtonActivatorOpacity	0.0
 #Const C_Dbg_ButtonActivatorColor	"F00"
@@ -177,7 +178,7 @@ Text GetEditAnchorManialink() {
 			</frame>
 			
 			<frame id="body-cpfunction" z-index="1" hidden="1">
-				<quad pos="0 -5" z-index="0" size="50 45" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
+				<quad pos="0 -5" z-index="0" size="50 65" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
 				<label pos="0 10" size="45 8" text="Function:" halign="center" valign="center" style="Default" textfont="GameFontReqular" textsize="3" z-index="1" textcolor="FFF"/>
 				
 				<quad pos="0 0" z-index="1" size="45 8" id="button-cpfunctionflag-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Neutral)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>
@@ -189,9 +190,13 @@ Text GetEditAnchorManialink() {
 				<label pos="17.5 -10" z-index="2" size="10 6" id="button-cpfunctionflagdefault-icon" text="" halign="center" valign="center" style="Default" textfont="GameFontBlack" textsize="4" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}"/>
 				<quad pos="17.5 -10" z-index="3" size="10 8" id="button-cpfunctionflagdefault-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
 
-				<quad pos="0 -20" z-index="1" size="45 8" id="button-cpfunctionnone-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Neutral)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>
-				<label pos="0 -20" z-index="2" size="45 6" text="None" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}"/>
-				<quad pos="0 -20" z-index="3" size="45 8" id="button-cpfunctionnone-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
+				<quad pos="0 -20" z-index="1" size="45 8" id="button-cpfunctionreset-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Neutral)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>
+				<label pos="0 -20" z-index="2" size="45 6" text="Flag Reset Trigger" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}"/>
+				<quad pos="0 -20" z-index="3" size="45 8" id="button-cpfunctionreset-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
+
+				<quad pos="0 -30" z-index="1" size="45 8" id="button-cpfunctionnone-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Neutral)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>
+				<label pos="0 -30" z-index="2" size="45 6" text="None" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}"/>
+				<quad pos="0 -30" z-index="3" size="45 8" id="button-cpfunctionnone-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
 			</frame>
 			
 			<frame id="body-noedit" z-index="1" hidden="1">
@@ -240,6 +245,8 @@ Text GetEditAnchorManialink() {
 		declare CMlQuad ButtonCPFunctionFlagDefaultActivator = (Page.GetFirstChild("button-cpfunctionflagdefault-activator") as CMlQuad);
 		declare CMlQuad ButtonCPFunctionNoneBg = (Page.GetFirstChild("button-cpfunctionnone-bg") as CMlQuad);
 		declare CMlQuad ButtonCPFunctionNoneActivator = (Page.GetFirstChild("button-cpfunctionnone-activator") as CMlQuad);
+		declare CMlQuad ButtonCPFunctionResetBg = (Page.GetFirstChild("button-cpfunctionreset-bg") as CMlQuad);
+		declare CMlQuad ButtonCPFunctionResetActivator = (Page.GetFirstChild("button-cpfunctionreset-activator") as CMlQuad);
 
 		declare CMlLabel LabelOrder = (Page.GetFirstChild("label-ordervalue") as CMlLabel);
 		declare CMlQuad ButtonOrderUp = (Page.GetFirstChild("button-order-up") as CMlQuad);
@@ -332,6 +339,9 @@ Text GetEditAnchorManialink() {
 									FlagRushArena_EditedAnchorTag = "{{{C_FlagSpawnTag}}}";
 								}
 							}
+							case ButtonCPFunctionResetActivator: {
+								FlagRushArena_EditedAnchorTag = "{{{C_FlagResetTag}}}";
+							}
 							case ButtonCPFunctionNoneActivator: {
 								FlagRushArena_EditedAnchorTag = "{{{C_CheckpointTagNoFunction}}}";
 							}
@@ -373,6 +383,10 @@ Text GetEditAnchorManialink() {
 								ButtonBackground = ButtonCPFunctionFlagDefaultToggleBg;
 								BackgroundColor = {{{Color_ButtonBackground_Neutral_Focus}}};
 							}
+							case ButtonCPFunctionResetActivator: {
+								ButtonBackground = ButtonCPFunctionResetBg;
+								BackgroundColor = {{{Color_ButtonBackground_Neutral_Focus}}};
+							}
 						}
 						
 						if(ButtonBackground != Null) {
@@ -403,9 +417,12 @@ Text GetEditAnchorManialink() {
 								ButtonBackground = ButtonCPFunctionNoneBg;
 								BackgroundColor = {{{Color_ButtonBackground_Neutral}}};
 							}
-							
 							case ButtonCPFunctionFlagDefaultActivator: {
 								ButtonBackground = ButtonCPFunctionFlagDefaultToggleBg;
+								BackgroundColor = {{{Color_ButtonBackground_Neutral}}};
+							}
+							case ButtonCPFunctionResetActivator: {
+								ButtonBackground = ButtonCPFunctionResetBg;
 								BackgroundColor = {{{Color_ButtonBackground_Neutral}}};
 							}
 						}
@@ -478,7 +495,7 @@ Void InitLandmarks() {
 				if(!TL::StartsWith(C_FinishTagPrefix, Anchor.Tag)) Anchor.Tag = C_FinishTagNoFunction;
 			}
 			case CAnchorData::EWaypointType::Checkpoint: {
-				if(!( Anchor.Tag == C_FlagSpawnTag || Anchor.Tag == C_DefaultFlagSpawnTag)) Anchor.Tag = C_CheckpointTagNoFunction;				
+				if(!( Anchor.Tag == C_FlagSpawnTag || Anchor.Tag == C_DefaultFlagSpawnTag || Anchor.Tag == C_FlagResetTag)) Anchor.Tag = C_CheckpointTagNoFunction;				
 			}
 			default: {
 				Anchor.Tag = C_LandmarkTagNoFunction;

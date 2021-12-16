@@ -24,9 +24,9 @@ declare sServerInfo ServerInfo;
 Text[Text] getPayLoad() {
 	return [
 		"name" => ServerAdmin.ServerInfo.ServerName,
-		"login" => ServerAdmin.ServerInfo.ServerLogin,
-		"joinLink" => ServerAdmin.ServerInfo.JoinLink,
-		"playersCount" => "" ^ ServerAdmin.ServerInfo.PlayerCount
+		"login" => ServerAdmin.ServerInfo.ServerLogin,		
+		"playersCurrent" => "" ^ ServerAdmin.ServerInfo.PlayerCount,
+		"playersMax" => "" ^ ServerAdmin.ServerInfo.MaxPlayerCount
 	];
 }
 
@@ -61,8 +61,8 @@ Text HttpPostSync(Text _address, Text[Text] _params) {
 		output = req.Result;
 		Http.Destroy(req);
 		return output;
-	} 
-
+	}
+	
 	ServerInfo.IsConnected = False;
 	return output;	
 }

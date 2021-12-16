@@ -1,8 +1,9 @@
 #RequireContext CServerPlugin
 #Include "TimeLib" as TimeLib
 #Include "TextLib" as TextLib
-#Include "ServerPlugin/FlagRush/Config.Script.txt" as Config
 #Include "Libs/FlagRush/Connection.Script.txt" as Connection
+#Include "ServerPlugin/FlagRush/Config.Script.txt" as Config
+
 
 #Struct Config::ConfigJson as ConfigJson
 #Struct Connection::sServerInfo as sServerInfo

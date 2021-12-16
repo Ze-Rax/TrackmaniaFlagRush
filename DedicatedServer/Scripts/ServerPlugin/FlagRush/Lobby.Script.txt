@@ -1,0 +1,34 @@
+#RequireContext CServerPlugin
+
+#Include "ServerPlugin/FlagRush/Config.Script.txt" as Config
+#Include "Libs/FlagRush/UI/MatchMaking.Script.txt" as FlagRush_UIMatchMaking
+#Struct Config::ConfigJson as ConfigJson
+#Const C_LayerName "MatchMaking"
+
+Void do_nothing() {}
+
+main() {
+	declare Boolean initialStartDone = False;    
+	log("starting...");
+    Config::Init();
+
+    declare ConfigJson config = Config::Get();
+    declare CUILayer Layer = UIManager.UILayerCreate();
+    Layer.ManialinkPage = FlagRush_UIMatchMaking::GetManialink(config.Host^"/server/status");
+    Layer.Type = CUILayer::EUILayerType::Normal;
+
+    UIManager.UIAll.UILayers.add(Layer);
+
+    while (True) {   
+		yield;
+
+        foreach(Event in PendingEvents) {
+			switch (Event.Type) {
+				case CServerPluginEvent::EType::ClientConnected: {
+					declare CUIConfig UI = Event.Client.UI;
+                    UI.UILayers.add(Layer);
+				}	
+			}
+		}		
+	}
+}

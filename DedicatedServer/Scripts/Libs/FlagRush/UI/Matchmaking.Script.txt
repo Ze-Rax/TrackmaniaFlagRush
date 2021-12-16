@@ -1,0 +1,161 @@
+// #RequireContext CSmMlScriptIngame
+
+Text GetManialink(Text ServerUrl) {
+    return """ 
+    <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3">
+		<framemodel id="frameServer" pos="0 0">
+			<label id="serverName" pos="25 0" z-index="0" size="47.1 4" text="ServerName" textfont="GameFontRegular" textsize="2" valign="center2" halign="center"/>
+			<label id="serverInfo" pos="25 -4" z-index="0" size="47.1 4" text="0 / 32" textfont="GameFontRegular" textsize="2" valign="center2" halign="center"/>
+			<label id="btnJoin" class="joinButton" pos="62.5 -2" z-index="0" size="25 8" text="Join" textfont="GameFontRegular" textsize="2" valign="center2" halign="center" focusareacolor1="090" focusareacolor2="0f0" scriptevents="1" hidden="0"/>
+			<label id="btnFull" pos="62.5 -2" z-index="1" size="25 8" text="Full" textfont="GameFontRegular" textsize="2" valign="center2" halign="center" focusareacolor1="900" focusareacolor2="900" scriptevents="1" hidden="1"/>
+			<quad id="serverBg" pos="0 -2" z-index="0" size="50 8" bgcolor="0009" opacity="0.7" halign="left" valign="center"/>
+		</framemodel>
+		<frame pos="0 48" size="320 15" scale="0.5" valign="center" halign="center">
+			<!-- logo -->
+			<frame id="text" pos="0 -0.5">
+				<label pos="-2 -4" z-index="0" size="20 10" text="$iRUSH" textemboss="1" textfont="RobotoCondensedBold" halign="left" valign="center2" textsize="6"/>
+				<quad pos="0 1" z-index="0" size="18.1 18.1"  style="UIConstruction_Buttons" substyle="Validate" halign="center" valign="center" rot="-17"/>
+				<label pos="2 0" z-index="0" size="20 10" text="$iFLAG" halign="right" valign="center2" textsize="6" textemboss="1" textfont="RobotoCondensedBold"/>
+			</frame>
+			<!-- background -->
+			<frame id="background" rot="71" valign="center" halign="center">
+				<quad pos="0 0" size="0.5 300" bgcolor="000" opacity="1" halign="center" valign="center"/>
+				<quad pos="35 0" size="70 400" bgcolor="04f" opacity="1" halign="center" valign="center"/>
+				<quad pos="-35 0" size="70 400" bgcolor="b00" opacity="1" halign="center" valign="center"/>
+			</frame>
+		</frame>
+		<frame id="servers" pos="-78 40">
+			<frameinstance pos="0 0" modelid="frameServer" hidden="1" />
+			<frameinstance pos="0 -10" modelid="frameServer" hidden="1" />
+			<frameinstance pos="0 -20" modelid="frameServer" hidden="1" />
+			<frameinstance pos="0 -30" modelid="frameServer"  hidden="1"/>
+			<frameinstance pos="0 -40" modelid="frameServer"  hidden="1"/>
+			<frameinstance pos="0 -50" modelid="frameServer" hidden="1" />
+			<frameinstance pos="0 -60" modelid="frameServer" hidden="1" />
+			<frameinstance pos="0 -70" modelid="frameServer" hidden="1" />
+			<frameinstance pos="80 0" modelid="frameServer" hidden="1" />
+			<frameinstance pos="80 -10" modelid="frameServer" hidden="1"/>
+			<frameinstance pos="80 -20" modelid="frameServer" hidden="1"/>
+			<frameinstance pos="80 -30" modelid="frameServer" hidden="1"/>
+			<frameinstance pos="80 -40" modelid="frameServer" hidden="1"/>
+			<frameinstance pos="80 -50" modelid="frameServer" hidden="1"/>
+			<frameinstance pos="80 -60" modelid="frameServer" hidden="1"/>
+			<frameinstance pos="80 -70" modelid="frameServer" hidden="1"/>
+		</frame>
+
+		<label id="status" pos="0 0" z-index="0" size="90 7" text="Please wait..." halign="center" valign="center"/>
+
+		<label id="queueButton" pos="0 -44" z-index="0" size="60 8" text="Queue" halign="center" valign="center" focusareacolor1="000" focusareacolor2="33f" scriptevents="1"/>
+		<quad pos="0 44" z-index="0" size="160 95" bgcolor="000" opacity="0.7" halign="center" valign="top"/>
+		<script><!-- 
+#Include "TimeLib" as TimeLib
+#Include "TextLib" as TextLib
+#Include "MathLib" as Math
+
+#Struct K_ServerInfo {
+Text login;
+Text name;
+Integer playersCurrent;
+Integer playersMax;
+}
+
+#Const C_UpdateInterval 15
+#Const C_Address "{{{ ServerUrl }}}"
+
+declare Integer lastUpdate;
+declare K_ServerInfo[] serverInfo;
+
+Text HttpGet(Text _address) {
+	declare req = Http.CreateGet(_address, False);
+	wait(req.IsCompleted);
+	lastUpdate = TextLib::ToInteger(TimeLib::GetCurrent());
+	declare output = "";
+	if (req.StatusCode == 200) {		
+		output = req.Result;
+	}
+	Http.Destroy(req);
+	return output;
+}
+
+Void render() {
+	declare CMlLabel status = (Page.GetFirstChild("status") as CMlLabel);
+	status.Hide();
+	
+	declare CMlFrame serversFrame = (Page.GetFirstChild("servers") as CMlFrame);
+	foreach(i => elem in serversFrame.Controls) {
+			elem.Hide();
+			
+			if (serverInfo.existskey(i)) {
+				declare K_ServerInfo info = serverInfo[i];
+				
+				declare CMlFrame frame = (elem as CMlFrame);
+					elem.Show();
+					declare CMlLabel lblName = (frame.GetFirstChild("serverName") as CMlLabel);
+					declare CMlLabel lblInfo = (frame.GetFirstChild("serverInfo") as CMlLabel);					
+					declare CMlLabel lblJoin = (frame.GetFirstChild("btnJoin") as CMlLabel);
+					declare CMlLabel lblFull = (frame.GetFirstChild("btnFull") as CMlLabel);
+					
+															
+					lblName.Value = info.name;
+					lblInfo.Value = info.playersCurrent ^ "/" ^ info.playersMax;
+					lblJoin.DataAttributeSet("login", info.login);
+										
+					lblFull.Hide();
+					if (info.playersCurrent  >=  info.playersMax) {
+						lblFull.Show();
+					} 					
+			}						
+	}
+}
+
+
+
+Void updateServerData() {
+	declare Text response = HttpGet(C_Address);
+	log(response);
+	if (response != "") {
+		declare Boolean success = serverInfo.fromjson(response);
+		log(serverInfo);
+		if (success) render();	
+	}
+}
+
+Text findServer() {
+	foreach (i => server in serverInfo) {	
+		if (server.playersCurrent < server.playersMax) {
+			return server.login;
+    }
+	}
+  return "";
+}
+
+main() {
+	updateServerData();
+		
+	while(True) {
+		yield;
+		if (lastUpdate > 0 && TextLib::ToInteger(TimeLib::GetCurrent()) > lastUpdate + C_UpdateInterval) {								
+				updateServerData();
+		}
+		
+		foreach(Event in PendingEvents) {
+				if (Event.Type == CMlScriptEvent::Type::MouseClick)	{
+					if (Event.ControlId == "queueButton") {
+						declare Text login = findServer();
+						if (login != "") OpenLink("#join="^login^"@Trackmania", CMlScript::LinkType::ManialinkBrowser);
+					}
+					
+					if (Event.Control.HasClass("joinButton")) {
+						declare Text login = Event.Control.DataAttributeGet("login");
+						if (login != "") OpenLink("#join="^login^"@Trackmania", CMlScript::LinkType::ManialinkBrowser);
+					}				
+				}		
+		}						
+	}
+}
+
+--></script>
+</manialink>
+    """;
+}

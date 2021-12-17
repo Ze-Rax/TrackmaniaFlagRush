@@ -1,0 +1,212 @@
+#Include "TextLib" as TL
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
+
+#Const C_BackgroundZIndex					0
+#Const C_RadarBaseSize						100.
+#Const C_MarkerFadeStart					0.80
+#Const C_MarkerFadeEnd 						0.95
+#Const C_PlayerMarkerGlowOpacity	0.5
+#Const C_PlayerMarkerIconOpacity	1.
+
+#Struct K_Config {
+	Real Scale;
+	Real MarkerScale;
+	Real Zoom;
+	Vec2 Position;
+}
+declare K_Config G_Config;
+
+Void SetConfig(K_Config Config) {
+	G_Config = Config;
+}
+
+Text GetBackgroundManialink() {
+	return """
+	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3" name="FlagRush_Radar_Background">
+		<frame id="radar-background" scale="{{{ G_Config.Scale }}}" pos="{{{ G_Config.Position.X }}} {{{ G_Config.Position.Y }}}" hidden="1">
+			<quad z-index="{{{ C_BackgroundZIndex }}}" size="{{{ C_RadarBaseSize }}} {{{ C_RadarBaseSize }}}" opacity="0.5" halign="center" valign="center" id="radar-background" bgcolor="000"/>
+			<quad z-index="{{{ C_BackgroundZIndex + 1 }}}" size="21 21" halign="center" valign="center" style="Bgs1InRace" substyle="BgColorContour" scale="5" colorize="f44" id="radar-border"/>
+		</frame>
+
+		<script><!--
+			{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+
+			main() {
+				declare CMlFrame FrameBackground = (Page.GetFirstChild("radar-background") as CMlFrame);
+				declare CMlQuad Border = (FrameBackground.GetFirstChild("radar-border") as CMlQuad);
+
+				while(True) {
+					yield;
+
+					if (GUIPlayer == Null) {
+						FrameBackground.Hide();
+						continue;
+					}
+
+					FrameBackground.Show();
+					Border.Colorize = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
+				}
+			}
+		--></script>
+	</manialink>
+	""";
+}
+
+Text GetMarkersManialink() {
+	declare Text[] PlayerMarkerInstances = [];
+	foreach (Index => Player in Players) PlayerMarkerInstances.add("""<frameinstance modelid="marker-player" id="marker-player-{{{ Index }}}" scale="{{{ G_Config.MarkerScale }}}"/>""");
+
+	return """
+	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3" name="FlagRush_Radar_Markers">
+		<framemodel id="marker-player">
+			<quad size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="ArrowUp_light" id="icon"/>
+			<quad size="15 15" halign="center" valign="center" style="Bgs1InRace" substyle="Glow" id="glow"/>
+		</framemodel>
+
+		<framemodel id="marker-flag">
+			<quad size="10 10" halign="center" valign="center" style="UIConstruction_Buttons" substyle="Validate" id="icon"/>
+		</framemodel>
+
+		<frame z-index="{{{ C_BackgroundZIndex + 2 }}}" id="marker-frame" scale="{{{ G_Config.Scale }}}" pos="{{{ G_Config.Position.X }}} {{{ G_Config.Position.Y }}}" hidden="1">
+			{{{ TL::Join("\n", PlayerMarkerInstances) }}}
+			<frameinstance modelid="marker-flag" id="marker-flag" scale="{{{ G_Config.MarkerScale }}}"/>
+		</frame>
+
+		<script><!--
+		#Include "MathLib" as ML
+
+		declare CMlFrame[] PlayerMarkerFrames;
+		declare CMlFrame FlagMarkerFrame;
+
+		{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+
+		CMlFrame[] GetPlayerMarkerFrames() {
+			declare CMlFrame[] Frames = [];
+			for (Index, 0, {{{ PlayerMarkerInstances.count -1 }}}) Frames.add((Page.GetFirstChild("marker-player-" ^ Index) as CMlFrame));
+			return Frames;
+		}
+
+		CMlQuad GetPlayerMarkerIcon(CMlFrame MarkerFrame) {
+			return (MarkerFrame.GetFirstChild("icon") as CMlQuad);
+		}
+
+		Vec2 Rotate(Real Angle, Vec2 Vector) {
+			declare Real Cosinus = ML::Cos(Angle);
+			declare Real Sinus = ML::Sin(Angle);
+			return <Cosinus, Sinus> * Vector.X + <Sinus, - Cosinus> * Vector.Y;
+		}
+
+		Void UpdateFlagMarker() {
+			// Determine releative position on radar
+			declare netread Vec3 Net_FlagRush_FlagPosition for Teams[0];
+			declare Vec3 RelativePosition = GUIPlayer.Position - Net_FlagRush_FlagPosition;
+			declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <RelativePosition.X, RelativePosition.Z>);
+
+			// If too far outside, still show on border
+			RelativeRadarPosition = < ML::Clamp(RelativeRadarPosition.X, -100., 100.), ML::Clamp(RelativeRadarPosition.Y, -100., 100.) >;
+
+			// Update marker frame
+			FlagMarkerFrame.RelativePosition_V3 = RelativeRadarPosition * {{{ G_Config.Zoom }}};
+			FlagMarkerFrame.ZIndex = Net_FlagRush_FlagPosition.Y;
+		}
+
+		Void UpdatePlayerMarker(CSmPlayer Player, CMlFrame MarkerFrame) {
+			declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+
+			if (Player == GUIPlayer) {
+				// Always show self or spectated player in center facing up
+				MarkerFrame.Show();
+				MarkerFrame.RelativePosition_V3 = <0., 0.>;
+				MarkerFrame.RelativeRotation = 0.;
+			} else {
+				// Determine relative position on radar
+				declare Vec3 RelativePosition = GUIPlayer.Position - Player.Position;
+				declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <RelativePosition.X, RelativePosition.Z>) * {{{ G_Config.Zoom }}};
+
+				// Hide when outside
+				declare Real OffsetXPercentage = ML::Abs(RelativeRadarPosition.X) / {{{ C_RadarBaseSize / 2 }}};
+				declare Real OffsetYPercentage = ML::Abs(RelativeRadarPosition.Y) / {{{ C_RadarBaseSize / 2 }}};
+				if (OffsetXPercentage > {{{ C_MarkerFadeEnd }}} || OffsetYPercentage > {{{ C_MarkerFadeEnd }}}) {
+					MarkerFrame.Hide();
+					return;
+				}
+				MarkerFrame.Show();
+				
+				// Determine relative rotation to the player
+				declare Real RelativeYaw;
+				if (Net_FlagRush_FlagCarrierLogin == Player.User.Login) RelativeYaw = 0.;
+				else RelativeYaw = GUIPlayer.AimYaw - Player.AimYaw;
+
+				// Fade when close too the edge
+				declare Real Opacity = 1.0;
+				if (OffsetXPercentage > {{{ C_MarkerFadeStart }}} || OffsetYPercentage > {{{ C_MarkerFadeStart }}}) {
+					declare Real MaxOffset = ML::Abs(ML::Max(OffsetXPercentage, OffsetYPercentage));
+					declare Real FadeProgress = ({{{ C_MarkerFadeEnd }}} - MaxOffset) / ({{{ C_MarkerFadeEnd - C_MarkerFadeStart }}});
+					Opacity = ML::Clamp(FadeProgress, 0., 1.);
+				}
+
+				// Update marker frame
+				MarkerFrame.RelativePosition_V3 = RelativeRadarPosition;
+				MarkerFrame.ZIndex = Player.Position.Y;
+				MarkerFrame.RelativeRotation = RelativeYaw / ML::Pi * 180;
+				(MarkerFrame.GetFirstChild("icon") as CMlQuad).Opacity = Opacity * {{{ C_PlayerMarkerIconOpacity }}};
+				(MarkerFrame.GetFirstChild("glow") as CMlQuad).Opacity = Opacity * {{{ C_PlayerMarkerGlowOpacity }}};
+			}
+		}
+
+		main() {
+			declare CMlFrame MainFrame = (Page.GetFirstChild("marker-frame") as CMlFrame);
+			FlagMarkerFrame = (Page.GetFirstChild("marker-flag") as CMlFrame);
+			PlayerMarkerFrames = GetPlayerMarkerFrames();
+
+			declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+
+			while (True) {
+				yield;
+
+				if(GUIPlayer == Null) {
+					MainFrame.Hide();
+					continue;
+				}
+				MainFrame.Show();
+
+				// Update player markers
+				declare Integer ActualPlayerIndex = -1;
+				foreach (Player in Players) {
+					if (Player.RequestsSpectate) continue;
+					ActualPlayerIndex += 1;
+					if (ActualPlayerIndex >= PlayerMarkerFrames.count) break;
+
+					declare CMlFrame PlayerFrame <=> PlayerMarkerFrames[ActualPlayerIndex];
+					declare CMlQuad PlayerIcon <=> GetPlayerMarkerIcon(PlayerFrame);
+
+					// Change Icon Color
+					PlayerIcon.Colorize = GetTeamPrimaryColor(Player.CurrentClan);
+
+					// Change Icon if Player is flag carrier
+					if(Net_FlagRush_FlagCarrierLogin == Player.User.Login) {
+						PlayerIcon.Style = "UIConstruction_Buttons";
+						PlayerIcon.Substyle = "Validate";
+					} else {
+						PlayerIcon.Style = "UICommon64_1";
+						PlayerIcon.Substyle = "ArrowUp_light";
+					}
+
+					// Position Marker
+					UpdatePlayerMarker(Player, PlayerFrame);
+				}
+
+				// Update flag marker
+				if (Net_FlagRush_FlagCarrierLogin != "") FlagMarkerFrame.Hide();
+				else {
+					FlagMarkerFrame.Show();
+					UpdateFlagMarker();
+				}
+			}
+		}
+		--></script>
+	</manialink>
+	""";
+}

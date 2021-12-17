@@ -44,7 +44,7 @@
 #Const 	C_RespawnSpeedLimitKmh 				30.
 
 #Const  C_Debug 											False
-#Const	C_Debug_NbFakeUsers						<0, 0>
+#Const	C_Debug_NbFakeUsers						<1, 1>
 
 //////////////
 // Settings //
@@ -130,7 +130,7 @@ declare Text G_LastSettings_Team2ForcedColor;
 declare Boolean G_LastSettings_UseClubTags;
 declare Boolean G_LastSettings_UseCollisions;
 
-declare Integer G_LastSpectatorsCount;
+declare Integer G_LastPlayersCount;
 
 ///////////
 // Plugs //
@@ -419,6 +419,7 @@ HandleModeSettingsUpdate();
 
 TimeWarnings::Show();
 CheckRoundEndConditions();
+CheckRadarReinit();
 
 if(G_PauseRequested) {
 	MB_StopTurn();
@@ -461,6 +462,13 @@ Void SetEndTime(Integer _EndTime) {
 Void SendWelcomeMessage(CSmPlayer Player) {
 	declare CUIConfig UI = UIManager.GetUI(Player);
 	UI.SendChat("""Welcome to $l[https://discord.gg/J6ApdyRqEZ]$44f「$fffFlagRush$f44」$l $fff[{{{Version}}}]!""");
+}
+
+Void CheckRadarReinit() {
+	if (Players.count != G_LastPlayersCount) {
+		FlagRush_UI::InitRadar();
+	}
+	G_LastPlayersCount = Players.count;
 }
 
 // --------------------------------------------------
@@ -1081,13 +1089,6 @@ Void HandleEvents() {
 			}
 		}
 	}
-	
-	// Spectator count change
-	if (Spectators.count != G_LastSpectatorsCount) {
-		FlagRush_UI::InitRadar();		
-	}
-	
-	G_LastSpectatorsCount = Spectators.count;
 }
 
 /**
@@ -1224,6 +1225,7 @@ Void ExecWarmUp() {
 		HandleCommands();
 		HandleModeSettingsUpdate();
 		TimeWarnings::Show();
+		CheckRadarReinit();
 	}
 	
 	// End WarmUp

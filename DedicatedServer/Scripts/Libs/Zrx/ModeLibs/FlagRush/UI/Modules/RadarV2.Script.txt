@@ -137,6 +137,8 @@ Text GetMarkersManialink() {
 				MarkerFrame.Show();
 				MarkerFrame.RelativePosition_V3 = <0., 0.>;
 				MarkerFrame.RelativeRotation = 0.;
+				(MarkerFrame.GetFirstChild("icon") as CMlQuad).Opacity = {{{ C_PlayerMarkerIconOpacity }}};
+				(MarkerFrame.GetFirstChild("glow") as CMlQuad).Opacity = {{{ C_PlayerMarkerGlowOpacity }}};
 			} else {
 				// Determine relative position on radar
 				declare Vec3 RelativePosition = GUIPlayer.Position - Player.Position;

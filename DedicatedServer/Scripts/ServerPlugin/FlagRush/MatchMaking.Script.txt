@@ -14,7 +14,7 @@ Void do_nothing() {}
 main() {
 	declare Boolean initialStartDone = False;    
 	declare ConfigJson config = Config::Init();	
-	log("starting...");
+	log("Enabling MatchMaking for the server...");
 	
 	while (True) {   
 		yield;
@@ -22,16 +22,13 @@ main() {
 		
 		if (initialStartDone == False && MapLoaded) {
 			initialStartDone = True;
-			log("""Connecting to backend...""");
 			Connection::ConnectServer(config.Host, config.Secret, C_UpdateInterval);
 		}
-		
-		if (ServerInfo.LastUpdate > 0 && TextLib::ToInteger(TimeLib::GetCurrent()) > ServerInfo.LastUpdate + C_UpdateInterval) {					
-			log("""Sending ping to matchmaking server after {{{C_UpdateInterval}}} seconds.""");
+	
+		if (ServerInfo.LastUpdate > 0 && TextLib::ToInteger(TimeLib::GetCurrent()) > ServerInfo.LastUpdate + C_UpdateInterval) {
 			Connection::SendUpdateRequest();
 			continue;
 		}
-
 
 		foreach(Event in PendingEvents) {
 			switch (Event.Type) {

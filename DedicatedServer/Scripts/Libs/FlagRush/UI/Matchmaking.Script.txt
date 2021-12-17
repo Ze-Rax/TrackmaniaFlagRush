@@ -112,11 +112,9 @@ Void render() {
 
 
 Void updateServerData() {
-	declare Text response = HttpGet(C_Address);
-	log(response);
+	declare Text response = HttpGet(C_Address);	
 	if (response != "") {
-		declare Boolean success = serverInfo.fromjson(response);
-		log(serverInfo);
+		declare Boolean success = serverInfo.fromjson(response);		
 		if (success) render();	
 	}
 }

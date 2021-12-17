@@ -118,3 +118,6 @@ The project is licensed under the [MIT License](LICENSE).
 
 ## 1.1.1
 * Fixed an small issue with the radar not displaying some players correctly when in spectator
+
+## 1.1.2
+* Fixed an issue with the respawn timer constantly resetting when falling into offzone

@@ -33,7 +33,7 @@
 
 /* Constants */
 #Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version												"1.1.1"
+#Const	Version												"1.1.2"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
 #Const	C_SpawnAnimDuration						1500
@@ -538,7 +538,6 @@ Void CheckRoundEndConditions() {
 Void InitPlayer(CSmPlayer Player) {
 	Player.TrustClientSimu = True;
 	Player.UseCrudeExtrapolation = False;
-	Player.Armor = 1;
 	declare Integer PreviousClan for Player;
 	
 	SetPlayerClan(Player, Player.RequestedClan);
@@ -802,16 +801,15 @@ Void FlagRush_UnspawnPlayers() {
  */
 Void SpawnPlayers() {
 	foreach (Player in Players) {
-		if (Player.Armor <= 0) {		// If Player has no armor, unspawn first (for example Offzone hit)
+		declare netwrite Integer Net_SpawnDate for Player;
+		if (Player.Armor <= 0 && Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {		// If Player has no armor, unspawn first (for example Offzone hit)
 			if(GameplayPhase::Get() != GameplayPhase::C_Warmup) {
-				declare netwrite Integer Net_SpawnDate for Player;
 				Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
 			}
-			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null			
+			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null
 		}
 		
 		// Spawn unspawned players
-		declare netwrite Integer Net_SpawnDate for Player;
 		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && Net_SpawnDate <= Now) {
 			InitPlayer(Player);
 			declare CMapLandmark SpawnLandmark = FlagRush_Map::GetSpawn(Player);

@@ -100,3 +100,18 @@ Huge thanks to everyone who helped this project to become reality:
 Join us in our [Discord Server](https://discord.gg/J6ApdyRqEZ)!
 
 The project is licensed under the [MIT License](LICENSE).
+
+# Changelog
+
+## 1.1.0
++ Added a radar ("minimap") on screen, which shows the location of nearby players and the flag
++ Added a flag reset trigger for mapping. If you pass it, the flag will instantly be reset at the player will be unspawned. (Similar to offzone)
++ Added a visual respawn timer which counts down how much time is left until you respawn ("reverse progress bar")
++ Added a setting for player collision (Experimental; disabled by default)
+  *  Collisions have several issues. For once, TM collisions can be very weird. Apart from that there are Hitbox issues, so sometimes flagsteals from the front or back won't work! Keep that in mind, we will improve on it in the future
++ Added warnings when timelimit is about to run out (60 seconds remaining, 30 seconds remaining)
+* Increased default player respawn delay: 1.5s -> 3.0s
+* Flag stealing now gives priority to the opposing team, which makes it easier to steal the flag when two teammates are stacked on each other
+* Disabled crude extrapolation for hopefully slightly better player synchronization
+* Some optimizations have been made to make the UI more performant
+* Fixed multiple bugs and crashes

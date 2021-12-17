@@ -1,0 +1,70 @@
+#Include "Libs/Zrx/ModeLibs/Common/GameplayPhase.Script.txt" as GameplayPhase
+#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"		 as EventFeed
+
+#Const	C_BigMessage_Duration					3000
+
+#Struct K_TimeWarnings {
+	Boolean WarmupEndSoon;
+	Boolean RoundEndSoon;
+	Boolean RoundEndVerySoon;
+}
+
+declare K_TimeWarnings G_EnabledTimeWarnings;
+
+/**
+ * Returns the time until the time limit is reached.
+*/
+Integer GetTimeRemaining() {
+	return EndTime - Now;
+}
+
+/**
+ * Handles the display of time-related warnings.
+ */
+Void Show() {
+	declare Integer TimeRemaining = GetTimeRemaining();
+	switch (GameplayPhase::Get()) {
+		case GameplayPhase::C_Warmup: {
+			if(TimeRemaining > 0 && TimeRemaining < 5 * 1000 && G_EnabledTimeWarnings.WarmupEndSoon) {
+				G_EnabledTimeWarnings.WarmupEndSoon = False;
+				EventFeed::SendMessage("$f90Warmup ends in 5 seconds!", "chrono");
+			}
+		}
+		case GameplayPhase::C_Round: {
+			if(TimeRemaining < 60 * 1000 && G_EnabledTimeWarnings.RoundEndSoon) {
+				G_EnabledTimeWarnings.RoundEndSoon = False;
+				declare Text Message = "$f9060 seconds remaining!";
+				EventFeed::SendMessage(Message, "chrono");
+				UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::TiePoint, 0);
+			}
+
+			if(TimeRemaining < 30 * 1000 && G_EnabledTimeWarnings.RoundEndVerySoon) {
+				G_EnabledTimeWarnings.RoundEndVerySoon = False;
+				declare Text Message = "$f9030 seconds remaining!";
+				EventFeed::SendMessage(Message, "chrono");
+				UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::TiePoint, 0);
+			}
+		}
+	}
+}
+
+/**
+ * Mark all time warnings as enabled (they will be able to be triggered again).
+ */
+Void EnableAll() {
+	G_EnabledTimeWarnings.WarmupEndSoon = True;
+	G_EnabledTimeWarnings.RoundEndSoon = True;
+	G_EnabledTimeWarnings.RoundEndVerySoon = True;
+}
+
+/**
+ * Mark time warnings as enabled depending on the match timelimit (they will be able to be triggered again).
+ */
+Void EnableWithTimelimit(Integer TotalSeconds) {
+	EnableAll();
+
+	if (TotalSeconds <= 60) {
+		G_EnabledTimeWarnings.RoundEndSoon = False;
+		G_EnabledTimeWarnings.RoundEndVerySoon = False;
+	}
+}

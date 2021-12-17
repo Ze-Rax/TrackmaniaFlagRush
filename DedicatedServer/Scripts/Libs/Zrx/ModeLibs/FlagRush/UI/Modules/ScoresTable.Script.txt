@@ -104,7 +104,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 	n times player-card-team1 (Frameinstance)
 	n times player-card-team2 (Frameinstance)
 	-->
-	<frame id="scorestable-main" scale="1.4" pos="0 43" valign="bottom">
+	<frame id="scorestable-main" scale="1.4" pos="0 43" valign="bottom" z-index="100">
 		<frame id="body" pos="0 0">
 			<frame id="header">
 				<frame id="logo" pos="0 -4" size="280 15" scale="0.5" valign="center" halign="center" z-index="-1">
@@ -173,6 +173,8 @@ Text GetManialink(Integer _PlayersPerPage) {
 	#Include "TextLib" as TL
 	#Include "MathLib" as ML
 	#Include "ColorLib" as CL
+	
+	#Const C_UpdateInterval 100
 
 	// ------------------------------ //
 	// Global Variables
@@ -500,14 +502,20 @@ Text GetManialink(Integer _PlayersPerPage) {
 	main() {		
 		Init();
 		
+		declare Integer LastUpdate = -1;
+		
 		while(True) {
 			yield;
+			
+			HandleEvents();
 
+			if(Now - LastUpdate < C_UpdateInterval) continue;
+			LastUpdate = Now;
 			UpdateTeamNamesAndColors();		
 			UpdateTeamScores();
 			UpdateCurrentPage();
 			UpdateFooter();
-			HandleEvents();
+			
 		}
 	}
 	--></script>

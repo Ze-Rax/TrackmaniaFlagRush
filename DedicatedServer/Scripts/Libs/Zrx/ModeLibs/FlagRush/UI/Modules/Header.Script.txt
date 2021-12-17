@@ -50,6 +50,8 @@ Text GetManialink() {
 		#Include "MathLib" as ML
 		#Include "TextLib" as TL	
 		#Include "ColorLib" as CL
+		
+		#Const C_UpdateInterval 100
 			
 		{{{UIShared::GetTeamColorNetreadFunctions()}}}
 		
@@ -92,10 +94,15 @@ Text GetManialink() {
 			declare netread Text Net_FlagRush_FlagCarrierName for Teams[0];
 			declare netread Integer Net_FlagRush_EndTime for Teams[0];
 			declare netread Integer Net_GameplayPhase for Teams[0];	
+			
+			declare Integer LastUpdate = -1;
 
 			/* Main Loop */
 			while(True) {
 				yield;
+				
+				if(Now - LastUpdate < C_UpdateInterval) continue;
+				LastUpdate = Now;
 				
 				/* Team names and colors */
 				LabelTeam1Name.Value = Teams[0].Name;
@@ -166,6 +173,12 @@ Text GetManialink() {
 						LabelTimeLimit.Value = "Overtime";
 						LabelTimeLimit.Visible = True;
 						QuadCenterFlag.Visible = False;
+					}
+					case {{{GameplayPhase::C_Round}}}: {
+						/* Low Time Color */
+						if (IsTimeLeft && RoundTimeLeft / 1000 < 30) {
+							LabelTimeLimit.TextPrefix = "$f00";
+						}
 					}
 				}
 				

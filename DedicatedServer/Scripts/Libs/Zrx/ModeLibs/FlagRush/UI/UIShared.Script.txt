@@ -10,5 +10,19 @@
 				declare netread Vec3 Net_FlagRush_PrimaryColor for Team;
 				return Net_FlagRush_PrimaryColor;
 			}
+
+			Vec3 GetTeamPrimaryColor(Integer Clan) {
+				if (Clan <= 0 || Clan > Teams.count) return {{{FlagRush_Teams::C_DefaultNeutralColor}}};
+				return GetTeamPrimaryColor(Teams[Clan-1]);
+			}
 """;
+}
+
+Text GetUtilFunctions() {
+	return """
+		CSmPlayer GetPlayer(Text Login) {
+			foreach (Player in Players) if (Player.User.Login == Login) return Player;
+			return Null;
+		}
+	""";
 }

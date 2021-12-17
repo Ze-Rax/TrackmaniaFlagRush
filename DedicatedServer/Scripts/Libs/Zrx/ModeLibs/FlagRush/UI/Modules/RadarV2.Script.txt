@@ -81,6 +81,7 @@ Text GetMarkersManialink() {
 		declare CMlFrame FlagMarkerFrame;
 
 		{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+		{{{ UIShared::GetUtilFunctions() }}}
 
 		CMlFrame[] GetPlayerMarkerFrames() {
 			declare CMlFrame[] Frames = [];
@@ -101,7 +102,18 @@ Text GetMarkersManialink() {
 		Void UpdateFlagMarker() {
 			// Determine releative position on radar
 			declare netread Vec3 Net_FlagRush_FlagPosition for Teams[0];
-			declare Vec3 RelativePosition = GUIPlayer.Position - Net_FlagRush_FlagPosition;
+			declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+
+			declare Vec3 RelativePosition;
+			declare CSmPlayer FlagCarrierPlayer <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
+			declare CMlQuad FlagMarkerIcon = (FlagMarkerFrame.GetFirstChild("icon") as CMlQuad);
+			if(Net_FlagRush_FlagCarrierLogin == "" || FlagCarrierPlayer == Null) {
+				RelativePosition = GUIPlayer.Position - Net_FlagRush_FlagPosition;
+				FlagMarkerIcon.Colorize = <1., 1., 1.>;
+			} else {
+				RelativePosition = GUIPlayer.Position - FlagCarrierPlayer.Position;
+				FlagMarkerIcon.Colorize = GetTeamPrimaryColor(FlagCarrierPlayer.CurrentClan);
+			}
 			declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <RelativePosition.X, RelativePosition.Z>);
 
 			// If too far outside, still show on border
@@ -114,6 +126,11 @@ Text GetMarkersManialink() {
 
 		Void UpdatePlayerMarker(CSmPlayer Player, CMlFrame MarkerFrame) {
 			declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+
+			if (Player.User.Login == Net_FlagRush_FlagCarrierLogin) {
+				MarkerFrame.Hide();
+				return;
+			}
 
 			if (Player == GUIPlayer) {
 				// Always show self or spectated player in center facing up
@@ -185,25 +202,12 @@ Text GetMarkersManialink() {
 					// Change Icon Color
 					PlayerIcon.Colorize = GetTeamPrimaryColor(Player.CurrentClan);
 
-					// Change Icon if Player is flag carrier
-					if(Net_FlagRush_FlagCarrierLogin == Player.User.Login) {
-						PlayerIcon.Style = "UIConstruction_Buttons";
-						PlayerIcon.Substyle = "Validate";
-					} else {
-						PlayerIcon.Style = "UICommon64_1";
-						PlayerIcon.Substyle = "ArrowUp_light";
-					}
-
 					// Position Marker
 					UpdatePlayerMarker(Player, PlayerFrame);
 				}
 
 				// Update flag marker
-				if (Net_FlagRush_FlagCarrierLogin != "") FlagMarkerFrame.Hide();
-				else {
-					FlagMarkerFrame.Show();
-					UpdateFlagMarker();
-				}
+				UpdateFlagMarker();
 			}
 		}
 		--></script>

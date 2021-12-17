@@ -17,3 +17,12 @@
 			}
 """;
 }
+
+Text GetUtilFunctions() {
+	return """
+		CSmPlayer GetPlayer(Text Login) {
+			foreach (Player in Players) if (Player.User.Login == Login) return Player;
+			return Null;
+		}
+	""";
+}

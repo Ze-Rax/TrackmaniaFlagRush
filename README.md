@@ -115,3 +115,6 @@ The project is licensed under the [MIT License](LICENSE).
 * Disabled crude extrapolation for hopefully slightly better player synchronization
 * Some optimizations have been made to make the UI more performant
 * Fixed multiple bugs and crashes
+
+## 1.1.1
+* Fixed an small issue with the radar not displaying some players correctly when in spectator

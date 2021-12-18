@@ -33,7 +33,7 @@
 
 /* Constants */
 #Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version												"1.1.2"
+#Const	Version												"1.2.0-dev"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
 #Const	C_SpawnAnimDuration						1500
@@ -44,7 +44,7 @@
 #Const 	C_RespawnSpeedLimitKmh 				30.
 
 #Const  C_Debug 											False
-#Const	C_Debug_NbFakeUsers						<0, 0>
+#Const	C_Debug_NbFakeUsers						<1, 1>
 
 //////////////
 // Settings //

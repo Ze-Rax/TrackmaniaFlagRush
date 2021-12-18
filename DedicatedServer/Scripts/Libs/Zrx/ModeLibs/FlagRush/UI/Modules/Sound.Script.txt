@@ -1,0 +1,42 @@
+// #RequireContext CSmMlScriptIngame
+
+/** 
+* Plays sound events on timestamp:	
+* @param Text[] SoundUrl
+*/
+Void Play(Text[] SoundUrl) {
+	declare netwrite Integer FlagRush_AudioEventStamp for Teams[0] = -1;
+	declare netwrite Text[] FlagRush_AudioUrl for Teams[0];
+	
+	FlagRush_AudioEventStamp = Now;
+	FlagRush_AudioUrl = SoundUrl;
+}
+
+
+/**
+* get the layer manialink as text
+*/
+Text GetManialink() {
+	return """ 
+	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3">
+	<script><!-- 
+	main() {
+		declare Integer LastAudioEventStamp = 0;
+		declare netread Integer FlagRush_AudioEventStamp for Teams[0]= -1;
+		declare netread Text[] FlagRush_AudioUrl for Teams[0];
+		
+		while(True) {
+			yield;
+			if (FlagRush_AudioEventStamp > LastAudioEventStamp) {
+				LastAudioEventStamp = FlagRush_AudioEventStamp;
+				foreach(Url in FlagRush_AudioUrl) {
+					Audio.PlaySoundEvent(Url, 1.);
+				}
+			}
+		}
+	}
+	--></script>
+	</manialink>
+	""";
+}

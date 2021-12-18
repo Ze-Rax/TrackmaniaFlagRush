@@ -744,6 +744,8 @@ Void ScoreFlag(CSmPlayer Player) {
 	declare Teamname = Team.Name;
 	declare Message = """{{{ColorText}}}{{{Player.User.Name}}}$z scored for {{{ColorText}}}{{{Teamname}}}$z!""";
 	UIManager.UIAll.QueueMessage (C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Finish, 0);
+	FlagRush_UI::PlaySound(["file://Media/Sounds/Nadeo/CommonLibs/Game/KnockOutPlayer_01.wav", "file://Media/Sounds/Nadeo/CommonLibs/Game/ShowWinners.wav"]);
+	
 	EventFeed::SendMessage(Message, "flag", ColorPrimaryUI);
 	// Add the points
 	Scores::AddClanRoundPoints(Player.CurrentClan, 1);

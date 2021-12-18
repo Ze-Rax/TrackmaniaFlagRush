@@ -1,0 +1,75 @@
+// #RequireContext CSmMlScriptIngame
+
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt"	as UIShared
+
+Void Play(CSmPlayer Player) {
+	declare netwrite Integer Net_FlagRush_FlagAnimStamp for Teams[0];
+	declare netwrite Text Net_FlagRush_FlagAnimPlayerLogin for Teams[0];
+	Net_FlagRush_FlagAnimPlayerLogin = Player.User.Login;
+	Net_FlagRush_FlagAnimStamp = Now;
+}
+
+Text GetManialink() {
+	return """
+	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3">
+	<frame pos="0 40">
+	<label id="player" scale="0" pos="0 4" z-index="0" size="113 9.33" text="" textfont="GameFontBlack" textsize="5" halign="center" valign="center2" opacity="1" textcolor="fff"/>
+	<label id="team" scale="0" pos="0 0" z-index="0" size="113 9.47" text="" textfont="GameFontBlack" textsize="5" halign="center" opacity="1" valign="top" textcolor="fff"/>
+	<label id="title" scale="0" pos="0 -2.53" z-index="0" size="200 50" text="FLAG SCORED" textfont="GameFontBlack" halign="center" valign="center2" textsize="20" textcolor="fff" opacity="1"/>
+	</frame>
+	
+	<script><!--
+	#Include "TextLib" as TL
+	
+	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ UIShared::GetUtilFunctions() }}}
+	
+	main() {
+		declare CMlFrame Frame = (Page.GetFirstChild("background-frame") as CMlFrame);
+		declare CMlLabel lblTitle = (Page.GetFirstChild("title") as CMlLabel);
+		declare CMlLabel lblPlayer = (Page.GetFirstChild("player") as CMlLabel);
+		declare CMlLabel lblTeam = (Page.GetFirstChild("team") as CMlLabel);
+		declare Integer LastEventStamp = GameTime;
+		declare netread Integer Net_FlagRush_FlagAnimStamp for Teams[0];
+		declare netread Text Net_FlagRush_FlagAnimPlayerLogin for Teams[0];
+		
+		while(True) {
+			yield;
+			if (Net_FlagRush_FlagAnimStamp > LastEventStamp) {
+				declare Player <=> GetPlayer(Net_FlagRush_FlagAnimPlayerLogin);
+				if (Player == Null) continue;
+				lblTitle.RelativeScale = 0.;
+				lblTitle.Opacity = 1.;
+				lblPlayer.RelativeScale = 0.;
+				lblPlayer.Opacity = 1.;
+				lblTeam.RelativeScale = 0.;
+				lblTeam.Opacity = 1.;
+				LastEventStamp = Net_FlagRush_FlagAnimStamp;
+				lblTitle.Value = "$"^TL::ColorToText(GetTeamPrimaryColor(Player.CurrentClan)) ^ Player.User.Name ^ "$g scores!";
+				
+				{
+					declare netread Integer Net_FlagRush_TeamRoundScore for Teams[0];
+					lblPlayer.Value = "$"^TL::ColorToText(GetTeamPrimaryColor(1)) ^ Teams[0].Name ^ "$g$o " ^ Net_FlagRush_TeamRoundScore;
+				}
+				
+				{
+					declare netread Integer Net_FlagRush_TeamRoundScore for Teams[1];
+					lblTeam.Value = "$"^TL::ColorToText(GetTeamPrimaryColor(2)) ^ Teams[1].Name ^ "$g$o " ^ Net_FlagRush_TeamRoundScore;
+				}
+
+				AnimMgr.Add(lblTitle, "<elem scale =\"1\" opacity=\"1\" />", 1000, CAnimManager::EAnimManagerEasing::ElasticOut2);
+				AnimMgr.Add(lblTitle, "<elem scale=\"20\" opacity=\"0\" />", Now+1100, 1000, CAnimManager::EAnimManagerEasing::CircIn);
+				AnimMgr.Add(lblPlayer, "<elem scale=\"1\"/>", Now+1100, 1000, CAnimManager::EAnimManagerEasing::QuartOut);
+				AnimMgr.Add(lblTeam, "<elem scale=\"1\" />", Now+1100, 1000, CAnimManager::EAnimManagerEasing::QuartOut);
+				
+				// outro
+				AnimMgr.Add(lblPlayer, "<elem scale=\"1\" opacity=\"0\"/>", Now+2600, 2000, CAnimManager::EAnimManagerEasing::QuartIn);
+				AnimMgr.Add(lblTeam, "<elem scale=\"1\" opacity=\"0\"/>", Now+2600, 2000, CAnimManager::EAnimManagerEasing::QuartIn);				
+			}
+		}
+	}
+	--></script>
+	</manialink>
+	""";
+}

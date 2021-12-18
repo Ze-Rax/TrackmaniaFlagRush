@@ -34,7 +34,7 @@ Text GetManialink() {
 			<quad id="up" pos="0 7.5" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" hidden="1" />
 			<quad id="down" pos="0 -5.5" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center" hidden="1"/>
 		
-			<frame pos="0 7" scale="0.6">
+			<frame id="gauge-frame" pos="0 7" scale="0.6">
 				<frame size="10 20" pos="0 0">
 					<quad id="gauge2" pos="0 -10" z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" rot="0" hidden="1" />
 				</frame>
@@ -60,28 +60,20 @@ Text GetManialink() {
 			Void RenderProgress(CMlFrame Frame, Real Value) {
 				declare CMlQuad Gauge1 = Frame.GetFirstChild("gauge1") as CMlQuad;
 				declare CMlQuad Gauge2 = Frame.GetFirstChild("gauge2") as CMlQuad;
-				if (Value == 0.) {
+				if (Value <= 0.01) {
 					Gauge1.Hide();
 					Gauge2.Hide();
 					return;
-				}
-
-				if (Value <= 0.5) {
+				} else if (Value <= 0.5) {
 					Gauge1.Show();
 					Gauge2.Hide();
 					Gauge1.RelativeRotation = -180. + Value * 360;
 					Gauge2.RelativeRotation = 0.;
-				} 
-				if (Value > .5) {
+				} else {
 					Gauge1.Show();
 					Gauge2.Show();
 					Gauge1.RelativeRotation = 0.;
-					Gauge2.RelativeRotation = 180. + Value * 360;
-					
-				}
-				if (Value == 1.) {
-					Gauge1.RelativeRotation = 0.;
-					Gauge2.RelativeRotation = -180.;					
+					Gauge2.RelativeRotation = 180. + Value * 360;					
 				}
 			}
 
@@ -97,13 +89,14 @@ Text GetManialink() {
 				}
 				
 				declare CMlFrame FrameMarkerFlag = (Page.GetFirstChild("marker-flag") as CMlFrame);
-				declare CMlQuad QuadMarkerFlag = (FrameMarkerFlag.GetFirstChild("quad-flag") as CMlQuad);	
-				declare CMlQuad QuadFlagUp = (FrameMarkerFlag.GetFirstChild("up") as CMlQuad);	
-				declare CMlQuad QuadFlagDown = (FrameMarkerFlag.GetFirstChild("down") as CMlQuad);	
+				declare CMlFrame FrameGauge = (Page.GetFirstChild("gauge-frame") as CMlFrame);
+				declare CMlQuad QuadMarkerFlag = (FrameMarkerFlag.GetFirstChild("quad-flag") as CMlQuad);
+				declare CMlQuad QuadFlagUp = (FrameMarkerFlag.GetFirstChild("up") as CMlQuad);
+				declare CMlQuad QuadFlagDown = (FrameMarkerFlag.GetFirstChild("down") as CMlQuad);
 
 				QuadMarkerFlag.Colorize = GetTeamPrimaryColor(Null);
 				
-				declare netread Integer Net_FlagRush_FlagCarrierClan for Teams[0];				
+				declare netread Integer Net_FlagRush_FlagCarrierClan for Teams[0];
 				declare netread Integer Net_FlagRush_FlagGaugeStartDate for Teams[0];
 				declare netread Integer Net_FlagRush_FlagGaugeDuration for Teams[0];
 				declare netread Text	  Net_FlagRush_FlagCarrierLogin for Teams[0];
@@ -121,7 +114,6 @@ Text GetManialink() {
 					// Apply colors
 					QuadMarkerFlag.Colorize = FlagColor;
 					
-
 					foreach (MarkerFrame in Team1BaseMarkerFrames) {
 						(MarkerFrame.GetFirstChild("quad-base") as CMlQuad).Colorize = GetTeamPrimaryColor(Teams[0]);
 					}
@@ -129,18 +121,18 @@ Text GetManialink() {
 						(MarkerFrame.GetFirstChild("quad-base") as CMlQuad).Colorize = GetTeamPrimaryColor(Teams[1]);
 					}
 					
-					/* Gauge animation */
+			
 
 					declare CSmPlayer Player <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
 					if (GUIPlayer != Null) {
-						declare Real distance;
-						if (Player != Null) distance = Player.Position.Y - GUIPlayer.Position.Y;
-						else distance = Net_FlagRush_FlagPosition.Y - GUIPlayer.Position.Y;
+						declare Real Distance;
+						if (Player != Null) Distance = Player.Position.Y - GUIPlayer.Position.Y;
+						else Distance = Net_FlagRush_FlagPosition.Y - GUIPlayer.Position.Y;
 
 						QuadFlagDown.Hide();
 						QuadFlagUp.Hide();
-						if (ML::Abs(distance) >= 8.) {
-							if (distance < 0) {
+						if (ML::Abs(Distance) >= 8.) {
+							if (Distance < 0) {
 								QuadFlagUp.Hide();
 								QuadFlagDown.Show();
 							} else {
@@ -150,17 +142,19 @@ Text GetManialink() {
 						}
 					}
 
+					/* Gauge animation */
 					// Flag gauge end in future
 					declare Boolean IsEndInFuture = Net_FlagRush_FlagGaugeStartDate + Net_FlagRush_FlagGaugeDuration > GameTime;
 					if (IsEndInFuture && Net_FlagRush_FlagGaugeDuration > 0) {
 						declare Ratio = (0. + Net_FlagRush_FlagGaugeDuration - (GameTime - Net_FlagRush_FlagGaugeStartDate)) / Net_FlagRush_FlagGaugeDuration;
 						declare Real Value = ML::Clamp(Ratio, 0.0, 1.0);
+						FrameGauge.Show();
 						RenderProgress(FrameMarkerFlag, Value);
 						QuadMarkerFlag.Opacity = 0.5;
 					}
 					// Flag gauge already finished
 					else {	// Flag respawn already happened
-						RenderProgress(FrameMarkerFlag, 0.);
+						FrameGauge.Hide();
 						QuadMarkerFlag.Opacity = 1.;
 					}
 				}

@@ -1,5 +1,7 @@
 #Include "TextLib" as TL
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
+
 
 #Const C_BackgroundZIndex					0
 #Const C_RadarBaseSize						100.
@@ -67,6 +69,8 @@ Text GetMarkersManialink() {
 
 		<framemodel id="marker-flag">
 			<quad size="10 10" halign="center" valign="center" style="UIConstruction_Buttons" substyle="Validate" id="icon"/>
+			<quad id="up" pos="0 5.5" size="6 6" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" hidden="1" />
+			<quad id="down" pos="0 -5.5" size="6 6" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center" hidden="1"/>
 		</framemodel>
 
 		<frame z-index="{{{ C_BackgroundZIndex + 2 }}}" id="marker-frame" scale="{{{ G_Config.Scale }}}" pos="{{{ G_Config.Position.X }}} {{{ G_Config.Position.Y }}}" hidden="1">
@@ -79,6 +83,9 @@ Text GetMarkersManialink() {
 
 		declare CMlFrame[] PlayerMarkerFrames;
 		declare CMlFrame FlagMarkerFrame;
+		declare CMlQuad FlagMarkerIcon;
+		declare CMlQuad FlagMarkerUp;
+		declare CMlQuad FlagMarkerDown;
 
 		{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 		{{{ UIShared::GetUtilFunctions() }}}
@@ -106,15 +113,14 @@ Text GetMarkersManialink() {
 
 			declare Vec3 RelativePosition;
 			declare CSmPlayer FlagCarrierPlayer <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
-			declare CMlQuad FlagMarkerIcon = (FlagMarkerFrame.GetFirstChild("icon") as CMlQuad);
 			if(Net_FlagRush_FlagCarrierLogin == "" || FlagCarrierPlayer == Null) {
-				RelativePosition = GUIPlayer.Position - Net_FlagRush_FlagPosition;
-				FlagMarkerIcon.Colorize = <1., 1., 1.>;
+				RelativePosition = Net_FlagRush_FlagPosition - GUIPlayer.Position;
+				FlagMarkerIcon.Colorize = {{{ FlagRush_Teams::C_DefaultNeutralColor}}};
 			} else {
-				RelativePosition = GUIPlayer.Position - FlagCarrierPlayer.Position;
+				RelativePosition = FlagCarrierPlayer.Position - GUIPlayer.Position;
 				FlagMarkerIcon.Colorize = GetTeamPrimaryColor(FlagCarrierPlayer.CurrentClan);
 			}
-			declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <RelativePosition.X, RelativePosition.Z>);
+			declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <-RelativePosition.X, -RelativePosition.Z>);
 
 			// If too far outside, still show on border
 			RelativeRadarPosition = < ML::Clamp(RelativeRadarPosition.X, -100., 100.), ML::Clamp(RelativeRadarPosition.Y, -100., 100.) >;
@@ -122,6 +128,8 @@ Text GetMarkersManialink() {
 			// Update marker frame
 			FlagMarkerFrame.RelativePosition_V3 = RelativeRadarPosition * {{{ G_Config.Zoom }}};
 			FlagMarkerFrame.ZIndex = Net_FlagRush_FlagPosition.Y;
+			FlagMarkerUp.Visible = RelativePosition.Y >= {{{ UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+			FlagMarkerDown.Visible = RelativePosition.Y <= {{{ -UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
 		}
 
 		Void UpdatePlayerMarker(CSmPlayer Player, CMlFrame MarkerFrame) {
@@ -141,8 +149,8 @@ Text GetMarkersManialink() {
 				(MarkerFrame.GetFirstChild("glow") as CMlQuad).Opacity = {{{ C_PlayerMarkerGlowOpacity }}};
 			} else {
 				// Determine relative position on radar
-				declare Vec3 RelativePosition = GUIPlayer.Position - Player.Position;
-				declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <RelativePosition.X, RelativePosition.Z>) * {{{ G_Config.Zoom }}};
+				declare Vec3 RelativePosition = Player.Position - GUIPlayer.Position;
+				declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <-RelativePosition.X, -RelativePosition.Z>) * {{{ G_Config.Zoom }}};
 
 				// Hide when outside
 				declare Real OffsetXPercentage = ML::Abs(RelativeRadarPosition.X) / {{{ C_RadarBaseSize / 2 }}};
@@ -178,6 +186,9 @@ Text GetMarkersManialink() {
 		main() {
 			declare CMlFrame MainFrame = (Page.GetFirstChild("marker-frame") as CMlFrame);
 			FlagMarkerFrame = (Page.GetFirstChild("marker-flag") as CMlFrame);
+			FlagMarkerIcon = (FlagMarkerFrame.GetFirstChild("icon") as CMlQuad);
+			FlagMarkerUp = (FlagMarkerFrame.GetFirstChild("up") as CMlQuad);
+			FlagMarkerDown = (FlagMarkerFrame.GetFirstChild("down") as CMlQuad);
 			PlayerMarkerFrames = GetPlayerMarkerFrames();
 
 			declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];

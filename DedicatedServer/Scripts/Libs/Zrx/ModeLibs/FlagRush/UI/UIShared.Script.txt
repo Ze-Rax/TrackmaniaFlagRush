@@ -1,5 +1,7 @@
 #Include	"Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
 
+#Const C_FlagMarkerHeightIndicatorThreshold	8.
+
 /**
  *	Common Functions to embed in multiple manialink
  */

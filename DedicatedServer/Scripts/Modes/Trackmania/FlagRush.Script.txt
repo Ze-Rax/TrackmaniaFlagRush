@@ -107,6 +107,9 @@
 #Command	Command_ResetFlag			(Boolean) as	"Reset flag"
 #Const		C_Command_ResetFlag									"ResetFlag"
 
+#Const		C_Command_AddBots										"AddBots"
+#Const		C_Command_RemoveBots								"RemoveBots"
+
 //////////////////////
 // Global Variables //
 //////////////////////
@@ -1093,6 +1096,7 @@ Void HandleEvents() {
  * Handles a single command.
  */
 Void HandleCommand(CommandUtils::K_Command Command) {
+	UIManager.UIAll.SendChat("""[FlagRush] Received Command: {{{ Command.Name }}}""");
 	switch(Command.Name) {
 		case CommandUtils::C_CommandPrefix ^ C_Command_EndWarmup: {
 			WarmUpReadyUp::Stop();
@@ -1107,6 +1111,12 @@ Void HandleCommand(CommandUtils::K_Command Command) {
 			declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
 			ResetHandicaps(FlagCarrierPlayer);
 			ResetFlag();
+		}
+		case CommandUtils::C_CommandPrefix ^ C_Command_AddBots: {
+			Users_SetNbFakeUsers(1, 1);
+		}
+		case CommandUtils::C_CommandPrefix ^ C_Command_RemoveBots: {
+			Users_SetNbFakeUsers(0, 0);
 		}
 	}
 }

@@ -57,36 +57,34 @@ Text GetManialink() {
 			{{{ UIShared::GetUtilFunctions() }}}
 
 			/** render progress between 0.0 - 1.0 */
-			Void RenderProgress(CMlFrame Frame, Real value) {
-				declare CMlQuad gauge1 = Frame.GetFirstChild("gauge1") as CMlQuad;
-				declare CMlQuad gauge2 = Frame.GetFirstChild("gauge2") as CMlQuad;
-				if (value == 0.) {
-					gauge1.Hide();
-					gauge2.Hide();
+			Void RenderProgress(CMlFrame Frame, Real Value) {
+				declare CMlQuad Gauge1 = Frame.GetFirstChild("gauge1") as CMlQuad;
+				declare CMlQuad Gauge2 = Frame.GetFirstChild("gauge2") as CMlQuad;
+				if (Value == 0.) {
+					Gauge1.Hide();
+					Gauge2.Hide();
 					return;
 				}
 
-				if (value <= 0.5) {
-					gauge1.Show();
-					gauge2.Hide();
-					gauge1.RelativeRotation = -180. + value * 360;
-					gauge2.RelativeRotation = 0.;
+				if (Value <= 0.5) {
+					Gauge1.Show();
+					Gauge2.Hide();
+					Gauge1.RelativeRotation = -180. + Value * 360;
+					Gauge2.RelativeRotation = 0.;
 				} 
-				if (value > .5) {
-					gauge1.Show();
-					gauge2.Show();
-					gauge1.RelativeRotation = 0.;
-					gauge2.RelativeRotation = 180. + value * 360;
+				if (Value > .5) {
+					Gauge1.Show();
+					Gauge2.Show();
+					Gauge1.RelativeRotation = 0.;
+					Gauge2.RelativeRotation = 180. + Value * 360;
 					
 				}
-				if (value == 1.) {
-					gauge1.RelativeRotation = 0.;
-					gauge2.RelativeRotation = -180.;					
+				if (Value == 1.) {
+					Gauge1.RelativeRotation = 0.;
+					Gauge2.RelativeRotation = -180.;					
 				}
-
 			}
 
-	
 			main() {
 				declare CMlFrame[] Team1BaseMarkerFrames;
 				declare CMlFrame[] Team2BaseMarkerFrames;

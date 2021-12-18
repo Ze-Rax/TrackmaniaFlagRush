@@ -2,6 +2,14 @@
 
 **`FlagRush`** is a Trackmania gamemode, where two teams compete in an arena to capture a flag and bring it to opposing team base. Mode plays best with a team size of 3 players per team.
 
+# Maps
+
+You can find compatible maps on Maniaexchange:
+- https://trackmania.exchange/mapsearch2?mtype=FlagRushArena
+
+We recommend stating with our officially reviewed mapppack:
+- https://trackmania.exchange/mappack/view/1151/flagrush-accepted-maps
+
 # Server How-to
 
 1. Setup Trackmania2020 dedicated server. ([Tutorial](https://forums.ubisoft.com/showthread.php/2242192-Tutorial-Trackmania-2020-Dedicated-Server))

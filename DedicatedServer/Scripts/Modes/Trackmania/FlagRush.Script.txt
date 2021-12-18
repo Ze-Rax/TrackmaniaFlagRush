@@ -44,7 +44,7 @@
 #Const 	C_RespawnSpeedLimitKmh 				30.
 
 #Const  C_Debug 											False
-#Const	C_Debug_NbFakeUsers						<1, 1>
+#Const	C_Debug_NbFakeUsers						<0, 0>
 
 //////////////
 // Settings //

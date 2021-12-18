@@ -1,5 +1,7 @@
 #Include "TextLib" as TL
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
+
 
 #Const C_BackgroundZIndex					0
 #Const C_RadarBaseSize						100.
@@ -24,9 +26,20 @@ Text GetBackgroundManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_Radar_Background">
-		<frame id="radar-background" scale="{{{ G_Config.Scale }}}" pos="{{{ G_Config.Position.X }}} {{{ G_Config.Position.Y }}}" hidden="1">
-			<quad z-index="{{{ C_BackgroundZIndex }}}" size="{{{ C_RadarBaseSize }}} {{{ C_RadarBaseSize }}}" opacity="0.5" halign="center" valign="center" id="radar-background" bgcolor="000"/>
-			<quad z-index="{{{ C_BackgroundZIndex + 1 }}}" size="21 21" halign="center" valign="center" style="Bgs1InRace" substyle="BgColorContour" scale="5" colorize="f44" id="radar-border"/>
+		<frame id="radar-background" scale="{{{ G_Config.Scale }}}" pos="{{{ G_Config.Position.X }}} {{{ G_Config.Position.Y }}}">
+			<quad id="radar-border" size="{{{C_RadarBaseSize * 1.02}}} {{{C_RadarBaseSize * 1.02}}}"  image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" valign="center" halign="center"/>
+
+			<!-- inner decoration -->
+			<quad pos="0 {{{C_RadarBaseSize / 2}}}" z-index="0" size="1 {{{C_RadarBaseSize * 0.375}}}" bgcolor="000" opacity="0.1" halign="center" valign="top"/>
+			<quad pos="0 {{{-C_RadarBaseSize / 2}}}" z-index="0" size="1 {{{C_RadarBaseSize * 0.375}}}" bgcolor="000" opacity="0.1" halign="center" valign="bottom"/>
+			<quad pos="{{{C_RadarBaseSize / 2}}} 0" z-index="0" size="{{{C_RadarBaseSize * 0.375}}} 1" bgcolor="000" opacity="0.1" halign="right" valign="center"/>
+			<quad pos="{{{-C_RadarBaseSize / 2}}} 0" z-index="0" size="{{{C_RadarBaseSize * 0.375}}} 1" bgcolor="000" opacity="0.1" halign="left" valign="center"/>
+
+			<quad size="{{{C_RadarBaseSize * 0.75}}} {{{C_RadarBaseSize * 0.75}}}" image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" valign="center" halign="center" modulatecolor="000" opacity="0.1"/>
+			<quad size="{{{C_RadarBaseSize * 0.5}}} {{{C_RadarBaseSize * 0.5}}}" image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" valign="center" halign="center" modulatecolor="000" opacity="0.1"/>
+
+			<!-- background -->
+			<quad size="{{{C_RadarBaseSize}}} {{{C_RadarBaseSize}}}"  image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga" valign="center" halign="center" modulatecolor="111" opacity="0.7"/>    
 		</frame>
 
 		<script><!--
@@ -45,7 +58,7 @@ Text GetBackgroundManialink() {
 					}
 
 					FrameBackground.Show();
-					Border.Colorize = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
+					Border.ModulateColor = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
 				}
 			}
 		--></script>
@@ -67,6 +80,8 @@ Text GetMarkersManialink() {
 
 		<framemodel id="marker-flag">
 			<quad size="10 10" halign="center" valign="center" style="UIConstruction_Buttons" substyle="Validate" id="icon"/>
+			<quad id="up" pos="0 5.5" size="6 6" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" hidden="1" />
+			<quad id="down" pos="0 -5.5" size="6 6" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center" hidden="1"/>
 		</framemodel>
 
 		<frame z-index="{{{ C_BackgroundZIndex + 2 }}}" id="marker-frame" scale="{{{ G_Config.Scale }}}" pos="{{{ G_Config.Position.X }}} {{{ G_Config.Position.Y }}}" hidden="1">
@@ -79,6 +94,9 @@ Text GetMarkersManialink() {
 
 		declare CMlFrame[] PlayerMarkerFrames;
 		declare CMlFrame FlagMarkerFrame;
+		declare CMlQuad FlagMarkerIcon;
+		declare CMlQuad FlagMarkerUp;
+		declare CMlQuad FlagMarkerDown;
 
 		{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 		{{{ UIShared::GetUtilFunctions() }}}
@@ -106,22 +124,25 @@ Text GetMarkersManialink() {
 
 			declare Vec3 RelativePosition;
 			declare CSmPlayer FlagCarrierPlayer <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
-			declare CMlQuad FlagMarkerIcon = (FlagMarkerFrame.GetFirstChild("icon") as CMlQuad);
 			if(Net_FlagRush_FlagCarrierLogin == "" || FlagCarrierPlayer == Null) {
-				RelativePosition = GUIPlayer.Position - Net_FlagRush_FlagPosition;
-				FlagMarkerIcon.Colorize = <1., 1., 1.>;
+				RelativePosition = Net_FlagRush_FlagPosition - GUIPlayer.Position;
+				FlagMarkerIcon.Colorize = {{{ FlagRush_Teams::C_DefaultNeutralColor}}};
 			} else {
-				RelativePosition = GUIPlayer.Position - FlagCarrierPlayer.Position;
+				RelativePosition = FlagCarrierPlayer.Position - GUIPlayer.Position;
 				FlagMarkerIcon.Colorize = GetTeamPrimaryColor(FlagCarrierPlayer.CurrentClan);
 			}
-			declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <RelativePosition.X, RelativePosition.Z>);
+			declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <-RelativePosition.X, -RelativePosition.Z>);
 
 			// If too far outside, still show on border
-			RelativeRadarPosition = < ML::Clamp(RelativeRadarPosition.X, -100., 100.), ML::Clamp(RelativeRadarPosition.Y, -100., 100.) >;
+			declare Distance = ML::Distance(<0., 0.> , RelativeRadarPosition);
+			declare Vec2 UnitDirection = RelativeRadarPosition * (1 / (ML::Abs(Distance) + 0.001));
+			RelativeRadarPosition = UnitDirection * ML::Clamp(Distance, {{{ -C_RadarBaseSize / 2 / G_Config.Zoom }}}, {{{ C_RadarBaseSize / 2 / G_Config.Zoom}}});
 
 			// Update marker frame
 			FlagMarkerFrame.RelativePosition_V3 = RelativeRadarPosition * {{{ G_Config.Zoom }}};
 			FlagMarkerFrame.ZIndex = Net_FlagRush_FlagPosition.Y;
+			FlagMarkerUp.Visible = RelativePosition.Y >= {{{ UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+			FlagMarkerDown.Visible = RelativePosition.Y <= {{{ -UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
 		}
 
 		Void UpdatePlayerMarker(CSmPlayer Player, CMlFrame MarkerFrame) {
@@ -141,13 +162,12 @@ Text GetMarkersManialink() {
 				(MarkerFrame.GetFirstChild("glow") as CMlQuad).Opacity = {{{ C_PlayerMarkerGlowOpacity }}};
 			} else {
 				// Determine relative position on radar
-				declare Vec3 RelativePosition = GUIPlayer.Position - Player.Position;
-				declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <RelativePosition.X, RelativePosition.Z>) * {{{ G_Config.Zoom }}};
+				declare Vec3 RelativePosition = Player.Position - GUIPlayer.Position;
+				declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <-RelativePosition.X, -RelativePosition.Z>) * {{{ G_Config.Zoom }}};
 
 				// Hide when outside
-				declare Real OffsetXPercentage = ML::Abs(RelativeRadarPosition.X) / {{{ C_RadarBaseSize / 2 }}};
-				declare Real OffsetYPercentage = ML::Abs(RelativeRadarPosition.Y) / {{{ C_RadarBaseSize / 2 }}};
-				if (OffsetXPercentage > {{{ C_MarkerFadeEnd }}} || OffsetYPercentage > {{{ C_MarkerFadeEnd }}}) {
+				declare OffsetPercentage = ML::Distance(<0., 0.> , RelativeRadarPosition) / {{{ C_RadarBaseSize / 2 }}};
+				if (OffsetPercentage > {{{ C_MarkerFadeEnd }}}) {
 					MarkerFrame.Hide();
 					return;
 				}
@@ -160,9 +180,8 @@ Text GetMarkersManialink() {
 
 				// Fade when close too the edge
 				declare Real Opacity = 1.0;
-				if (OffsetXPercentage > {{{ C_MarkerFadeStart }}} || OffsetYPercentage > {{{ C_MarkerFadeStart }}}) {
-					declare Real MaxOffset = ML::Abs(ML::Max(OffsetXPercentage, OffsetYPercentage));
-					declare Real FadeProgress = ({{{ C_MarkerFadeEnd }}} - MaxOffset) / ({{{ C_MarkerFadeEnd - C_MarkerFadeStart }}});
+				if (OffsetPercentage > {{{ C_MarkerFadeStart }}}) {
+					declare Real FadeProgress = ({{{ C_MarkerFadeEnd }}} - OffsetPercentage) / ({{{ C_MarkerFadeEnd - C_MarkerFadeStart }}});
 					Opacity = ML::Clamp(FadeProgress, 0., 1.);
 				}
 
@@ -178,6 +197,9 @@ Text GetMarkersManialink() {
 		main() {
 			declare CMlFrame MainFrame = (Page.GetFirstChild("marker-frame") as CMlFrame);
 			FlagMarkerFrame = (Page.GetFirstChild("marker-flag") as CMlFrame);
+			FlagMarkerIcon = (FlagMarkerFrame.GetFirstChild("icon") as CMlQuad);
+			FlagMarkerUp = (FlagMarkerFrame.GetFirstChild("up") as CMlQuad);
+			FlagMarkerDown = (FlagMarkerFrame.GetFirstChild("down") as CMlQuad);
 			PlayerMarkerFrames = GetPlayerMarkerFrames();
 
 			declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];

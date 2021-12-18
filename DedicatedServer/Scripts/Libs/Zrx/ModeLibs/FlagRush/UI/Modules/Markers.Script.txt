@@ -129,17 +129,8 @@ Text GetManialink() {
 						if (Player != Null) Distance = Player.Position.Y - GUIPlayer.Position.Y;
 						else Distance = Net_FlagRush_FlagPosition.Y - GUIPlayer.Position.Y;
 
-						QuadFlagDown.Hide();
-						QuadFlagUp.Hide();
-						if (ML::Abs(Distance) >= 8.) {
-							if (Distance < 0) {
-								QuadFlagUp.Hide();
-								QuadFlagDown.Show();
-							} else {
-								QuadFlagUp.Show();
-								QuadFlagDown.Hide();
-							}
-						}
+						QuadFlagDown.Visible = Distance <= {{{ -UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+						QuadFlagUp.Visible = Distance >= {{{ UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
 					}
 
 					/* Gauge animation */

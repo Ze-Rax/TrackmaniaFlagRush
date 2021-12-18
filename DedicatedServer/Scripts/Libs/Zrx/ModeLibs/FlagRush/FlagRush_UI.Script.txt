@@ -167,7 +167,7 @@ Void InitRadar() {
 		Scale = 0.35,
 		MarkerScale = 1.5,
 		Position = <135., -65.>,
-		Zoom = 0.5};
+		Zoom = 0.35};
 	FlagRush_UIRadarV2::SetConfig(Config);
 
 	Layers::Create(C_LayerName_RadarBackground, FlagRush_UIRadarV2::GetBackgroundManialink());

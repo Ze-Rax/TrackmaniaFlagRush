@@ -26,9 +26,11 @@ Text GetBackgroundManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_Radar_Background">
-		<frame id="radar-background" scale="{{{ G_Config.Scale }}}" pos="{{{ G_Config.Position.X }}} {{{ G_Config.Position.Y }}}" hidden="1">
-			<quad z-index="{{{ C_BackgroundZIndex }}}" size="{{{ C_RadarBaseSize }}} {{{ C_RadarBaseSize }}}" opacity="0.5" halign="center" valign="center" id="radar-background" bgcolor="000"/>
-			<quad z-index="{{{ C_BackgroundZIndex + 1 }}}" size="21 21" halign="center" valign="center" style="Bgs1InRace" substyle="BgColorContour" scale="5" colorize="f44" id="radar-border"/>
+		<frame id="radar-background" scale="{{{ G_Config.Scale }}}" pos="{{{ G_Config.Position.X }}} {{{ G_Config.Position.Y }}}">
+		  <frame size="{{{C_RadarBaseSize * 0.98}}} {{{C_RadarBaseSize * 0.98}}}" valign="center" halign="center" z-index="{{{ C_BackgroundZIndex }}}">
+		    <quad pos="0 0" z-index="0" size="{{{ C_RadarBaseSize }}} {{{ C_RadarBaseSize }}}"  alphamask="file://Media/Painter/Stencils/01-EllipseRound/Icon.dds" image="file://Media/Painter/Stencils/01-EllipseRound/Icon.dds" valign="center" halign="center" modulatecolor="000" opacity="0.7"/>
+		  </frame>
+			<quad pos="0 0" z-index="{{{ C_BackgroundZIndex +1 }}}" size="{{{ C_RadarBaseSize * 1.05 }}} {{{ C_RadarBaseSize * 1.05 }}}" image="file://Media/Manialinks/Common/Settings/Interface/CrosshairRocket.png" valign="center" halign="center" colorize="f44" id="radar-border"/>
 		</frame>
 
 		<script><!--
@@ -123,7 +125,9 @@ Text GetMarkersManialink() {
 			declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <-RelativePosition.X, -RelativePosition.Z>);
 
 			// If too far outside, still show on border
-			RelativeRadarPosition = < ML::Clamp(RelativeRadarPosition.X, -100., 100.), ML::Clamp(RelativeRadarPosition.Y, -100., 100.) >;
+			declare Distance = ML::Distance(<0., 0.> , RelativeRadarPosition);
+			declare Vec2 UnitDirection = RelativeRadarPosition * (1 / (ML::Abs(Distance) + 0.001));
+			RelativeRadarPosition = UnitDirection * ML::Clamp(Distance, {{{ -C_RadarBaseSize }}}, {{{ C_RadarBaseSize }}});
 
 			// Update marker frame
 			FlagMarkerFrame.RelativePosition_V3 = RelativeRadarPosition * {{{ G_Config.Zoom }}};
@@ -153,9 +157,8 @@ Text GetMarkersManialink() {
 				declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <-RelativePosition.X, -RelativePosition.Z>) * {{{ G_Config.Zoom }}};
 
 				// Hide when outside
-				declare Real OffsetXPercentage = ML::Abs(RelativeRadarPosition.X) / {{{ C_RadarBaseSize / 2 }}};
-				declare Real OffsetYPercentage = ML::Abs(RelativeRadarPosition.Y) / {{{ C_RadarBaseSize / 2 }}};
-				if (OffsetXPercentage > {{{ C_MarkerFadeEnd }}} || OffsetYPercentage > {{{ C_MarkerFadeEnd }}}) {
+				declare OffsetPercentage = ML::Distance(<0., 0.> , RelativeRadarPosition) / {{{ C_RadarBaseSize / 2 }}};
+				if (OffsetPercentage > {{{ C_MarkerFadeEnd }}}) {
 					MarkerFrame.Hide();
 					return;
 				}
@@ -168,9 +171,8 @@ Text GetMarkersManialink() {
 
 				// Fade when close too the edge
 				declare Real Opacity = 1.0;
-				if (OffsetXPercentage > {{{ C_MarkerFadeStart }}} || OffsetYPercentage > {{{ C_MarkerFadeStart }}}) {
-					declare Real MaxOffset = ML::Abs(ML::Max(OffsetXPercentage, OffsetYPercentage));
-					declare Real FadeProgress = ({{{ C_MarkerFadeEnd }}} - MaxOffset) / ({{{ C_MarkerFadeEnd - C_MarkerFadeStart }}});
+				if (OffsetPercentage > {{{ C_MarkerFadeStart }}}) {
+					declare Real FadeProgress = ({{{ C_MarkerFadeEnd }}} - OffsetPercentage) / ({{{ C_MarkerFadeEnd - C_MarkerFadeStart }}});
 					Opacity = ML::Clamp(FadeProgress, 0., 1.);
 				}
 

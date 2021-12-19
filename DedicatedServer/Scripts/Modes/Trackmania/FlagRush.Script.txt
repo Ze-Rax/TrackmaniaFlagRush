@@ -132,6 +132,7 @@ declare Text G_LastSettings_Team2ForcedName;
 declare Text G_LastSettings_Team2ForcedColor;
 declare Boolean G_LastSettings_UseClubTags;
 declare Boolean G_LastSettings_UseCollisions;
+declare Boolean G_LastSettings_UseCrudeExtrapolation;
 
 declare Integer G_LastPlayersCount;
 
@@ -540,7 +541,7 @@ Void CheckRoundEndConditions() {
  */
 Void InitPlayer(CSmPlayer Player) {
 	Player.TrustClientSimu = True;
-	Player.UseCrudeExtrapolation = False;
+	Player.UseCrudeExtrapolation = S_UseCrudeExtrapolation;
 	declare Integer PreviousClan for Player;
 	
 	SetPlayerClan(Player, Player.RequestedClan);
@@ -877,6 +878,8 @@ Void UpdateCriticalSettings() {
 	G_LastSettings_Team2ForcedName = S_Team2Name;
 	G_LastSettings_Team2ForcedColor = S_Team2Color;
 	G_LastSettings_UseClubTags = S_UseClubTags;
+
+	G_LastSettings_UseCrudeExtrapolation = S_UseCrudeExtrapolation;
 }
 
 /**
@@ -893,11 +896,11 @@ Void HandleModeSettingsUpdate() {
 	
 	if (G_LastSettings_UseCollisions != S_UseCollisions) {
 		UsePvPCollisions = S_UseCollisions;
-
 	}
 	
 	declare Boolean NeedsRestartTurn = (G_LastSettings_UseReversedBases != S_UseReversedBases) ||
-																		 (G_LastSettings_UseCollisions != S_UseCollisions);
+																		 (G_LastSettings_UseCollisions != S_UseCollisions) ||
+																		 (G_LastSettings_UseCrudeExtrapolation != S_UseCrudeExtrapolation);
 	if(NeedsRestartTurn) if(MB_TurnIsRunning()) MB_StopTurn();
 	
 	declare Boolean NeedsReinitTeamConfigs =
@@ -928,6 +931,15 @@ Void UpdatePlayers() {
 		if (Player.RequestedClan != Player.CurrentClan) {
 			FlagRush_UnspawnPlayer(Player);
 			InitPlayer(Player);
+		}
+
+		// When using crude extrapolation, player position is not sent to other players
+		if(S_UseCrudeExtrapolation) {
+			declare netwrite Vec3 Net_Position for Player;
+			Net_Position = Player.Position;
+
+			declare netwrite Real Net_Yaw for Player;
+			Net_Yaw = Player.AimYaw;
 		}
 	}
 }

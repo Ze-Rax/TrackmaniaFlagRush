@@ -125,13 +125,13 @@ Text GetMarkersManialink() {
 			declare Vec3 RelativePosition;
 			declare CSmPlayer FlagCarrierPlayer <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
 			if(Net_FlagRush_FlagCarrierLogin == "" || FlagCarrierPlayer == Null) {
-				RelativePosition = Net_FlagRush_FlagPosition - GUIPlayer.Position;
+				RelativePosition = Net_FlagRush_FlagPosition - GetPlayerPosition(GUIPlayer);
 				FlagMarkerIcon.Colorize = {{{ FlagRush_Teams::C_DefaultNeutralColor}}};
 			} else {
-				RelativePosition = FlagCarrierPlayer.Position - GUIPlayer.Position;
+				RelativePosition = GetPlayerPosition(FlagCarrierPlayer) - GetPlayerPosition(GUIPlayer);
 				FlagMarkerIcon.Colorize = GetTeamPrimaryColor(FlagCarrierPlayer.CurrentClan);
 			}
-			declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <-RelativePosition.X, -RelativePosition.Z>);
+			declare Vec2 RelativeRadarPosition = Rotate(-GetPlayerYaw(GUIPlayer), <-RelativePosition.X, -RelativePosition.Z>);
 
 			// If too far outside, still show on border
 			declare Distance = ML::Distance(<0., 0.> , RelativeRadarPosition);
@@ -162,8 +162,8 @@ Text GetMarkersManialink() {
 				(MarkerFrame.GetFirstChild("glow") as CMlQuad).Opacity = {{{ C_PlayerMarkerGlowOpacity }}};
 			} else {
 				// Determine relative position on radar
-				declare Vec3 RelativePosition = Player.Position - GUIPlayer.Position;
-				declare Vec2 RelativeRadarPosition = Rotate(-GUIPlayer.AimYaw, <-RelativePosition.X, -RelativePosition.Z>) * {{{ G_Config.Zoom }}};
+				declare Vec3 RelativePosition = GetPlayerPosition(Player) - GetPlayerPosition(GUIPlayer);
+				declare Vec2 RelativeRadarPosition = Rotate(-GetPlayerYaw(GUIPlayer), <-RelativePosition.X, -RelativePosition.Z>) * {{{ G_Config.Zoom }}};
 
 				// Hide when outside
 				declare OffsetPercentage = ML::Distance(<0., 0.> , RelativeRadarPosition) / {{{ C_RadarBaseSize / 2 }}};
@@ -176,7 +176,7 @@ Text GetMarkersManialink() {
 				// Determine relative rotation to the player
 				declare Real RelativeYaw;
 				if (Net_FlagRush_FlagCarrierLogin == Player.User.Login) RelativeYaw = 0.;
-				else RelativeYaw = GUIPlayer.AimYaw - Player.AimYaw;
+				else RelativeYaw = GetPlayerYaw(Player) - GetPlayerYaw(GUIPlayer);
 
 				// Fade when close too the edge
 				declare Real Opacity = 1.0;
@@ -187,8 +187,8 @@ Text GetMarkersManialink() {
 
 				// Update marker frame
 				MarkerFrame.RelativePosition_V3 = RelativeRadarPosition;
-				MarkerFrame.ZIndex = Player.Position.Y;
-				MarkerFrame.RelativeRotation = RelativeYaw / ML::Pi * 180;
+				MarkerFrame.ZIndex = GetPlayerPosition(Player).Y;
+				MarkerFrame.RelativeRotation = -RelativeYaw / ML::Pi * 180;
 				(MarkerFrame.GetFirstChild("icon") as CMlQuad).Opacity = Opacity * {{{ C_PlayerMarkerIconOpacity }}};
 				(MarkerFrame.GetFirstChild("glow") as CMlQuad).Opacity = Opacity * {{{ C_PlayerMarkerGlowOpacity }}};
 			}

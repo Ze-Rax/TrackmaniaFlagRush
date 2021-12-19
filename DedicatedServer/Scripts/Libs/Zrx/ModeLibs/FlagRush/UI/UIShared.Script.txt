@@ -1,6 +1,6 @@
 #Include	"Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
 
-#Const C_FlagMarkerHeightIndicatorThreshold	8.
+#Const C_FlagMarkerHeightIndicatorThreshold	7.
 
 /**
  *	Common Functions to embed in multiple manialink
@@ -25,6 +25,18 @@ Text GetUtilFunctions() {
 		CSmPlayer GetPlayer(Text Login) {
 			foreach (Player in Players) if (Player.User.Login == Login) return Player;
 			return Null;
+		}
+
+		Vec3 GetPlayerPosition(CSmPlayer Player) {
+			if(Player == InputPlayer || !Player.UseCrudeExtrapolation) return Player.Position;
+			declare netread Vec3 Net_Position for Player;
+			return Net_Position;
+		}
+
+		Real GetPlayerYaw(CSmPlayer Player) {
+			if (Player == InputPlayer || !Player.UseCrudeExtrapolation) return Player.AimYaw;
+			declare netread Real Net_Yaw for Player;
+			return Net_Yaw;
 		}
 	""";
 }

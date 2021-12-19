@@ -120,14 +120,12 @@ Text GetManialink() {
 					foreach (MarkerFrame in Team2BaseMarkerFrames) {
 						(MarkerFrame.GetFirstChild("quad-base") as CMlQuad).Colorize = GetTeamPrimaryColor(Teams[1]);
 					}
-					
-			
 
 					declare CSmPlayer Player <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
 					if (GUIPlayer != Null) {
 						declare Real Distance;
-						if (Player != Null) Distance = Player.Position.Y - GUIPlayer.Position.Y;
-						else Distance = Net_FlagRush_FlagPosition.Y - GUIPlayer.Position.Y;
+						if (Player != Null) Distance = GetPlayerPosition(Player).Y - GetPlayerPosition(GUIPlayer).Y;
+						else Distance = Net_FlagRush_FlagPosition.Y - GetPlayerPosition(GUIPlayer).Y;
 
 						QuadFlagDown.Visible = Distance <= {{{ -UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
 						QuadFlagUp.Visible = Distance >= {{{ UIShared::C_FlagMarkerHeightIndicatorThreshold }}};

@@ -178,7 +178,7 @@ Text GetEditAnchorManialink() {
 			</frame>
 			
 			<frame id="body-cpfunction" z-index="1" hidden="1">
-				<quad pos="0 -5" z-index="0" size="50 65" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
+				<quad pos="0 -10" z-index="0" size="50 55" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
 				<label pos="0 10" size="45 8" text="Function:" halign="center" valign="center" style="Default" textfont="GameFontRegular" textsize="3" z-index="1" textcolor="FFF"/>
 				
 				<quad pos="0 0" z-index="1" size="45 8" id="button-cpfunctionflag-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Neutral)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>

@@ -296,9 +296,10 @@ Text GetManialink(Integer _PlayersPerPage) {
 
 		/* Netread variables */
 		declare netread Integer Net_FlagRush_FlagsScored for Score;
-		declare netread Integer Net_FlagRush_FlagsScored_Round for Score;
+		declare netread Integer Net_FlagRush_FlagsScored_Match for Score;
 		declare netread Integer Net_FlagRush_FlagsStolen for Score;
-		declare netread Integer Net_FlagRush_FlagsStolen_Round for Score;
+		declare netread Integer Net_FlagRush_FlagsStolen_Match for Score;
+		declare netread Integer Net_FlagRush_MatchPoints for Score;
 
 		/* References for MlControls in PlayerCard Frame */
 		declare CMlLabel LabelPlayerName = (PlayerCard.GetFirstChild("name") as CMlLabel);
@@ -353,12 +354,12 @@ Text GetManialink(Integer _PlayersPerPage) {
 		LabelPlayerName.Value = Score.User.Name;
 
 		/* Scores values */
-		LabelPlayerPoints.Value = TL::ToText(Score.Points);
+		LabelPlayerPoints.Value = TL::ToText(Net_FlagRush_MatchPoints);
 		LabelPlayerPointsAdd.Value = TL::ToText(Score.RoundPoints);
 		LabelPlayerFlagsScored.Value = TL::ToText(Net_FlagRush_FlagsScored);
-		LabelPlayerFlagsScoredAdd.Value = TL::ToText(Net_FlagRush_FlagsScored_Round);
+		LabelPlayerFlagsScoredAdd.Value = TL::ToText(Net_FlagRush_FlagsScored_Match);
 		LabelPlayerFlagsStolen.Value = TL::ToText(Net_FlagRush_FlagsStolen);
-		LabelPlayerFlagsStolenAdd.Value = TL::ToText(Net_FlagRush_FlagsStolen_Round);	
+		LabelPlayerFlagsStolenAdd.Value = TL::ToText(Net_FlagRush_FlagsStolen_Match);	
 	}
 
 	/**

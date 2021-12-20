@@ -109,8 +109,6 @@
 
 #Const		C_Command_AddBots										"AddBots"
 #Const		C_Command_RemoveBots								"RemoveBots"
-#Const    C_Command_ShowMVP										"MvpOn"
-#Const    C_Command_HideMVP										"MvpOff"
 
 //////////////////////
 // Global Variables //
@@ -177,9 +175,6 @@ ModeCommands::AddQuickCommand(C_Command_EndWarmup, "Icons64x64_1", "ArrowGreen")
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UIConstruction_Buttons", "Validate");
-
-ModeCommands::AddQuickCommand(C_Command_ShowMVP, "UICommon64_1", "Pause_light");
-ModeCommands::AddQuickCommand(C_Command_HideMVP, "UICommon64_1", "Pause_light");
 HandleModeSettingsUpdate();
 ***
 
@@ -400,8 +395,8 @@ if(MapWinsTeam1 >= S_NbMapsToWinMatch || MapWinsTeam2 >= S_NbMapsToWinMatch)
 	EventFeed::SendMessage(Message, "info");
 	FlagRush_UI::ShowMVP(True);	
 	MB_Sleep(S_ChatTime * 1500);
-	MB_StopMatch();
 	FlagRush_UI::ShowMVP(False);
+	MB_StopMatch();
 }
 
 Layers::DestroyAll();
@@ -1133,13 +1128,7 @@ Void HandleCommand(CommandUtils::K_Command Command) {
 		}
 		case CommandUtils::C_CommandPrefix ^ C_Command_RemoveBots: {
 			Users_SetNbFakeUsers(0, 0);
-		}
-		case CommandUtils::C_CommandPrefix ^ C_Command_ShowMVP: {			
-			FlagRush_UI::ShowMVP(True);
-		}
-		case CommandUtils::C_CommandPrefix ^ C_Command_HideMVP: {			
-			FlagRush_UI::ShowMVP(False);
-		}		
+		}	
 	}
 }
 

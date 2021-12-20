@@ -101,7 +101,7 @@ Text GetManialink() {
 			declare CMlLabel LblDesc = (Frame.GetFirstChild("description") as CMlLabel);
 			declare netread Integer Net_FlagRush_MatchPoints for Score;
 			if (Player.User.Login == GetFlagStolen()) {
-				LblDesc.Value ="\nMost Flags Stolen";
+				LblDesc.Value ="Most Flags Stolen";
 			}
 			
 			if (Player.User.Login == GetFlagsScored()) {
@@ -122,9 +122,9 @@ Text GetManialink() {
 			declare CMlLabel Title = (Page.GetFirstChild("title") as CMlLabel);		
 			declare CMlFrame TitleFrame = (Page.GetFirstChild("title-frame") as CMlFrame);		
 			declare Integer AnimStart = Now;
-			declare Text FlagRush_AudioUrl = "file://Media/Sounds/Nadeo/CommonLibs/Game/trophysolo_argent.wav";
-			Audio.PlaySoundEvent(FlagRush_AudioUrl, 1.);
+			declare Text FlagRush_AudioUrl = "file://Media/Sounds/Nadeo/CommonLibs/Game/trophysolo_argent.wav";			
 			if (SceneId == NullId) {
+				Audio.PlaySoundEvent(FlagRush_AudioUrl, 1.);
 				declare Integer[Text] Score = GetScores();
 							
 				SceneId = MenuSceneMgr.SceneCreate("Empty");
@@ -189,8 +189,7 @@ Text GetManialink() {
 					if (ItemId != NullId) {
 						MenuSceneMgr.ItemSetLocation(SceneId, ItemId3, <-3., 0., z3>, 180., False);
 					}
-													
-					if (Now-AnimStart > 8000) {					
+					if (Now-AnimStart > 7000) {					
 						break;
 					}
 				}

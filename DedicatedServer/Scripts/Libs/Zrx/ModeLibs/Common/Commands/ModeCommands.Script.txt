@@ -78,14 +78,14 @@ Text GetManialink() {
 	<frame id="custom-command" pos="40">
 		<quad pos="0 0" z-index="0" size="65 10" bgcolor="000" halign="center" valign="center" opacity="0.5"/>
 		<quad pos="-30 0" z-index="0" size="45 5" bgcolor="000" halign="left" valign="center" opacity="0.5"/>
-		<textedit pos="-30 0" z-index="2" size="45 5"  id="textedit-command" valign="center" halign="left" textsize="3" style="StyleTextScriptEditor" textcolor="fff"/>
+		<entry pos="-30 0" z-index="2" size="45 5"  id="textedit-command" valign="center" halign="left" textsize="3" style="StyleTextScriptEditor" textcolor="fff"/>
 		<label pos="30 0" z-index="2" size="20 5" text="$z" valign="center" halign="right" style="CardButtonMediumXS" id="button-sendcommand" scriptevents="1"/>
 	</frame>
 </frame>
 
 <script> <!--
 #Include "TextLib" as TL
-#Const C_MenuAnimDuration 1000
+#Const C_MenuAnimDuration 750
 
 declare CMlFrame FrameMain;
 declare CMlQuad QuadToggleMenu;
@@ -116,7 +116,7 @@ main() {
 	QuadToggleMenu = (Page.GetFirstChild("toggle-menu") as CMlQuad);
 	
 	declare CMlFrame FrameCustomCommand = (Page.GetFirstChild("cuomst-command") as CMlFrame);
-	declare CMlTextEdit TextEditCustomCommand = (Page.GetFirstChild("textedit-command") as CMlTextEdit);
+	declare CMlEntry TextEditCustomCommand = (Page.GetFirstChild("textedit-command") as CMlEntry);
 	declare CMlLabel ButtonCustomCommandSend = (Page.GetFirstChild("button-sendcommand") as CMlLabel);
 	
 	declare netread Text[] Net_ModeCommands_PermittedUserLogins for Teams[0];
@@ -163,6 +163,13 @@ main() {
 						if(QuickCommands.existskey(Event.Control as CMlQuad)) {
 							QuickCommands[Event.Control as CMlQuad].Visible = False;
 						}					
+					}
+					case CMlScriptEvent::Type::EntrySubmit: {
+						declare Text[] CommandSplit = TL::Split(" ", TextEditCustomCommand.Value);
+						if(CommandSplit.count >= 1) {
+							SendCustomEvent("{{{CommandUtils::C_CommandPrefix}}}" ^ CommandSplit[0], CommandSplit.slice(1, CommandSplit.count - 1));
+						}
+						TextEditCustomCommand.Value = "";
 					}
 				}
 			}

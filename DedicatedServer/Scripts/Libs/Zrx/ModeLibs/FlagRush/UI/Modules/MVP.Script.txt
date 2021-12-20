@@ -20,21 +20,20 @@ Text GetManialink() {
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="Flagrush_MVP">
 	<framemodel id="player">
-			<label id="name" pos="0 0" z-index="0" size="80 8" text="PlayerName" textfont="GameFontBlack" textsize="6" halign="center" valign="center2"/>
-			<label id="score" pos="0 -7" z-index="0" size="80 8" text="# points" textfont="GameFontRegular" textsize="6" halign="center" valign="center2"/>
+	<label id="name" pos="0 0" z-index="0" size="80 8" text="PlayerName" textfont="GameFontBlack" textsize="6" halign="center" valign="center2"/>
+	<label id="score" pos="0 -7" z-index="0" size="80 8" text="# points" textfont="GameFontRegular" textsize="6" halign="center" valign="center2"/>
 	</framemodel>
-
-	
-	
-	<frame id="mvp-frame" hidden="1">
-	<label pos="0 50" z-index="0" size="150 12" text="Most Valuable Players" textfont="GameFontBlack" textsize="12" halign="center" valign="center2"/>
-	<frameinstance id="mvp" pos="0 -20" modelid="player" hidden="1" />
-	<frameinstance id="mvp2" pos="-75 0" modelid="player" hidden="1" />
-	<frameinstance id="mvp3" pos="75 0" modelid="player" hidden="1" />
+	<frame id="mvp-frame" z-index="-1" hidden="1">	
+			<label pos="0 35" z-index="0" size="150 12" text="MVP of the Match" textfont="GameFontBlack" textsize="12" halign="center" valign="center2"/>			
+			<frameinstance id="mvp" pos="0 -40" modelid="player" hidden="1" />
+			<frameinstance id="mvp2" pos="-85 -20" modelid="player" hidden="1" />
+			<frameinstance id="mvp3" pos="85 -20" modelid="player" hidden="1" />
+			<!-- <quad pos="0 0" z-index="-2" size="320 200" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" opacity="1" halign="center" valign="center" colorize="0af" /> -->
+			<quad pos="0 0" z-index="-2" size="320 200" image="file:///Media/Manialinks/Nadeo/TMNext/Menus/PageGarage/Garage_background.png" opacity="1" halign="center" valign="center" />
+			
+			<camera id="camera" pos="0 0" size="360 180" valign="center" halign="center" />
 	</frame>
-	<camera id="camera" pos="0 20" size="360 180" valign="center" halign="center" hidden="1" opacity="0.2" />
-
-
+	
 	<script><!--
 	declare Ident SceneId;
 	declare Ident ItemId;
@@ -43,20 +42,20 @@ Text GetManialink() {
 	
 	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 	{{{ UIShared::GetUtilFunctions() }}}
-
+	
 	Void do_nothing() { }	
 	
 	Text GetLogin(Integer[Text] Array, Integer Index) {
 		declare Integer x = 0;
 		foreach(Key => Value in Array) {
 			if (x == Index) {
-			return Key;
+				return Key;
 			}
 			x += 1;
 		}
 		return "";
 	}
-
+	
 	Integer[Text] GetScores() {
 		declare Integer[Text] Score;
 		foreach(Player in Players) {
@@ -64,30 +63,30 @@ Text GetManialink() {
 		}
 		return Score.sortreverse();
 	}
-
-
+	
+	
 	Void RenderPlayer(CMlFrame Frame, CSmPlayer Player) {
 		declare CSmScore Score <=> Player.Score;
 		Frame.Show();
 		declare CMlLabel LblName = (Frame.GetFirstChild("name") as CMlLabel);			
 		declare CMlLabel LblScore = (Frame.GetFirstChild("score") as CMlLabel);
-
+		
 		declare netread Integer Net_FlagRush_FlagsScored for Score;
 		declare netread Integer Net_FlagRush_FlagsScored_Round for Score;
 		declare netread Integer Net_FlagRush_FlagsStolen for Score;
 		declare netread Integer Net_FlagRush_FlagsStolen_Round for Score;
-
+		
 		LblName.Value = Player.User.Name;
 		LblScore.Value = Score.Points ^ " Points";
 	}
-
-
+	
+	
 	Void ShowScene() {
 		declare CMlCamera Camera = (Page.GetFirstChild("camera") as CMlCamera);
 		declare CMlFrame Frame = (Page.GetFirstChild("mvp-frame") as CMlFrame);		
 		if (SceneId == NullId) {
 			declare Integer[Text] Score = GetScores();
-
+			
 			SceneId = MenuSceneMgr.SceneCreate("Empty");
 			MenuSceneMgr.CameraSetLocation(SceneId, <0., 2.5, -8.5>, 12., 50.);
 			//MenuSceneMgr.PlaneReflectEnable(SceneId, 0.63, Null, Null, Null, Null, -2.1);
@@ -157,16 +156,14 @@ Text GetManialink() {
 			if (Net_FlagRush_MVPStamp > LastUpdate) {
 				LastUpdate = Net_FlagRush_MVPStamp;
 				if (Net_FlagRush_MVPShow) {
-					log("Show");
 					ShowScene();
 				} else {
-					log("Hide");
 					HideScene();
 				}
 			}
 		}
 	}
-
+	
 	--></script>
 	</manialink>
 	""";

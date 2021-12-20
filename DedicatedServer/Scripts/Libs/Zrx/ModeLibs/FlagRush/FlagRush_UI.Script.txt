@@ -16,6 +16,7 @@
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"	as ModeCommands
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt"						as FlagRush_UIHeader
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"								as FlagRush_UIMVP
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_UIMarkers
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Spectator.Script.txt"					as FlagRush_UISpectator
@@ -25,6 +26,7 @@
 #Const C_LayerName_ScoresTable			"Layer_FlagRush_ScoresTable"
 #Const C_LayerName_ScoresHeader			"Layer_FlagRush_ScoresHeader"
 #Const C_LayerName_RoundUI					"Layer_FlagRush_RoundUI"
+#Const C_LayerName_MVP							"Layer_FlagRush_MVP"
 #Const C_LayerName_Markers					"Layer_FlagRush_Markers"
 #Const C_LayerName_Feed							"Layer_FlagRush_Feed"
 #Const C_LayerName_Flash						"Layer_FlagRush_Flash"
@@ -201,7 +203,12 @@ Void Init() {
 	Layers::Create(C_LayerName_Flash, FlagRush_UIFlash::GetManialink());
 	Layers::SetType(C_LayerName_Flash, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Flash);
-	
+
+	// MVP
+	Layers::Create(C_LayerName_MVP, FlagRush_UIMVP::GetManialink());
+	Layers::SetType(C_LayerName_MVP, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_MVP);
+		
 	// ModeCommands
 	Layers::Create(C_LayerName_ModeCommands, ModeCommands::GetManialink());
 	Layers::SetType(C_LayerName_ModeCommands, CUILayer::EUILayerType::Normal);
@@ -308,4 +315,12 @@ Void UpdateModeSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap) {
 	
 	declare netwrite Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
 	Net_FlagRush_NbRoundsToWinMap = NbRoundsToWinMap;
+}
+
+Void ShowMVP(Boolean Value) {
+	if (Value == True) {		
+		FlagRush_UIMVP::Show();
+	} else {		
+		FlagRush_UIMVP::Hide();
+	}
 }

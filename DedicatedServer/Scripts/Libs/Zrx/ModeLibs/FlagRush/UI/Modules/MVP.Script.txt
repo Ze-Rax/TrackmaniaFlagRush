@@ -1,0 +1,173 @@
+// #RequireContext CMlScriptIngame
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
+
+Void Show() {
+	declare netwrite Integer Net_FlagRush_MVPStamp for Teams[0];
+	declare netwrite Boolean Net_FlagRush_MVPShow for Teams[0];
+	Net_FlagRush_MVPStamp = Now;
+	Net_FlagRush_MVPShow = True;
+}
+
+Void Hide() {
+	declare netwrite Integer Net_FlagRush_MVPStamp for Teams[0];
+	declare netwrite Boolean Net_FlagRush_MVPShow for Teams[0];
+	Net_FlagRush_MVPStamp = Now;
+	Net_FlagRush_MVPShow = False;
+}
+
+Text GetManialink() {
+	return """
+	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3" name="Flagrush_MVP">
+	<framemodel id="player">
+			<label id="name" pos="0 0" z-index="0" size="80 8" text="PlayerName" textfont="GameFontBlack" textsize="6" halign="center" valign="center2"/>
+			<label id="score" pos="0 -7" z-index="0" size="80 8" text="# points" textfont="GameFontRegular" textsize="6" halign="center" valign="center2"/>
+	</framemodel>
+
+	
+	
+	<frame id="mvp-frame" hidden="1">
+	<label pos="0 50" z-index="0" size="150 12" text="Most Valuable Players" textfont="GameFontBlack" textsize="12" halign="center" valign="center2"/>
+	<frameinstance id="mvp" pos="0 -20" modelid="player" hidden="1" />
+	<frameinstance id="mvp2" pos="-75 0" modelid="player" hidden="1" />
+	<frameinstance id="mvp3" pos="75 0" modelid="player" hidden="1" />
+	</frame>
+	<camera id="camera" pos="0 20" size="360 180" valign="center" halign="center" hidden="1" opacity="0.2" />
+
+
+	<script><!--
+	declare Ident SceneId;
+	declare Ident ItemId;
+	declare Ident ItemId2;
+	declare Ident ItemId3;
+	
+	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ UIShared::GetUtilFunctions() }}}
+
+	Void do_nothing() { }	
+	
+	Text GetLogin(Integer[Text] Array, Integer Index) {
+		declare Integer x = 0;
+		foreach(Key => Value in Array) {
+			if (x == Index) {
+			return Key;
+			}
+			x += 1;
+		}
+		return "";
+	}
+
+	Integer[Text] GetScores() {
+		declare Integer[Text] Score;
+		foreach(Player in Players) {
+			Score[Player.User.Login] = Player.Score.Points;			
+		}
+		return Score.sortreverse();
+	}
+
+
+	Void RenderPlayer(CMlFrame Frame, CSmPlayer Player) {
+		declare CSmScore Score <=> Player.Score;
+		Frame.Show();
+		declare CMlLabel LblName = (Frame.GetFirstChild("name") as CMlLabel);			
+		declare CMlLabel LblScore = (Frame.GetFirstChild("score") as CMlLabel);
+
+		declare netread Integer Net_FlagRush_FlagsScored for Score;
+		declare netread Integer Net_FlagRush_FlagsScored_Round for Score;
+		declare netread Integer Net_FlagRush_FlagsStolen for Score;
+		declare netread Integer Net_FlagRush_FlagsStolen_Round for Score;
+
+		LblName.Value = Player.User.Name;
+		LblScore.Value = Score.Points ^ " Points";
+	}
+
+
+	Void ShowScene() {
+		declare CMlCamera Camera = (Page.GetFirstChild("camera") as CMlCamera);
+		declare CMlFrame Frame = (Page.GetFirstChild("mvp-frame") as CMlFrame);		
+		if (SceneId == NullId) {
+			declare Integer[Text] Score = GetScores();
+
+			SceneId = MenuSceneMgr.SceneCreate("Empty");
+			MenuSceneMgr.CameraSetLocation(SceneId, <0., 2.5, -8.5>, 12., 50.);
+			//MenuSceneMgr.PlaneReflectEnable(SceneId, 0.63, Null, Null, Null, Null, -2.1);
+			
+			/* Destroy the previous item */
+			if (ItemId != NullId) {
+				MenuSceneMgr.ItemDestroy(SceneId, ItemId);
+				MenuSceneMgr.ItemDestroy(SceneId, ItemId2);
+				MenuSceneMgr.ItemDestroy(SceneId, ItemId3);
+				ItemId = NullId;
+				ItemId2 = NullId;
+				ItemId3 = NullId;
+			}
+			
+			/* Add a new item to the scene */
+			if (Score.count >= 1) {
+				declare CSmPlayer Player <=> GetPlayer(GetLogin(Score, 0));
+				declare CMlFrame Frame = (Page.GetFirstChild("mvp") as CMlFrame);		
+				RenderPlayer(Frame, Player);
+				ItemId = MenuSceneMgr.ItemCreate(SceneId, "CarSport", Player.User.Model_CarSport_SkinName, Player.User.Model_CarSport_SkinUrl);
+				MenuSceneMgr.ItemSetLocation(SceneId, ItemId, <0., 0., 0.>, 180., False);
+			}
+			
+			if (Score.count >= 2) {
+				declare CSmPlayer Player <=> GetPlayer(GetLogin(Score, 1));
+				declare CMlFrame Frame = (Page.GetFirstChild("mvp2") as CMlFrame);		
+				RenderPlayer(Frame, Player);
+				ItemId2 = MenuSceneMgr.ItemCreate(SceneId, "CarSport", Player.User.Model_CarSport_SkinName, Player.User.Model_CarSport_SkinUrl);
+				MenuSceneMgr.ItemSetLocation(SceneId, ItemId2, <3.5, 0., 2.>, 180., False);
+			}
+			if (Score.count >= 3) {
+				declare CSmPlayer Player <=> GetPlayer(GetLogin(Score, 2));
+				declare CMlFrame Frame = (Page.GetFirstChild("mvp3") as CMlFrame);		
+				RenderPlayer(Frame, Player);
+				ItemId3 = MenuSceneMgr.ItemCreate(SceneId, "CarSport", Player.User.Model_CarSport_SkinName, Player.User.Model_CarSport_SkinUrl);
+				MenuSceneMgr.ItemSetLocation(SceneId, ItemId3, <-3.5, 0., 2.>, 180., False);
+			}
+			Camera.Show();
+			Frame.Show();
+		}
+	}
+	
+	Void HideScene() {
+		declare CMlCamera Camera = (Page.GetFirstChild("camera") as CMlCamera);
+		declare CMlFrame Frame = (Page.GetFirstChild("mvp-frame") as CMlFrame);	
+		if (SceneId != NullId) {
+			MenuSceneMgr.ItemDestroy(SceneId, ItemId);		
+			MenuSceneMgr.ItemDestroy(SceneId, ItemId2);
+			MenuSceneMgr.ItemDestroy(SceneId, ItemId3);
+			MenuSceneMgr.SceneDestroy(SceneId);
+			ItemId = NullId;
+			ItemId2 = NullId;
+			ItemId3 = NullId;
+			SceneId = NullId;	
+			Camera.Hide();	
+			Frame.Hide();
+		}
+	}
+	
+	main() {
+		declare netread Integer Net_FlagRush_MVPStamp for Teams[0];
+		declare netread Boolean Net_FlagRush_MVPShow for Teams[0];
+		declare Integer LastUpdate = Net_FlagRush_MVPStamp;
+		
+		while(True) {
+			yield;
+			if (Net_FlagRush_MVPStamp > LastUpdate) {
+				LastUpdate = Net_FlagRush_MVPStamp;
+				if (Net_FlagRush_MVPShow) {
+					log("Show");
+					ShowScene();
+				} else {
+					log("Hide");
+					HideScene();
+				}
+			}
+		}
+	}
+
+	--></script>
+	</manialink>
+	""";
+}

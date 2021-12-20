@@ -109,6 +109,8 @@
 
 #Const		C_Command_AddBots										"AddBots"
 #Const		C_Command_RemoveBots								"RemoveBots"
+#Const    C_Command_ShowMVP										"MvpOn"
+#Const    C_Command_HideMVP										"MvpOff"
 
 //////////////////////
 // Global Variables //
@@ -170,11 +172,14 @@ foreach(Login in ModeCommandsAdminLogins) {
 	ModeCommands::AddAdmin(Login);
 }
 ModeCommands::AddAdmin("W2ZNWNzVQV6z3hXuNgRMRg");	// Ze-Rax
+ModeCommands::AddAdmin("EdbzfLXMS_aI_PjZCVaygQ");	// Reaby
 ModeCommands::AddQuickCommand(C_Command_EndWarmup, "Icons64x64_1", "ArrowGreen");
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UIConstruction_Buttons", "Validate");
 
+ModeCommands::AddQuickCommand(C_Command_ShowMVP, "UICommon64_1", "Pause_light");
+ModeCommands::AddQuickCommand(C_Command_HideMVP, "UICommon64_1", "Pause_light");
 HandleModeSettingsUpdate();
 ***
 
@@ -1130,6 +1135,14 @@ Void HandleCommand(CommandUtils::K_Command Command) {
 		case CommandUtils::C_CommandPrefix ^ C_Command_RemoveBots: {
 			Users_SetNbFakeUsers(0, 0);
 		}
+		case CommandUtils::C_CommandPrefix ^ C_Command_ShowMVP: {
+			log("show");
+			FlagRush_UI::ShowMVP(True);
+		}
+		case CommandUtils::C_CommandPrefix ^ C_Command_HideMVP: {
+			log("hide");
+			FlagRush_UI::ShowMVP(False);
+		}		
 	}
 }
 

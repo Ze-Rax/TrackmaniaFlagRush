@@ -351,7 +351,6 @@ if (MatchEndRequested) G_MapValid = False;
 ***
 // Evaluate Current Map
 if (G_MapValid) {
-	declare MessageDuration = S_ChatTime * 1000;
 	declare Text Message;
 	
 	declare Integer MapWinnerClan = MatchEvaluation::EvaluateMap();
@@ -367,10 +366,10 @@ if (G_MapValid) {
 		Message = """{{{ColorText}}}{{{Team.Name}}}$z won the map!""";
 	}
 	
-	UIManager.UIAll.QueueMessage(MessageDuration, 2, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
+	UIManager.UIAll.QueueMessage(S_ChatTime * 1000, 2, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
 	EventFeed::SendMessage(Message, "info");
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-	MB_Sleep(MessageDuration);
+	MB_Sleep(S_ChatTime * 1000);
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 } else {
 	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 2, CUIConfig::EMessageDisplay::Big, "The map was skipped!", CUIConfig::EUISound::EndRound, 0);
@@ -382,7 +381,7 @@ declare MapWinsTeam1 = TeamPointsProgression::GetClanMapsWon(1);
 declare MapWinsTeam2 = TeamPointsProgression::GetClanMapsWon(2);
 if(MapWinsTeam1 >= S_NbMapsToWinMatch || MapWinsTeam2 >= S_NbMapsToWinMatch)
 {
-	declare MessageDuration = S_ChatTime * 1000;
+
 	declare Text Message;
 	
 	// Match_EndMatch is during Mapload, Finish here
@@ -396,13 +395,13 @@ if(MapWinsTeam1 >= S_NbMapsToWinMatch || MapWinsTeam2 >= S_NbMapsToWinMatch)
 		declare ColorText = "$" ^ CL::RgbToHex3(ColorPrimaryUI);
 		Message = """{{{ColorText}}}{{{WinnerTeam.Name}}}$z won the match!""";
 	}
-	UIManager.UIAll.QueueMessage(MessageDuration, 3, CUIConfig::EMessageDisplay::Big, Message,CUIConfig::EUISound::EndMatch, 0);
+	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 3, CUIConfig::EMessageDisplay::Big, Message,CUIConfig::EUISound::EndMatch, 0);
+	MB_Sleep(C_BigMessage_Duration);
 	EventFeed::SendMessage(Message, "info");
-	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-	MB_Sleep(MessageDuration);
-	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
-	
+	FlagRush_UI::ShowMVP(True);	
+	MB_Sleep(S_ChatTime * 1500);
 	MB_StopMatch();
+	FlagRush_UI::ShowMVP(False);
 }
 
 Layers::DestroyAll();

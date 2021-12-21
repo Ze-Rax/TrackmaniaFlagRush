@@ -1018,18 +1018,14 @@ Void HandleEvents() {
 				} else if (FlagRush_Map::GetBases(1).exists(Event.Landmark)) {
 					if (S_UseReversedBases) {
 						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
-						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 2) ResetFlag();
-					} else {
+						} else {
 						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
-						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ResetFlag();
-					}
+						}
 				} else if (FlagRush_Map::GetBases(2).exists(Event.Landmark)) {
 					if (S_UseReversedBases) {
-						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
-						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ResetFlag();
+						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);						
 					} else {
-						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
-						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 2) ResetFlag();
+						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);						
 					}
 				} else if (FlagRush_Map::IsResetFlagTrigger(Event.Landmark)) {
 					OnPlayerDeath(Event.Player);

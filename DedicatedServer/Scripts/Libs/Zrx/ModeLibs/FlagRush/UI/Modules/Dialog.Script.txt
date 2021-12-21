@@ -46,8 +46,7 @@ Text GetVersionInfo(Text Version) {
 	switch(Version) {
 		case "1.2.0-dev": {
 			Info = """
-Changes:
-	* Added Flag Reset on own Score
+Changes:	
 	* Added new sounds for Scoring a Flag
 	* Added MVP display
 	* Fixed Flag Spawn randomization

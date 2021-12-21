@@ -235,8 +235,7 @@ Void Init(Text FlagRush_Version) {
 	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Sound);
 	declare Text[] Matches = TL::RegexMatch("""-dev""", FlagRush_Version, "");
-	log(Matches);
-
+	
 	if (Matches[0] == "-dev") {
 		Layers::Create(C_LayerName_Dialog, FlagRush_UIDialog::GetVersionInfo(FlagRush_Version));
 		Layers::SetType(C_LayerName_Dialog, CUILayer::EUILayerType::Normal);

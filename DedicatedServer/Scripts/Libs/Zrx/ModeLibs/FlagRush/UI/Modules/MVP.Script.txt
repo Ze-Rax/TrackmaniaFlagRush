@@ -58,7 +58,7 @@ Text GetManialink() {
 	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 	{{{ UIShared::GetUtilFunctions() }}}
 	
-	Text GetValue(Integer[Text] Array, Integer Index) {
+	CSmScore GetScore(Integer[CSmScore] Array, Integer Index) {
 		declare Integer x = 0;
 		foreach(Key => Value in Array) {
 			if (x == Index) {
@@ -66,36 +66,36 @@ Text GetManialink() {
 			}
 			x += 1;
 		}
-		return "";
+		return Null;
 	}
 	
-	Integer[Text] GetScores() {
-		declare Integer[Text] Output;
+	Integer[CSmScore] GetMatchPoints() {
+		declare Integer[CSmScore] Output;
 		foreach(Score in Scores) {
 			declare netread Integer Net_FlagRush_MatchPoints for Score;
-			Output[Score.User.Login] = Net_FlagRush_MatchPoints;			
+			if (Net_FlagRush_MatchPoints > 0) Output[Score] = Net_FlagRush_MatchPoints;			
 		}
 		return Output.sortreverse();
 	}
 	
-	Text GetFlagsScored() {
-		declare Integer[Text] Output;
+	CSmScore GetFlagsScored() {
+		declare Integer[CSmScore] Output;
 		foreach(Score in Scores) {
 			declare netread Integer Net_FlagRush_FlagsScored_Match for Score;
-			Output[Score.User.Login] = Net_FlagRush_FlagsScored_Match;			
+			Output[Score] = Net_FlagRush_FlagsScored_Match;			
 		}
 		Output = Output.sortreverse();
-		return GetValue(Output, 0);
+		return GetScore(Output, 0);
 	}
 	
-	Text GetFlagStolen() {
-		declare Integer[Text] Output;
+	CSmScore GetFlagStolen() {
+		declare Integer[CSmScore] Output;
 		foreach(Score in Scores) {
 			declare netread Integer Net_FlagRush_FlagsStolen_Match for Score;
-			Output[Score.User.Login] = Net_FlagRush_FlagsStolen_Match;			
+			Output[Score] = Net_FlagRush_FlagsStolen_Match;			
 		}
 		Output = Output.sortreverse();
-		return GetValue(Output, 0);
+		return GetScore(Output, 0);
 	}
 	
 	Real MapRange(Real value, Real low1, Real high1, Real low2, Real high2) { 
@@ -103,22 +103,21 @@ Text GetManialink() {
 	}
 	
 	
-	Void RenderPlayer(CMlFrame Frame, CSmPlayer Player) {
-		declare CSmScore Score <=> Player.Score;
+	Void RenderPlayer(CMlFrame Frame,CSmScore Score) {		
 		Frame.Show();
 		declare CMlLabel LblName = (Frame.GetFirstChild("name") as CMlLabel);			
 		declare CMlLabel LblScore = (Frame.GetFirstChild("score") as CMlLabel);
 		declare CMlLabel LblDesc = (Frame.GetFirstChild("description") as CMlLabel);
 		declare netread Integer Net_FlagRush_MatchPoints for Score;
-		if (Player.User.Login == GetFlagStolen()) {
+		if (Score == GetFlagStolen()) {
 			LblDesc.Value ="Most Flags Stolen";
 		}
 		
-		if (Player.User.Login == GetFlagsScored()) {
+		if (Score == GetFlagsScored()) {
 			LblDesc.Value ="Most Flags Scored";
 		}
 		
-		LblName.Value = Player.User.Name;
+		LblName.Value = Score.User.Name;
 		LblScore.Value = Net_FlagRush_MatchPoints ^ " Points";
 		
 		
@@ -135,7 +134,7 @@ Text GetManialink() {
 		declare Text FlagRush_AudioUrl = "file://Media/Sounds/Nadeo/CommonLibs/Game/trophysolo_argent.wav";			
 		if (SceneId == NullId) {
 			Audio.PlaySoundEvent(FlagRush_AudioUrl, 1.);
-			declare Integer[Text] Score = GetScores();
+			declare Integer[CSmScore] Score = GetMatchPoints();
 			
 			SceneId = MenuSceneMgr.SceneCreate("Empty");
 			MenuSceneMgr.CameraSetLocation(SceneId, <0., 3.3, -14.>, 9., 35.);
@@ -153,25 +152,25 @@ Text GetManialink() {
 			
 			/* Add items to the scene */
 			if (Score.count >= 1) {
-				declare CSmPlayer Player <=> GetPlayer(GetValue(Score, 0));
+				declare CSmScore PlayerScore <=> GetScore(Score, 0);
 				declare CMlFrame Frame = (Page.GetFirstChild("mvp") as CMlFrame);		
-				RenderPlayer(Frame, Player);
-				ItemId = MenuSceneMgr.ItemCreate(SceneId, "CarSport", Player.User.Model_CarSport_SkinName, Player.User.Model_CarSport_SkinUrl);
+				RenderPlayer(Frame, PlayerScore);
+				ItemId = MenuSceneMgr.ItemCreate(SceneId, "CarSport", PlayerScore.User.Model_CarSport_SkinName, PlayerScore.User.Model_CarSport_SkinUrl);
 				MenuSceneMgr.ItemSetLocation(SceneId, ItemId, <0., 0., 0.>, 180., False);
 			}
 			
 			if (Score.count >= 2) {
-				declare CSmPlayer Player <=> GetPlayer(GetValue(Score, 1));
+				declare CSmScore PlayerScore <=> GetScore(Score, 1);
 				declare CMlFrame Frame = (Page.GetFirstChild("mvp2") as CMlFrame);		
-				RenderPlayer(Frame, Player);
-				ItemId2 = MenuSceneMgr.ItemCreate(SceneId, "CarSport", Player.User.Model_CarSport_SkinName, Player.User.Model_CarSport_SkinUrl);
+				RenderPlayer(Frame, PlayerScore);
+				ItemId2 = MenuSceneMgr.ItemCreate(SceneId, "CarSport", PlayerScore.User.Model_CarSport_SkinName, PlayerScore.User.Model_CarSport_SkinUrl);
 				MenuSceneMgr.ItemSetLocation(SceneId, ItemId2, <3.5, 0., 2.>, 180., False);
 			}
 			if (Score.count >= 3) {
-				declare CSmPlayer Player <=> GetPlayer(GetValue(Score, 2));
+				declare CSmScore PlayerScore <=> GetScore(Score, 2);
 				declare CMlFrame Frame = (Page.GetFirstChild("mvp3") as CMlFrame);		
-				RenderPlayer(Frame, Player);
-				ItemId3 = MenuSceneMgr.ItemCreate(SceneId, "CarSport", Player.User.Model_CarSport_SkinName, Player.User.Model_CarSport_SkinUrl);
+				RenderPlayer(Frame, PlayerScore);
+				ItemId3 = MenuSceneMgr.ItemCreate(SceneId, "CarSport", PlayerScore.User.Model_CarSport_SkinName, PlayerScore.User.Model_CarSport_SkinUrl);
 				MenuSceneMgr.ItemSetLocation(SceneId, ItemId3, <-3.5, 0., 2.>, 180., False);
 			}
 			
@@ -269,7 +268,7 @@ Text GetManialink() {
 						continue;
 					}										
 				}
-				
+
 				if (MouseLeftButton) {
 					foreach (Event in PendingEvents) {
 						if (Event.Type == CMlScriptEvent::Type::MouseClick) {

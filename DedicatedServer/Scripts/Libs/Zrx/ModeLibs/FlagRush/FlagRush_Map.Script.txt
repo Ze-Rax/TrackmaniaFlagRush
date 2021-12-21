@@ -53,7 +53,7 @@ CMapLandmark[] GetBases(Integer Clan) {
  * Chooses a random flag spawn.
  */
 CMapLandmark GetRandomFlagSpawn() {
-	declare Integer RandomIndex = ML::Rand(0, G_FlagSpawns.count - 1);
+	declare Integer RandomIndex = ML::Rand(0, G_FlagSpawns.count - 1, Now);
 	return G_FlagSpawns[RandomIndex];
 }
 

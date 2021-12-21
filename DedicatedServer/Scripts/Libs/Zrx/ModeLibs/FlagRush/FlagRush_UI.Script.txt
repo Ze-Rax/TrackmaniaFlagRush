@@ -19,6 +19,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"								as FlagRush_UIMVP
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_UIMarkers
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt"							as FlagRush_UISound
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Spectator.Script.txt"					as FlagRush_UISpectator
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/RadarV2.Script.txt"						as FlagRush_UIRadarV2
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Respawn.Script.txt"						as FlagRush_UIRespawn
@@ -30,6 +31,7 @@
 #Const C_LayerName_Markers					"Layer_FlagRush_Markers"
 #Const C_LayerName_Feed							"Layer_FlagRush_Feed"
 #Const C_LayerName_Flash						"Layer_FlagRush_Flash"
+#Const C_LayerName_Sound						"Layer_FlagRush_Sound"
 #Const C_LayerName_Spectator				"Layer_FlagRush_Spectator"
 #Const C_LayerName_Respawn					"Layer_FlagRush_Respawn"
 #Const C_LayerName_ModeCommands			"Layer_ModeCommands"
@@ -224,6 +226,11 @@ Void Init() {
 	Layers::SetType(C_LayerName_Respawn, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Respawn);
 	
+	// Sound
+	Layers::Create(C_LayerName_Sound, FlagRush_UISound::GetManialink());
+	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Sound);
+		
 	// Markers
 	InitMarkers();
 	
@@ -314,7 +321,6 @@ Void UpdateScores() {
 	foreach (Score in Scores) UpdateScore(Score);
 }
 
-
 /**
  * Sends relevant mode settings values to the clients via netwrite.
  */
@@ -332,4 +338,18 @@ Void ShowMVP(Boolean Value) {
 	} else {		
 		FlagRush_UIMVP::Hide();
 	}
+}
+
+/**
+ * Plays multiple sounds at all clients.
+ */
+Void PlaySound(Text[] Url) {
+	FlagRush_UISound::Play(Url);
+}
+
+/**
+ * Plays a sound at all clients.
+ */
+Void PlaySound(Text Url) {
+	FlagRush_UISound::Play([Url]);
 }

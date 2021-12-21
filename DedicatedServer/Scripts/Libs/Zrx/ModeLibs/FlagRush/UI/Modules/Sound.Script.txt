@@ -21,10 +21,10 @@ Text GetManialink() {
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3">
 	<script><!-- 
-	main() {
+	main() {				
+		declare netread Integer Net_FlagRush_AudioEventStamp for Teams[0];
+		declare Integer LastAudioEventStamp = Net_FlagRush_AudioEventStamp;
 		
-		declare Integer LastAudioEventStamp = GameTime;
-		declare netread Integer Net_FlagRush_AudioEventStamp for Teams[0]= -1;
 		declare netread Text[] Net_FlagRush_AudioUrl for Teams[0];		
 		while(True) {
 			yield;

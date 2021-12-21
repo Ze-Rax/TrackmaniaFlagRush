@@ -190,7 +190,7 @@ FlagRush_Map::InitLandmarks();
 Map::SetDefaultStart(FlagRush_Map::GetSpawn(1));
 FlagState::SetAtLandmark(FlagRush_Map::GetDefaultFlagSpawn());
 
-FlagRush_UI::Init();
+FlagRush_UI::Init(Version);
 InitPlayers();
 FlagRush_Teams::Init();
 FlagRush_UI::UpdateDossards();
@@ -1018,14 +1018,18 @@ Void HandleEvents() {
 				} else if (FlagRush_Map::GetBases(1).exists(Event.Landmark)) {
 					if (S_UseReversedBases) {
 						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
+						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 2) ResetFlag();
 					} else {
 						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
+						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ResetFlag();
 					}
 				} else if (FlagRush_Map::GetBases(2).exists(Event.Landmark)) {
 					if (S_UseReversedBases) {
 						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
+						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ResetFlag();
 					} else {
 						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
+						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 2) ResetFlag();
 					}
 				} else if (FlagRush_Map::IsResetFlagTrigger(Event.Landmark)) {
 					OnPlayerDeath(Event.Player);

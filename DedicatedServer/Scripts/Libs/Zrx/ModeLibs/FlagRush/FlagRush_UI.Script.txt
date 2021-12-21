@@ -1,3 +1,5 @@
+#Include "TextLib" as TL
+
 #Include "Libs/Nadeo/ModeLibs/Legacy/Layers2.Script.txt"							as Layers
 #Include "Libs/Nadeo/TMxSM/Race/Scores.Script.txt"										as Scores
 
@@ -14,6 +16,7 @@
 /* UI Modules */
 #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"							as EventFeed
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"	as ModeCommands
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Dialog.Script.txt"						as FlagRush_UIDialog
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt"						as FlagRush_UIHeader
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"								as FlagRush_UIMVP
@@ -24,6 +27,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/RadarV2.Script.txt"						as FlagRush_UIRadarV2
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Respawn.Script.txt"						as FlagRush_UIRespawn
 
+#Const C_LayerName_Dialog						"Layer_FlagRush_Dialog"
 #Const C_LayerName_ScoresTable			"Layer_FlagRush_ScoresTable"
 #Const C_LayerName_ScoresHeader			"Layer_FlagRush_ScoresHeader"
 #Const C_LayerName_RoundUI					"Layer_FlagRush_RoundUI"
@@ -184,7 +188,7 @@ Void InitRadar() {
 /**
  * Creates the UI Layers and initializes the markers for each player.
  */
-Void Init() {
+Void Init(Text FlagRush_Version) {
 	// Scores header
 	Layers::Create(C_LayerName_ScoresHeader, FlagRush_UIHeader::GetManialink());
 	Layers::SetType(C_LayerName_ScoresHeader, CUILayer::EUILayerType::Normal);
@@ -230,7 +234,15 @@ Void Init() {
 	Layers::Create(C_LayerName_Sound, FlagRush_UISound::GetManialink());
 	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Sound);
-		
+	declare Text[] Matches = TL::RegexMatch("""-dev""", FlagRush_Version, "");
+	log(Matches);
+
+	if (Matches[0] == "-dev") {
+		Layers::Create(C_LayerName_Dialog, FlagRush_UIDialog::GetVersionInfo(FlagRush_Version));
+		Layers::SetType(C_LayerName_Dialog, CUILayer::EUILayerType::Normal);
+		Layers::Attach(C_LayerName_Dialog);
+	}
+
 	// Markers
 	InitMarkers();
 	

@@ -8,10 +8,10 @@ Text GetManialink() {
 	
 	Minimap::CreateMarker(
 		AllPlayers.count,
-		"MinimapFlag", 
+		"MinimapFlag",
 		"""
 		<quad halign="center" valign="center" pos="0 0" z-index="5" size="10 10" style="UIConstruction_Buttons" substyle="Validate" id="Icon"/>
-		""", 
+		""",
 		"""
 		declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
 		if(GUIPlayer != Null && Net_FlagRush_FlagCarrierLogin == "") {
@@ -26,10 +26,10 @@ Text GetManialink() {
 		""",
 		"""
 		if(GUIPlayer != Null) RelPos = Rotate(-GUIPlayer.AimYaw, AbsPos);
-		""", 
+		""",
 		"""
 		FinPos = RelPos;
-		""", 
+		""",
 		"""
 		IsHidden = True;
 		""");
@@ -37,11 +37,11 @@ Text GetManialink() {
 	foreach (i => Player in AllPlayers) {
 		Minimap::CreateMarker(
 			i,
-			"MinimapPlayer_"^i, 
+			"MinimapPlayer_"^i,
 			"""
 			<quad halign="center" valign="center" pos="0 0" z-index="0" size="25 25" style="Bgs1InRace" substyle="Glow" opacity="0.5"/>
 			<quad halign="center" valign="center" pos="0 0" z-index="5" size="10 10" style="UICommon64_1" substyle="ArrowUp_light" id="Icon"/>
-			""", 
+			""",
 			"""
 			if (Players.existskey({{{i}}})) {
 				declare CSmPlayer _Player <=> Players[{{{i}}}];
@@ -53,12 +53,12 @@ Text GetManialink() {
 					(GUIPlayer.Position.Z - _Player.Position.Z) / 32 / 48
 				>;
 			}
-			""", 
+			""",
 			"""
 			RelPos = AbsPos;
 
 			if (Players.existskey({{{i}}})) {
-				declare _Player <=> Players[{{{i}}}];				
+				declare _Player <=> Players[{{{i}}}];
 				if(_Player == GUIPlayer) {
 					RelRot = 0.;
 				} else {
@@ -69,7 +69,7 @@ Text GetManialink() {
 					else RelRot = AbsRot;
 				}
 			}
-			""", 
+			""",
 			"""
 			FinPos = RelPos;
 			FinRot = RelRot;
@@ -81,7 +81,7 @@ Text GetManialink() {
 
 					declare netread Vec3 Net_FlagRush_PrimaryColor for Teams[_Player.CurrentClan-1];
 					QuadIcon.Colorize = Net_FlagRush_PrimaryColor;
-					QuadIcon.ZIndex = _Player.Position.Y;						
+					QuadIcon.ZIndex = _Player.Position.Y;
 
 					declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
 					if(Net_FlagRush_FlagCarrierLogin == _Player.User.Login) {
@@ -93,7 +93,7 @@ Text GetManialink() {
 					}
 				}
 			}
-			""", 
+			""",
 			"""
 			IsHidden = True;
 			"""
@@ -105,10 +105,10 @@ Text GetManialink() {
 		MinimapZoom = 7.5;
 		MinimapPosition = < 135., -65. >;
 		MinimapSize = .125;
-		""", 
+		""",
 		"""
-		<quad halign="center" valign="center" pos="0 0" size="33 33" opacity="0.5" scale="3" bgcolor="000"/>		
-		""", 
+		<quad halign="center" valign="center" pos="0 0" size="33 33" opacity="0.5" scale="3" bgcolor="000"/>
+		""",
 		
 		"""
 		if(GUIPlayer != Null) {
@@ -116,12 +116,12 @@ Text GetManialink() {
 			if(GUIPlayer.CurrentClan > 0) {
 				declare CMlQuad RadarBorder = (Page.GetFirstChild("radar-border") as CMlQuad);
 				declare netread Vec3 Net_FlagRush_PrimaryColor for Teams[GUIPlayer.CurrentClan-1];
-				RadarBorder.ModulateColor = Net_FlagRush_PrimaryColor;				
+				RadarBorder.ModulateColor = Net_FlagRush_PrimaryColor;
 			}
 		} else {
 			Minimap.Hide();
 		}
 		""",
-		"", 
+		"",
 		"");
 	}

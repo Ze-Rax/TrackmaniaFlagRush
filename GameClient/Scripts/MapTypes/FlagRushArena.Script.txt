@@ -481,7 +481,7 @@ Void EditAnchorData(Ident _EditedAnchorDataId) {
 			case CAnchorData::EWaypointType::Finish: {
 				FlagRushArena_EditFinish = True;
 			}
-		}		
+		}
 	}
 }
 
@@ -491,11 +491,11 @@ Void InitLandmarks() {
 			case CAnchorData::EWaypointType::Start: {
 				if(!TL::StartsWith(C_StartTagPrefix, Anchor.Tag)) Anchor.Tag = C_StartTagNoFunction;
 			}
-			case CAnchorData::EWaypointType::Finish: {				
+			case CAnchorData::EWaypointType::Finish: {
 				if(!TL::StartsWith(C_FinishTagPrefix, Anchor.Tag)) Anchor.Tag = C_FinishTagNoFunction;
 			}
 			case CAnchorData::EWaypointType::Checkpoint: {
-				if(!( Anchor.Tag == C_FlagSpawnTag || Anchor.Tag == C_DefaultFlagSpawnTag || Anchor.Tag == C_FlagResetTag)) Anchor.Tag = C_CheckpointTagNoFunction;				
+				if(!( Anchor.Tag == C_FlagSpawnTag || Anchor.Tag == C_DefaultFlagSpawnTag || Anchor.Tag == C_FlagResetTag)) Anchor.Tag = C_CheckpointTagNoFunction;
 			}
 			default: {
 				Anchor.Tag = C_LandmarkTagNoFunction;
@@ -512,7 +512,7 @@ Void PlayTestRun() {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Main
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-main() {	
+main() {
 	HoldLoadingScreen = True;
 	ReportContext::SetContext(System, ReportContext::C_Context_MapEditor);
 	TMMapType::ApplyDecoImages();

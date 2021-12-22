@@ -1,3 +1,9 @@
+#Struct K_FlagPass {
+	CUser OldCarrier;
+	CUser NewCarrier;
+	Integer Date;
+}
+
 #Struct K_FlagState {
 	CMapLandmark Landmark;
 	CUser Carrier;
@@ -5,6 +11,7 @@
 	Vec3 LastSafePosition;
 	Integer LastDropDate;
 	Integer PickupableDate;
+	K_FlagPass LastFlagPass;
 }
 
 declare K_FlagState G_FlagState;
@@ -87,6 +94,15 @@ Void SetPickupableDate(Integer Date) {
  */
 Void SetLastDropDate(Integer Date) {
 	G_FlagState.LastDropDate = Date;
+}
+
+/**
+ * Set the new flag carrier and also tracks the last pass
+ */
+Void PassFlag(CSmPlayer NewCarrier) {
+	assert(NewCarrier != GetFlagCarrierPlayer(), "Cannot pass the flag between same player");
+	G_FlagState.LastFlagPass = K_FlagPass{OldCarrier = G_FlagState.Carrier, NewCarrier = NewCarrier.User, Date = Now};
+	SetAtCarrier(NewCarrier);
 }
 
 /**

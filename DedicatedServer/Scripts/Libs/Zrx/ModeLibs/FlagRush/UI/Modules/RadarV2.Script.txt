@@ -39,7 +39,7 @@ Text GetBackgroundManialink() {
 			<quad size="{{{C_RadarBaseSize * 0.5}}} {{{C_RadarBaseSize * 0.5}}}" image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" valign="center" halign="center" modulatecolor="000" opacity="0.1"/>
 
 			<!-- background -->
-			<quad size="{{{C_RadarBaseSize}}} {{{C_RadarBaseSize}}}"  image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga" valign="center" halign="center" modulatecolor="111" opacity="0.7"/>    
+			<quad size="{{{C_RadarBaseSize}}} {{{C_RadarBaseSize}}}"  image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga" valign="center" halign="center" modulatecolor="111" opacity="0.7"/>
 		</frame>
 
 		<script><!--

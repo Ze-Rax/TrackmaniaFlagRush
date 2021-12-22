@@ -1,6 +1,6 @@
 /*
  * WarmUp Library with infinite time and ready up mechanic.
- *	
+ *
  * Players need to ready up before the warmup end.
  * At least one player in every clan must be ready.
  * Warmup can be force stopped by calling Stop()
@@ -136,7 +136,7 @@ Void Private_UpdateWarmUpEndTime(Boolean AllClansAtLeastOnePlayerReady, Boolean 
 		} else if (G_TimeoutState.State == C_Timeout_State_OnePlayerReady) {
 			Private_UpdateTimeout(C_Timeout_State_AllPlayersReady, C_Timeout_AllPlayersReady);
 		}
-	} else if (AllClansAtLeastOnePlayerReady) {			
+	} else if (AllClansAtLeastOnePlayerReady) {
 		if (G_TimeoutState.State == C_Timeout_State_NotStarted) {
 			Private_StartTimeout(C_Timeout_State_OnePlayerReady, C_Timeout_AtLeastOnePlayerReady);
 		} else if (G_TimeoutState.State == C_Timeout_State_AllPlayersReady) {
@@ -160,7 +160,7 @@ Boolean Private_MatchCanStart() {
 		PlayerClanReadyState.NbPlayers += 1;
 		if(G_PlayersReady.get(Player.User.Login, False)) {
 			PlayerClanReadyState.NbPlayersReady += 1;
-		}				
+		}
 		ClanReadyStates[Player.CurrentClan] = PlayerClanReadyState;
 	}
 	
@@ -218,7 +218,7 @@ Void Stop() {
  * Checks for XmlRpc events that would stop the warmup.
  */
 Void Private_HandleXmlRpcEvents() {
-	foreach (XmlRpcEvent in XmlRpc.PendingEvents) {		
+	foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
 		switch (XmlRpcEvent.Type) {
 			case CXmlRpcEvent::EType::CallbackArray: {
 				switch (XmlRpcEvent.ParamArray1) {

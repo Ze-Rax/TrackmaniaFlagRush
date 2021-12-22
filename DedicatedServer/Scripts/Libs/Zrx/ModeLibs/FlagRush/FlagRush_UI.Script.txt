@@ -302,28 +302,28 @@ Void UpdateTeamScores() {
  * Updates the netwrite/read values for a specific score
  */
 Void UpdateScore(CSmScore Score) {
-	declare netwrite Integer Net_FlagRush_FlagsScored for Score;
-	declare netwrite Integer Net_FlagRush_FlagsScored_Round for Score;
+	declare netwrite Integer Net_FlagRush_Points_Match for Score;
 	declare netwrite Integer Net_FlagRush_FlagsScored_Match for Score;
-	declare netwrite Integer Net_FlagRush_FlagsStolen for Score;
-	declare netwrite Integer Net_FlagRush_FlagsStolen_Round for Score;
+	declare netwrite Integer Net_FlagRush_FlagsScored_Round for Score;
 	declare netwrite Integer Net_FlagRush_FlagsStolen_Match for Score;
-	declare netwrite Integer Net_FlagRush_MatchPoints for Score;
-	
-	Net_FlagRush_MatchPoints
+	declare netwrite Integer Net_FlagRush_FlagsStolen_Round for Score;
+	declare netwrite Integer Net_FlagRush_FlagsAssists_Match for Score;
+	declare netwrite Integer Net_FlagRush_FlagsAssists_Round for Score;
+
+	Net_FlagRush_Points_Match
 		= Scores::GetPlayerMatchPoints(Score);
-	Net_FlagRush_FlagsScored
-		= Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored);
-	Net_FlagRush_FlagsScored_Round
-		= Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored);
 	Net_FlagRush_FlagsScored_Match
 		= Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored);
-	Net_FlagRush_FlagsStolen
-		= Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen);
-	Net_FlagRush_FlagsStolen_Round
-		= Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen);
+	Net_FlagRush_FlagsScored_Round
+		= Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored);
 	Net_FlagRush_FlagsStolen_Match
 		= Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen);
+	Net_FlagRush_FlagsStolen_Round
+		= Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen);
+	Net_FlagRush_FlagsAssists_Match
+		= Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists);
+	Net_FlagRush_FlagsAssists_Round
+		= Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists);
 }
 
 /**

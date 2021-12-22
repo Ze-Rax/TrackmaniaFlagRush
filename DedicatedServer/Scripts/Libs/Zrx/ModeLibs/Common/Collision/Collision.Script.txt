@@ -34,7 +34,7 @@ Void Yield() {
 
 	// Collision detection using CylinderHitbox (based on Dommy's Lib)
 	for(IndexPlayer1, 0, Players.count - 2) {
-		for(IndexPlayer2, IndexPlayer1 + 1, Players.count - 1) {	// No need to check with previous players		
+		for(IndexPlayer2, IndexPlayer1 + 1, Players.count - 1) {	// No need to check with previous players
 			declare Player1 = Players[IndexPlayer1];
 			declare Player2 = Players[IndexPlayer2];
 			if(Hitbox::AreTouching(Player1, Player2)) {

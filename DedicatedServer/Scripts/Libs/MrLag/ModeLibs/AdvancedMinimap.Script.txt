@@ -152,7 +152,7 @@ Void CreateMarker(Integer _Id, Text _FrameId, Text _FrameManialink, Text _Absolu
     G_Markers[_Id] = Marker{FrameId = _FrameId, FrameManialink = _FrameManialink, AbsoluteSetScript = _AbsoluteSetScript, AbsoluteToRelativeScript = _AbsoluteToRelativeScript, FinalInScript = _FinalInScript, FinalOutScript = _FinalOutScript};
 }
 
-Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _BackgroundScript, Text _StylesManialink, Text _PreMainScript) {    
+Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _BackgroundScript, Text _StylesManialink, Text _PreMainScript) {
     declare SingleQuote0 = """ " """;
     declare SingleQuote1 = TL::SubString(SingleQuote0, 1, 1);
     
@@ -228,7 +228,7 @@ Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _Backg
             </frame>
 						<!-- border here -->
 						<quad halign="center" valign="center" pos="0 0" size="33.5 33.5" z-index="1000" style="Bgs1InRace" substyle="BgColorContour" scale="3" modulatecolor="fff" id="radar-border"/>
-            """ ^ FramesManialink ^ """    
+            """ ^ FramesManialink ^ """
         </frame>
     </frame>
     <script><!--

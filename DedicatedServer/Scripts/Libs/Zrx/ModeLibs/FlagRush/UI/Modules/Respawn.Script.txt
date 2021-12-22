@@ -9,7 +9,7 @@ Text GetManialink() {
 			<label pos="40 -5" z-index="2" size="80 6" text="" halign="center" style="TextCardSmall" textsize="3" valign="center2" id="rs-label" textcolor="fff"/>
 			<frame id="rs-gauge-frame" size="80 10">
 				<quad pos="0 0" z-index="1" size="80 10" id="rs-gauge" style="UICommon64_1" substyle="BgFrame1" colorize="004" opacity="0.7"/>
-			</frame>	
+			</frame>
 		<quad pos="0 0" z-index="0" size="80 10" id="rs-gauge2" style="UICommon64_1" substyle="BgFrame1" colorize="000" opacity="0.7"/>
 		</frame>
 	
@@ -28,15 +28,15 @@ Text GetManialink() {
 		declare netread Integer Net_SpawnDate for InputPlayer;
 		declare Integer TotalRespawnTime = -1;
 		while (True) {
-			yield;			
-			declare Integer MillisRemaining = Net_SpawnDate - GameTime;			
+			yield;
+			declare Integer MillisRemaining = Net_SpawnDate - GameTime;
 			if (Net_SpawnDate <= 0 || MillisRemaining <= 0 || IsSpectator) {
 				RespawnFrame.Visible = False;
 				continue;
 			}
 			
 			declare Integer SecondsRemaining = MillisRemaining / 1000;
-			declare Real Ratio = ML::NearestReal(MillisRemaining) / TotalRespawnTime;			
+			declare Real Ratio = ML::NearestReal(MillisRemaining) / TotalRespawnTime;
 			RespawnFrame.Visible = True;
 			
 			if (TotalRespawnTime <= 0) {
@@ -46,8 +46,8 @@ Text GetManialink() {
 			GaugeFrame.Size.X = ML::Clamp(80. * Ratio, 0., 80.);
 			declare Integer teamId = InputPlayer.CurrentClan-1;
 			if (Teams.existskey(teamId)) {
-				RespawnQuad.Colorize = GetTeamPrimaryColor(Teams[teamId]) * 0.5;			
-			}					
+				RespawnQuad.Colorize = GetTeamPrimaryColor(Teams[teamId]) * 0.5;
+			}
 			RespawnLabel.SetText("Respawning in " ^ (SecondsRemaining + 1) ^ "...");
 			
 		}

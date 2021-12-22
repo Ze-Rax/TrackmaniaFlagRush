@@ -17,7 +17,7 @@ Text GetManialink() {
 	declare Text FlagSpawnMarkerFrameInstancesXml;
 	for(I, 0, FlagRush_Map::GetFlagSpawns().count - 1) {
 		FlagSpawnMarkerFrameInstancesXml ^= """
-		<frameinstance modelid="model-marker-flag" id="marker-flag-spawn-{{{I}}}" scale="0.7"/>		
+		<frameinstance modelid="model-marker-flag" id="marker-flag-spawn-{{{I}}}" scale="0.7"/>
 		""";
 	}
 	
@@ -73,7 +73,7 @@ Text GetManialink() {
 					Gauge1.Show();
 					Gauge2.Show();
 					Gauge1.RelativeRotation = 0.;
-					Gauge2.RelativeRotation = 180. + Value * 360;					
+					Gauge2.RelativeRotation = 180. + Value * 360;
 				}
 			}
 

@@ -159,7 +159,7 @@ Boolean AreTouching(CSmPlayer _Player1, CSmPlayer _Player2) {
 	if (MathLib::Distance(_Player1.Position, _Player2.Position) > C_DetectionDistance) return False;
 	
 	// ---------------------------------- //
-	// Set hitbox model properties	
+	// Set hitbox model properties
 	declare Vec3 FixedPos1 = _Player1.Position;
 	declare Vec3 FixedPos2 = _Player2.Position;
 	

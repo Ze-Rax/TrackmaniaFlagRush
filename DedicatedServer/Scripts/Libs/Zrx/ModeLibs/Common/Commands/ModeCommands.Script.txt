@@ -162,7 +162,7 @@ main() {
 					case CMlScriptEvent::Type::MouseOut: {
 						if(QuickCommands.existskey(Event.Control as CMlQuad)) {
 							QuickCommands[Event.Control as CMlQuad].Visible = False;
-						}					
+						}
 					}
 					case CMlScriptEvent::Type::EntrySubmit: {
 						declare Text[] CommandSplit = TL::Split(" ", TextEditCustomCommand.Value);
@@ -320,7 +320,7 @@ Void Private_HandleInternalCommand(CommandUtils::K_Command Command) {
 /**
  * Loads persistent settings from the server.
  */
-Void Load() {	
+Void Load() {
 	declare persistent Text[] Persistent_ModeCommands_AdminLogins for This;
 	G_AdminLogins = Persistent_ModeCommands_AdminLogins;
 	declare persistent Text[] Persistent_ModeCommands_PermittedUserLogins for This;

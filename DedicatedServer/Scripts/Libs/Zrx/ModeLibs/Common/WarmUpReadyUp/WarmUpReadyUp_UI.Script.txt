@@ -56,7 +56,7 @@ Text GetManialink() {
 			declare CMlQuad ButtonReadyActivator = (Page.GetFirstChild("button-ready-activator") as CMlQuad);
 			declare Boolean ButtonHoverState = False;
 			
-			declare LastRequestsSpectateState = False;			
+			declare LastRequestsSpectateState = False;
 			SetReady(False);
 			ButtonReadyBackground.Colorize = C_Color_NotReady;
 

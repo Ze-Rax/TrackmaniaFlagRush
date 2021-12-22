@@ -63,13 +63,16 @@ Text GetManialink(Integer _PlayersPerPage) {
 	<framemodel id="player-card-left">
 		<quad pos="0 0" z-index="-1" size="64 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame2" colorize="006" halign="left"/>
 		<quad pos="0 0" z-index="1" size="6 6" bgcolor="FFF" valign="center" id="avatar" halign="left"/>
-		<label pos="7 0" z-index="1" size="30 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
-		<label pos="42 2.5" z-index="1" size="9 3" text="0" halign="center" textsize="2" id="points" valign="top" />
-		<label pos="51 2.5" z-index="1" size="9 3" text="0" valign	="top" halign="center" textsize="2" id="flags-scored" />
-		<label pos="60 2.5" z-index="1" size="9 3" text="0" valign="top" halign="center" textsize="2" id="flags-stolen" />
-		<label pos="42 -3" z-index="1" size="9 3" text="0"  halign="center" textsize="0.1" id="points-add" valign="bottom" textprefix="$fff " />
-		<label pos="51 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-scored-add" textprefix="$fff " />
-		<label pos="60 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-stolen-add" textprefix="$fff " />
+		<label pos="7 0" z-index="1" size="20 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
+		<label pos="33 2.5" z-index="1" size="9 3" text="0" halign="center" textsize="2" id="points" valign="top" />
+		<label pos="42 2.5" z-index="1" size="9 3" text="0" valign	="top" halign="center" textsize="2" id="flags-scored" />
+		<label pos="51 2.5" z-index="1" size="9 3" text="0" valign="top" halign="center" textsize="2" id="flags-stolen" />
+		<label pos="60 2.5" z-index="1" size="9 3" text="0" valign="top" halign="center" textsize="2" id="flags-assists" />
+		<label pos="33 -3" z-index="1" size="9 3" text="0"  halign="center" textsize="0.1" id="points-add" valign="bottom" textprefix="$fff+" />
+		<label pos="42 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-scored-add" textprefix="$fff+" />
+		<label pos="51 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-stolen-add" textprefix="$fff+" />
+		<label pos="60 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-assists-add" textprefix="$fff+" />
+		<quad pos="33 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
 		<quad pos="42 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
 		<quad pos="51 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
 		<quad pos="60 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
@@ -78,13 +81,16 @@ Text GetManialink(Integer _PlayersPerPage) {
 	<framemodel id="player-card-right">
 		<quad pos="0 0" z-index="-1" size="64 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame2" colorize="300" halign="left"/>
 		<quad pos="0 0" z-index="1" size="6 6" bgcolor="FFF" valign="center" id="avatar" halign="left"/>
-		<label pos="7 0" z-index="1" size="30 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
-		<label pos="42 2.5" z-index="1" size="9 3" text="0" halign="center" textsize="2" id="points" valign="top" />
-		<label pos="51 2.5" z-index="1" size="9 3" text="0" valign="top" halign="center" textsize="2" id="flags-scored" />
-		<label pos="60 2.5" z-index="1" size="9 3" text="0" valign="top" halign="center" textsize="2" id="flags-stolen" />
-		<label pos="42 -3" z-index="1" size="9 3" text="0"  halign="center" textsize="0.1" id="points-add" valign="bottom" textprefix="$fff " />
-		<label pos="51 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-scored-add" textprefix="$fff " />
-		<label pos="60 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-stolen-add" textprefix="$fff " />
+		<label pos="7 0" z-index="1" size="20 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
+		<label pos="33 2.5" z-index="1" size="9 3" text="0" halign="center" textsize="2" id="points" valign="top" />
+		<label pos="42 2.5" z-index="1" size="9 3" text="0" valign="top" halign="center" textsize="2" id="flags-scored" />
+		<label pos="51 2.5" z-index="1" size="9 3" text="0" valign="top" halign="center" textsize="2" id="flags-stolen" />
+		<label pos="60 2.5" z-index="1" size="9 3" text="0" valign="top" halign="center" textsize="2" id="flags-assists" />
+		<label pos="33 -3" z-index="1" size="9 3" text="0"  halign="center" textsize="0.1" id="points-add" valign="bottom" textprefix="$fff+" />
+		<label pos="42 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-scored-add" textprefix="$fff+" />
+		<label pos="51 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-stolen-add" textprefix="$fff+" />
+		<label pos="60 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-assists-add" textprefix="$fff+" />
+		<quad pos="33 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
 		<quad pos="42 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
 		<quad pos="51 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
 		<quad pos="60 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
@@ -125,19 +131,21 @@ Text GetManialink(Integer _PlayersPerPage) {
 				<label pos="-18 -4" z-index="2" size="12 8" text="0" halign="center" valign="center2" textsize="	5" id="team1-score" textfont="GameFontBlack" />
 				<label pos="20 -4" z-index="2" size="12 10" text="0" halign="center" valign="center2" textsize="5" id="team2-score" textfont="GameFontBlack"/>
 				<label pos="-47 -4" z-index="1" size="46 8" text="Team 1" halign="center" textsize="4" id="team1-name" textfont="GameFontRegular" valign="center2"/>
-				<label pos="46 -4" z-index="1" size="48 10" text="Team 2" valign="center2" halign="center" textsize="4" id="team2-name" textfont="GameFontRegular"/>				
+				<label pos="46 -4" z-index="1" size="48 10" text="Team 2" valign="center2" halign="center" textsize="4" id="team2-name" textfont="GameFontRegular"/>
 			</frame>
 
 			<frame id="column-legend" pos="0 -10">
 				<frame id="team1" pos="-68 0">
-					<label class="legend" pos="42 0" z-index="1" size="10 5" text="Points"  valign="center" halign="center" textsize="0.1" />
-					<label class="legend" pos="51 0" z-index="1" size="10 5" text="  Scored" valign="center" halign="center" textsize="0.1"/>
-					<label class="legend" pos="60 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
+					<label class="legend" pos="33 0" z-index="1" size="10 5" text="Points"  valign="center" halign="center" textsize="0.1" />
+					<label class="legend" pos="42 0" z-index="1" size="10 5" text="  Scored" valign="center" halign="center" textsize="0.1"/>
+					<label class="legend" pos="51 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
+					<label class="legend" pos="60 0" z-index="1" size="10 5" text="Assists"  valign="center" halign="center" textsize="0.1" />
 				</frame>
 				<frame id="team2" pos="5 0">
-					<label class="legend" pos="42 0" z-index="1" size="10 5" text="Points" valign="center" halign="center" textsize="0.1" />
-					<label class="legend" pos="51 0" z-index="1" size="10 5" text="  Scored" valign="center" halign="center" textsize="0.1" />
-					<label class="legend" pos="60 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
+					<label class="legend" pos="33 0" z-index="1" size="10 5" text="Points" valign="center" halign="center" textsize="0.1" />
+					<label class="legend" pos="42 0" z-index="1" size="10 5" text="  Scored" valign="center" halign="center" textsize="0.1" />
+					<label class="legend" pos="51 0" z-index="1" size="10 5" text="  Stolen"  valign="center" halign="center" textsize="0.1" />
+					<label class="legend" pos="60 0" z-index="1" size="10 5" text="Assists"  valign="center" halign="center" textsize="0.1" />
 				</frame>
 			</frame>
 
@@ -149,18 +157,18 @@ Text GetManialink(Integer _PlayersPerPage) {
 
 			<frame id="playergrid" pos="0 -9">
 				{{{PlayerCardFrameInstancesXml}}}
-			</frame>			
-			<frame valign="top" halign="center" size="140 42" pos="0 -9">				
-				<quad id="team2-center-divider" pos="1 0" size="0.5 50" bgcolor="000" opacity="0.6" halign="left" />	
+			</frame>
+			<frame valign="top" halign="center" size="140 42" pos="0 -9">
+				<quad id="team2-center-divider" pos="1 0" size="0.5 50" bgcolor="000" opacity="0.6" halign="left" />
 				<quad pos="1 0" size="70 50"  bgcolor="000a" halign="left" />
 
-				<quad id="team1-center-divider" pos="-1 0" size="0.5 50" bgcolor="000" opacity="0.6" halign="right" />				
+				<quad id="team1-center-divider" pos="-1 0" size="0.5 50" bgcolor="000" opacity="0.6" halign="right" />
 				<quad pos="-1 0" size="70 50" bgcolor="000a" halign="right" />
 			</frame>
 
 		</frame>
 		<frame id="footer" pos="0 {{{- (16 + (PlayersPerPage * 6.5))}}}">
-			<label pos="0 -1.5" z-index="0" size="140 4" text="FooterText" halign="center" valign="center2" textsize="1" textfont="GameFontRegular" id="text"/>			
+			<label pos="0 -1.5" z-index="0" size="140 4" text="FooterText" halign="center" valign="center2" textsize="1" textfont="GameFontRegular" id="text"/>
 		</frame>
 	</frame>
 	
@@ -207,7 +215,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 
 	// ------------------------------ //
 	// Helper functions
-	// ------------------------------ //	
+	// ------------------------------ //
 	{{{UIShared::GetTeamColorNetreadFunctions()}}}
 
 	/**
@@ -218,7 +226,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 		foreach (Player in Players) {
 			if (Player.User.Login == Login) {
 				return Player;
-			}			
+			}
 		}
 		return Null;
 	}
@@ -251,7 +259,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 	 * Updates the displayed names and colors for both teams.
 	 */
 	Void UpdateTeamNamesAndColors() {
-		declare Vec3 BgColor1 = CL::RgbToHsv(GetTeamPrimaryColor(Teams[0]));			
+		declare Vec3 BgColor1 = CL::RgbToHsv(GetTeamPrimaryColor(Teams[0]));
 		declare Vec3 BgColor2 = CL::RgbToHsv(GetTeamPrimaryColor(Teams[1]));
 		BgColor1.Z /= 3;
 		BgColor2.Z /= 3;
@@ -259,11 +267,11 @@ Text GetManialink(Integer _PlayersPerPage) {
 		BgColor2 = CL::HsvToRgb(BgColor2);
 		
 		LabelTeam1Name.Value = Teams[0].Name;
-		LabelTeam2Name.Value = Teams[1].Name;	
+		LabelTeam2Name.Value = Teams[1].Name;
 		QuadTeam1BackgroundHeader.BgColor = BgColor1;
 		QuadTeam2BackgroundHeader.BgColor = BgColor2;
 		QuadTeam1ScoreBackground.Colorize = GetTeamPrimaryColor(Teams[0]);
-		QuadTeam2ScoreBackground.Colorize = GetTeamPrimaryColor(Teams[1]);	
+		QuadTeam2ScoreBackground.Colorize = GetTeamPrimaryColor(Teams[1]);
 
 		QuadTeam1CenterDivider.BgColor = GetTeamPrimaryColor(Teams[0]);
 		QuadTeam2CenterDivider.BgColor = GetTeamPrimaryColor(Teams[1]);
@@ -295,11 +303,13 @@ Text GetManialink(Integer _PlayersPerPage) {
 		PlayerCard.Visible = True;
 
 		/* Netread variables */
-		declare netread Integer Net_FlagRush_FlagsScored_Round for Score;
+		declare netread Integer Net_FlagRush_Points_Match for Score;
 		declare netread Integer Net_FlagRush_FlagsScored_Match for Score;
-		declare netread Integer Net_FlagRush_FlagsStolen_Round for Score;
+		declare netread Integer Net_FlagRush_FlagsScored_Round for Score;
 		declare netread Integer Net_FlagRush_FlagsStolen_Match for Score;
-		declare netread Integer Net_FlagRush_MatchPoints for Score;
+		declare netread Integer Net_FlagRush_FlagsStolen_Round for Score;
+		declare netread Integer Net_FlagRush_FlagsAssists_Match for Score;
+		declare netread Integer Net_FlagRush_FlagsAssists_Round for Score;
 
 		/* References for MlControls in PlayerCard Frame */
 		declare CMlLabel LabelPlayerName = (PlayerCard.GetFirstChild("name") as CMlLabel);
@@ -311,6 +321,8 @@ Text GetManialink(Integer _PlayersPerPage) {
 		declare CMlLabel LabelPlayerFlagsScoredAdd = (PlayerCard.GetFirstChild("flags-scored-add") as CMlLabel);
 		declare CMlLabel LabelPlayerFlagsStolen = (PlayerCard.GetFirstChild("flags-stolen") as CMlLabel);
 		declare CMlLabel LabelPlayerFlagsStolenAdd = (PlayerCard.GetFirstChild("flags-stolen-add") as CMlLabel);
+		declare CMlLabel LabelPlayerFlagsAssists = (PlayerCard.GetFirstChild("flags-assists") as CMlLabel);
+		declare CMlLabel LabelPlayerFlagsAssistsAdd = (PlayerCard.GetFirstChild("flags-assists-add") as CMlLabel);
 		declare CMlQuad QuadInfo = (PlayerCard.GetFirstChild("info-icon") as CMlQuad);
 
 		/* General */
@@ -350,21 +362,18 @@ Text GetManialink(Integer _PlayersPerPage) {
 		
 		/* Avatar / Flag */
 		QuadPlayerAvatar.BgColor = TeamColor;
-		QuadPlayerAvatar.ImageUrl = Score.User.CountryFlagUrl;																
+		QuadPlayerAvatar.ImageUrl = Score.User.CountryFlagUrl;
 		LabelPlayerName.Value = Score.User.Name;
 
 		/* Scores values */
-		LabelPlayerPoints.Value = TL::ToText(Net_FlagRush_MatchPoints + Score.RoundPoints);
+		LabelPlayerPoints.Value = TL::ToText(Net_FlagRush_Points_Match);
 		LabelPlayerPointsAdd.Value = TL::ToText(Score.RoundPoints);
-		LabelPlayerPointsAdd.Visible = Score.RoundPoints > 0;
-
-		LabelPlayerFlagsScored.Value = TL::ToText(Net_FlagRush_FlagsScored_Match + Net_FlagRush_FlagsScored_Round);
+		LabelPlayerFlagsScored.Value = TL::ToText(Net_FlagRush_FlagsScored_Match);
 		LabelPlayerFlagsScoredAdd.Value = TL::ToText(Net_FlagRush_FlagsScored_Round);
-		LabelPlayerFlagsScoredAdd.Visible = Net_FlagRush_FlagsScored_Round > 0;
-
-		LabelPlayerFlagsStolen.Value = TL::ToText(Net_FlagRush_FlagsStolen_Match + Net_FlagRush_FlagsStolen_Round);
+		LabelPlayerFlagsStolen.Value = TL::ToText(Net_FlagRush_FlagsStolen_Match);
 		LabelPlayerFlagsStolenAdd.Value = TL::ToText(Net_FlagRush_FlagsStolen_Round);
-		LabelPlayerFlagsStolenAdd.Visible = Net_FlagRush_FlagsStolen_Round > 0;	
+		LabelPlayerFlagsAssists.Value = TL::ToText(Net_FlagRush_FlagsAssists_Match);
+		LabelPlayerFlagsAssistsAdd.Value = TL::ToText(Net_FlagRush_FlagsAssists_Round);
 	}
 
 	/**
@@ -441,7 +450,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 	 *     - Page navigation
 	 */
 	Void HandleEvents() {
-		foreach(Event in PendingEvents) {						
+		foreach(Event in PendingEvents) {
 			switch(Event.Type) {
 				case CMlScriptEvent::Type::KeyPress: {
 					switch(Event.KeyCode) {
@@ -505,7 +514,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 		CurrentPageIndex = 0;
 	}
 
-	main() {		
+	main() {
 		Init();
 		
 		declare Integer LastUpdate = -1;
@@ -517,7 +526,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 
 			if(Now - LastUpdate < C_UpdateInterval) continue;
 			LastUpdate = Now;
-			UpdateTeamNamesAndColors();		
+			UpdateTeamNamesAndColors();
 			UpdateTeamScores();
 			UpdateCurrentPage();
 			UpdateFooter();

@@ -89,14 +89,17 @@ Text GetManialink() {
 	/**
 	* Get Best player of FlagsScored
 	*/
-	CSmScore GetFlagsScored() {
-		declare Integer[CSmScore] Output;
-		foreach(Score in Scores) {
+	CSmScore GetScoreMostFlagsScored() {
+		declare CSmScore BestScore;
+		declare Integer MaxFlagScored = 0;
+		foreach (Score in Scores) {
 			declare netread Integer Net_FlagRush_FlagsScored_Match for Score;
-			Output[Score] = Net_FlagRush_FlagsScored_Match;			
+			if (Net_FlagRush_FlagsScored_Match > MaxFlagsScored) {
+				BestScore = Score;
+				MaxFlagsScores = Net_FlagRush_FlagsScored_Match;
+			}
 		}
-		Output = Output.sortreverse();
-		return GetScore(Output, 0);
+		return BestScore;
 	}
 	
 	/**

@@ -293,6 +293,8 @@ Void UpdateTeamScores() {
 		Net_FlagRush_TeamRoundScore = Scores::GetClanRoundPoints(Clan);
 		declare netwrite Integer Net_FlagRush_TeamMapScore for Teams[Clan-1];
 		Net_FlagRush_TeamMapScore = TeamPointsProgression::GetClanRoundsWon(Clan);
+		declare netwrite Integer Net_FlagRush_TeamMatchScore for Teams[Clan-1];
+		Net_FlagRush_TeamMatchScore = TeamPointsProgression::GetClanMapsWon(Clan);
 	}
 }
 

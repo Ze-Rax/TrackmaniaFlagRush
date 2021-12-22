@@ -82,9 +82,9 @@ Text GetManialink(Integer _PlayersPerPage) {
 		<label pos="42 2.5" z-index="1" size="9 3" text="0" halign="center" textsize="2" id="points" valign="top" />
 		<label pos="51 2.5" z-index="1" size="9 3" text="0" valign="top" halign="center" textsize="2" id="flags-scored" />
 		<label pos="60 2.5" z-index="1" size="9 3" text="0" valign="top" halign="center" textsize="2" id="flags-stolen" />
-		<label pos="42 -3" z-index="1" size="9 3" text="0"  halign="center" textsize="0.1" id="points-add" valign="bottom" textprefix="$fff+" />
-		<label pos="51 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-scored-add" textprefix="$fff+" />
-		<label pos="60 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-stolen-add" textprefix="$fff+" />
+		<label pos="42 -3" z-index="1" size="9 3" text="0"  halign="center" textsize="0.1" id="points-add" valign="bottom" textprefix="$fffr " />
+		<label pos="51 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-scored-add" textprefix="$fffr" />
+		<label pos="60 -3" z-index="1" size="9 3" text="0" valign="bottom" halign="center" textsize="0.1" id="flags-stolen-add" textprefix="$fffr" />
 		<quad pos="42 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
 		<quad pos="51 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
 		<quad pos="60 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
@@ -295,9 +295,9 @@ Text GetManialink(Integer _PlayersPerPage) {
 		PlayerCard.Visible = True;
 
 		/* Netread variables */
-		declare netread Integer Net_FlagRush_FlagsScored for Score;
+		declare netread Integer Net_FlagRush_FlagsScored_Round for Score;
 		declare netread Integer Net_FlagRush_FlagsScored_Match for Score;
-		declare netread Integer Net_FlagRush_FlagsStolen for Score;
+		declare netread Integer Net_FlagRush_FlagsStolen_Round for Score;
 		declare netread Integer Net_FlagRush_FlagsStolen_Match for Score;
 		declare netread Integer Net_FlagRush_MatchPoints for Score;
 
@@ -354,12 +354,17 @@ Text GetManialink(Integer _PlayersPerPage) {
 		LabelPlayerName.Value = Score.User.Name;
 
 		/* Scores values */
-		LabelPlayerPoints.Value = TL::ToText(Net_FlagRush_MatchPoints);
+		LabelPlayerPoints.Value = TL::ToText(Net_FlagRush_MatchPoints + Score.RoundPoints);
 		LabelPlayerPointsAdd.Value = TL::ToText(Score.RoundPoints);
-		LabelPlayerFlagsScored.Value = TL::ToText(Net_FlagRush_FlagsScored);
-		LabelPlayerFlagsScoredAdd.Value = TL::ToText(Net_FlagRush_FlagsScored_Match);
-		LabelPlayerFlagsStolen.Value = TL::ToText(Net_FlagRush_FlagsStolen);
-		LabelPlayerFlagsStolenAdd.Value = TL::ToText(Net_FlagRush_FlagsStolen_Match);	
+		LabelPlayerPointsAdd.Visible = Score.RoundPoints > 0;
+
+		LabelPlayerFlagsScored.Value = TL::ToText(Net_FlagRush_FlagsScored_Match + Net_FlagRush_FlagsScored_Round);
+		LabelPlayerFlagsScoredAdd.Value = TL::ToText(Net_FlagRush_FlagsScored_Round);
+		LabelPlayerFlagsScoredAdd.Visible = Net_FlagRush_FlagsScored_Round > 0;
+
+		LabelPlayerFlagsStolen.Value = TL::ToText(Net_FlagRush_FlagsStolen_Match + Net_FlagRush_FlagsStolen_Round);
+		LabelPlayerFlagsStolenAdd.Value = TL::ToText(Net_FlagRush_FlagsStolen_Round);
+		LabelPlayerFlagsStolenAdd.Visible = Net_FlagRush_FlagsStolen_Round > 0;	
 	}
 
 	/**

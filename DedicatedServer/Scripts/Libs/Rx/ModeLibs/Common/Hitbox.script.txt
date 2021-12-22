@@ -1,0 +1,159 @@
+#Const Version					"2021-12-22"
+#Const ScriptName				"Hitbox.Script.txt"
+
+#Include "MathLib" as ML
+
+#Const C_UpOffset 		0.44
+#Const C_FrontOffset	1.3
+#Const C_BackOffset 	0.75
+
+#Const C_CarEllipsoid     	<1.1, 0.5, 1.1> //xyz "radius"
+#Const C_CarEllipsoidOffset <-0.3, 0.575, -0.3>
+#Const C_FlagEllipsoid			<1.5,3.,1.5>
+
+/**
+ * recompute value below if you changed any value above
+ */
+#Const C_MaxDist 23.04
+#Const C_MinDist 1
+#Const C_MaxDistFlag 16.6
+#Const C_MinDistFlag 5.29
+
+/**
+* double vec3 struct to be used either as :
+* a segment (point - point)
+* an ellipsoid (point - xyz "radius")
+*/
+#Struct Struct_Vec3Vec3 {
+	Vec3 A;
+	Vec3 B;
+}
+/**
+* fast Sphere distance function
+* return the squared distance to avoid a sqrt
+*/
+Real DistanceSquared(Vec3 _A, Vec3 _B){
+	declare Real X = (_A.X - _B.X);
+	declare Real Y = (_A.Y - _B.Y);
+	declare Real Z = (_A.Z - _B.Z);
+	return X * X + Y * Y + Z * Z;
+}
+
+/**
+* fast Ellipsoid distance function
+* return the squared distance to avoid a sqrt
+*/
+Real WeightedDistanceSquared(Vec3 _A, Vec3 _B, Vec3 _V, Vec3 _W) {
+	declare Real X = (_A.X - _B.X) / (_V.X + _W.X);
+	declare Real Y = (_A.Y - _B.Y) / (_V.Y + _W.Y);
+	declare Real Z = (_A.Z - _B.Z) / (_V.Z + _W.Z);
+	return X * X + Y * Y + Z * Z;
+}
+
+/**
+* get the ellipsoid of the collider of the player
+* according to the player orientation
+*/
+Vec3 PlayerEllipsoid(CSmPlayer Player){
+	declare Real Sideness = 1-ML::Abs(Player.Upwardness);
+	return C_CarEllipsoid + C_CarEllipsoidOffset * Sideness;
+}
+
+/**
+* get the points describing a segment along the car length
+* offset upward according to the player orientation
+*/
+Struct_Vec3Vec3 PlayerSegment(CSmPlayer Player){
+	declare Vec3 Up = <0.,1.,0.> * (C_UpOffset * Player.Upwardness);
+  declare Vec3 Front = Player.AimDirection * C_FrontOffset + Up;
+  declare Vec3 Back = Player.AimDirection * -C_BackOffset + Up;
+	return Struct_Vec3Vec3 {
+		A = Player.Position + Back,
+		B = Player.Position + Front
+	};
+}
+
+/**
+* get the ShortestSegment between two Segments
+*/
+Struct_Vec3Vec3 ShortestSegment(Struct_Vec3Vec3 A,Struct_Vec3Vec3 B){
+	declare Vec3 R = B.B - A.B;
+	declare Vec3 U = A.A - A.B;
+	declare Vec3 V = B.A - B.B;
+
+	declare Real RU = ML::DotProduct(R,U);
+	declare Real RV = ML::DotProduct(R,V);
+	declare Real UU = ML::DotProduct(U,U);
+	declare Real UV = ML::DotProduct(U,V);
+	declare Real VV = ML::DotProduct(V,V);
+
+	declare Real Det = UU * VV - UV * UV;
+	declare Real S = 0.;
+	declare Real T = 0.;
+
+	if (Det < 0.001 * UU * VV) {
+		S = ML::Clamp(RU / UU, 0., 1.);
+		T = 0.;
+	}
+	else {
+		S = ML::Clamp((RU * VV - RV * UV) / Det, 0., 1.);
+		T = ML::Clamp((RU * UV - RV * UU) / Det, 0., 1.);
+	}
+
+	return Struct_Vec3Vec3 {
+		A = A.B + ML::Clamp((T * UV + RU) / UU, 0., 1.) * U,
+		B = B.B + ML::Clamp((S * UV - RV) / VV, 0., 1.) * V
+	};
+}
+
+/**
+* get the closet point of a segment to a point P
+*/
+Vec3 ClosestPoint(Struct_Vec3Vec3 S,Vec3 P){
+	declare Vec3 BA = S.B - S.A;
+	declare Real T = ML::DotProduct(P - S.A, BA) / ML::DotProduct(BA, BA);
+  return S.A + (S.B - S.A) * ML::Clamp(T,0.,1.);
+}
+
+/**
+* check if two player collide
+*/
+Boolean AreColliding(CSmPlayer PlayerA,CSmPlayer PlayerB){
+
+	//if both players are more than C_MaxDist away from each other there is no case where they do collide
+	if (DistanceSquared(PlayerA.Position,PlayerB.Position)  > C_MaxDist) return False;
+	//if both players are less than C_MinDist away from each other there is no case where they do NOT collide
+	if (DistanceSquared(PlayerA.Position,PlayerB.Position)  < C_MinDist) return True;
+
+	//get the segment representation of the two players
+	declare Struct_Vec3Vec3 SegA = PlayerSegment(PlayerA);
+	declare Struct_Vec3Vec3 SegB = PlayerSegment(PlayerB);
+	//get the shortest segment between the two players
+	declare Struct_Vec3Vec3 SegS = ShortestSegment(SegA,SegB);
+
+	//check if the two ellipsoids positioned at each end of the shortest segment are touching
+	if(WeightedDistanceSquared(SegS.A, SegS.B, PlayerEllipsoid(PlayerA), PlayerEllipsoid(PlayerB)) < 1){
+		return True;
+	}
+	return False;
+}
+
+//check if a player and the flag collide
+Boolean AreColliding(CSmPlayer Player,Vec3 FlagPos){
+
+	//if both players are more than C_MaxDistFlag away from each other there is no case where they do collide
+	if (DistanceSquared(Player.Position,FlagPos) > C_MaxDistFlag) return False;
+	//if both players are less than C_MinDistFlag away from each other there is no case where they do NOT collide
+	if (DistanceSquared(Player.Position,FlagPos) < C_MinDistFlag) return True;
+
+	//get the segment representation of the player
+	declare Struct_Vec3Vec3 Seg = PlayerSegment(Player);
+	//get the closest point of this segment the flag
+	declare Vec3 P = ClosestPoint(Seg,FlagPos);
+
+	//check if the two ellipsoids positioned at P and FlagPos are touching
+	if(WeightedDistanceSquared(P, FlagPos, PlayerEllipsoid(Player), C_FlagEllipsoid) < 1){
+		return True;
+	}
+	return False;
+}

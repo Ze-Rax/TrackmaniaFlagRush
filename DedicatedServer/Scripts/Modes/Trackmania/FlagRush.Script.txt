@@ -696,36 +696,45 @@ Void SetFlagCarrier(CSmPlayer Player) {
 /**
  * Drops the flag at the position of the current carrier
  */
-Void DropFlag() {
-	// If there's no carrier, it can't be dropped
-	if(FlagState::Get().Carrier == Null) return;
-
-	FlagRush_Common::Log("""{{{FlagState::Get().Carrier.Name}}} dropped the flag!""");
-
+Void DropFlag(Vec3 GroundPosition) {
+	
 	// Display a message to all players
-	declare CSmScore CarrierScore <=> GetScore(FlagState::Get().Carrier.Login);
+	declare Text Message = "The flag was dropped!";
 	declare Vec3 Color = FlagRush_Teams::C_DefaultNeutralColor;
-	if(CarrierScore != Null && CarrierScore.TeamNum > 0)
-	{
-		declare Team <=> Teams[CarrierScore.TeamNum - 1];
-		declare Vec3 ColorPrimaryUI for Team;
-		Color = ColorPrimaryUI;
-	}
-	declare ColorText = "$" ^ CL::RgbToHex3(Color);
-	declare Message = """{{{ColorText}}}{{{FlagState::Get().Carrier.Name}}}$z dropped the {{{ColorText}}}flag$z!""";
+
+	if(FlagState::Get().Carrier != Null) {
+		FlagRush_Common::Log("""{{{FlagState::Get().Carrier.Name}}} dropped the flag!""");
+
+		declare CSmScore CarrierScore <=> GetScore(FlagState::Get().Carrier.Login);
+		if(CarrierScore != Null && CarrierScore.TeamNum > 0)
+		{
+			declare Team <=> Teams[CarrierScore.TeamNum - 1];
+			declare Vec3 ColorPrimaryUI for Team;
+			Color = ColorPrimaryUI;
+		}
+		declare ColorText = "$" ^ CL::RgbToHex3(Color);
+		Message = """{{{ColorText}}}{{{FlagState::Get().Carrier.Name}}}$z dropped the {{{ColorText}}}flag$z!""";
+
+		// Reset Carrier handicaps
+		ResetHandicaps(FlagState::GetFlagCarrierPlayer());
+	}	
+	
 	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
 	EventFeed::SendMessage(Message, "flag", Color);
 
-	// Reset Carrier handicaps
-	ResetHandicaps(FlagState::GetFlagCarrierPlayer());
-
 	// Adjust the drop position
-	declare FlagPosition = FlagState::Get().Position;
+	declare FlagPosition = GroundPosition;
 	FlagPosition.Y += Hitbox::GetCarSize(MapPlayerModelName).Y / 2;
 
 	// Set the new flag position
 	SetFlagPosition(FlagPosition, Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000));
 	FlagState::SetLastDropDate(Now);
+}
+
+Void DropFlag() {
+	declare CSmPlayer FlagCarrierPlayer <=> FlagState::GetFlagCarrierPlayer();
+	if(FlagCarrierPlayer != Null) DropFlag(FlagCarrierPlayer.Position);
+	else DropFlag(FlagState::Get().Position);
 }
 
 /**
@@ -788,16 +797,16 @@ Void StealFlag(CSmPlayer NewCarrier) {
  * Unspawns a player and drops the flag if the player is the current flag carrier.
  */
 Void FlagRush_UnspawnPlayer(CSmPlayer Player) {
-	if(Player.User == FlagState::Get().Carrier) DropFlag();
+	if(Player == FlagState::GetFlagCarrierPlayer()) DropFlag(FlagState::Get().LastSafePosition);
 	UnspawnPlayer(Player);
 }
 
 /**
  * Unspawns all players.
- *See FlagRush_Functions::UnspawnPlayer(CSmPlayer).
+ * See FlagRush_Functions::UnspawnPlayer(CSmPlayer).
  */
 Void FlagRush_UnspawnPlayers() {
-	foreach(Player in Players) UnspawnPlayer(Player);
+	foreach(Player in Players) FlagRush_UnspawnPlayer(Player);
 }
 
 /**
@@ -806,14 +815,6 @@ Void FlagRush_UnspawnPlayers() {
 Void SpawnPlayers() {
 	foreach (Player in Players) {
 		declare netwrite Integer Net_SpawnDate for Player;
-		if (Player.Armor <= 0 && Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {		// If Player has no armor, unspawn first (for example Offzone hit)
-			if(GameplayPhase::Get() != GameplayPhase::C_Warmup) {
-				Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
-			}
-			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null
-		}
-		
-		// Spawn unspawned players
 		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && Net_SpawnDate <= Now) {
 			InitPlayer(Player);
 			declare CMapLandmark SpawnLandmark = FlagRush_Map::GetSpawn(Player);
@@ -924,11 +925,20 @@ Void HandleModeSettingsUpdate() {
  * Updates the players if their state changed (Change team, ...).
  */
 Void UpdatePlayers() {
-	// Update Clan
 	foreach (Player in Players) {
+		// Update Clan
 		if (Player.RequestedClan != Player.CurrentClan) {
 			FlagRush_UnspawnPlayer(Player);
 			InitPlayer(Player);
+		}
+
+		// Unspawn dead players
+		if (Player.Armor <= 0 && Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {		// If Player has no armor, unspawn first (for example Offzone hit)
+			if(GameplayPhase::Get() != GameplayPhase::C_Warmup) {
+				declare netwrite Integer Net_SpawnDate for Player;
+				Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+			}
+			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null
 		}
 
 		// When using crude extrapolation, player position is not sent to other players
@@ -972,7 +982,7 @@ Void OnPlayerDeath(CSmPlayer Player) {
 	if(UI != Null) UI.QueueMessage(2000, 1, CUIConfig::EMessageDisplay::Small, "", CUIConfig::EUISound::Capture, 1);
 
 	// Reset Flag and Unspawn
-	if(Player == FlagState::GetFlagCarrierPlayer()) ResetFlag();
+	if(Player == FlagState::GetFlagCarrierPlayer()) DropFlag(FlagState::Get().LastSafePosition);
 	UnspawnPlayer(Player);
 
 	// No respawn timer in warmup

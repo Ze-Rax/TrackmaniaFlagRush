@@ -2,6 +2,7 @@
 	CMapLandmark Landmark;
 	CUser Carrier;
 	Vec3 Position;
+	Vec3 LastSafePosition;
 	Integer LastDropDate;
 	Integer PickupableDate;
 }
@@ -92,10 +93,9 @@ Void SetLastDropDate(Integer Date) {
  * Updates the position of the flag when carried by a player.
  */
 Void UpdatePosition() {
-	if(G_FlagState.Carrier != Null) {
-		declare CSmPlayer CarrierPlayer = GetFlagCarrierPlayer();
-		if(CarrierPlayer != Null) {
-			G_FlagState.Position = CarrierPlayer.Position;
-		}
+	declare CSmPlayer CarrierPlayer = GetFlagCarrierPlayer();
+	if (CarrierPlayer != Null) {
+		G_FlagState.Position = CarrierPlayer.Position;
+		if (CarrierPlayer.WheelsContactCount >= 3) G_FlagState.LastSafePosition = CarrierPlayer.Position;
 	}
 }

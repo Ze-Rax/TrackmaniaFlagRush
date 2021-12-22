@@ -760,18 +760,19 @@ Void ScoreFlag(CSmPlayer Player) {
 	// Scoring player
 	Scores::AddClanRoundPoints(Player.CurrentClan, 1);
 	Scores::AddPlayerRoundPoints(Player.Score, FlagRush_Common::C_PointsValue_ScoreFlag);
-	Telemetry::AddPlayerRoundInteger(Player.Score, FlagRush_Common::C_Telemetry_Key_FlagsScored, 1);
-	// Assist
+	FlagRush_UI::UpdateScore(Player.Score);
+	// Assisting player
 	declare FlagState::K_FlagPass LastPass = FlagState::Get().LastFlagPass;
 	if (Now - LastPass.Date < C_AssistTimeDuration && LastPass.OldCarrier != Null && Player.User != LastPass.OldCarrier) {
 		declare CSmScore AssistingPlayerScore <=> GetScore(LastPass.OldCarrier.Login);
 		if (AssistingPlayerScore.TeamNum == Player.Score.TeamNum) {
 			Scores::AddPlayerRoundPoints(AssistingPlayerScore, FlagRush_Common::C_PointsValue_ScoreFlagAssist);
-			Telemetry::AddPlayerRoundInteger(Player.Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists, 1);
+			Telemetry::AddPlayerRoundInteger(AssistingPlayerScore, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists, 1);
+			FlagRush_UI::UpdateScore(AssistingPlayerScore);
 		}
 	}
-	// Update UI
-	FlagRush_UI::UpdateScore(Player.Score);
+	// Team
+	Telemetry::AddPlayerRoundInteger(Player.Score, FlagRush_Common::C_Telemetry_Key_FlagsScored, 1);
 	FlagRush_UI::UpdateTeamScores();
 	
 	ResetHandicaps(Player);

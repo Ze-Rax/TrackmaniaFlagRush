@@ -390,12 +390,12 @@ if(MapWinsTeam1 >= S_NbMapsToWinMatch || MapWinsTeam2 >= S_NbMapsToWinMatch)
 		declare ColorText = "$" ^ CL::RgbToHex3(ColorPrimaryUI);
 		Message = """{{{ColorText}}}{{{WinnerTeam.Name}}}$z won the match!""";
 	}
-	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 3, CUIConfig::EMessageDisplay::Big, Message,CUIConfig::EUISound::EndMatch, 0);
-	MB_Sleep(C_BigMessage_Duration);
+	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 3, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndMatch, 0);
 	EventFeed::SendMessage(Message, "info");
-	FlagRush_UI::ShowMVP(True);	
+	MB_Sleep(C_BigMessage_Duration);	
+	FlagRush_UI::ToggleMVP(True);	
 	MB_Sleep(S_ChatTime * 1500);
-	FlagRush_UI::ShowMVP(False);
+	FlagRush_UI::ToggleMVP(False);
 	MB_StopMatch();
 }
 

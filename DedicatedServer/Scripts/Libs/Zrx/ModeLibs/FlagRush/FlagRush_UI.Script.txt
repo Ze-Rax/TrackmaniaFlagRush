@@ -234,8 +234,8 @@ Void Init(Text FlagRush_Version) {
 	Layers::Create(C_LayerName_Sound, FlagRush_UISound::GetManialink());
 	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Sound);
-	declare Text[] Matches = TL::RegexMatch("""-dev""", FlagRush_Version, "");
 	
+	declare Text[] Matches = TL::RegexMatch("""-dev""", FlagRush_Version, "");
 	if (Matches[0] == "-dev") {
 		Layers::Create(C_LayerName_Dialog, FlagRush_UIDialog::GetVersionInfo(FlagRush_Version));
 		Layers::SetType(C_LayerName_Dialog, CUILayer::EUILayerType::Normal);
@@ -345,12 +345,11 @@ Void UpdateModeSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap) {
 	Net_FlagRush_NbRoundsToWinMap = NbRoundsToWinMap;
 }
 
-Void ShowMVP(Boolean Value) {
-	if (Value == True) {		
-		FlagRush_UIMVP::Show();
-	} else {		
-		FlagRush_UIMVP::Hide();
-	}
+/**
+	* Toggles MVP scene on/off
+	*/
+Void ToggleMVP(Boolean Value) {
+	FlagRush_UIMVP::Toggle(Value);
 }
 
 /**

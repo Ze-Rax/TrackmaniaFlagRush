@@ -96,6 +96,6 @@ Void UpdatePosition() {
 	declare CSmPlayer CarrierPlayer = GetFlagCarrierPlayer();
 	if (CarrierPlayer != Null) {
 		G_FlagState.Position = CarrierPlayer.Position;
-		if (CarrierPlayer.WheelsContactCount == 4 && CarrierPlayer.FlyingDistance == 0.) G_FlagState.LastSafePosition = CarrierPlayer.Position;
+		if (CarrierPlayer.WheelsContactCount >= 3) G_FlagState.LastSafePosition = CarrierPlayer.Position;
 	}
 }

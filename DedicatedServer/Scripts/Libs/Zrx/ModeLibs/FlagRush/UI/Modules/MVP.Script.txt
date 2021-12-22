@@ -115,8 +115,8 @@ Text GetManialink() {
 	/**	
 	* Maps range of numbers to another
 	*/
-	Real MapRange(Real value, Real from_low, Real from_high, Real to_low, Real to_high) { 
-		return to_low + (to_high - to_low) * (value - from_low) / (from_high - from_low); 
+	Real MapRange(Real Value, Real FromLow, Real FromHigh, Real ToLow, Real ToHigh) { 
+		return ToLow + (ToHigh - ToLow) * (Value - FromLow) / (FromHigh - FromLow); 
 	}
 	
 	/**

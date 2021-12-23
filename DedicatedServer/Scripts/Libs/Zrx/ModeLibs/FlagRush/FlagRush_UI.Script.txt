@@ -22,17 +22,18 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/RadarV2.Script.txt"						as FlagRush_UIRadarV2
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Respawn.Script.txt"						as FlagRush_UIRespawn
 
-#Const C_LayerName_ScoresTable			"Layer_FlagRush_ScoresTable"
-#Const C_LayerName_ScoresHeader			"Layer_FlagRush_ScoresHeader"
-#Const C_LayerName_RoundUI					"Layer_FlagRush_RoundUI"
-#Const C_LayerName_Markers					"Layer_FlagRush_Markers"
-#Const C_LayerName_Feed							"Layer_FlagRush_Feed"
-#Const C_LayerName_Flash						"Layer_FlagRush_Flash"
-#Const C_LayerName_Spectator				"Layer_FlagRush_Spectator"
-#Const C_LayerName_Respawn					"Layer_FlagRush_Respawn"
-#Const C_LayerName_ModeCommands			"Layer_ModeCommands"
-#Const C_LayerName_RadarBackground	"Layer_RadarBackground"
-#Const C_LayerName_RadarMarkers			"Layer_RadarMarkers"
+#Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
+#Const C_LayerName_ScoresHeader				"Layer_FlagRush_ScoresHeader"
+#Const C_LayerName_RoundUI						"Layer_FlagRush_RoundUI"
+#Const C_LayerName_Markers						"Layer_FlagRush_Markers"
+#Const C_LayerName_Feed								"Layer_FlagRush_Feed"
+#Const C_LayerName_Flash							"Layer_FlagRush_Flash"
+#Const C_LayerName_Spectator					"Layer_FlagRush_Spectator"
+#Const C_LayerName_Respawn						"Layer_FlagRush_Respawn"
+#Const C_LayerName_ModeCommands				"Layer_ModeCommands"
+#Const C_LayerName_RadarBackground		"Layer_RadarBackground"
+#Const C_LayerName_RadarMarkers				"Layer_RadarMarkers"
+#Const C_LayerName_RadarCustomization "Layer_RadarCustomization"
 
 #Const C_FlagCarrierName_Dropped 	"Dropped"
 #Const C_FlagCarrierName_Spawn		"Spawn"
@@ -167,14 +168,20 @@ Void InitRadar() {
 		Scale = 0.35,
 		MarkerScale = 1.5,
 		Position = <135., -65.>,
-		Zoom = 0.35};
+		Zoom = 0.35,
+		BackgroundOpacity = 0.7,
+		DetailOpacity = 0.1};
 	FlagRush_UIRadarV2::SetConfig(Config);
+
+	Layers::Create(C_LayerName_RadarCustomization, FlagRush_UIRadarV2::GetCustomizationManialink());
+	Layers::SetType(C_LayerName_RadarCustomization, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_RadarCustomization);
 
 	Layers::Create(C_LayerName_RadarBackground, FlagRush_UIRadarV2::GetBackgroundManialink());
 	Layers::SetType(C_LayerName_RadarBackground, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_RadarBackground);
 
-	InitRadarMarkers();
+	InitRadarMarkers();	
 }
 
 /**

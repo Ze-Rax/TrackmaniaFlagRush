@@ -167,7 +167,18 @@ Text GetManialink() {
 			if (Index > 2) break;
 			if (PlayerScore != Null) {
 				declare CMlFrame Frame = (Page.GetFirstChild("mvp"^Index) as CMlFrame);
-				declare ItemId = MenuSceneMgr.ItemCreate(SceneId, "CarSport", PlayerScore.User.Model_CarSport_SkinName, PlayerScore.User.Model_CarSport_SkinUrl);
+				declare Text[] TeamSkinName = ["Skins/Models/CarSport/Stadium_Clan_dolphin.zip","Skins/Models/CarSport/Stadium_Clan_ladybug.zip"];
+				declare Text SkinUrl = PlayerScore.User.Model_CarSport_SkinUrl;
+				declare Text SkinName = PlayerScore.User.Model_CarSport_SkinName;
+
+				if (TeamSkinName.existskey(PlayerScore.TeamNum-1)) {
+							SkinName = TeamSkinName[PlayerScore.TeamNum-1];
+							SkinUrl = "";
+				} else {
+						SkinName = "Skins/Models/CarSport/Stadium_Clan_dolphin.zip";  // just to be sure the file exists for the skin url...
+				}
+
+				declare ItemId = MenuSceneMgr.ItemCreate(SceneId, "CarSport", SkinName, SkinUrl);
 				declare Pos = CarPositions[Index];
 				Items.add(K_Item{ItemId = ItemId, Position = Pos});
 				MenuSceneMgr.ItemSetLocation(SceneId, ItemId, Pos, 180., False);

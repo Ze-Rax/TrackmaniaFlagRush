@@ -83,6 +83,7 @@
 #Setting S_Team2Name 												"" 			as "Force Team 2 Name"
 #Setting S_Team2Color 											"" 			as "Force Team 2 Color"
 #Setting S_UseClubTags											False		as "Use club tags for team names & colors"
+#Setting S_UseTeamSkins											True		as "Use colored skins for teams"
 
 // ModeCommands
 #Setting S_ModeCommands_AdminLoginsCsv 			"" 			as "<hidden>" // Admin logins for the mode commands ui
@@ -135,7 +136,7 @@ declare Boolean G_LastSettings_UseCollisions;
 declare Boolean G_LastSettings_UseCrudeExtrapolation;
 
 declare Integer G_LastPlayersCount;
-
+declare Ident[] G_FlagRush_TeamSkins;
 ///////////
 // Plugs //
 ///////////
@@ -176,6 +177,12 @@ ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UIConstruction_Buttons", "Validate");
 HandleModeSettingsUpdate();
+***
+
+***Match_LoadItems***
+***
+G_FlagRush_TeamSkins.add(ItemList_AddWithSkin("CarSport", "Skins/Models/CarSport/Stadium_Clan_dolphin.zip"));
+G_FlagRush_TeamSkins.add(ItemList_AddWithSkin("CarSport", "Skins/Models/CarSport/Stadium_Clan_ladybug.zip"));
 ***
 
 ***Match_StartMatch***
@@ -544,6 +551,15 @@ Void InitPlayer(CSmPlayer Player) {
 	declare Integer PreviousClan for Player;
 
 	SetPlayerClan(Player, Player.RequestedClan);
+
+	if (S_UseTeamSkins) {
+		if (G_FlagRush_TeamSkins.existskey(Player.RequestedClan-1)) {
+			Player.ForceModelId = G_FlagRush_TeamSkins[Player.RequestedClan-1];
+		} else {
+			Player.ForceModelId = NullId;
+		}
+	}
+
 	if (Player.RequestedClan != PreviousClan) {
 		FlagRush_Teams::Init();
 		FlagRush_UI::UpdateDossards();

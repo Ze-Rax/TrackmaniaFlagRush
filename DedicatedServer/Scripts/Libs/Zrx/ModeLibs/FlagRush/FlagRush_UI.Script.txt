@@ -181,7 +181,7 @@ Void InitRadar() {
 	Layers::SetType(C_LayerName_RadarBackground, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_RadarBackground);
 
-	InitRadarMarkers();	
+	InitRadarMarkers();
 }
 
 /**

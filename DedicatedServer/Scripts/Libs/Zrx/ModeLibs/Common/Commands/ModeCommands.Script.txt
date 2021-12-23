@@ -27,7 +27,7 @@ Void Private_OnPermissionsUpdate() {
 	// Send the permitted users to the UIs
 	declare netwrite Text[] Net_ModeCommands_PermittedUserLogins for Teams[0];
 	Net_ModeCommands_PermittedUserLogins = G_PermittedUserLogins;
-	
+
 	// Save the admins and permitted users persistently on the server
 	declare persistent Text[] Persistent_ModeCommands_AdminLogins for This;
 	Persistent_ModeCommands_AdminLogins = G_AdminLogins;
@@ -68,13 +68,13 @@ Text GetManialink() {
 
 <frame id="commands-ui" pos="170 {{{C_UIPosition_Y}}}" z-index="50">
 	<quad  z-index="0" size="10 10" bgcolor="FFF" style="Icons128x128_1" substyle="BackFocusable" scriptevents="1" halign="center" valign="center" id="toggle-menu"/>
-	
+
 	<label  z-index="0" size="65 7.5" text="Mode Commands" halign="left" valign="center" pos="7.5 9" textfont="GameFontBlack" textsize="4" textemboss="1"/>
-	
+
 	<frame id="quick-commands" pos="80">
 		{{{FrameInstancesXml}}}
 	</frame>
-	
+
 	<frame id="custom-command" pos="40">
 		<quad pos="0 0" z-index="0" size="65 10" bgcolor="000" halign="center" valign="center" opacity="0.5"/>
 		<quad pos="-30 0" z-index="0" size="45 5" bgcolor="000" halign="left" valign="center" opacity="0.5"/>
@@ -114,29 +114,29 @@ main() {
 	/* Control References */
 	FrameMain = (Page.GetFirstChild("commands-ui") as CMlFrame);
 	QuadToggleMenu = (Page.GetFirstChild("toggle-menu") as CMlQuad);
-	
+
 	declare CMlFrame FrameCustomCommand = (Page.GetFirstChild("cuomst-command") as CMlFrame);
 	declare CMlEntry TextEditCustomCommand = (Page.GetFirstChild("textedit-command") as CMlEntry);
 	declare CMlLabel ButtonCustomCommandSend = (Page.GetFirstChild("button-sendcommand") as CMlLabel);
-	
+
 	declare netread Text[] Net_ModeCommands_PermittedUserLogins for Teams[0];
-	
+
 	declare CMlLabel[CMlQuad] QuickCommands;
 	{{{QuickCommandReferences}}}
-	
+
 	FrameMain.RelativePosition_V3 = <155., {{{C_UIPosition_Y}}}>;
 	MenuState = False;
 	ToggleMenu(MenuState);
-	
+
 	while(True) {
 		yield;
-		
+
 		declare Boolean UserIsPermitted = Net_ModeCommands_PermittedUserLogins.exists(LocalUser.Login);
 		FrameMain.Visible = UserIsPermitted;
 		if (!UserIsPermitted) {
 			continue;
 		}
-		
+
 		foreach (Event in PendingEvents) {
 				switch (Event.Type) {
 					case CMlScriptEvent::Type::MouseClick: {
@@ -334,7 +334,7 @@ Void Load() {
  */
 Void Yield() {
 	G_PendingCommands.clear();
-	
+
 	foreach (Event in UIManager.PendingEvents) {
 		if(TL::StartsWith("Command_", Event.CustomEventType)) {
 			declare CommandUtils::K_Command Command = CommandUtils::FromEvent(Event);

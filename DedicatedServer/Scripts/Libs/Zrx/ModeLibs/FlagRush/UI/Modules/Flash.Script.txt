@@ -21,7 +21,7 @@ Text GetManialink() {
 		<label pos="0 -9" z-index="0" size="120 6" textsize="1.5" text="You must be still to respawn." textfont="GameFontRegular" halign="center" valign="center2" opacity="0"/>
 	</frame>
 	<script><!--
-	
+
 	Void FlashRespawn() {
 		declare CMlFrame frame = (Page.GetFirstChild("respawn") as CMlFrame);
 		foreach (elem in frame.Controls) {
@@ -30,7 +30,7 @@ Text GetManialink() {
 			AnimMgr.Add(label, "<elem opacity=\"0\" />", 1500,  CAnimManager::EAnimManagerEasing::CubicIn);
 		}
 	}
-	
+
 	main() {
 		declare netread Integer Net_FlagRush_RespawnStamp for UI;
 		declare Integer LastUpdate = Net_FlagRush_RespawnStamp;

@@ -127,13 +127,13 @@ Example.Script.txt shows an example on how it can be used. Replace <PlayerIcon> 
 #Struct Marker {
     Text FrameId;
     Text FrameManialink;
-    
+
     // Script setting the marker and its absolute position and rotation
     Text AbsoluteSetScript;
-    
+
     // Script setting relative position and rotation after minimap set
     Text AbsoluteToRelativeScript;
-    
+
     // Script giving info on how the marker should behave if in or out of bounds
     Text FinalInScript;
     Text FinalOutScript;
@@ -155,19 +155,19 @@ Void CreateMarker(Integer _Id, Text _FrameId, Text _FrameManialink, Text _Absolu
 Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _BackgroundScript, Text _StylesManialink, Text _PreMainScript) {
     declare SingleQuote0 = """ " """;
     declare SingleQuote1 = TL::SubString(SingleQuote0, 1, 1);
-    
+
     // MarkerIds
     declare Integer[] MarkerIds;
     foreach (MarkerId => MarkeObj in G_Markers) {
         MarkerIds.add(MarkerId);
     }
-    
+
     // MarkerFrameIds
     declare Text[Integer] MarkerFrameIds;
     foreach (MarkerId => MarkerObj in G_Markers) {
         MarkerFrameIds[MarkerId] = SingleQuote1 ^ MarkerObj.FrameId ^ SingleQuote1;
     }
-    
+
     // Build Manialink
     declare FramesManialink = "";
     foreach (MarkerId => MarkerObj in G_Markers) {
@@ -177,7 +177,7 @@ Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _Backg
         </frame>
         """;
     }
-    
+
     // Build AbsoluteSetScripts
     declare AbsoluteSetScripts = "";
     foreach (MarkerId => MarkerObj in G_Markers) {
@@ -186,7 +186,7 @@ Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _Backg
             """ ^ MarkerObj.AbsoluteSetScript ^ """
         }""";
     }
-    
+
     // Build AbsoluteToRelativeScripts
     declare AbsoluteToRelativeScripts = "";
     foreach (MarkerId => MarkerObj in G_Markers) {
@@ -195,7 +195,7 @@ Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _Backg
             """ ^ MarkerObj.AbsoluteToRelativeScript ^ """
         }""";
     }
-    
+
     // Build FinalInScripts
     declare FinalInScripts = "";
     foreach (MarkerId => MarkerObj in G_Markers) {
@@ -204,7 +204,7 @@ Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _Backg
             """ ^ MarkerObj.FinalInScript ^ """
         }""";
     }
-    
+
     // Build FinalOutScripts
     declare FinalOutScripts = "";
     foreach (MarkerId => MarkerObj in G_Markers) {
@@ -213,10 +213,10 @@ Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _Backg
             """ ^ MarkerObj.FinalOutScript ^ """
         }""";
     }
-    
+
     return """
     <manialink version="3">
-    
+
     <stylesheet>
         <style class="CENTERED" halign="center" valign="center" pos="0 0" />
         """ ^ _StylesManialink ^ """
@@ -234,38 +234,38 @@ Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _Backg
     <script><!--
     #Include "MathLib" as ML
     #Include "TextLib" as TL
-    
+
     #Const C_MarkerIds {{{MarkerIds}}}
     #Const C_MarkerFrameIds {{{MarkerFrameIds}}}
-    
+
     """ ^ _PreMainScript ^ """
-    
+
     Vec2 Rotate(Real _Angle, Vec2 _Vector) {
         declare Cosinus = ML::Cos(_Angle);
         declare Sinus = ML::Sin(_Angle);
         return <Cosinus, Sinus> * _Vector.X + <Sinus, - Cosinus> * _Vector.Y;
     }
-    
+
     main () {
         declare Vec2[Integer] AbsolutePositions;
         declare Vec2[Integer] RelativePositions;
         declare Vec2[Integer] FinalPositions;
-        
+
         declare Real[Integer] AbsoluteRotations;
         declare Real[Integer] RelativeRotations;
         declare Real[Integer] FinalRotations;
-        
+
         declare Boolean[Integer] Hidden;
-        
+
         declare Minimap <=> (Page.GetFirstChild("Minimap") as CMlFrame);
         declare MinimapBackground <=> (Minimap.GetFirstChild("MinimapBackground") as CMlFrame);
-        
+
         declare Real MinimapZoom = 1.;
         declare Vec2 MinimapOffset = <0., 0.>;
         declare Real MinimapRotation = 0.;
         declare Vec2 MinimapPosition = <0., 0.>;
         declare Real MinimapSize = 1.;
-        
+
         foreach (MarkerId in C_MarkerIds) {
             AbsolutePositions[MarkerId] = <0., 0.>;
             AbsoluteRotations[MarkerId] = 0.;
@@ -275,7 +275,7 @@ Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _Backg
             FinalRotations[MarkerId] = 0.;
             Hidden[MarkerId] = False;
         }
-        
+
         while (True) {
 					yield;
             // Absolute set
@@ -283,44 +283,44 @@ Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _Backg
                 declare Vec2 AbsPos;
                 declare Real AbsRot;
                 declare Boolean IsHidden = False;
-                
+
                 if (False) {}
                 """ ^ AbsoluteSetScripts ^ """
-                
+
                 AbsolutePositions[MarkerId] = AbsPos;
                 AbsoluteRotations[MarkerId] = AbsRot;
                 Hidden[MarkerId] = IsHidden;
             }
-            
+
             // Focus set
             """ ^ _MinimapSetScript ^ """
-            
+
             // Relative set
             foreach (MarkerId in C_MarkerIds) {
                 declare Vec2 AbsPos = AbsolutePositions[MarkerId];
                 declare Real AbsRot = AbsoluteRotations[MarkerId];
                 declare Boolean IsHidden = Hidden[MarkerId];
-                
+
                 declare Vec2 RelPos;
                 declare Real RelRot;
-                
+
                 if (False) {}
                 """ ^ AbsoluteToRelativeScripts ^ """
-                
+
                 RelativePositions[MarkerId] = RelPos;
                 RelativeRotations[MarkerId] = RelRot;
                 Hidden[MarkerId] = IsHidden;
             }
-            
+
             // Final prop
             foreach (MarkerId in C_MarkerIds) {
                 declare Vec2 RelPos = RelativePositions[MarkerId];
                 declare Real RelRot = RelativeRotations[MarkerId];
                 declare Boolean IsHidden = Hidden[MarkerId];
-                
+
                 declare Vec2 FinPos;
                 declare Real FinRot;
-                
+
                 if (ML::Abs(RelPos.X) > 1. * MinimapSize || ML::Abs(RelPos.Y) > 1. * MinimapSize) {
                     if (False) {}
                     """ ^ FinalOutScripts ^ """
@@ -328,22 +328,22 @@ Text GetManialink(Text _MinimapSetScript, Text _BackgroundManialink, Text _Backg
                     if (False) {}
                     """ ^ FinalInScripts ^ """
                 }
-                
+
                 FinalPositions[MarkerId] = FinPos;
                 FinalRotations[MarkerId] = FinRot;
                 Hidden[MarkerId] = IsHidden;
             }
-            
+
             // Drawing stuff
             Minimap.RelativePosition_V3 = MinimapPosition;
             Minimap.Size = <100., 100.>;
-            
+
             MinimapBackground.Size = <100., 100.> * MinimapZoom;
             MinimapBackground.RelativeRotation = -MinimapRotation / ML::PI() * 180;
             MinimapBackground.RelativePosition_V3 = Rotate(MinimapRotation, MinimapOffset * 50. * MinimapZoom);
-            
+
             """ ^ _BackgroundScript ^ """
-            
+
             foreach (MarkerId => MarkerFrameId in C_MarkerFrameIds) {
                 declare Frame <=> (Minimap.GetFirstChild(MarkerFrameId) as CMlFrame);
                 Frame.RelativeRotation = FinalRotations[MarkerId] / ML::PI() * 180;

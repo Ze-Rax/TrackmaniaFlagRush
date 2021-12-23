@@ -87,7 +87,7 @@ Void InitFlagSpawnMarkers() {
 		G_FlagMarker = UIManager.UIAll.AddMarker(FlagState::Get().Position);
 		G_FlagMarker.Box = C_FlagMarker_Box_Position;
 	}
-	
+
 	G_FlagMarker.ManialinkFrameId = "marker-flag";
 	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
 }
@@ -104,12 +104,12 @@ Void UpdateFlagMarker() { InitFlagMarker(); }
  */
  Void UpdateFlagCarrierNetData() {
 	declare FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
-	
+
 	// Carrier Clan Index (for color)
 	declare netwrite Integer Net_FlagRush_FlagCarrierClan for Teams[0];
 	if (FlagCarrierPlayer == Null) Net_FlagRush_FlagCarrierClan = 0;
 	else Net_FlagRush_FlagCarrierClan = FlagCarrierPlayer.CurrentClan;
-	
+
 	// Carrier name and login
 	declare netwrite Text Net_FlagRush_FlagCarrierName for Teams[0];
 	declare netwrite Text Net_FlagRush_FlagCarrierLogin for Teams[0];
@@ -120,7 +120,7 @@ Void UpdateFlagMarker() { InitFlagMarker(); }
 	}
 	else if (FlagState::Get().Landmark != Null) Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Spawn;
 	else Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Dropped;
-	
+
 	// Flag Position
 	declare netwrite Vec3 Net_FlagRush_FlagPosition for Teams[0];
 	Net_FlagRush_FlagPosition = FlagState::Get().Position;
@@ -134,12 +134,12 @@ Void InitMarkers() {
 
 	// Clear old markers
 	UIManager.UIAll.ClearMarkers();
-	
+
 	// Create Layer for all UIs
 	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
 	Layers::SetType(C_LayerName_Markers, CUILayer::EUILayerType::Markers);
 	Layers::Attach(C_LayerName_Markers);
-	
+
 	// Create Markers for the Bases
 	for(Clan, 1, 2) {
 		for(BaseIndex, 0, FlagRush_Map::GetBases(Clan).count -1) {
@@ -193,18 +193,18 @@ Void Init(Text FlagRush_Version) {
 	Layers::Create(C_LayerName_ScoresHeader, FlagRush_UIHeader::GetManialink());
 	Layers::SetType(C_LayerName_ScoresHeader, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_ScoresHeader);
-	
+
 	// Scores table
 	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoresTable::GetManialink(6));
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
-	
+
 	// Event Feed
 	EventFeed::ClearMessages();
 	Layers::Create(C_LayerName_Feed, EventFeed::GetManialink(10));
 	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Feed);
-	
+
 	// Flash
 	Layers::Create(C_LayerName_Flash, FlagRush_UIFlash::GetManialink());
 	Layers::SetType(C_LayerName_Flash, CUILayer::EUILayerType::Normal);
@@ -214,7 +214,7 @@ Void Init(Text FlagRush_Version) {
 	Layers::Create(C_LayerName_MVP, FlagRush_UIMVP::GetManialink());
 	Layers::SetType(C_LayerName_MVP, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_MVP);
-		
+
 	// ModeCommands
 	Layers::Create(C_LayerName_ModeCommands, ModeCommands::GetManialink());
 	Layers::SetType(C_LayerName_ModeCommands, CUILayer::EUILayerType::Normal);
@@ -229,12 +229,12 @@ Void Init(Text FlagRush_Version) {
 	Layers::Create(C_LayerName_Respawn, FlagRush_UIRespawn::GetManialink());
 	Layers::SetType(C_LayerName_Respawn, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Respawn);
-	
+
 	// Sound
 	Layers::Create(C_LayerName_Sound, FlagRush_UISound::GetManialink());
 	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Sound);
-	
+
 	declare Text[] Matches = TL::RegexMatch("""-dev""", FlagRush_Version, "");
 	if (Matches[0] == "-dev") {
 		Layers::Create(C_LayerName_Dialog, FlagRush_UIDialog::GetVersionInfo(FlagRush_Version));
@@ -244,7 +244,7 @@ Void Init(Text FlagRush_Version) {
 
 	// Markers
 	InitMarkers();
-	
+
 	// Radar
 	InitRadar();
 }
@@ -340,7 +340,7 @@ Void UpdateScores() {
 Void UpdateModeSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap) {
 	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
 	Net_FlagRush_NbMapsToWinMatch = NbMapsToWinMatch;
-	
+
 	declare netwrite Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
 	Net_FlagRush_NbRoundsToWinMap = NbRoundsToWinMap;
 }

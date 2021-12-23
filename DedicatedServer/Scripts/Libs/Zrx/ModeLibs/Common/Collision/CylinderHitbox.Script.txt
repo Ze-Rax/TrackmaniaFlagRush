@@ -153,54 +153,54 @@ Boolean AreTouching(CSmPlayer _Player1, CSmPlayer _Player2) {
 	if (!IsSpawned(_Player1) || !IsSpawned(_Player2)) return False;
 	if (_Player1.Position == <0., 0., 0.> || _Player2.Position == <0., 0., 0.>) return False;
 	if (!C_CarModelSizes.existskey(MapPlayerModelName)) return False;
-	
+
 	// ---------------------------------- //
 	// Check if cars are close enough
 	if (MathLib::Distance(_Player1.Position, _Player2.Position) > C_DetectionDistance) return False;
-	
+
 	// ---------------------------------- //
 	// Set hitbox model properties
 	declare Vec3 FixedPos1 = _Player1.Position;
 	declare Vec3 FixedPos2 = _Player2.Position;
-	
+
 	FixedPos1.Y += C_CarModelSizes[MapPlayerModelName].Y / 2;
 	FixedPos2.Y += C_CarModelSizes[MapPlayerModelName].Y / 2;
-	
+
 	// ---------------------------------- //
 	// Convert rad to deg pitch
 	declare Real Player1Pitch = Private_GetPitch(_Player1.AimPitch);
 	declare Real Player2Pitch = Private_GetPitch(_Player2.AimPitch);
-	
+
 	// ---------------------------------- //
 	// Cylinder diameter depends on player rotation
 	declare Real Player1Diameter;
 	Player1Diameter = (C_CarModelSizes[MapPlayerModelName].X - C_VerticalSizeSub) * Private_GetCyliDiameter(Player1Pitch);
 	declare Real Player2Diameter;
 	Player2Diameter = (C_CarModelSizes[MapPlayerModelName].X - C_VerticalSizeSub) * Private_GetCyliDiameter(Player2Pitch);
-	
+
 	// ---------------------------------- //
 	// Diameter can't be shorter than vehicle width
 	if (Player1Diameter < C_CarModelSizes[MapPlayerModelName].Z) Player1Diameter = C_CarModelSizes[MapPlayerModelName].Z;
 	if (Player2Diameter < C_CarModelSizes[MapPlayerModelName].Z) Player2Diameter = C_CarModelSizes[MapPlayerModelName].Z;
-	
+
 	// ---------------------------------- //
 	// Check if cylinders touch in X and Z axis
 	if (Private_Distance2D(FixedPos1, FixedPos2) > (Player1Diameter + Player2Diameter) / 2) return False;
-	
+
 	// ---------------------------------- //
 	// Cylinder height depends on player rotation
 	declare Real Player1Height = C_CarModelSizes[MapPlayerModelName].X * Private_GetCyliHeight(Player1Pitch);
 	declare Real Player2Height = C_CarModelSizes[MapPlayerModelName].X * Private_GetCyliHeight(Player2Pitch);
-	
+
 	// ---------------------------------- //
 	// Height can't be lower then vehicle height
 	if (Player1Height < C_CarModelSizes[MapPlayerModelName].Y) Player1Height = C_CarModelSizes[MapPlayerModelName].Y;
 	if (Player2Height < C_CarModelSizes[MapPlayerModelName].Y) Player2Height = C_CarModelSizes[MapPlayerModelName].Y;
-	
+
 	// ---------------------------------- //
 	// Check if cylinders touch in Y axis
 	if (Private_Distance1D(FixedPos1.Y, FixedPos2.Y) - (C_VerticalSizeSub * 2) > (Player1Height + Player2Height) / 2) return False;
-	
+
 	// ---------------------------------- //
 	// Players touch
 	return True;
@@ -220,33 +220,33 @@ Struct_Hitbox GetHitbox(CSmPlayer _Player) {
 				|| _Player.Position == <0., 0., 0.>
 				|| !C_CarModelSizes.existskey(MapPlayerModelName)
 	) return Struct_Hitbox{Center = <0., 0., 0.>, Diameter = 0., Height = 0.};
-	
+
 	declare Real PlayerPitch = Private_GetPitch(_Player.AimPitch);
-	
+
 	// Get Center
 	declare Vec3 Center = _Player.Position;
 	Center.Y += C_CarModelSizes[MapPlayerModelName].Y / 2;
-	
+
 	// Get Diameter
 	declare Real Diameter = (C_CarModelSizes[MapPlayerModelName].X - C_VerticalSizeSub) * Private_GetCyliDiameter(PlayerPitch);
 	if (Diameter < C_CarModelSizes[MapPlayerModelName].Z) Diameter = C_CarModelSizes[MapPlayerModelName].Z;
-	
+
 	// Get Height
 	declare Real Height = C_CarModelSizes[MapPlayerModelName].X * Private_GetCyliHeight(PlayerPitch);
 	if (Height < C_CarModelSizes[MapPlayerModelName].Y) Height = C_CarModelSizes[MapPlayerModelName].Y;
-	
+
 	// Return result
 	return Struct_Hitbox{Center = Center, Diameter = Diameter, Height = Height};
 }
 
 Boolean CheckOverlap(Struct_Hitbox Hitbox1, Struct_Hitbox Hitbox2) {
 	if (Hitbox1.Diameter <= 0. || Hitbox2.Diameter <= 0. || Hitbox1.Height <= 0. || Hitbox2.Height <= 0.) return False;
-	
+
 	// Check X & Z
 	if (Private_Distance2D(Hitbox1.Center, Hitbox2.Center) > (Hitbox1.Diameter + Hitbox2.Diameter) / 2) return False;
 	// Check Y
 	if (Private_Distance1D(Hitbox1.Center.Y, Hitbox2.Center.Y) - (C_VerticalSizeSub * 2) > (Hitbox1.Height + Hitbox2.Height) / 2) return False;
-	
+
 	return True;
 }
 

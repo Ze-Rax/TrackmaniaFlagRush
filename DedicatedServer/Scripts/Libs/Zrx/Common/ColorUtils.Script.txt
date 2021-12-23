@@ -39,13 +39,13 @@ Real GetHueDifference(Real Hue1, Real Hue2) {
 	} else {           // Need to check loop around lowerbound
 		HueDifferenceLoop = Hue2 - (Hue1 + 1.);
 	}
-	
+
 	// Final Difference is the one which absolute is lowest (but not the absolute!)
 	declare FinalHueDifference = HueDifference;
 	if (ML::Abs(HueDifferenceLoop) < ML::Abs(FinalHueDifference)) {
 		FinalHueDifference = HueDifferenceLoop;
 	}
-	
+
 	return FinalHueDifference;
 }
 
@@ -56,16 +56,16 @@ Real GetHueDifference(Real Hue1, Real Hue2) {
  Vec3 AdjustHueOverlap(Vec3 BaseColor, Vec3 ColorToAdjust, Real HueDifferenceThreshold) {
 	declare Vec3 BaseColorHsv = CL::RgbToHsv(BaseColor);
 	declare Vec3 ColorToAdjustHsv = CL::RgbToHsv(ColorToAdjust);
-	
+
 	declare Real HueBaseColor = BaseColorHsv.X;
 	declare Real HueColorToAdjust = ColorToAdjustHsv.X;
-	
+
 	// Check if the difference is below a threshold (in [0.0, 0.5]) = Needs adjustments
 	declare Real HueDifference = GetHueDifference(HueBaseColor, HueColorToAdjust);
 	if (ML::Abs(HueDifference) < HueDifferenceThreshold) {
 		// Correct the hue of team 2 in the according direction
 		HueColorToAdjust = HueBaseColor + MathUtils::Sign(HueDifference) * HueDifferenceThreshold;
-		
+
 		// Correct HueTeam2 if out of range [0.0, 1.0] (Hue is a loop in that range)
 		if (HueColorToAdjust < 0.) {
 			HueColorToAdjust += 1.;
@@ -73,7 +73,7 @@ Real GetHueDifference(Real Hue1, Real Hue2) {
 			HueColorToAdjust -= 1.;
 		}
 	}
-	
+
 	// Return the corrected color
 	declare Vec3 AdjustedColor = ColorToAdjustHsv;
 	AdjustedColor.X = HueColorToAdjust;

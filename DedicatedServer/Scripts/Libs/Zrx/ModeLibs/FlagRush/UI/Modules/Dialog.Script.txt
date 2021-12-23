@@ -12,17 +12,17 @@ Text GetManialink(Text Header, Text SubHeader, Text Info) {
 			<quad  z-index="0" size="160 110" bgcolor="000" opacity="0.3" halign="center" valign="center" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/MenuLibs/ScrollBar_Center.dds"  modulatecolor="000"/>
 			<quad  z-index="0" size="160 110" opacity="0.9"  alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" halign="center" valign="center"  modulatecolor="115EFFFF"/>
 		</frame>
-		<script><!-- 
+		<script><!--
 		main() {
 			declare Boolean Flagrush_Dialog_Hide for UI;
-			declare CMlFrame Frame <=> (Page.GetFirstChild("content") as CMlFrame);	
+			declare CMlFrame Frame <=> (Page.GetFirstChild("content") as CMlFrame);
 			declare Boolean run = True;
 
 			if (Flagrush_Dialog_Hide) {
 				Frame.Hide();
 				run = False;
 			}
-			
+
 			while(run) {
 				yield;
 				foreach(Event in PendingEvents) {
@@ -46,7 +46,7 @@ Text GetVersionInfo(Text Version) {
 	switch(Version) {
 		case "1.2.0-dev": {
 			Info = """
-Changes:	
+Changes:
 	* Added new sounds for Scoring a Flag
 	* Added MVP display
 	* Fixed Flag Spawn randomization

@@ -73,7 +73,7 @@ Void InitLandmarks() {
 	G_FlagSpawns.clear();
 	G_Bases = [1 => [], 2 => []];
 	G_Spawns.clear();
-	
+
 	foreach (Landmark in MapLandmarks) {
 		switch (Landmark.Tag) {
 			case C_LandmarkTag_SpawnTeam1: if (Landmark.PlayerSpawn != Null) G_Spawns[1] = Landmark;
@@ -87,7 +87,7 @@ Void InitLandmarks() {
 			}
 		}
 	}
-	
+
 	declare FoundSpawnTeam1 = G_Spawns[1] != Null;
 	declare FoundSpawnTeam2 = G_Spawns[2] != Null;
 	declare FoundBaseTeam1 = G_Bases[1].count > 0;
@@ -95,9 +95,9 @@ Void InitLandmarks() {
 	declare FoundFlagSpawn = G_FlagSpawns.count > 0;
 	declare FoundDefaultFlagSpawn = G_DefaultFlagSpawn != Null;
 	declare SameAmountBases = G_Bases[1].count == G_Bases[2].count;
-	
+
 	declare Valid = FoundSpawnTeam1 && FoundSpawnTeam2 && FoundBaseTeam1 && FoundBaseTeam2 && FoundFlagSpawn && FoundDefaultFlagSpawn && SameAmountBases;
-	
+
 	assert(Valid,
 		"""Couldn't init all landmarks!
 		{{{"\t"}}}{{{C_LandmarkTag_SpawnTeam1}}}: {{{FoundSpawnTeam1}}}
@@ -108,6 +108,6 @@ Void InitLandmarks() {
 		{{{"\t"}}}{{{C_LandmarkTag_DefaultFlagSpawn}}} : {{{FoundDefaultFlagSpawn}}}
 		{{{"\t"}}}Same amount of bases per team: {{{SameAmountBases}}}"""
 	);
-	
+
 	FlagRush_Common::Log("All Landmarks found!");
 }

@@ -172,7 +172,7 @@ Text GetMarkersManialink() {
 					return;
 				}
 				MarkerFrame.Show();
-				
+
 				// Determine relative rotation to the player
 				declare Real RelativeYaw;
 				if (Net_FlagRush_FlagCarrierLogin == Player.User.Login) RelativeYaw = 0.;

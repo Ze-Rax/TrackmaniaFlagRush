@@ -5,7 +5,7 @@
 /** Inits minimap */
 Text GetManialink() {
 	Minimap::ClearMarkers();
-	
+
 	Minimap::CreateMarker(
 		AllPlayers.count,
 		"MinimapFlag",
@@ -109,7 +109,7 @@ Text GetManialink() {
 		"""
 		<quad halign="center" valign="center" pos="0 0" size="33 33" opacity="0.5" scale="3" bgcolor="000"/>
 		""",
-		
+
 		"""
 		if(GUIPlayer != Null) {
 			Minimap.Show();

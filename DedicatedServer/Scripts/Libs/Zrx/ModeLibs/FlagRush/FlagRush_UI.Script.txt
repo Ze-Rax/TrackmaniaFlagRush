@@ -14,8 +14,8 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"			as FlagRush_Common
 
 /* UI Modules */
-#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"							as EventFeed
-#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"	as ModeCommands
+#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"											as EventFeed
+#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"					as ModeCommands
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Dialog.Script.txt"						as FlagRush_UIDialog
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt"						as FlagRush_UIHeader
@@ -24,7 +24,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt"							as FlagRush_UISound
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Spectator.Script.txt"					as FlagRush_UISpectator
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/RadarV2.Script.txt"						as FlagRush_UIRadarV2
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Respawn.Script.txt"						as FlagRush_UIRespawn
 
 #Const C_LayerName_Dialog						"Layer_FlagRush_Dialog"
@@ -162,7 +162,7 @@ Void InitMarkers() {
  * Recreates only the markers for the radar.
  */
 Void InitRadarMarkers() {
-	Layers::Create(C_LayerName_RadarMarkers, FlagRush_UIRadarV2::GetMarkersManialink());
+	Layers::Create(C_LayerName_RadarMarkers, FlagRush_UIRadar::GetMarkersManialink());
 	Layers::SetType(C_LayerName_RadarMarkers, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_RadarMarkers);
 }
@@ -171,14 +171,14 @@ Void InitRadarMarkers() {
  * Creates the radar with markers for all players and bases.
  */
 Void InitRadar() {
-	declare FlagRush_UIRadarV2::K_Config Config = FlagRush_UIRadarV2::K_Config {
+	declare FlagRush_UIRadar::K_Config Config = FlagRush_UIRadar::K_Config {
 		Scale = 0.35,
 		MarkerScale = 1.5,
 		Position = <135., -65.>,
 		Zoom = 0.35};
-	FlagRush_UIRadarV2::SetConfig(Config);
+	FlagRush_UIRadar::SetConfig(Config);
 
-	Layers::Create(C_LayerName_RadarBackground, FlagRush_UIRadarV2::GetBackgroundManialink());
+	Layers::Create(C_LayerName_RadarBackground, FlagRush_UIRadar::GetBackgroundManialink());
 	Layers::SetType(C_LayerName_RadarBackground, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_RadarBackground);
 

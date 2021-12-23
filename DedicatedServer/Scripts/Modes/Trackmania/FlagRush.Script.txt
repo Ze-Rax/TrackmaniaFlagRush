@@ -15,7 +15,7 @@
 #Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"				as ModeCommands
 #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"				as CommandUtils
-#Include "Libs/Zrx/ModeLibs/Common/Collision/CylinderHitbox.Script.txt"			as Hitbox
+#Include "Libs/Rx/ModeLibs/Common/Hitbox.Script.txt"												as Hitbox
 #Include "Libs/Zrx/ModeLibs/Common/GameplayPhase.Script.txt"								as GameplayPhase
 
 /* FlagRush Libs */
@@ -39,8 +39,6 @@
 #Const	C_SpawnAnimDuration						1500
 #Const	C_BigMessage_Duration					3000
 
-#Const	C_FlagHitbox_Diameter					6.
-#Const	C_FlagHitbox_Height						4.
 #Const 	C_RespawnSpeedLimitKmh 				30.
 
 #Const	C_AssistTimeDuration					5000
@@ -725,7 +723,7 @@ Void DropFlag(Vec3 GroundPosition) {
 
 	// Adjust the drop position
 	declare FlagPosition = GroundPosition;
-	FlagPosition.Y += Hitbox::GetCarSize(MapPlayerModelName).Y / 2;
+	FlagPosition.Y += 0.5;
 
 	// Set the new flag position
 	SetFlagPosition(FlagPosition, Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000));
@@ -853,14 +851,8 @@ Void UpdateFlag() {
 			ResetFlag();
 		}
 		else {
-			declare FlagHitbox = Hitbox::Struct_Hitbox {
-				Center = FlagState::Get().Position,
-				Diameter = C_FlagHitbox_Diameter,
-				Height = C_FlagHitbox_Height
-			};
-			
 			foreach (Player in Players) {
-				if (Hitbox::CheckOverlap(FlagHitbox, Hitbox::GetHitbox(Player))) {
+				if (Hitbox::AreColliding(Player,FlagState::Get().Position)) {
 					declare Integer FlagRush_LastFlagDropDate for Player = -1;
 					if(FlagRush_LastFlagDropDate != FlagState::Get().LastDropDate || Now - FlagRush_LastFlagDropDate > ML::NearestInteger(S_DropFlagPickupPenalty * 1000)) {
 						SetFlagPosition(Player, Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
@@ -1099,7 +1091,7 @@ Void HandleEvents() {
 		declare CSmPlayer FlagStealer;
 		foreach (Player in Players) {
 			if (Player == CarrierPlayer) continue;
-			if (Hitbox::AreTouching(CarrierPlayer, Player)) {
+			if (Hitbox::AreColliding(CarrierPlayer, Player)) {
 				if(Player.CurrentClan != CarrierPlayer.CurrentClan || FlagStealer == Null) {
 					FlagStealer = Player;
 					if (Player.CurrentClan != CarrierPlayer.CurrentClan) break;

@@ -93,8 +93,7 @@ Text GetManialink() {
 					}
 				}
 
-				foreach(InputEvent in Input.PendingEvents) {
-					log(InputEvent.Pad.ButtonEvents);
+				foreach(InputEvent in Input.PendingEvents) {					
 					if(InputEvent.Pad != Null && ( (InputEvent.Pad.L1 > 0 && InputEvent.Pad.R1 > 0) || (InputEvent.Pad.View > 0) ) ) {
 						SetReady(!Ready);
 					}

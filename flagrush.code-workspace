@@ -10,7 +10,9 @@
 	"settings": {
 		"editor.tabSize": 2,
 		"editor.detectIndentation": false,
-		"editor.insertSpaces": false
+		"editor.insertSpaces": false,
+		"diffEditor.ignoreTrimWhitespace": false,
+		"files.trimTrailingWhitespace": true
 	},
 	"extensions": {
 		"recommendations": [

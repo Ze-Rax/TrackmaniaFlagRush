@@ -38,7 +38,7 @@ Void SendMessage(Text string, Text Style, Text Substyle, Vec3 Color) {
 	declare LikeNow = Now;
 	G_FeedMessages.addfirst(K_FeedMessage{Message=string, IconStyle=Style, IconSubstyle=Substyle, IconColor=Color, Stamp=LikeNow});
 	G_FeedMessages = G_FeedMessages.slice(0, C_FeedMessageAmount);
-	
+
 	foreach(Player in AllPlayers) {
 		declare CUIConfig UI = UIManager.GetUI(Player);
 		if (UI != Null) {
@@ -59,7 +59,7 @@ Void SendMessage(Text string, Text Style, Text Substyle, Vec3 Color) {
 Void SendMessage(Text String, Text Icon, Vec3 Color) {
 	declare color = Color;
 	if (color == <0., 0., 0.>) color = <1., 1., 1.>;
-	
+
 	switch (Icon) {
 		case "base": SendMessage(String, "ManiaPlanetMainMenu", "IconHome", color);
 		case "flag": SendMessage(String, "UIConstruction_Buttons", "Validate", color);
@@ -82,7 +82,7 @@ Text GetManialink(Integer feedSize) {
 	for (i, 0, feedSize) {
 		entries ^= """<frameinstance modelid="message"/> """ ^ "\n";
 	}
-		
+
 	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="EventFeed">
 	<framemodel id="message">
@@ -94,7 +94,7 @@ Text GetManialink(Integer feedSize) {
 	</frame>
 	<script><!--
 	#Include "MathLib" as ML
-	
+
 	#Const size {{{ feedSize-1 }}}
 
 	#Struct K_FeedMessage {
@@ -107,28 +107,28 @@ Text GetManialink(Integer feedSize) {
 
 	declare Integer counter;
 	declare Integer LastUpdate;
-	
+
 	Void addMessage(K_FeedMessage Message) {
 		declare CMlFrame frame = (Page.GetFirstChild("Events") as CMlFrame);
 		declare idx = counter%size;
-		
+
 		for (i,0,size) {
 			declare key = (idx + i) % size;
 			frame.Controls[key].RelativePosition_V3.Y = -i * 4.;
 		}
-		
+
 		if (frame.Controls.existskey(idx)) {
 			declare CMlFrame elem = frame.Controls[idx] as CMlFrame;
 			declare CMlLabel label = elem.Controls[1] as CMlLabel;
-			
+
 			label.Value = Message.Message;
 			label.Scale= 1.2;
 			label.Opacity = 0.;
-			
+
 			AnimMgr.Flush(label);
 			AnimMgr.Add(label, "<label scale=\"1\" opacity=\"1\" pos=\"1.5 "^label.RelativePosition_V3.Y ^"\" />", 750, CAnimManager::EAnimManagerEasing::CircOut);
 			AnimMgr.Add(label, "<label opacity=\"0\" scale=\"1.1\"/>", Now+5500, 1000, CAnimManager::EAnimManagerEasing::CircOut);
-			
+
 			declare CMlQuad quad = elem.Controls[0] as CMlQuad;
 			quad.Scale= 1.2;
 			quad.Opacity = 0.;
@@ -138,39 +138,39 @@ Text GetManialink(Integer feedSize) {
 			AnimMgr.Flush(quad);
 			AnimMgr.Add(quad, "<label scale=\"1\" opacity=\"1\" pos=\"0 "^label.RelativePosition_V3.Y ^"\" />", 750, CAnimManager::EAnimManagerEasing::CircOut);
 			AnimMgr.Add(quad, "<label opacity=\"0\" scale=\"1.1\"/>", Now+5500, 1000, CAnimManager::EAnimManagerEasing::CircOut);
-			
-			
+
+
 		}
-		
+
 		counter+=1;
 	}
-	
+
 	Void processMessage(Integer stamp) {
 		declare netread K_FeedMessage[] Net_EventFeed_Messages for UI;
-		
+
 		foreach (Message in Net_EventFeed_Messages) {
 			if (Message.Stamp >= stamp) {
 				addMessage(Message);
 			}
 		}
 	}
-	
-	
+
+
 	main() {
-		
+
 		declare netread Integer Net_EventFeed_Update for UI;
 		declare CMlFrame frame = (Page.GetFirstChild("Events") as CMlFrame);
 		LastUpdate = 0;
 		counter = 0;
-		
+
 		while(True) {
 			yield;
-			
+
 			if (Net_EventFeed_Update > LastUpdate) {
 				LastUpdate = Net_EventFeed_Update;
 				processMessage(Net_EventFeed_Update);
 			}
-			
+
 		}
 	}
 	--></script>

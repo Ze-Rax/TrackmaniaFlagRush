@@ -80,7 +80,7 @@ Void Private_Configs_InitFromClubTags() {
 		ClubTagUtils::GetTeamConfig(1),
 		ClubTagUtils::GetTeamConfig(2)
 	];
-	
+
 	// Right now: ClubTagUtils::K_TeamConfig is the same as FlagRush_Team::K_TeamConfig
 	// and can be assigned directly
 	G_TeamConfigs = [Teams[0] => TeamConfigs[0], Teams[1] => TeamConfigs[1]];
@@ -96,7 +96,7 @@ Void Private_Configs_OverrideEmptyFields() {
 			G_TeamConfigs[Team].Name = G_TeamNameOverrides[TeamIndex];
 		else if (G_TeamConfigs[Team].Name == "")					// Was empty
 			G_TeamConfigs[Team].Name = GetDefaultTeamName(TeamIndex + 1);
-			
+
 		if(G_TeamColorHexOverrides.get(TeamIndex, "") != "")
 			G_TeamConfigs[Team].Color = CL::Hex3ToRgb(G_TeamColorHexOverrides[TeamIndex]);
 		else if (G_TeamConfigs[Team].Color == ClubTagUtils::C_InvalidColor)
@@ -122,13 +122,13 @@ Void Private_Configs_OverrideEmptyFields() {
 Void Private_Configs_AdjustAvoidHueOverlap() {
 	declare Text Team1ColorOverride = G_TeamColorHexOverrides.get(0, "");
 	declare Text Team2ColorOverride = G_TeamColorHexOverrides.get(1, "");
-	
+
 	// Only adjust if at least one team color is not forced by settings
 	if (Team1ColorOverride == "" || Team2ColorOverride == "") {
 		// See table above
 		declare Boolean AdjustFirst = Team2ColorOverride != "" ||
 				(G_TeamConfigs[Teams[1]].ClubTag != "" && G_TeamConfigs[Teams[0]].ClubTag == "" && Team1ColorOverride == "");
-		
+
 		if (AdjustFirst) G_TeamConfigs[Teams[0]].Color = ColorUtils::AdjustHueOverlap(
 				G_TeamConfigs[Teams[1]].Color,
 				G_TeamConfigs[Teams[0]].Color,
@@ -147,15 +147,15 @@ Void Private_Configs_ApplyToTeams() {
 	for(TeamIndex, 0, 1) {
 		Teams[TeamIndex].Name = G_TeamConfigs[Teams[TeamIndex]].Name;
 		declare Vec3 PrimaryColor = G_TeamConfigs[Teams[TeamIndex]].Color;
-		
+
 		// Teams have automatic change for colors; Need full saturation and value (HSV)
 		Teams[TeamIndex].ColorPrimary = ColorUtils::ColorToFullSaturationAndValue(PrimaryColor);
 		Teams[TeamIndex].ColorSecondary = ColorUtils::ColorToFullSaturationAndValue(PrimaryColor);
-		
+
 		// Use "declare for" for actual colors for UI. Player Markers still use Teams[I].ColorPrimary
 		declare Vec3 ColorPrimaryUI for Teams[TeamIndex];
 		ColorPrimaryUI = PrimaryColor;
-		
+
 		declare netwrite Vec3 Net_FlagRush_PrimaryColor for Teams[TeamIndex];
 		Net_FlagRush_PrimaryColor = PrimaryColor;
 	}

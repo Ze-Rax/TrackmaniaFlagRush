@@ -1,3 +1,4 @@
+// #RequireContext CSmMode
 /*
  * WarmUp Library with infinite time and ready up mechanic.
  *
@@ -163,7 +164,7 @@ Boolean Private_MatchCanStart() {
 		}
 		ClanReadyStates[Player.CurrentClan] = PlayerClanReadyState;
 	}
-	
+
 	// There have to be at least two clans
 	if ((UseClans || UseMultiClans) && ClanReadyStates.count < 2) {
 		if(G_TimeoutState.State != C_Timeout_State_NotStarted) {
@@ -180,10 +181,10 @@ Boolean Private_MatchCanStart() {
 		AllClansAllPlayersReady = AllClansAllPlayersReady && (ReadyState.NbPlayersReady == ReadyState.NbPlayers);
 		AllClansAllPlayersReady = AllClansAllPlayersReady && AllClansAtLeastOnePlayerReady;
 	}
-	
+
 	// Update Warmup EndTime
 	Private_UpdateWarmUpEndTime(AllClansAtLeastOnePlayerReady, AllClansAllPlayersReady);
-	
+
 	// Check if the timeout ended
 	declare TimeoutEnded = G_TimeoutState.State != C_Timeout_State_NotStarted && Now > EndTime;
 	if(TimeoutEnded) {
@@ -203,6 +204,7 @@ Void Start() {
 	Layers::Create(WarmUpReadyUp_UI::C_ManialinkName, WarmUpReadyUp_UI::GetManialink());
 	Layers::SetType(WarmUpReadyUp_UI::C_ManialinkName, CUILayer::EUILayerType::Normal);
 	Layers::Attach(WarmUpReadyUp_UI::C_ManialinkName);
+	UIManager.UIAll.SendChat("""$f90Warmup!$fff Ready up by clicking the "Ready"-Button or pressing F7 /  / +""");
 }
 
 /**
@@ -257,7 +259,7 @@ Void Private_HandleUIEvents() {
  */
 Void Yield() {
 	PendingEvents = [];
-	
+
 	Private_HandleXmlRpcEvents();
 	Private_HandleUIEvents();
 

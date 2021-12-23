@@ -4,7 +4,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"	as FlagRush_Map
 
 Text GetManialink() {
-	
+
 	declare Text BasesFrameInstancesXml;
 	declare Integer NbBasesPerTeam = FlagRush_Map::GetBases(1).count;
 	for(I, 0, NbBasesPerTeam-1) {
@@ -20,11 +20,11 @@ Text GetManialink() {
 		<frameinstance modelid="model-marker-flag" id="marker-flag-spawn-{{{I}}}" scale="0.7"/>
 		""";
 	}
-	
+
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_Markers">
-		
+
 		<framemodel id="model-marker-base" hidden="1">
 			<quad pos="0 0" z-index="1" size="10 10" bgcolor="FFFA" style="ManiaPlanetMainMenu" substyle="IconHome" halign="center" valign="center" colorize="fff" id="quad-base"/>
 		</framemodel>
@@ -33,7 +33,7 @@ Text GetManialink() {
 			<quad pos="0 0.5" z-index="2" size="10 10" halign="center" style="UIConstruction_Buttons" substyle="Validate" id="quad-flag" valign="center"/>
 			<quad id="up" pos="0 7.5" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" hidden="1" />
 			<quad id="down" pos="0 -5.5" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center" hidden="1"/>
-		
+
 			<frame id="gauge-frame" pos="0 7" scale="0.6">
 				<frame size="10 20" pos="0 0">
 					<quad id="gauge2" pos="0 -10" z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" rot="0" hidden="1" />
@@ -47,12 +47,12 @@ Text GetManialink() {
 		{{{BasesFrameInstancesXml}}}
 
 		<frameinstance modelid="model-marker-flag" id="marker-flag"/>
-		
+
 		{{{FlagSpawnMarkerFrameInstancesXml}}}
 
 		<script><!--
 			#Include "MathLib" as ML
-			
+
 			{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 			{{{ UIShared::GetUtilFunctions() }}}
 
@@ -83,11 +83,11 @@ Text GetManialink() {
 				for(I, 0, {{{NbBasesPerTeam-1}}}) {
 					declare CMlFrame FrameMarkerBase1 = (Page.GetFirstChild("marker-base-team1-" ^ I) as CMlFrame);
 					Team1BaseMarkerFrames.add(FrameMarkerBase1);
-					
+
 					declare CMlFrame FrameMarkerBase2 = (Page.GetFirstChild("marker-base-team2-" ^ I) as CMlFrame);
 					Team2BaseMarkerFrames.add(FrameMarkerBase2);
 				}
-				
+
 				declare CMlFrame FrameMarkerFlag = (Page.GetFirstChild("marker-flag") as CMlFrame);
 				declare CMlFrame FrameGauge = (Page.GetFirstChild("gauge-frame") as CMlFrame);
 				declare CMlQuad QuadMarkerFlag = (FrameMarkerFlag.GetFirstChild("quad-flag") as CMlQuad);
@@ -95,25 +95,25 @@ Text GetManialink() {
 				declare CMlQuad QuadFlagDown = (FrameMarkerFlag.GetFirstChild("down") as CMlQuad);
 
 				QuadMarkerFlag.Colorize = GetTeamPrimaryColor(Null);
-				
+
 				declare netread Integer Net_FlagRush_FlagCarrierClan for Teams[0];
 				declare netread Integer Net_FlagRush_FlagGaugeStartDate for Teams[0];
 				declare netread Integer Net_FlagRush_FlagGaugeDuration for Teams[0];
 				declare netread Text	  Net_FlagRush_FlagCarrierLogin for Teams[0];
 				declare netread Vec3 		Net_FlagRush_FlagPosition for Teams[0];
-				
+
 				while(True) {
 					yield;
-					
+
 					/* Colors */
-					
+
 					// Get the right color for the flag
 					declare Vec3 FlagColor = GetTeamPrimaryColor(Null);
 					if (Net_FlagRush_FlagCarrierClan > 0) FlagColor = GetTeamPrimaryColor(Teams[Net_FlagRush_FlagCarrierClan - 1]);
-					
+
 					// Apply colors
 					QuadMarkerFlag.Colorize = FlagColor;
-					
+
 					foreach (MarkerFrame in Team1BaseMarkerFrames) {
 						(MarkerFrame.GetFirstChild("quad-base") as CMlQuad).Colorize = GetTeamPrimaryColor(Teams[0]);
 					}

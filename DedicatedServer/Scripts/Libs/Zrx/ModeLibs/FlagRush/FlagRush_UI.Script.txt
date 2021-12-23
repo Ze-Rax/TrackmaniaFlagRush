@@ -1,3 +1,5 @@
+#Include "TextLib" as TL
+
 #Include "Libs/Nadeo/ModeLibs/Legacy/Layers2.Script.txt"							as Layers
 #Include "Libs/Nadeo/TMxSM/Race/Scores.Script.txt"										as Scores
 
@@ -12,22 +14,28 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"			as FlagRush_Common
 
 /* UI Modules */
-#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"									as EventFeed
-#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"			as ModeCommands
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"					as FlagRush_UIFlash
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt"				as FlagRush_UIHeader
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"				as FlagRush_UIMarkers
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"		as FlagRush_UIScoresTable
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Spectator.Script.txt"			as FlagRush_UISpectator
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"					as FlagRush_UIRadar
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Respawn.Script.txt"				as FlagRush_UIRespawn
+#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"											as EventFeed
+#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"					as ModeCommands
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Dialog.Script.txt"						as FlagRush_UIDialog
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt"						as FlagRush_UIHeader
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"								as FlagRush_UIMVP
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_UIMarkers
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt"							as FlagRush_UISound
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Spectator.Script.txt"					as FlagRush_UISpectator
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Respawn.Script.txt"						as FlagRush_UIRespawn
 
+#Const C_LayerName_Dialog						"Layer_FlagRush_Dialog"
 #Const C_LayerName_ScoresTable			"Layer_FlagRush_ScoresTable"
 #Const C_LayerName_ScoresHeader			"Layer_FlagRush_ScoresHeader"
 #Const C_LayerName_RoundUI					"Layer_FlagRush_RoundUI"
+#Const C_LayerName_MVP							"Layer_FlagRush_MVP"
 #Const C_LayerName_Markers					"Layer_FlagRush_Markers"
 #Const C_LayerName_Feed							"Layer_FlagRush_Feed"
 #Const C_LayerName_Flash						"Layer_FlagRush_Flash"
+#Const C_LayerName_Sound						"Layer_FlagRush_Sound"
 #Const C_LayerName_Spectator				"Layer_FlagRush_Spectator"
 #Const C_LayerName_Respawn					"Layer_FlagRush_Respawn"
 #Const C_LayerName_ModeCommands			"Layer_ModeCommands"
@@ -79,7 +87,7 @@ Void InitFlagSpawnMarkers() {
 		G_FlagMarker = UIManager.UIAll.AddMarker(FlagState::Get().Position);
 		G_FlagMarker.Box = C_FlagMarker_Box_Position;
 	}
-	
+
 	G_FlagMarker.ManialinkFrameId = "marker-flag";
 	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
 }
@@ -96,12 +104,12 @@ Void UpdateFlagMarker() { InitFlagMarker(); }
  */
  Void UpdateFlagCarrierNetData() {
 	declare FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
-	
+
 	// Carrier Clan Index (for color)
 	declare netwrite Integer Net_FlagRush_FlagCarrierClan for Teams[0];
 	if (FlagCarrierPlayer == Null) Net_FlagRush_FlagCarrierClan = 0;
 	else Net_FlagRush_FlagCarrierClan = FlagCarrierPlayer.CurrentClan;
-	
+
 	// Carrier name and login
 	declare netwrite Text Net_FlagRush_FlagCarrierName for Teams[0];
 	declare netwrite Text Net_FlagRush_FlagCarrierLogin for Teams[0];
@@ -112,7 +120,7 @@ Void UpdateFlagMarker() { InitFlagMarker(); }
 	}
 	else if (FlagState::Get().Landmark != Null) Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Spawn;
 	else Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Dropped;
-	
+
 	// Flag Position
 	declare netwrite Vec3 Net_FlagRush_FlagPosition for Teams[0];
 	Net_FlagRush_FlagPosition = FlagState::Get().Position;
@@ -126,12 +134,12 @@ Void InitMarkers() {
 
 	// Clear old markers
 	UIManager.UIAll.ClearMarkers();
-	
+
 	// Create Layer for all UIs
 	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
 	Layers::SetType(C_LayerName_Markers, CUILayer::EUILayerType::Markers);
 	Layers::Attach(C_LayerName_Markers);
-	
+
 	// Create Markers for the Bases
 	for(Clan, 1, 2) {
 		for(BaseIndex, 0, FlagRush_Map::GetBases(Clan).count -1) {
@@ -180,28 +188,33 @@ Void InitRadar() {
 /**
  * Creates the UI Layers and initializes the markers for each player.
  */
-Void Init() {
+Void Init(Text FlagRush_Version) {
 	// Scores header
 	Layers::Create(C_LayerName_ScoresHeader, FlagRush_UIHeader::GetManialink());
 	Layers::SetType(C_LayerName_ScoresHeader, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_ScoresHeader);
-	
+
 	// Scores table
 	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoresTable::GetManialink(6));
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
-	
+
 	// Event Feed
 	EventFeed::ClearMessages();
 	Layers::Create(C_LayerName_Feed, EventFeed::GetManialink(10));
 	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Feed);
-	
+
 	// Flash
 	Layers::Create(C_LayerName_Flash, FlagRush_UIFlash::GetManialink());
 	Layers::SetType(C_LayerName_Flash, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Flash);
-	
+
+	// MVP
+	Layers::Create(C_LayerName_MVP, FlagRush_UIMVP::GetManialink());
+	Layers::SetType(C_LayerName_MVP, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_MVP);
+
 	// ModeCommands
 	Layers::Create(C_LayerName_ModeCommands, ModeCommands::GetManialink());
 	Layers::SetType(C_LayerName_ModeCommands, CUILayer::EUILayerType::Normal);
@@ -216,10 +229,22 @@ Void Init() {
 	Layers::Create(C_LayerName_Respawn, FlagRush_UIRespawn::GetManialink());
 	Layers::SetType(C_LayerName_Respawn, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Respawn);
-	
+
+	// Sound
+	Layers::Create(C_LayerName_Sound, FlagRush_UISound::GetManialink());
+	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Sound);
+
+	declare Text[] Matches = TL::RegexMatch("""-dev""", FlagRush_Version, "");
+	if (Matches[0] == "-dev") {
+		Layers::Create(C_LayerName_Dialog, FlagRush_UIDialog::GetVersionInfo(FlagRush_Version));
+		Layers::SetType(C_LayerName_Dialog, CUILayer::EUILayerType::Normal);
+		Layers::Attach(C_LayerName_Dialog);
+	}
+
 	// Markers
 	InitMarkers();
-	
+
 	// Radar
 	InitRadar();
 }
@@ -268,6 +293,8 @@ Void UpdateTeamScores() {
 		Net_FlagRush_TeamRoundScore = Scores::GetClanRoundPoints(Clan);
 		declare netwrite Integer Net_FlagRush_TeamMapScore for Teams[Clan-1];
 		Net_FlagRush_TeamMapScore = TeamPointsProgression::GetClanRoundsWon(Clan);
+		declare netwrite Integer Net_FlagRush_TeamMatchScore for Teams[Clan-1];
+		Net_FlagRush_TeamMatchScore = TeamPointsProgression::GetClanMapsWon(Clan);
 	}
 }
 
@@ -307,14 +334,34 @@ Void UpdateScores() {
 	foreach (Score in Scores) UpdateScore(Score);
 }
 
-
 /**
  * Sends relevant mode settings values to the clients via netwrite.
  */
 Void UpdateModeSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap) {
 	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
 	Net_FlagRush_NbMapsToWinMatch = NbMapsToWinMatch;
-	
+
 	declare netwrite Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
 	Net_FlagRush_NbRoundsToWinMap = NbRoundsToWinMap;
+}
+
+/**
+	* Toggles MVP scene on/off
+	*/
+Void ToggleMVP(Boolean Value) {
+	FlagRush_UIMVP::Toggle(Value);
+}
+
+/**
+ * Plays multiple sounds at all clients.
+ */
+Void PlaySound(Text[] Url) {
+	FlagRush_UISound::Play(Url);
+}
+
+/**
+ * Plays a sound at all clients.
+ */
+Void PlaySound(Text Url) {
+	FlagRush_UISound::Play([Url]);
 }

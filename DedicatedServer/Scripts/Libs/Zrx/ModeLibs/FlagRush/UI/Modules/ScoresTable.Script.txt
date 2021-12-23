@@ -16,7 +16,7 @@
 
 Text GetManialink(Integer _PlayersPerPage) {
 	declare PlayersPerPage = ML::Clamp(_PlayersPerPage, 1, 6);
-	
+
 	// Create Text with XML Frame instances to insert in manialink text
 	declare Text PlayerCardFrameInstancesTeam1Xml;
 	declare Text PlayerCardFrameInstancesTeam2Xml;
@@ -32,17 +32,17 @@ Text GetManialink(Integer _PlayersPerPage) {
 	{{{PlayerCardFrameInstancesTeam1Xml}}}
 	{{{PlayerCardFrameInstancesTeam2Xml}}}
 	""";
-	
+
 	// Create Text with Maniascript arrays to insert in manialink script text
 	declare Text PlayerCardFramesTeam1ScriptList = "[";
 	declare Text PlayerCardFramesTeam2ScriptList = "[";
 	for(I, 1, PlayersPerPage) {
 		PlayerCardFramesTeam1ScriptList ^= """
 		Page.GetFirstChild("player-card-team1-{{{I}}}") as CMlFrame""";
-		
+
 		PlayerCardFramesTeam2ScriptList ^= """
 		Page.GetFirstChild("player-card-team2-{{{I}}}") as CMlFrame""";
-		
+
 		if(I < PlayersPerPage) {
 			PlayerCardFramesTeam1ScriptList ^= ",";
 			PlayerCardFramesTeam2ScriptList ^= ",";
@@ -52,7 +52,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 			PlayerCardFramesTeam2ScriptList ^= "]";
 		}
 	}
-	
+
 	// Build the actual manialink and return it
 	declare MLText = """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
@@ -99,7 +99,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 	<!-- Actual scores table -->
 	<!--
 	Structure:
-	
+
 	scorestable-main (Frame)
 	teamscores-round (Frame)
 	for each team: team name, roundscore, colored score background
@@ -125,7 +125,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 						<quad pos="-35 0" size="70 400" bgcolor="00b" opacity="0.7" halign="center" valign="center" id="team1-background-header"/>
 					</frame>
 				</frame>
-				
+
 				<quad id="team1-score-background" pos="-18 0" z-index="0" size="12 8" style="UICommon64_1" substyle="BgFrame1" colorize="000" halign="center" valign="top" opacity="0.5"/>
 				<quad id="team2-score-background" pos="20 0" z-index="0" size="12 8" halign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000" opacity="0.5"/>
 				<label pos="-18 -4" z-index="2" size="12 8" text="0" halign="center" valign="center2" textsize="	5" id="team1-score" textfont="GameFontBlack" />
@@ -171,9 +171,9 @@ Text GetManialink(Integer _PlayersPerPage) {
 			<label pos="0 -1.5" z-index="0" size="140 4" text="FooterText" halign="center" valign="center2" textsize="1" textfont="GameFontRegular" id="text"/>
 		</frame>
 	</frame>
-	
+
 	<!-- Script to handle the scores table -->
-	
+
 	<script><!--
 	// ------------------------------ //
 	// Includes
@@ -181,7 +181,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 	#Include "TextLib" as TL
 	#Include "MathLib" as ML
 	#Include "ColorLib" as CL
-	
+
 	#Const C_UpdateInterval 100
 
 	// ------------------------------ //
@@ -230,7 +230,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 		}
 		return Null;
 	}
-	
+
 	/**
 	 * Checks if a player with given login is connected.
 	 */
@@ -248,7 +248,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 		// Determine the amount of pages and clamp the current page
 		declare Integer NbPages	= (ML::Max(ScoresToDisplay[1].count, ScoresToDisplay[2].count) / ({{{PlayersPerPage}}} + 1)) + 1;
 		CurrentPageIndex = ML::Clamp(CurrentPageIndex, 0, NbPages - 1);
-		
+
 		// Show page controls if there is more than one page
 		FramePageControls.Visible = NbPages >= 2;
 		QuadPagePrevious.Visible = CurrentPageIndex >= 1;
@@ -265,7 +265,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 		BgColor2.Z /= 3;
 		BgColor1 = CL::HsvToRgb(BgColor1);
 		BgColor2 = CL::HsvToRgb(BgColor2);
-		
+
 		LabelTeam1Name.Value = Teams[0].Name;
 		LabelTeam2Name.Value = Teams[1].Name;
 		QuadTeam1BackgroundHeader.BgColor = BgColor1;
@@ -359,7 +359,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 			BackgroundColor.Z *= {{{C_PlayerCardBackgrounColorMultiplier}}};
 		}
 		QuadPlayerBackground.Colorize = BackgroundColor;
-		
+
 		/* Avatar / Flag */
 		QuadPlayerAvatar.BgColor = TeamColor;
 		QuadPlayerAvatar.ImageUrl = Score.User.CountryFlagUrl;
@@ -382,7 +382,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 	 */
 	CMlFrame GetPlayerCardByClanAndIndex(Integer Clan, Integer Index) {
 		if(Index >= {{{PlayersPerPage}}} || Index < 0) return Null;
-		
+
 		if(Clan == 1) return PlayerCardFramesTeam1[Index];
 		else if(Clan == 2) return PlayerCardFramesTeam2[Index];
 		return Null;
@@ -516,12 +516,12 @@ Text GetManialink(Integer _PlayersPerPage) {
 
 	main() {
 		Init();
-		
+
 		declare Integer LastUpdate = -1;
-		
+
 		while(True) {
 			yield;
-			
+
 			HandleEvents();
 
 			if(Now - LastUpdate < C_UpdateInterval) continue;
@@ -530,12 +530,12 @@ Text GetManialink(Integer _PlayersPerPage) {
 			UpdateTeamScores();
 			UpdateCurrentPage();
 			UpdateFooter();
-			
+
 		}
 	}
 	--></script>
 	</manialink>
 	""";
-	
+
 	return MLText;
 }

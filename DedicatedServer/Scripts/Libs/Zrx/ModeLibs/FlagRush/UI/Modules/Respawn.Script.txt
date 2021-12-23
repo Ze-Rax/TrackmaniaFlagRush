@@ -12,17 +12,17 @@ Text GetManialink() {
 			</frame>
 		<quad pos="0 0" z-index="0" size="80 10" id="rs-gauge2" style="UICommon64_1" substyle="BgFrame1" colorize="000" opacity="0.7"/>
 		</frame>
-	
+
 	<script><!--
 	#Include "MathLib" as ML
-	
+
 	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 	main() {
 		declare CMlFrame RespawnFrame = (Page.GetFirstChild("rs-frame") as CMlFrame);
 		declare CMlFrame GaugeFrame = (Page.GetFirstChild("rs-gauge-frame") as CMlFrame);
 		declare CMlLabel RespawnLabel = (Page.GetFirstChild("rs-label") as CMlLabel);
 		declare CMlQuad  RespawnQuad = (Page.GetFirstChild("rs-gauge") as CMlQuad);
-		
+
 		wait(InputPlayer != Null);
 
 		declare netread Integer Net_SpawnDate for InputPlayer;
@@ -34,22 +34,22 @@ Text GetManialink() {
 				RespawnFrame.Visible = False;
 				continue;
 			}
-			
+
 			declare Integer SecondsRemaining = MillisRemaining / 1000;
 			declare Real Ratio = ML::NearestReal(MillisRemaining) / TotalRespawnTime;
 			RespawnFrame.Visible = True;
-			
+
 			if (TotalRespawnTime <= 0) {
 				TotalRespawnTime = MillisRemaining;
 			}
-			
+
 			GaugeFrame.Size.X = ML::Clamp(80. * Ratio, 0., 80.);
 			declare Integer teamId = InputPlayer.CurrentClan-1;
 			if (Teams.existskey(teamId)) {
 				RespawnQuad.Colorize = GetTeamPrimaryColor(Teams[teamId]) * 0.5;
 			}
 			RespawnLabel.SetText("Respawning in " ^ (SecondsRemaining + 1) ^ "...");
-			
+
 		}
 	}
 	--></script>

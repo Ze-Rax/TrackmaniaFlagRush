@@ -79,7 +79,7 @@ Void SetAtPosition(Vec3 Position) {
  */
 Void SetPickupableDate(Integer Date) {
 	G_FlagState.PickupableDate = Date;
-	
+
 	/* Gauge timing */
 	declare FlooredGaugeDuration = Date - Now;
 	if (FlooredGaugeDuration < 0) FlooredGaugeDuration = 0;

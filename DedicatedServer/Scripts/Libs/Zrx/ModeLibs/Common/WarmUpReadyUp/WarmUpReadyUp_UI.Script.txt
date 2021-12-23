@@ -7,14 +7,16 @@ Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="{{{C_ManialinkName}}}">
-		<frame id="player-ready-frame" pos="0 65">
-			<label pos="0 -8" z-index="0" size="40 5" text="pad  or  + " halign="center" textsize="4" textfont="GameFontRegular" valign="center2"/>
-			<quad pos="0 0" z-index="0" size="40 10" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" colorize="000" opacity="0.75"/>
+		<frame id="player-ready-frame" pos="0 60">
+			<label pos="-4 -7.95" z-index="0" size="43.1 5.89" text="        " textsize="5" textfont="GameFontRegular" halign="center" valign="center"/>
+			<label pos="-4 -8.25" z-index="0" size="43.1 6" text="     / F7" halign="center" textsize="3" textfont="GameFontRegular" valign="center2"/>
+			<quad pos="-3.22 0" z-index="0" size="46.4 10" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" colorize="000" opacity="0.75"/>
 			<quad pos="15 0" z-index="1" size="10 10" id="button-ready-background" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" colorize="fff"/>
 			<label pos="15 0" z-index="2" size="10 10" id="button-ready-icon" text="" halign="center" valign="center" style="Default" textfont="GameFontBlack" textsize="4"/>
-			<quad pos="0 0" z-index="3" size="40 10" id="button-ready-activator" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" opacity="0" scriptevents="1"/>
-			<label pos="-8.5 0" z-index="5" size="20.9 9.59" text="Ready" halign="center" textsize="4" style="Default" textfont="GameFontSemiBold" valign="center2"/><label pos="9 0" z-index="5" size="9.34 9.59" text="(F7)" halign="right" textsize="3" style="Default" textfont="GameFontRegular" valign="center2"/>
+			<quad pos="-2.11 0" z-index="3" size="44.2 10" id="button-ready-activator" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" opacity="0" scriptevents="1"/>
+			<label pos="-7.66 -0.111" z-index="5" size="29.6 9.59" text="Ready" halign="center" textsize="4" style="Default" textfont="GameFontSemiBold" valign="center2"/>
 		</frame>
+
 
 		<script><!--
 		#Include "TextLib" as TL

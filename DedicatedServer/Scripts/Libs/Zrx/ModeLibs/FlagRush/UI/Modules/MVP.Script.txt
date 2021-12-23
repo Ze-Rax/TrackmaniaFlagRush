@@ -48,21 +48,7 @@ Text GetManialink() {
 	
 	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 	{{{ UIShared::GetUtilFunctions() }}}
-	
-	/** 
-	* Gets CSmScore from array by index number
-	*/
-	CSmScore GetScore(Integer[CSmScore] Array, Integer Index) {
-		declare Integer x = 0;
-		foreach(Key => Value in Array) {
-			if (x == Index) {
-				return Key;
-			}
-			x += 1;
-		}
-		return Null;
-	}
-	
+
 	/**
 	* Get matchpoints, order is from z to a
 	*/

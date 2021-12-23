@@ -69,8 +69,8 @@ Text GetManialink() {
 	Integer[CSmScore] GetMatchPoints() {
 		declare Integer[CSmScore] Output;
 		foreach(Score in Scores) {
-			declare netread Integer Net_FlagRush_MatchPoints for Score;
-			if (Net_FlagRush_MatchPoints > 0) Output[Score] = Net_FlagRush_MatchPoints;			
+			declare netread Integer Net_FlagRush_Points_Match for Score;
+			Output[Score] = Net_FlagRush_Points_Match;			
 		}
 		return Output.sortreverse();
 	}
@@ -122,7 +122,7 @@ Text GetManialink() {
 		declare CMlLabel LblName = (Frame.GetFirstChild("name") as CMlLabel);			
 		declare CMlLabel LblScore = (Frame.GetFirstChild("score") as CMlLabel);
 		declare CMlLabel LblDesc = (Frame.GetFirstChild("description") as CMlLabel);
-		declare netread Integer Net_FlagRush_MatchPoints for Score;
+		declare netread Integer Net_FlagRush_Points_Match for Score;
 		LblDesc.Value = "";
 		
 		if (Score == GetScoreMostFlagsStolen()) {
@@ -136,7 +136,7 @@ Text GetManialink() {
 		}
 		
 		LblName.Value = Score.User.Name;
-		LblScore.Value = Net_FlagRush_MatchPoints ^ " Points";
+		LblScore.Value = Net_FlagRush_Points_Match ^ " Points";
 		
 	}
 	

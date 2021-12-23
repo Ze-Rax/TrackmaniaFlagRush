@@ -65,7 +65,7 @@ Void StartMatch() {
 }
 
 Void EndMatch() {
-	
+
 }
 
 Void StartMap() {
@@ -73,7 +73,7 @@ Void StartMap() {
 }
 
 Void EndMap() {
-	
+
 }
 
 Void StartRound() {
@@ -81,5 +81,5 @@ Void StartRound() {
 }
 
 Void EndRound() {
-	
+
 }

@@ -10,12 +10,12 @@
 Integer EvaluateRound() {
 	declare Integer RoundPointsTeam1 = Scores::GetClanRoundPoints(1);
 	declare Integer RoundPointsTeam2 = Scores::GetClanRoundPoints(2);
-	
+
 	declare Integer WinnerClan = 0;
 	declare Integer RoundPointsDiff = RoundPointsTeam1 - RoundPointsTeam2;
 	if(RoundPointsDiff > 0) WinnerClan = 1;
 	else if (RoundPointsDiff < 0) WinnerClan = 2;
-	
+
 	return WinnerClan;
 }
 
@@ -28,12 +28,12 @@ Integer EvaluateRound() {
 Integer EvaluateMap() {
 	declare Integer MapPointsTeam1 = TeamPointsProgression::GetClanRoundsWon(1);
 	declare Integer MapPointsTeam2 = TeamPointsProgression::GetClanRoundsWon(2);
-	
+
 	declare Integer WinnerClan = 0;
 	declare Integer MapPointsDiff = MapPointsTeam1 - MapPointsTeam2;
 	if (MapPointsDiff > 0) WinnerClan = 1;
 	else if (MapPointsDiff < 0) WinnerClan = 2;
-	
+
 	return WinnerClan;
 }
 
@@ -46,12 +46,12 @@ Integer EvaluateMap() {
 Integer EvaluateMatch() {
 	declare Integer MatchPointsTeam1 = TeamPointsProgression::GetClanMapsWon(1);
 	declare Integer MatchPointsTeam2 = TeamPointsProgression::GetClanMapsWon(2);
-	
+
 	declare Integer WinnerClan = 0;
 	declare Integer MatchPointsDiff = MatchPointsTeam1 - MatchPointsTeam2;
 	if (MatchPointsDiff > 0) WinnerClan = 1;
 	else if (MatchPointsDiff < 0) WinnerClan = 2;
-	
+
 	return WinnerClan;
 }
 

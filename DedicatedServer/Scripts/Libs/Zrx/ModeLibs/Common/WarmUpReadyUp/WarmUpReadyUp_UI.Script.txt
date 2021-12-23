@@ -1,3 +1,5 @@
+// #RequireContext CSmMlScriptIngame
+
 #Const C_ReadyEvent_Type	"ready"
 #Const C_ManialinkName		"WarmUpReadyUp"
 
@@ -5,24 +7,21 @@ Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="{{{C_ManialinkName}}}">
-		<frame id="player-ready-frame" pos="0 -60">
-			<quad pos="0 0" z-index="0" size="40 10" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" colorize="000" opacity="0.75"/>
-
+		<frame id="player-ready-frame" pos="0 60">
+			<quad pos="-3.22 0" z-index="0" size="46.4 10" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" colorize="000" opacity="0.75"/>
 			<quad pos="15 0" z-index="1" size="10 10" id="button-ready-background" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" colorize="fff"/>
 			<label pos="15 0" z-index="2" size="10 10" id="button-ready-icon" text="" halign="center" valign="center" style="Default" textfont="GameFontBlack" textsize="4"/>
-			<quad pos="0 0" z-index="3" size="40 10" id="button-ready-activator" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" opacity="0" scriptevents="1"/>
-
-			<label pos="-5 0" z-index="5" size="30 8" text="Ready" halign="center" valign="center" textsize="4" style="Default" textfont="GameFontSemiBold"/>
+			<quad pos="-2.11 0" z-index="3" size="44.2 10" id="button-ready-activator" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" opacity="0" scriptevents="1"/>
+			<label pos="-7.66 -0.111" z-index="5" size="29.6 9.59" text="Ready" halign="center" textsize="4" style="Default" textfont="GameFontSemiBold" valign="center2"/>
 		</frame>
-
-		<script><!--
+<script><!--
 		#Include "TextLib" as TL
 		#Include "MathLib" as ML
 		#Include "ColorLib" as CL
 
 		#Const C_Color_Ready <0.1, 0.7, 0.1>
 		#Const C_Color_NotReady <0.9, 0.1, 0.1>
-		
+
 		declare Boolean Ready;
 
 		Vec3 TransformColor(Vec3 _BaseColor, Vec3 _Transformation) {
@@ -33,7 +32,7 @@ Text GetManialink() {
 			if (NewColor.X > 1.) NewColor.X -= 1.;
 			NewColor.Y = ML::Clamp(NewColor.Y + _Transformation.Y, 0., 1.);
 			NewColor.Z = ML::Clamp(NewColor.Z + _Transformation.Z, 0., 1.);
-		
+
 			return CL::HsvToRgb(NewColor);
 		}
 
@@ -55,14 +54,13 @@ Text GetManialink() {
 			declare CMlLabel ButtonReadyIcon = (Page.GetFirstChild("button-ready-icon") as CMlLabel);
 			declare CMlQuad ButtonReadyActivator = (Page.GetFirstChild("button-ready-activator") as CMlQuad);
 			declare Boolean ButtonHoverState = False;
-			
+
 			declare LastRequestsSpectateState = False;
 			SetReady(False);
 			ButtonReadyBackground.Colorize = C_Color_NotReady;
 
 			while(True) {
 				yield;
-				
 				// InputPlayer is not available right at server join
 				if(InputPlayer != Null) {
 					// Reset Ready if player switched from spectator to player or other way round
@@ -70,7 +68,7 @@ Text GetManialink() {
 						LastRequestsSpectateState = InputPlayer.RequestsSpectate;
 						SetReady(False);
 					}
-					
+
 					// Hide the ready button when player is in spectator
 					FrameReady.Visible = !InputPlayer.RequestsSpectate;
 				}
@@ -92,9 +90,20 @@ Text GetManialink() {
 					}
 				}
 
+				foreach(InputEvent in Input.PendingEvents) {
+					if(InputEvent.Pad != Null && ( (InputEvent.Pad.L1 > 0 && InputEvent.Pad.R1 > 0) || (InputEvent.Pad.View > 0) ) ) {
+						SetReady(!Ready);
+					}
+				}
+
 				// Check if ready button is hovered or clicked
 				foreach(Event in PendingEvents) {
 					switch (Event.Type) {
+						case CMlScriptEvent::Type::KeyPress: {
+							if (Event.KeyName == "F7") {
+								SetReady(!Ready);
+							}
+						}
 						case CMlScriptEvent::Type::MouseClick: {
 							switch (Event.Control) {
 								case ButtonReadyActivator: {

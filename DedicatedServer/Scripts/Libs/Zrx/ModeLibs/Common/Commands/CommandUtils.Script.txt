@@ -20,11 +20,11 @@
 */
 K_Command FromNameAndParams(Text Name, Text[] Params, Text Source) {
 	declare K_Command Command;
-	
+
 	Command.Name = Name;
 	Command.Source = Source;
 	Command.ValueText			= TL::Join(" ", Params);
-	
+
 	switch(Params.count) {
 		case 1: {
 			Command.ValueBoolean	= Params[0] == "True";
@@ -46,7 +46,7 @@ K_Command FromNameAndParams(Text Name, Text[] Params, Text Source) {
 			Command.ValueInt3.Z		= TL::ToInteger(Params[2]);
 		}
 	}
-	
+
 	return Command;
 }
 

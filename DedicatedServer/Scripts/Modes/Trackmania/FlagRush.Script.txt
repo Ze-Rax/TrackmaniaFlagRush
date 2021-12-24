@@ -926,6 +926,7 @@ Void HandleModeSettingsUpdate() {
 		|| G_LastSettings_Team2ForcedName != S_Team2Name
 		|| G_LastSettings_Team2ForcedColor != S_Team2Color
 		|| G_LastSettings_UseClubTags != S_UseClubTags;
+
 	if(NeedsReinitTeamConfigs) {
 		FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
 		FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);

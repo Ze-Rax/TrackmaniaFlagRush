@@ -10,6 +10,7 @@
 #Const C_PlayerMarkerGlowOpacity	0.5
 #Const C_PlayerMarkerIconOpacity	1.
 
+// /!\ On changes, also change the necessary values in K_RadarUserConfig (Private_GetRadarUserConfigStruct()) /!\
 #Struct K_Config {
 	Real Scale;
 	Real MarkerScale;
@@ -21,8 +22,26 @@
 
 declare K_Config G_Config;
 
+/**
+ * Sets the default config to be used for the radar
+ * Will be used for user config if no user config is given
+ */
 Void SetConfig(K_Config Config) {
 	G_Config = Config;
+}
+
+/**
+ * Returns the struct for the userconfig to embed in all radar layers.
+ */
+Text Private_GetRadarUserConfigStruct() {
+	return """
+		#Struct K_RadarUserConfig {
+			Real Scale;
+			Vec2 Position;
+			Real BackgroundOpacity;
+			Real DetailOpacity;
+		}
+	""";
 }
 
 Text GetCustomizationManialink() {
@@ -39,7 +58,7 @@ Text GetCustomizationManialink() {
 			<quad  z-index="0" size="50 25" style="UICommon128_1" substyle="BgFrame1" halign="center" valign="center" scale="2" colorize="000" opacity="0.75"/>
 
 			<frame id="header" z-index="1" pos="0 20">
-				<quad pos="0" size="50 5" opacity="0.75" style="UICommon128_1" substyle="BgFrame1" halign="center" colorize="000" scale="2" valign="center"/>	
+				<quad pos="0" size="50 5" opacity="0.75" style="UICommon128_1" substyle="BgFrame1" halign="center" colorize="000" scale="2" valign="center"/>
 				<label pos="0" z-index="1" size="90 10" text="Radar settings:" halign="center" valign="center" textfont="GameFontSemiBold" textsize="5"/>
 				<quad pos="45" z-index="01" size="7.5 7.5" bgcolor="FFF" halign="right" valign="center" style="UICommon64_1" substyle="Cross_light" scriptevents="1" id="settings-toggle-dialog"/>
 			</frame>
@@ -66,7 +85,7 @@ Text GetCustomizationManialink() {
 				<frame id="line-opacity" pos="0 -20">
 					<label pos="-45" z-index="0" size="40 5" text="Line Opacity:" textfont="GameFontRegular" halign="left" valign="center"/>
 					<slider halign="right" pos="22.5 0" valign="center" size="45 10" id="slider-line-opacity" scriptevents="1"></slider>
-				</frame>		
+				</frame>
 			</frame>
 
 		</frame>
@@ -74,18 +93,49 @@ Text GetCustomizationManialink() {
 		<script><!--
 			#Include "TextLib" as TL
 			#Include "MathLib" as ML
-		
+
+			{{{ Private_GetRadarUserConfigStruct() }}}
+
 			declare CMlFrame MapFrame;
 			declare CMlFrame SettingsDialogFrame;
-			
+
 			declare CMlQuad SettingsButton;
-		
+
 			declare CMlEntry PositionXEntry;
 			declare CMlEntry PositionYEntry;
 			declare CMlSlider ScaleSlider;
 			declare CMlSlider BackgroundOpacitySlider;
 			declare CMlSlider LineOpacitySlider;
-			
+
+			declare K_RadarUserConfig RadarConfig;
+
+			/**
+			 * Sends the radar config to teh other layers to display.
+			 */
+			 Void SendRadarUserConfigToLayers() {
+				declare persistent K_RadarUserConfig RadarUserConfig for LocalUser;
+				RadarUserConfig = RadarConfig;
+			}
+
+			/**
+			 * Loads the radar config for the player.
+			 * If player doesn't have a config, then the default server config is used.
+			 */
+			Void LoadRadarUserConfig() {
+				declare persistent Text Persistent_FlagRush_RadarUserConfigJson for UserMgr.MainUser = "{{{ TL::Replace(G_Config.tojson(), "\"", "\\\"") }}}";
+				RadarConfig.fromjson(Persistent_FlagRush_RadarUserConfigJson);
+				SendRadarUserConfigToLayers();
+			}
+
+			/**
+			 * Persistently saves the radar config the player.
+			 */
+			Void SaveRadarUserConfig() {
+				declare persistent Text Persistent_FlagRush_RadarUserConfigJson for UserMgr.MainUser;
+				Persistent_FlagRush_RadarUserConfigJson = RadarConfig.tojson();
+				UserMgr.MainUser.PersistentSave();
+			}
+
 			/**
 			 * Clamps the radar position so it stays inside the screen.
 			 * Else it could be unrecoverable
@@ -93,44 +143,40 @@ Text GetCustomizationManialink() {
 			Vec2 ClampToScreen(Vec2 Position) {
 				return < ML::Clamp(Position.X, -160., 160.), ML::Clamp(Position.Y, -90., 90.) >;
 			}
-			
+
 			/**
 			 * Updates the persistent settings
 			 */
 			Void UpdateSettings() {
-				declare persistent Vec2 Persistent_FlagRush_RadarPosition for UserMgr.MainUser = {{{G_Config.Position}}};
-				declare persistent Real Persistent_FlagRush_RadarScale for UserMgr.MainUser = {{{G_Config.Scale}}};
-				declare persistent Real Persistent_FlagRush_BackgroundOpacity for UserMgr.MainUser = {{{G_Config.BackgroundOpacity}}};
-				declare persistent Real Persistent_FlagRush_DetailOpacity for UserMgr.MainUser = {{{G_Config.DetailOpacity}}};
-				
 				// Validate entries
 				declare Real PosX = TL::ToReal(PositionXEntry.Value);
-				if (PosX == -1.) PosX = Persistent_FlagRush_RadarPosition.X;
-				
+				if (PosX == -1.) PosX = RadarConfig.Position.X;
+
 				declare Real PosY = TL::ToReal(PositionYEntry.Value);
-				if (PosY == -1.) PosY = Persistent_FlagRush_RadarPosition.Y;
-				
+				if (PosY == -1.) PosY = RadarConfig.Position.Y;
+
 				// Clamp to screen and write to persistent variable
-				Persistent_FlagRush_RadarPosition = ClampToScreen(<PosX, PosY>);
+				RadarConfig.Position = ClampToScreen(<PosX, PosY>);
 
 				// Update the entries if window was moved by mouse
-				PositionXEntry.Value = TL::ToText(Persistent_FlagRush_RadarPosition.X);
-				PositionYEntry.Value = TL::ToText(Persistent_FlagRush_RadarPosition.Y);
+				PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
+				PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
 
 				// Update the slider values
-				Persistent_FlagRush_RadarScale = ScaleSlider.Value;
-				Persistent_FlagRush_BackgroundOpacity = BackgroundOpacitySlider.Value;
-				Persistent_FlagRush_DetailOpacity = LineOpacitySlider.Value;
-			}
-		
-			main() {
+				RadarConfig.Scale = ScaleSlider.Value;
+				RadarConfig.BackgroundOpacity = BackgroundOpacitySlider.Value;
+				RadarConfig.DetailOpacity = LineOpacitySlider.Value;
 
+				SendRadarUserConfigToLayers();
+			}
+
+			main() {
 				// Get references
 				MapFrame = (Page.GetFirstChild("map-frame") as CMlFrame);
 				SettingsDialogFrame = (Page.GetFirstChild("customization-settings-dialog") as CMlFrame);
-				
+
 				SettingsButton = (Page.GetFirstChild("settings-toggle-map") as CMlQuad);
-				
+
 				PositionXEntry = (Page.GetFirstChild("position-x") as CMlEntry);
 				PositionYEntry = (Page.GetFirstChild("position-y") as CMlEntry);
 				ScaleSlider = (Page.GetFirstChild("slider-scale") as CMlSlider);
@@ -140,18 +186,14 @@ Text GetCustomizationManialink() {
 				// Some variables to keep track of states
 				declare Boolean Dragging = False;
 				declare Vec2 DraggingOffset;
-				
+
 				declare Boolean HoverSettingsButton;
 				declare Boolean HoverDragActivator;
 
 				declare Boolean SettingsVisibility;
 
-				// Settings for the player
-				declare persistent Vec2 Persistent_FlagRush_RadarPosition for UserMgr.MainUser = {{{G_Config.Position}}};
-				declare persistent Real Persistent_FlagRush_RadarScale for UserMgr.MainUser = {{{G_Config.Scale}}};
-				declare persistent Real Persistent_FlagRush_BackgroundOpacity for UserMgr.MainUser = {{{G_Config.BackgroundOpacity}}};
-				declare persistent Real Persistent_FlagRush_DetailOpacity for UserMgr.MainUser = {{{G_Config.DetailOpacity}}};
-				
+				LoadRadarUserConfig();
+
 				// Init controls
 				PositionXEntry.SetValueType(CMlEntry::ValueType::Ml_Real3Decimals);
 				PositionYEntry.SetValueType(CMlEntry::ValueType::Ml_Real3Decimals);
@@ -162,37 +204,44 @@ Text GetCustomizationManialink() {
 				LineOpacitySlider.MinRange = 0.;
 				LineOpacitySlider.MaxRange = 1.;
 
-				ScaleSlider.Value = Persistent_FlagRush_RadarScale;
-				BackgroundOpacitySlider.Value = Persistent_FlagRush_BackgroundOpacity;
-				LineOpacitySlider.Value = Persistent_FlagRush_DetailOpacity;
+				ScaleSlider.Value = RadarConfig.Scale;
+				BackgroundOpacitySlider.Value = RadarConfig.BackgroundOpacity;
+				LineOpacitySlider.Value = RadarConfig.DetailOpacity;
 
 				while(True) {
-					yield;
+
+					if (GUIPlayer == Null) {
+						MapFrame.Hide();
+						yield;
+						continue;
+					}
+					MapFrame.Show();
 
 					// Apply settings to update the dragging area
-					MapFrame.Scale = Persistent_FlagRush_RadarScale;
-					MapFrame.RelativePosition_V3 = Persistent_FlagRush_RadarPosition;					
-					
+					MapFrame.Scale = RadarConfig.Scale;
+					MapFrame.RelativePosition_V3 = RadarConfig.Position;
+
 					// Show or hide Settings dialog
 					SettingsButton.Visible = (HoverSettingsButton || HoverDragActivator) && !Dragging;
 					SettingsDialogFrame.Visible = SettingsVisibility;
 					if (SettingsVisibility) {
 						UpdateSettings();
 					}
-					
+
 					// Handle dragging
 					if (Dragging) {
 						// Mouse down = still dragging
 						if (MouseLeftButton) {
-							Persistent_FlagRush_RadarPosition = Input.MousePos + DraggingOffset;
-							MapFrame.RelativePosition_V3 = Persistent_FlagRush_RadarPosition;
-							PositionXEntry.Value = TL::ToText(Persistent_FlagRush_RadarPosition.X);
-							PositionYEntry.Value = TL::ToText(Persistent_FlagRush_RadarPosition.Y);
+							RadarConfig.Position = Input.MousePos + DraggingOffset;
+							MapFrame.RelativePosition_V3 = RadarConfig.Position;
+							PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
+							PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
 						} else {	// Finish dragging and save persistently
 							Dragging = False;
-							Persistent_FlagRush_RadarPosition = ClampToScreen(Persistent_FlagRush_RadarPosition);
-							UserMgr.MainUser.PersistentSave();
+							RadarConfig.Position = ClampToScreen(RadarConfig.Position);
+							SaveRadarUserConfig();
 						}
+						SendRadarUserConfigToLayers();
 					}
 
 					foreach (Event in PendingEvents) {
@@ -202,25 +251,29 @@ Text GetCustomizationManialink() {
 									Dragging = True;
 									DraggingOffset = MapFrame.AbsolutePosition_V3 - Input.MousePos;
 								} else if (TL::StartsWith("settings-toggle", Event.ControlId)) {
-									if (SettingsVisibility) UserMgr.MainUser.PersistentSave();
+									if (SettingsVisibility) SaveRadarUserConfig();
 									SettingsVisibility = !SettingsVisibility;
-								} 
+								}
 							}
 							case CMlScriptEvent::Type::MouseRightClick: {
 								if (Event.ControlId == "drag-activator") {
 									Dragging = False;
-									Persistent_FlagRush_RadarPosition = {{{G_Config.Position}}};
-									PositionXEntry.Value = TL::ToText(Persistent_FlagRush_RadarPosition.X);
-									PositionYEntry.Value = TL::ToText(Persistent_FlagRush_RadarPosition.Y);
+									RadarConfig.Position = {{{G_Config.Position}}};
+									PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
+									PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
+									SendRadarUserConfigToLayers();
 								} else if (Event.Control == ScaleSlider) {
-									Persistent_FlagRush_RadarScale = {{{G_Config.Scale}}};
+									RadarConfig.Scale = {{{G_Config.Scale}}};
 									ScaleSlider.Value = {{{G_Config.Scale}}};
+									SendRadarUserConfigToLayers();
 								} else if (Event.Control == BackgroundOpacitySlider) {
-									Persistent_FlagRush_BackgroundOpacity = {{{G_Config.BackgroundOpacity}}};
+									RadarConfig.BackgroundOpacity = {{{G_Config.BackgroundOpacity}}};
 									BackgroundOpacitySlider.Value = {{{G_Config.BackgroundOpacity}}};
+									SendRadarUserConfigToLayers();
 								} else if (Event.Control == LineOpacitySlider) {
-									Persistent_FlagRush_DetailOpacity = {{{G_Config.DetailOpacity}}};
+									RadarConfig.DetailOpacity = {{{G_Config.DetailOpacity}}};
 									LineOpacitySlider.Value = {{{G_Config.DetailOpacity}}};
+									SendRadarUserConfigToLayers();
 								}
 							}
 							case CMlScriptEvent::Type::MouseOver: {
@@ -233,6 +286,8 @@ Text GetCustomizationManialink() {
 							}
 						}
 					}
+
+					yield;
 				}
 			}
 		--></script>
@@ -244,7 +299,7 @@ Text GetBackgroundManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_Radar_Background">
-		<frame id="radar-background" scale="{{{ G_Config.Scale }}}" pos="{{{ G_Config.Position.X }}} {{{ G_Config.Position.Y }}}" hidden="1">
+		<frame id="radar-background" scale="{{{ G_Config.Scale }}}" pos="{{{ G_Config.Position.X }}} {{{ G_Config.Position.Y }}}">
 			<quad id="radar-border" size="{{{C_RadarBaseSize * 1.02}}} {{{C_RadarBaseSize * 1.02}}}"  image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" valign="center" halign="center"/>
 
 			<!-- inner decoration -->
@@ -261,7 +316,14 @@ Text GetBackgroundManialink() {
 		</frame>
 
 		<script><!--
+			{{{ Private_GetRadarUserConfigStruct() }}}
+
 			{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+
+			declare CMlFrame FrameBackground;
+			declare CMlQuad Background;
+			declare CMlQuad[] Details;
+			declare CMlQuad Border;
 
 			CMlQuad[] GetDetailControls() {
 				declare CMlQuad[] Quads;
@@ -270,33 +332,31 @@ Text GetBackgroundManialink() {
 			}
 
 			main() {
-				declare CMlFrame FrameBackground = (Page.GetFirstChild("radar-background") as CMlFrame);
-				declare CMlQuad Background = (Page.GetFirstChild("background") as CMlQuad);
-				declare CMlQuad[] Details = GetDetailControls();
-				declare CMlQuad Border = (FrameBackground.GetFirstChild("radar-border") as CMlQuad);
+				FrameBackground = (Page.GetFirstChild("radar-background") as CMlFrame);
+				Background = (Page.GetFirstChild("background") as CMlQuad);
+				Details = GetDetailControls();
+				Border = (FrameBackground.GetFirstChild("radar-border") as CMlQuad);
 
-				declare persistent Vec2 Persistent_FlagRush_RadarPosition for UserMgr.MainUser = {{{G_Config.Position}}};
-				declare persistent Real Persistent_FlagRush_RadarScale for UserMgr.MainUser = {{{G_Config.Scale}}};
-				declare persistent Real Persistent_FlagRush_BackgroundOpacity for UserMgr.MainUser = {{{G_Config.BackgroundOpacity}}};
-				declare persistent Real Persistent_FlagRush_DetailOpacity for UserMgr.MainUser = {{{G_Config.DetailOpacity}}};
+				declare persistent K_RadarUserConfig RadarUserConfig for LocalUser;
 
 				while(True) {
-					yield;
 
 					if (GUIPlayer == Null) {
 						FrameBackground.Hide();
+						yield;
 						continue;
 					}
 
-					// Update Settings
-					FrameBackground.RelativePosition_V3 = Persistent_FlagRush_RadarPosition;
-					FrameBackground.Scale = Persistent_FlagRush_RadarScale;
-					Background.Opacity = Persistent_FlagRush_BackgroundOpacity;
-					foreach (Detail in Details) Detail.Opacity = Persistent_FlagRush_DetailOpacity;
+					// Apply Radar Settings
+					FrameBackground.RelativePosition_V3 = RadarUserConfig.Position;
+					FrameBackground.Scale = RadarUserConfig.Scale;
+					Background.Opacity = RadarUserConfig.BackgroundOpacity;
+					foreach (Detail in Details) Detail.Opacity = RadarUserConfig.DetailOpacity;
 
 					Border.ModulateColor = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
 
 					FrameBackground.Show();
+					yield;
 				}
 			}
 		--></script>
@@ -331,6 +391,8 @@ Text GetMarkersManialink() {
 		<script><!--
 		#Include "MathLib" as ML
 
+		{{{ Private_GetRadarUserConfigStruct() }}}
+
 		declare CMlFrame[] PlayerMarkerFrames;
 		declare CMlFrame FlagMarkerFrame;
 		declare CMlQuad FlagMarkerIcon;
@@ -357,6 +419,9 @@ Text GetMarkersManialink() {
 			return <Cosinus, Sinus> * Vector.X + <Sinus, - Cosinus> * Vector.Y;
 		}
 
+		/**
+		 * Updates the flag marker frame.
+		 */
 		Void UpdateFlagMarker() {
 			// Determine releative position on radar
 			declare netread Vec3 Net_FlagRush_FlagPosition for Teams[0];
@@ -386,6 +451,9 @@ Text GetMarkersManialink() {
 			FlagMarkerDown.Visible = RelativePosition.Y <= {{{ -UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
 		}
 
+		/**
+		 * Updates a given marker frame with the information of a given player.
+		 */
 		Void UpdatePlayerMarker(CSmPlayer Player, CMlFrame MarkerFrame) {
 			declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
 
@@ -435,6 +503,28 @@ Text GetMarkersManialink() {
 			}
 		}
 
+		/**
+		 * Updates that markers for all player.
+		 * Also differentiates between actual players and spectators.
+		 */
+		Void UpdatePlayerMarkers() {
+			declare Integer ActualPlayerIndex = -1;
+			foreach (Player in Players) {
+				if (Player.RequestsSpectate) continue;
+				ActualPlayerIndex += 1;
+				if (ActualPlayerIndex >= PlayerMarkerFrames.count) break;
+
+				declare CMlFrame PlayerFrame <=> PlayerMarkerFrames[ActualPlayerIndex];
+				declare CMlQuad PlayerIcon <=> GetPlayerMarkerIcon(PlayerFrame);
+
+				// Change Icon Color
+				PlayerIcon.Colorize = GetTeamPrimaryColor(Player.CurrentClan);
+
+				// Position Marker
+				UpdatePlayerMarker(Player, PlayerFrame);
+			}
+		}
+
 		main() {
 			declare CMlFrame MainFrame = (Page.GetFirstChild("marker-frame") as CMlFrame);
 			FlagMarkerFrame = (Page.GetFirstChild("marker-flag") as CMlFrame);
@@ -446,41 +536,25 @@ Text GetMarkersManialink() {
 
 			declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
 
-			declare persistent Vec2 Persistent_FlagRush_RadarPosition for UserMgr.MainUser = {{{G_Config.Position}}};
-			declare persistent Real Persistent_FlagRush_RadarScale for UserMgr.MainUser = {{{G_Config.Scale}}};
+			declare persistent K_RadarUserConfig RadarUserConfig for LocalUser;
 
 			while (True) {
-				yield;
 
 				if(GUIPlayer == Null) {
 					MainFrame.Hide();
+					yield;
 					continue;
 				}
-				MainFrame.Show();
-				
-				// Update settings
-				MainFrame.RelativePosition_V3 = Persistent_FlagRush_RadarPosition;
-				MainFrame.Scale = Persistent_FlagRush_RadarScale;
 
-				// Update player markers
-				declare Integer ActualPlayerIndex = -1;
-				foreach (Player in Players) {
-					if (Player.RequestsSpectate) continue;
-					ActualPlayerIndex += 1;
-					if (ActualPlayerIndex >= PlayerMarkerFrames.count) break;
+				// Apply Radar Settings
+				MainFrame.RelativePosition_V3 = RadarUserConfig.Position;
+				MainFrame.Scale = RadarUserConfig.Scale;
 
-					declare CMlFrame PlayerFrame <=> PlayerMarkerFrames[ActualPlayerIndex];
-					declare CMlQuad PlayerIcon <=> GetPlayerMarkerIcon(PlayerFrame);
-
-					// Change Icon Color
-					PlayerIcon.Colorize = GetTeamPrimaryColor(Player.CurrentClan);
-
-					// Position Marker
-					UpdatePlayerMarker(Player, PlayerFrame);
-				}
-
-				// Update flag marker
+				UpdatePlayerMarkers();
 				UpdateFlagMarker();
+
+				MainFrame.Show();
+				yield;
 			}
 		}
 		--></script>

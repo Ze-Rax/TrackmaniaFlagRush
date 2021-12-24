@@ -9,7 +9,7 @@ Text GetManialink() {
 	<style class="header" textsize="2" textfont="GameFontSemiBold" valign="center2" />
 	</stylesheet>
 	<frame z-index="5000" id="main-menu" hidden="0">
-	<quad  z-index="-2" pos="0 0" size="70 80" opacity="0.9" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" halign="center"  modulatecolor="115EFFFF" valign="center"/>
+	<quad  id="background" z-index="-2" pos="0 0" size="70 80" opacity="0.9" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" halign="center"  modulatecolor="115EFFF" valign="center"/>
 	<quad pos="0 28" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
 	<label pos="0 34" z-index="0" size="93.6 8" text="FlagRush" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
 	<frame pos="0 15" class="uiContainer uiButton">
@@ -37,37 +37,6 @@ Text GetManialink() {
 	<label size="29 5" text="Classic Menu" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="0.5" data-action="ClassicMenu" opacity="0.5" />
 	</frame> -->
 	</frame>
-	<frame z-index="5000" id="setup-menu" hidden="1">
-	<quad  z-index="-2" pos="0 0" size="160 120" opacity="0.9" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" valign="center"  modulatecolor="115EFFFF" halign="center"/>
-	<label class="header" pos="0 50" size="120 8" text="$iMode Settings" textsize="6" textfont="GameFontExtraBold" halign="center" valign="center"/>
-	<frame id="settings-header" pos="-60 40">
-	<label class="header" pos="0 -2.5" size="50 5" text="Setting name" />
-	<label class="header" pos="50 -2.5" size="39 5" text="Value" />
-	<label class="header" pos="90 -2.5" size="39 5" text="Type" />
-	<quad pos="0 -7.5" size="120 0.5" bgcolor="3af" valign="bottom" />
-	</frame>
-	<frame id="settings-body" pos="-60 30" size="120 75" scroll="1" scrollmax="0 20">
-	<frame class="setting" pos="0 0">
-	<label class="text" pos="0 -2.5" size="50 5" text="Team 1 Name" />
-	<entry id="team1name" class="text" pos="50 -2.5" size="39 5" default=""  selecttext="1" textformat="Basic" focusareacolor1="0003" focusareacolor2="000f"/>
-	<label class="text" pos="90 -2.5" size="39 5" text="Text" />
-	</frame>
-	<frame class="setting" pos="0 -6">
-	<label class="text" pos="0 -2.5" size="50 5" text="Team 2 Name" />
-	<entry id="team2name" class="text" pos="50 -2.5" size="39 5" default=""  selecttext="1" textformat="Basic" focusareacolor1="0003" focusareacolor2="000f"/>
-	<label class="text" pos="90 -2.5" size="39 5" text="Text" />
-	</frame>
-	<quad pos="0 0" size="900 900" halign="center" valign="center"  bgcolor="0004" scriptevents="1"/>
-	</frame>
-	<frame pos="16 -50" class="uiContainer uiButton">
-	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="29 7" text="Cancel" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="ShowMenu" />
-	</frame>
-	<frame pos="-16 -50" class="uiContainer uiButton">
-	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="29 7" text="Apply" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3afa" scriptevents="1" translate="0" textsize="1.2" data-action="ApplySettings" />
-	</frame>
-	</frame>
 	<script><!--
 
 	Void ShowMenu(Text MenuName) {
@@ -79,7 +48,7 @@ Text GetManialink() {
 				foreach (i => Elem2 in Frame.Controls) {
 					Elem2.RelativeScale = 0.;
 					AnimMgr.Flush(Elem2);
-					AnimMgr.Add(Elem2, "<elem scale=\"1\" />", Now + 75*i, 1000, CAnimManager::EAnimManagerEasing::ElasticOut);
+					AnimMgr.Add(Elem2, "<elem scale=\"1\" />", Now - 200 + 75*i, 500, CAnimManager::EAnimManagerEasing::ElasticOut);
 				}
 			}
 		}
@@ -106,7 +75,9 @@ Text GetManialink() {
 					declare Text action = Event.Control.DataAttributeGet("action");
 					switch (action) {
 						case "ShowMenu": ShowMenu("main-menu");
-						case "Setup": ShowMenu("setup-menu");
+						case "Setup": {
+							TriggerPageAction("maniaplanet:editsettings");
+						}
 						case "ApplySettings": {
 							declare CMlEntry name1 <=> (Page.GetFirstChild("team1name") as CMlEntry);
 							declare CMlEntry name2 <=> (Page.GetFirstChild("team2name") as CMlEntry);

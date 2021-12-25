@@ -116,7 +116,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 				<frame id="logo" pos="0 -4" size="280 15" scale="0.5" valign="center" halign="center" z-index="-1">
 					<frame id="text" pos="0 -0.5">
 						<label pos="-2 -4" z-index="0" size="20 10" text="$iRUSH" textemboss="1" textfont="RobotoCondensedBold" halign="left" valign="center2" textsize="6"/>
-						<quad pos="0 1" z-index="0" size="18.1 18.1"  style="UIConstruction_Buttons" substyle="Validate" halign="center" valign="center" rot="-17"/>
+						<quad pos="0 1" z-index="0" size="18.1 18.1"  style="UIConstruction_Buttons" substyle="Validate" halign="center" valign="center" rot="-17"/> <!-- Adjust to new flag? -->
 						<label pos="2 0" z-index="0" size="20 10" text="$iFLAG" halign="right" valign="center2" textsize="6" textemboss="1" textfont="RobotoCondensedBold"/>
 					</frame>
 					<frame id="background" rot="71" valign="center" halign="center">

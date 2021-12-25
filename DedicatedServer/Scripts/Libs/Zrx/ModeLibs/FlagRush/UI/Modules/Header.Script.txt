@@ -37,7 +37,7 @@ Text GetManialink() {
 				<quad pos="0 0" size="20 8" id="background" valign="center" z-index="-1" style="UICommon64_1" substyle="BgFrame1" halign="center" colorize="000"/>
 
 				<label pos="0 0" z-index="1" size="25 8" text="00:00.00" id="timelimit" halign="center" valign="center" textsize="2" textfont="GameFontSemiBold"/>
-				<quad pos="0 0" z-index="1" size="8 8" opacity="1" halign="center" valign="center" style="UIConstruction_Buttons" substyle="Validate" id="center-flag"/>
+				<quad pos="0 0" z-index="1" size="8 8" opacity="1" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light" id="center-flag"/>
 			</frame>
 
 			<frame id="flagcarrier" pos="0 -10" z-index="-2">

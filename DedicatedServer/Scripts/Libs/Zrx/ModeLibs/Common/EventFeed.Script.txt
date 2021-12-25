@@ -62,7 +62,7 @@ Void SendMessage(Text String, Text Icon, Vec3 Color) {
 
 	switch (Icon) {
 		case "base": SendMessage(String, "ManiaPlanetMainMenu", "IconHome", color);
-		case "flag": SendMessage(String, "UIConstruction_Buttons", "Validate", color);
+		case "flag": SendMessage(String, "UICommon64_1", "Flag_light", color);
 		case "info": SendMessage(String, "UICommon64_1", "Info_light", color);
 		case "chrono": SendMessage(String, "UICommon64_1", "Chrono_light", color);
 		default: SendMessage(String, "", "", color);

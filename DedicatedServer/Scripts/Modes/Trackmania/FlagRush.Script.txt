@@ -721,8 +721,13 @@ Void DropFlag(Vec3 GroundPosition) {
 		declare ColorText = "$" ^ CL::RgbToHex3(Color);
 		Message = """{{{ColorText}}}{{{FlagState::Get().Carrier.Name}}}$z dropped the {{{ColorText}}}flag$z!""";
 
-		// Reset Carrier handicaps
-		ResetHandicaps(FlagState::GetFlagCarrierPlayer());
+		// Reset Carrier handicaps and drop flag
+		declare CSmPlayer CarrierPlayer <=> FlagState::GetFlagCarrierPlayer();
+		if(CarrierPlayer != Null) {
+			declare Integer FlagRush_LastFlagDropDate for CarrierPlayer;
+			FlagRush_LastFlagDropDate = Now;
+			ResetHandicaps(CarrierPlayer);
+		}
 	}
 
 	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
@@ -1056,10 +1061,8 @@ Void HandleEvents() {
 			case CSmModeEvent::EType::OnPlayerRequestRespawn: {
 				declare CSmPlayer FlagCarrierPlayer <=> FlagState::GetFlagCarrierPlayer();
 				declare Boolean PlayerIsFlagCarrier = FlagCarrierPlayer != Null && FlagCarrierPlayer == Event.Player;
-				if(PlayerIsFlagCarrier) {
+				if (PlayerIsFlagCarrier) {
 					DropFlag();
-					declare Integer FlagRush_LastFlagDropDate for FlagCarrierPlayer;
-					FlagRush_LastFlagDropDate = Now;
 				} else {
 					declare netwrite Integer Net_SpawnDate for Event.Player;
 					if (S_RespawnWhenStill) {

@@ -33,10 +33,6 @@ Text GetManialink() {
 				<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
 				<label size="49 7" text="Quit" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Quit" />
 			</frame>
-			<!-- <frame pos="0 -35" class="uiContainer uiButton">
-			<quad size="30 5" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" opacity="0.5"/>
-			<label size="29 5" text="Classic Menu" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="0.5" data-action="ClassicMenu" opacity="0.5" />
-			</frame> -->
 		</frame>
 		<script><!--
 

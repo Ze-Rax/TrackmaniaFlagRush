@@ -257,8 +257,7 @@ Void Init(Text FlagRush_Version) {
 	if (Player.CurrentClan <= 0) return;
 
 	// Color
-	declare Vec3 ColorPrimaryUI for Teams[Player.CurrentClan-1];
-	Player.Dossard_Color = ColorPrimaryUI;
+	Player.Dossard_Color = FlagRush_Teams::GetTeamDossardColor(Player.CurrentClan-1);
 	Player.Dossard_Number = "0" ^ Player.CurrentClan;
 
 	// Text

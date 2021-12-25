@@ -82,7 +82,7 @@
 #Setting S_Team1Color 											"" 			as "Force Team 1 Color"
 #Setting S_Team2Name 												"" 			as "Force Team 2 Name"
 #Setting S_Team2Color 											"" 			as "Force Team 2 Color"
-#Setting S_UseClubTags											False		as "Use club tags for team names & colors"
+#Setting S_UseClubTags											True		as "Use club tags for team names"
 #Setting S_UseTeamSkins											True		as "Use colored skins for teams"
 
 // ModeCommands
@@ -136,7 +136,6 @@ declare Boolean G_LastSettings_UseCollisions;
 declare Boolean G_LastSettings_UseCrudeExtrapolation;
 
 declare Integer G_LastPlayersCount;
-declare Ident[] G_FlagRush_TeamSkins;
 ///////////
 // Plugs //
 ///////////
@@ -181,8 +180,7 @@ HandleModeSettingsUpdate();
 
 ***Match_LoadItems***
 ***
-G_FlagRush_TeamSkins.add(ItemList_AddWithSkin("CarSport", "Skins/Models/CarSport/Stadium_Clan_dolphin.zip"));
-G_FlagRush_TeamSkins.add(ItemList_AddWithSkin("CarSport", "Skins/Models/CarSport/Stadium_Clan_ladybug.zip"));
+FlagRush_Teams::LoadSkins();
 ***
 
 ***Match_StartMatch***
@@ -549,15 +547,10 @@ Void InitPlayer(CSmPlayer Player) {
 	Player.TrustClientSimu = True;
 	Player.UseCrudeExtrapolation = S_UseCrudeExtrapolation;
 	declare Integer PreviousClan for Player;
-
 	SetPlayerClan(Player, Player.RequestedClan);
 
 	if (S_UseTeamSkins) {
-		if (G_FlagRush_TeamSkins.existskey(Player.RequestedClan-1)) {
-			Player.ForceModelId = G_FlagRush_TeamSkins[Player.RequestedClan-1];
-		} else {
-			Player.ForceModelId = NullId;
-		}
+		Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan-1);
 	}
 
 	if (Player.RequestedClan != PreviousClan) {

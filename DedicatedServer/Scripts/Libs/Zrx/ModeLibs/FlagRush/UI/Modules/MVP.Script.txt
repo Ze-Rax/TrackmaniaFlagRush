@@ -1,5 +1,8 @@
 // #RequireContext CMlScriptIngame
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" 								as UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
+
+#Struct FlagRush_Teams::K_TeamSkin as K_TeamSkin
 
 Void Toggle(Boolean Status) {
 	declare netwrite Integer Net_FlagRush_MVPStamp for Teams[0];
@@ -9,6 +12,8 @@ Void Toggle(Boolean Status) {
 }
 
 Text GetManialink() {
+	declare K_TeamSkin[Integer] TeamSkins = FlagRush_Teams::GetTeamSkins();
+
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3">
@@ -167,15 +172,16 @@ Text GetManialink() {
 			if (Index > 2) break;
 			if (PlayerScore != Null) {
 				declare CMlFrame Frame = (Page.GetFirstChild("mvp"^Index) as CMlFrame);
-				declare Text[] TeamSkinName = ["Skins/Models/CarSport/Stadium_Clan_dolphin.zip","Skins/Models/CarSport/Stadium_Clan_ladybug.zip"];
-				declare Text SkinUrl = PlayerScore.User.Model_CarSport_SkinUrl;
+				declare Text[] TeamSkinName = [ "{{{ TeamSkins[0].SkinName }}}", "{{{ TeamSkins[1].SkinName }}}"];
+				declare Text[] TeamSkinUrl = [ "{{{ TeamSkins[0].SkinUrl }}}", "{{{ TeamSkins[1].SkinUrl }}}"];
 				declare Text SkinName = PlayerScore.User.Model_CarSport_SkinName;
+				declare Text SkinUrl = PlayerScore.User.Model_CarSport_SkinUrl;
 
 				if (TeamSkinName.existskey(PlayerScore.TeamNum-1)) {
 							SkinName = TeamSkinName[PlayerScore.TeamNum-1];
-							SkinUrl = "";
+							SkinUrl = TeamSkinUrl[PlayerScore.TeamNum-1];
 				} else {
-						SkinName = "Skins/Models/CarSport/Stadium_Clan_dolphin.zip";  // just to be sure the file exists for the skin url...
+						SkinName = "{{{ TeamSkins[0].SkinName }}}";  // just to be sure the file exists for the skin url...
 				}
 
 				declare ItemId = MenuSceneMgr.ItemCreate(SceneId, "CarSport", SkinName, SkinUrl);

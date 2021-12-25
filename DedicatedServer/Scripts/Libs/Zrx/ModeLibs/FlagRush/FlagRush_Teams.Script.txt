@@ -1,8 +1,9 @@
+// #RequireContext CSmMode
+
 #Include "ColorLib"	as CL
 
-#Include "Libs/Zrx/Common/ColorUtils.Script.txt"	as ColorUtils
-
-#Include "Libs/Zrx/ModeLibs/Common/ClubTagUtils.Script.txt"					as ClubTagUtils
+#Include "Libs/Zrx/Common/ColorUtils.Script.txt"									as ColorUtils
+#Include "Libs/Zrx/ModeLibs/Common/ClubTagUtils.Script.txt"				as ClubTagUtils
 
 #Const	C_DefaultNeutralColor				<1., 1., 1.>
 #Const	C_DefaultTeamName						"???"
@@ -17,8 +18,15 @@
 	Vec3 Color;
 }
 
-declare K_TeamConfig[CTeam] G_TeamConfigs;
+#Struct K_TeamSkin {
+	Text SkinName;
+	Text SkinUrl;
+	Ident ItemId;
+	Vec3 Color;
+}
 
+declare K_TeamConfig[CTeam] G_TeamConfigs;
+declare K_TeamSkin[Integer] G_TeamSkins;
 declare Text[Integer] G_TeamNameOverrides;
 declare Text[Integer] G_TeamColorHexOverrides;
 declare Boolean G_UseClubTags;
@@ -44,10 +52,43 @@ Void UseClubTags(Boolean UseClubTags) {
 }
 
 /**
- * Gets the team config by the given clan number (>= 1).
+ * Load the skins
  */
-K_TeamConfig GetConfig(Integer Clan) {
-	return G_TeamConfigs.get(Teams[Clan-1], K_TeamConfig{});
+Void LoadSkins() {
+	declare Text[Integer] Names = [0 => "Skins/Models/CarSport/Stadium_Clan_dolphin.zip", 1 => "Skins/Models/CarSport/Stadium_Clan_ladybug.zip"];
+	declare Text[Integer] Urls = [0 => "", 1 => ""];
+	declare Vec3[Integer] Colors = [0 => CL::Hex6ToRgb("ffffff"), 1 => CL::Hex6ToRgb("ffffff")];
+
+	G_TeamSkins[0] = K_TeamSkin{SkinName=Names[0], SkinUrl=Urls[0], Color=Colors[0]};
+	G_TeamSkins[0].ItemId = ItemList_AddWithSkin("CarSport", Names[0]);
+
+	G_TeamSkins[1] = K_TeamSkin{SkinName=Names[1], SkinUrl=Urls[1], Color=Colors[1]};
+	G_TeamSkins[1].ItemId = ItemList_AddWithSkin("CarSport", Names[1]);
+}
+
+/**
+ * Get ModelId for team
+ */
+Ident GetSkinModelIdForTeam(Integer Team) {
+	if (G_TeamSkins.existskey(Team)) {
+		log(G_TeamSkins[Team]);
+		return G_TeamSkins[Team].ItemId;
+	}
+	return NullId;
+}
+
+/**
+ * Gets Team Dossard Color
+ */
+Vec3 GetTeamDossardColor(Integer TeamNum) {
+	return G_TeamSkins[TeamNum].Color;
+}
+
+/**
+ * Gets a team skin
+ */
+K_TeamSkin[Integer] GetTeamSkins() {
+ return G_TeamSkins;
 }
 
 /**
@@ -55,6 +96,13 @@ K_TeamConfig GetConfig(Integer Clan) {
  */
 K_TeamConfig GetConfig(CTeam Team) {
 	return G_TeamConfigs.get(Team, K_TeamConfig{});
+}
+
+/**
+ * Gets the team config by the given clan number (>= 1).
+ */
+K_TeamConfig GetConfig(Integer Clan) {
+	return GetConfig(Teams[Clan-1]);
 }
 
 /**
@@ -76,13 +124,11 @@ Text GetDefaultTeamName(Integer TeamNum) {
  */
 Void Private_Configs_InitFromClubTags() {
 	// Get TeamConfigs from ClubTags
-	declare ClubTagUtils::K_TeamConfig[] TeamConfigs = [
+	declare K_TeamConfig[] TeamConfigs = [
 		ClubTagUtils::GetTeamConfig(1),
 		ClubTagUtils::GetTeamConfig(2)
 	];
 
-	// Right now: ClubTagUtils::K_TeamConfig is the same as FlagRush_Team::K_TeamConfig
-	// and can be assigned directly
 	G_TeamConfigs = [Teams[0] => TeamConfigs[0], Teams[1] => TeamConfigs[1]];
 }
 
@@ -166,7 +212,7 @@ Void Private_Configs_ApplyToTeams() {
  */
 Void Init() {
 	if (G_UseClubTags) Private_Configs_InitFromClubTags();
-	else G_TeamConfigs = [Teams[0] => K_TeamConfig {}, Teams[1] => K_TeamConfig {}];
+ 	else G_TeamConfigs = [Teams[0] => GetConfig(1), Teams[1] => GetConfig(2)];
 	Private_Configs_OverrideEmptyFields();
 	Private_Configs_AdjustAvoidHueOverlap();
 	Private_Configs_ApplyToTeams();

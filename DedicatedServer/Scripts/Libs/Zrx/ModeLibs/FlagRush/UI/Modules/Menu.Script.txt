@@ -13,23 +13,27 @@ Text GetManialink() {
 			<quad pos="0 28" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
 			<label pos="0 34" z-index="0" size="93.6 8" text="FlagRush" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
 
-			<frame pos="0 15" class="uiContainer uiButton">
+			<frame pos="0 20" class="uiContainer uiButton">
 				<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
 				<label size="49 7" text="Resume" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Resume"/>
 			</frame>
-			<frame pos="0 5" class="uiContainer uiButton">
+			<frame pos="0 10" class="uiContainer uiButton">
 				<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
 				<label size="49 7" text="Change Team" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="ChangeTeam"/>
 			</frame>
-			<frame pos="0 -5" class="uiContainer uiButton">
+			<frame pos="0 0" class="uiContainer uiButton">
 				<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
 				<label size="49 7" text="Spectate" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Spectate" />
 			</frame>
-			<frame pos="0 -15" class="uiContainer uiButton">
+			<frame pos="0 -10" class="uiContainer uiButton">
+				<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
+				<label size="49 7" text="Balance Teams" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Balance" />
+			</frame>
+			<frame pos="0 -20" class="uiContainer uiButton">
 				<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
 				<label size="49 7" text="Mode Settings..." class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Setup" />
 			</frame>
-			<frame pos="0 -25" class="uiContainer uiButton">
+			<frame pos="0 -30" class="uiContainer uiButton">
 				<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
 				<label size="49 7" text="Quit" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Quit" />
 			</frame>
@@ -53,6 +57,7 @@ Text GetManialink() {
 
 		main() {
 			declare Boolean MenuStatusOld = Playground.IsInGameMenuDisplayed;
+			if (Playground.IsInGameMenuDisplayed)	ShowMenu("main-menu");
 
 			while (True) {
 				yield;
@@ -76,6 +81,10 @@ Text GetManialink() {
 								TriggerPageAction("maniaplanet:editsettings");
 							}
 							case "Resume": CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+							case "Balance":  {
+								Playground.RequestAutoTeamBalance();
+								CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+							}
 							case "Spectate": Playground.RequestSpectatorClient( !InputPlayer.RequestsSpectate );
 							case "ChangeTeam": {
 								if (InputPlayer.RequestedClan == 1) { Playground.JoinTeam2(); }

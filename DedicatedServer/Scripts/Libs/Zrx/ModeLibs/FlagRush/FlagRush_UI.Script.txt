@@ -225,6 +225,7 @@ Void Init(Text FlagRush_Version) {
 	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Sound);
 
+	//Welcome dialog
 	declare Text[] Matches = TL::RegexMatch("""-dev""", FlagRush_Version, "");
 	if (Matches[0] == "-dev") {
 		Layers::Create(C_LayerName_Dialog, FlagRush_UIDialog::GetVersionInfo(FlagRush_Version));
@@ -246,8 +247,7 @@ Void Init(Text FlagRush_Version) {
 	if (Player.CurrentClan <= 0) return;
 
 	// Color
-	declare Vec3 ColorPrimaryUI for Teams[Player.CurrentClan-1];
-	Player.Dossard_Color = ColorPrimaryUI;
+	Player.Dossard_Color = FlagRush_Teams::GetTeamDossardColor(Player.CurrentClan-1);
 	Player.Dossard_Number = "0" ^ Player.CurrentClan;
 
 	// Text

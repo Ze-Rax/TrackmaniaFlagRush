@@ -9,6 +9,9 @@
 #Const C_TeamColorMinValue							0.5
 #Const C_InvalidColor										<0., 0., 0.>
 
+/** /!\ Notice this needs to be same as FlagRush_Teams::K_TeamConfig /!\
+* @see Libs\Zrx\ModeLibs\FlagRush\FlagRush_Teams.Script.txt
+*/
 #Struct K_TeamConfig {
 	Text ClubTag;
 	Text Name;
@@ -77,7 +80,7 @@ K_TeamConfig GetTeamConfig(Integer Clan) {
 	if(!ClubTagMissmatch) {
 		TeamConfig.ClubTag = ClubTagTeam;
 		TeamConfig.Name = TL::RegexReplace(C_RegexPattern_TextFormat, ClubTagTeam, "g", "");
-		TeamConfig.Color = ClubTagToColor(ClubTagTeam);
+	//	TeamConfig.Color = ClubTagToColor(ClubTagTeam);
 	}
 
 	return TeamConfig;

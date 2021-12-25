@@ -76,7 +76,6 @@ Text GetManialink() {
 					if (Event.Type == CMlScriptEvent::Type::MouseClick) {
 						declare Text action = Event.Control.DataAttributeGet("action");
 						switch (action) {
-							case "ShowMenu": ShowMenu("main-menu");
 							case "Setup": {
 								TriggerPageAction("maniaplanet:editsettings");
 							}

@@ -724,7 +724,7 @@ Void DropFlag(Vec3 GroundPosition) {
 		// Reset Carrier handicaps and drop flag
 		declare CSmPlayer CarrierPlayer <=> FlagState::GetFlagCarrierPlayer();
 		if(CarrierPlayer != Null) {
-			declare Integer FlagRush_LastFlagDropDate for FlagCarrierPlayer;
+			declare Integer FlagRush_LastFlagDropDate for CarrierPlayer;
 			FlagRush_LastFlagDropDate = Now;
 			ResetHandicaps(CarrierPlayer);
 		}

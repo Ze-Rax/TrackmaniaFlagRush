@@ -71,7 +71,6 @@ Void LoadSkins() {
  */
 Ident GetSkinModelIdForTeam(Integer Team) {
 	if (G_TeamSkins.existskey(Team)) {
-		log(G_TeamSkins[Team]);
 		return G_TeamSkins[Team].ItemId;
 	}
 	return NullId;

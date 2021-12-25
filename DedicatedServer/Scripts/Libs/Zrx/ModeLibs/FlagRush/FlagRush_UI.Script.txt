@@ -237,7 +237,7 @@ Void Init(Text FlagRush_Version) {
 	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Sound);
 
-	// Sound
+	// Menu
 	Layers::Create(C_LayerName_Menu, FlagRush_UIMenu::GetManialink());
 	Layers::SetType(C_LayerName_Menu, CUILayer::EUILayerType::InGameMenu);
 	Layers::Attach(C_LayerName_Menu);

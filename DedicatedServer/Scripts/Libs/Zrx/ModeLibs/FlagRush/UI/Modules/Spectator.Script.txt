@@ -59,7 +59,7 @@ Text GetManialink() {
 				}
 			} else {
 				//spectate full map
-				ClientUI.Spectator_SetForcedTarget_AllMap();
+				ClientUI.Spectator_SetForcedTarget_AllPlayers();
 				ClientUI.SpectatorForceCameraType = -1;
 			}
 		} else {

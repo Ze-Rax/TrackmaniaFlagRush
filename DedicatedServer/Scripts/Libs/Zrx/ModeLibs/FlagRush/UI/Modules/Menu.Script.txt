@@ -4,96 +4,96 @@ Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3">
-	<stylesheet>
-	<style class="text" textsize="2" textfont="GameFontRegular" valign="center2" />
-	<style class="header" textsize="2" textfont="GameFontSemiBold" valign="center2" />
-	</stylesheet>
-	<frame z-index="5000" id="main-menu" hidden="1">
-		<quad  id="background" z-index="-2" pos="0 0" size="70 80" opacity="0.9" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" modulatecolor="115EFFF" halign="center" valign="center"/>
-		<quad pos="0 28" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
-		<label pos="0 34" z-index="0" size="93.6 8" text="FlagRush" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
+		<stylesheet>
+			<style class="text" textsize="2" textfont="GameFontRegular" valign="center2" />
+			<style class="header" textsize="2" textfont="GameFontSemiBold" valign="center2" />
+		</stylesheet>
+		<frame z-index="5000" id="main-menu" hidden="1">
+			<quad  id="background" z-index="-2" pos="0 0" size="70 80" opacity="0.9" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" modulatecolor="115EFFF" halign="center" valign="center"/>
+			<quad pos="0 28" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
+			<label pos="0 34" z-index="0" size="93.6 8" text="FlagRush" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
 
-		<frame pos="0 15" class="uiContainer uiButton">
-			<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-			<label size="49 7" text="Resume" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Resume"/>
-		</frame>
-		<frame pos="0 5" class="uiContainer uiButton">
-			<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-			<label size="49 7" text="Change Team" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="ChangeTeam"/>
-		</frame>
-		<frame pos="0 -5" class="uiContainer uiButton">
-			<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-			<label size="49 7" text="Spectate" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Spectate" />
-		</frame>
+			<frame pos="0 15" class="uiContainer uiButton">
+				<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
+				<label size="49 7" text="Resume" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Resume"/>
+			</frame>
+			<frame pos="0 5" class="uiContainer uiButton">
+				<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
+				<label size="49 7" text="Change Team" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="ChangeTeam"/>
+			</frame>
+			<frame pos="0 -5" class="uiContainer uiButton">
+				<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
+				<label size="49 7" text="Spectate" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Spectate" />
+			</frame>
 			<frame pos="0 -15" class="uiContainer uiButton">
-			<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-		<label size="49 7" text="Mode Settings..." class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Setup" />
-		</frame>
+				<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
+				<label size="49 7" text="Mode Settings..." class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Setup" />
+			</frame>
 			<frame pos="0 -25" class="uiContainer uiButton">
-			<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-		<label size="49 7" text="Quit" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Quit" />
+				<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
+				<label size="49 7" text="Quit" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Quit" />
+			</frame>
+			<!-- <frame pos="0 -35" class="uiContainer uiButton">
+			<quad size="30 5" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" opacity="0.5"/>
+			<label size="29 5" text="Classic Menu" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="0.5" data-action="ClassicMenu" opacity="0.5" />
+			</frame> -->
 		</frame>
-		<!-- <frame pos="0 -35" class="uiContainer uiButton">
-		<quad size="30 5" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" opacity="0.5"/>
-		<label size="29 5" text="Classic Menu" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="0.5" data-action="ClassicMenu" opacity="0.5" />
-		</frame> -->
-	</frame>
-	<script><!--
+		<script><!--
 
-	Void ShowMenu(Text MenuName) {
-		foreach (Elem in Page.MainFrame.Controls) {
-			Elem.Hide();
-			if (Elem.ControlId == MenuName) {
-				Elem.Show();
-				declare CMlFrame Frame = (Elem as CMlFrame);
-				foreach (i => Elem2 in Frame.Controls) {
-					Elem2.RelativeScale = 0.;
-					AnimMgr.Flush(Elem2);
-					AnimMgr.Add(Elem2, "<elem scale=\"1\" />", Now - 200 + 75*i, 500, CAnimManager::EAnimManagerEasing::ElasticOut);
+		Void ShowMenu(Text MenuName) {
+			foreach (Elem in Page.MainFrame.Controls) {
+				Elem.Hide();
+				if (Elem.ControlId == MenuName) {
+					Elem.Show();
+					declare CMlFrame Frame = (Elem as CMlFrame);
+					foreach (i => Elem2 in Frame.Controls) {
+						Elem2.RelativeScale = 0.;
+						AnimMgr.Flush(Elem2);
+						AnimMgr.Add(Elem2, "<elem scale=\"1\" />", Now - 200 + 75*i, 500, CAnimManager::EAnimManagerEasing::ElasticOut);
+					}
 				}
 			}
 		}
-	}
 
-	main() {
-		declare Boolean MenuStatusOld = Playground.IsInGameMenuDisplayed;
+		main() {
+			declare Boolean MenuStatusOld = Playground.IsInGameMenuDisplayed;
 
-		while (True) {
-			yield;
+			while (True) {
+				yield;
 
-			if (Playground.IsInGameMenuDisplayed != MenuStatusOld ) {
-				MenuStatusOld = Playground.IsInGameMenuDisplayed;
-				if (Playground.IsInGameMenuDisplayed) {
-					ShowMenu("main-menu");
-				}
-			}
-			foreach(Event in PendingEvents) {
-				if (Event.Type == CMlScriptEvent::Type::KeyPress) {
-					if (Page.MainFrame.Visible == True && Event.KeyName == "Escape") {
-						CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+				if (Playground.IsInGameMenuDisplayed != MenuStatusOld ) {
+					MenuStatusOld = Playground.IsInGameMenuDisplayed;
+					if (Playground.IsInGameMenuDisplayed) {
+						ShowMenu("main-menu");
 					}
 				}
-				if (Event.Type == CMlScriptEvent::Type::MouseClick) {
-					declare Text action = Event.Control.DataAttributeGet("action");
-					switch (action) {
-						case "ShowMenu": ShowMenu("main-menu");
-						case "Setup": {
-							TriggerPageAction("maniaplanet:editsettings");
-						}
-						case "Resume": CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
-						case "Spectate": Playground.RequestSpectatorClient( !InputPlayer.RequestsSpectate );
-						case "ChangeTeam": {
-							if (InputPlayer.RequestedClan == 1) { Playground.JoinTeam2(); }
-							else { Playground.JoinTeam1(); }
+				foreach(Event in PendingEvents) {
+					if (Event.Type == CMlScriptEvent::Type::KeyPress) {
+						if (Page.MainFrame.Visible == True && Event.KeyName == "Escape") {
 							CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
 						}
-						case "Quit": Playground.QuitServer(True);
+					}
+					if (Event.Type == CMlScriptEvent::Type::MouseClick) {
+						declare Text action = Event.Control.DataAttributeGet("action");
+						switch (action) {
+							case "ShowMenu": ShowMenu("main-menu");
+							case "Setup": {
+								TriggerPageAction("maniaplanet:editsettings");
+							}
+							case "Resume": CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+							case "Spectate": Playground.RequestSpectatorClient( !InputPlayer.RequestsSpectate );
+							case "ChangeTeam": {
+								if (InputPlayer.RequestedClan == 1) { Playground.JoinTeam2(); }
+								else { Playground.JoinTeam1(); }
+								CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+							}
+							case "Quit": Playground.QuitServer(True);
+						}
 					}
 				}
 			}
 		}
-	}
-	--></script>
+		--></script>
 	</manialink>
 	""";
 }

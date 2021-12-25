@@ -63,7 +63,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 	<framemodel id="player-card-left">
 		<quad pos="0 0" z-index="-1" size="64 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame2" colorize="006" halign="left"/>
 		<quad pos="0 0" z-index="1" size="6 6" bgcolor="FFF" valign="center" id="avatar" halign="left"/>
-		<label pos="7 0" z-index="1" size="20 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
+		<label pos="7 0" z-index="1" size="15 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
 		<label pos="33 2.5" z-index="1" size="9 3" text="0" halign="center" textsize="2" id="points" valign="top" />
 		<label pos="42 2.5" z-index="1" size="9 3" text="0" valign	="top" halign="center" textsize="2" id="flags-scored" />
 		<label pos="51 2.5" z-index="1" size="9 3" text="0" valign="top" halign="center" textsize="2" id="flags-stolen" />
@@ -76,12 +76,12 @@ Text GetManialink(Integer _PlayersPerPage) {
 		<quad pos="42 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
 		<quad pos="51 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
 		<quad pos="60 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
-		<quad pos="36 0" z-index="2" size="3 3" halign="center" valign="center" id="info-icon" style="Icons64x64_2" substyle="Disconnected" hidden="1" /> <!-- Style="UICommon64_1" SubStyle="Camera_light" -->
+		<quad pos="26 0" z-index="2" size="3 3" halign="center" valign="center" id="info-icon" style="Icons64x64_2" substyle="Disconnected" hidden="1" /> <!-- Style="UICommon64_1" SubStyle="Camera_light" -->
 	</framemodel>
 	<framemodel id="player-card-right">
 		<quad pos="0 0" z-index="-1" size="64 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame2" colorize="300" halign="left"/>
 		<quad pos="0 0" z-index="1" size="6 6" bgcolor="FFF" valign="center" id="avatar" halign="left"/>
-		<label pos="7 0" z-index="1" size="20 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
+		<label pos="7 0" z-index="1" size="15 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
 		<label pos="33 2.5" z-index="1" size="9 3" text="0" halign="center" textsize="2" id="points" valign="top" />
 		<label pos="42 2.5" z-index="1" size="9 3" text="0" valign="top" halign="center" textsize="2" id="flags-scored" />
 		<label pos="51 2.5" z-index="1" size="9 3" text="0" valign="top" halign="center" textsize="2" id="flags-stolen" />
@@ -94,7 +94,7 @@ Text GetManialink(Integer _PlayersPerPage) {
 		<quad pos="42 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
 		<quad pos="51 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
 		<quad pos="60 0" z-index="1" size="8 6" opacity="0.4" id="background" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000"/>
-		<quad pos="36 0" id="info-icon" z-index="2" size="3 3" halign="center" valign="center" style="Icons64x64_2" substyle="Disconnected" hidden="1" /> <!-- Style="UICommon64_1" SubStyle="Camera_light" -->
+		<quad pos="26 0" id="info-icon" z-index="2" size="3 3" halign="center" valign="center" style="Icons64x64_2" substyle="Disconnected" hidden="1" /> <!-- Style="UICommon64_1" SubStyle="Camera_light" -->
 	</framemodel>
 	<!-- Actual scores table -->
 	<!--

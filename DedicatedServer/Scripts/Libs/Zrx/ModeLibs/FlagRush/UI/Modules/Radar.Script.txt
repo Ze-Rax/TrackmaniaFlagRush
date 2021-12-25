@@ -218,7 +218,7 @@ Text GetManialink() {
 				Customization_DetailOpacitySlider.MinRange = 0.;
 				Customization_DetailOpacitySlider.MaxRange = 1.;
 
-				declare persistent K_RadarUserConfig RadarConfig for LocalUser;
+				declare K_RadarUserConfig RadarConfig for LocalUser;
 				Customization_ScaleSlider.Value = RadarConfig.Scale;
 				Customization_BackgroundOpacitySlider.Value = RadarConfig.BackgroundOpacity;
 				Customization_DetailOpacitySlider.Value = RadarConfig.DetailOpacity;
@@ -229,9 +229,9 @@ Text GetManialink() {
 			 * If player doesn't have a config, then the default server config is used.
 			 */
 			 Void LoadRadarUserConfig() {
-				 declare persistent Boolean RadarConfigLoaded for LocalUser;
+				 declare Boolean RadarConfigLoaded for LocalUser;
 				if(!RadarConfigLoaded) {
-					declare persistent K_RadarUserConfig RadarConfig for LocalUser;
+					declare K_RadarUserConfig RadarConfig for LocalUser;
 					declare persistent Text Persistent_FlagRush_RadarUserConfigJson for UserMgr.MainUser = "{{{ TL::Replace(G_Config.tojson(), "\"", "\\\"") }}}";
 					RadarConfig.fromjson(Persistent_FlagRush_RadarUserConfigJson);
 					RadarConfigLoaded = True;
@@ -242,7 +242,7 @@ Text GetManialink() {
 			 * Persistently saves the radar config the player.
 			 */
 			Void SaveRadarUserConfig() {
-				declare persistent K_RadarUserConfig RadarConfig for LocalUser;
+				declare K_RadarUserConfig RadarConfig for LocalUser;
 				declare persistent Text Persistent_FlagRush_RadarUserConfigJson for UserMgr.MainUser;
 				Persistent_FlagRush_RadarUserConfigJson = RadarConfig.tojson();
 				UserMgr.MainUser.PersistentSave();
@@ -257,10 +257,10 @@ Text GetManialink() {
 			}
 
 			/**
-			 * Updates the persistent settings
+			 * Updates the radar settings dialog settings
 			 */
 			 Void UpdateRadarSettings() {
-				declare persistent K_RadarUserConfig RadarConfig for LocalUser;
+				declare K_RadarUserConfig RadarConfig for LocalUser;
 
 				// Validate entries
 				declare Real PosX = TL::ToReal(Customization_PositionXEntry.Value);
@@ -286,7 +286,7 @@ Text GetManialink() {
 			 * Applies all customizations done by the player to the radar. (Scale, Position, ...)
 			 */
 			Void ApplyRadarSettings() {
-				declare persistent K_RadarUserConfig RadarConfig for LocalUser;
+				declare K_RadarUserConfig RadarConfig for LocalUser;
 
 				RadarFrame.RelativePosition_V3 = RadarConfig.Position;
 				RadarFrame.RelativeScale = RadarConfig.Scale;
@@ -413,7 +413,7 @@ Text GetManialink() {
 			 * Handles what should happen if the user is dragging the radar
 			 */
 			 Void HandleDragging() {
-				declare persistent K_RadarUserConfig RadarConfig for LocalUser;
+				declare K_RadarUserConfig RadarConfig for LocalUser;
 				if (MouseLeftButton && GUIPlayer != Null) { // Mouse down = still dragging
 					RadarConfig.Position = Input.MousePos + DraggingOffset;
 					RadarFrame.RelativePosition_V3 = RadarConfig.Position;
@@ -427,10 +427,21 @@ Text GetManialink() {
 			}
 
 			/**
+			 * Hides the radar and does some necessary handling.
+			 */
+			Void HideRadar() {
+				RadarFrame.Hide();
+				if (Dragging) {
+					Dragging = False;
+					SaveRadarUserConfig();
+				}
+			}
+
+			/**
 			 * Handles all kinds of Manialink events.
 			 */
 			Void HandleEvents() {
-				declare persistent K_RadarUserConfig RadarConfig for LocalUser;
+				declare K_RadarUserConfig RadarConfig for LocalUser;
 				foreach (Event in PendingEvents) {
 					switch (Event.Type) {
 						case CMlScriptEvent::Type::MouseClick: {
@@ -438,7 +449,7 @@ Text GetManialink() {
 								Dragging = True;
 								DraggingOffset = RadarFrame.AbsolutePosition_V3 - Input.MousePos;
 							} else if (TL::StartsWith("settings-toggle", Event.ControlId)) {
-								declare persistent Boolean SettingsVisibility for LocalUser;
+								declare Boolean SettingsVisibility for LocalUser;
 								if (SettingsVisibility) SaveRadarUserConfig();
 								SettingsVisibility = !SettingsVisibility;
 							}
@@ -478,7 +489,7 @@ Text GetManialink() {
 				AssignReferences();
 				InitMlControls();
 
-				declare persistent Boolean SettingsVisibility for LocalUser;
+				declare Boolean SettingsVisibility for LocalUser;
 
 				while(True) {
 					// Handle events
@@ -491,11 +502,7 @@ Text GetManialink() {
 
 					// Some operations should or can only be done when there is a GUIPlayer
 					if (GUIPlayer == Null) {
-						if(RadarFrame.Visible) {
-							RadarFrame.Hide();
-							if (Dragging) SaveRadarUserConfig();
-							Dragging = False;
-						}
+						if(RadarFrame.Visible) HideRadar();
 						yield;
 						continue;
 					}

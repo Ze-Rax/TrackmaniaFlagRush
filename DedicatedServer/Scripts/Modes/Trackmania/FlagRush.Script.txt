@@ -107,8 +107,7 @@
 #Command	Command_ResetFlag			(Boolean) as	"Reset flag"
 #Const		C_Command_ResetFlag									"ResetFlag"
 
-#Const		C_Command_AddBots										"AddBots"
-#Const		C_Command_RemoveBots								"RemoveBots"
+#Const		C_Command_SetBots										"SetBots"
 
 //////////////////////
 // Global Variables //
@@ -1136,11 +1135,10 @@ Void HandleCommand(CommandUtils::K_Command Command) {
 			ResetHandicaps(FlagCarrierPlayer);
 			ResetFlag();
 		}
-		case CommandUtils::C_CommandPrefix ^ C_Command_AddBots: {
-			Users_SetNbFakeUsers(1, 1);
-		}
-		case CommandUtils::C_CommandPrefix ^ C_Command_RemoveBots: {
-			Users_SetNbFakeUsers(0, 0);
+		case CommandUtils::C_CommandPrefix ^ C_Command_SetBots: {
+			declare Integer Amount = Command.ValueInteger;
+			if (Amount < 0) Amount = 0;
+			Users_SetNbFakeUsers(Amount, Amount);
 		}
 	}
 }

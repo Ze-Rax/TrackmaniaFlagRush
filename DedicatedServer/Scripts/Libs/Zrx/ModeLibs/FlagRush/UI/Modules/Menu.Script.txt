@@ -58,10 +58,9 @@ Text GetManialink() {
 	<quad pos="8 0" z-index="2" size="3 3" halign="center" valign="center" id="info-icon" style="Icons64x64_2" substyle="Disconnected" hidden="0" />
 	</framemodel>
 	<frame z-index="5000" id="main-menu" hidden="1">
-	<quad id="background" z-index="-2" pos="0 0" size="70 80" opacity="0.9" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" halign="center"  modulatecolor="115EFFFF" valign="center"/>
-	<quad pos="0 22" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
-	<label pos="0 26" z-index="0" size="59.3 5" text="1.2.0-dev" halign="center" valign="center" textprefix="Script version: " id="lblVersion" textfont="GameFontSemiBold"/>
-	<label pos="0 34" z-index="0" size="93.6 7.89" text="FlagRush" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
+	<quad id="background" z-index="-2" pos="0 0" size="70 80" opacity="1" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" halign="center"  modulatecolor="115EFFFF" valign="center"/>
+	<quad pos="0 24" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
+	<label pos="0 32" z-index="0" size="93.6 7.89" text="FlagRush" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
 	<frame pos="0 15" class="uiContainer uiButton">
 	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
 	<label size="49 7" text="Resume" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Resume"/>
@@ -84,7 +83,7 @@ Text GetManialink() {
 	</frame>
 	</frame>
 	<frame z-index="5000" hidden="0" id="teams-menu">
-	<quad id="background" z-index="-2" pos="0 0" size="160 90" opacity="0.9" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" modulatecolor="115EFFFF" valign="center" halign="center"/>
+	<quad id="background" z-index="-2" pos="0 0" size="160 90" opacity="1" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" modulatecolor="115EFFFF" valign="center" halign="center"/>
 	<label class="header" pos="0 40" size="120 8" text="$iTeams" textsize="6" textfont="GameFontExtraBold" halign="center" valign="center"/>
 	<frame pos="-70 20">
 	{{{PlayerCardFrameInstancesTeam1Xml}}}

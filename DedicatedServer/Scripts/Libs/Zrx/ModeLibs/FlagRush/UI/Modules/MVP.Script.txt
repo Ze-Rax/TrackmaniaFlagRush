@@ -293,6 +293,11 @@ Text GetManialink() {
 					LastAngle[TargetCar] = Angle;
 					continue;
 				}
+			} else {
+				foreach (i => Item in Items) {
+					declare Real Angle = LastAngle["car"^(i+1)] + MapRange(MouseX, -160., 160. , -7. , 7.);
+					MenuSceneMgr.ItemSetLocation(SceneId, Item.ItemId, Item.Position, 180.+Angle, False);
+				}
 			}
 
 			foreach (Event in PendingEvents) {

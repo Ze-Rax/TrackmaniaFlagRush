@@ -957,6 +957,14 @@ Void UpdatePlayers() {
 			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null
 		}
 
+		// Add spawn delay, if player was a specator
+		declare Boolean WasSpectator for Player.User;
+ 		if (WasSpectator) {
+			WasSpectator = False;
+		 	declare netwrite Integer Net_SpawnDate for Player;
+		 	Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+		 }
+
 		// When using crude extrapolation, player position is not sent to other players
 		if(S_UseCrudeExtrapolation) {
 			declare netwrite Vec3 Net_Position for Player;
@@ -974,6 +982,8 @@ Void UpdatePlayers() {
 Void UpdateSpectators() {
 	foreach (Spectator in Spectators)
 	{
+		declare Boolean WasSpectator for Spectator.User;
+		WasSpectator = True;
 		if (FlagState::Get().Carrier == Spectator.User) DropFlag();
 	}
 }

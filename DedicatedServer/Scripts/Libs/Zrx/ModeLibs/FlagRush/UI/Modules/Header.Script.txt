@@ -14,8 +14,8 @@ Text GetManialink() {
 			<label pos="0 0.25" z-index="0" size="30 10" text="Round Wins" halign="center" valign="center" textfont="GameFontRegular" textsize="1"/>
 			<quad pos="-30 0" z-index="0" size="60 8" id="team1-mapscore-background" valign="center" halign="center" style="UICommon64_1" substyle="BgFrameTilted1" colorize="004" scale="0.5"/>
 			<quad pos="30 0" z-index="0" size="60 8" id="team2-mapscore-background" valign="center" halign="center" style="UICommon64_1" substyle="BgFrameTilted1" colorize="400" scale="0.5"/>
-			<label id="team1-mapscore" pos="-30 0" z-index="2" size="30 5" text=" " valign="center2" halign="center" textsize="1"/>
-			<label id="team2-mapscore" pos="30 0" z-index="2" size="30 5" text=" " valign="center2" halign="center" textsize="1"/>
+			<label id="team1-mapscore" pos="-30 0" z-index="2" size="30 5" text=" " valign="center2" halign="center" textsize="0.5"/>
+			<label id="team2-mapscore" pos="30 0" z-index="2" size="30 5" text=" " valign="center2" halign="center" textsize="0.5"/>
 		</frame>
 		<frame id="main">
 			<frame id="team-stats">
@@ -163,7 +163,7 @@ Text GetManialink() {
 					case {{{GameplayPhase::C_Warmup}}}: {
 						LabelTimeLimit.TextPrefix = "$f90";
 						LabelFlagCarrier.TextPrefix = "$f90";
-						LabelFlagCarrier.Value = "WarmUp - First to " ^ Net_FlagRush_NbMapsToWinMatch ;
+						LabelFlagCarrier.Value = "WarmUp";
 						QuadCenterFlag.Colorize = {{{FlagRush_Teams::C_DefaultNeutralColor}}};
 					}
 					case {{{GameplayPhase::C_Overtime}}}: {

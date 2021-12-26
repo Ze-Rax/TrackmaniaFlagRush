@@ -963,7 +963,7 @@ Void UpdatePlayers() {
 			WasSpectator = False;
 		 	declare netwrite Integer Net_SpawnDate for Player;
 		 	Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
-		 }
+		}
 
 		// When using crude extrapolation, player position is not sent to other players
 		if(S_UseCrudeExtrapolation) {

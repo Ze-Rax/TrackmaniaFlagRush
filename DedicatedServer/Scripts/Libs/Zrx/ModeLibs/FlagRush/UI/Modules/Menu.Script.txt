@@ -1,7 +1,7 @@
 // #RequireContext CSmMlScriptIngame
 #Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
 
-#Const		C_PlayerCardBackgrounColorMultiplier		0.75
+#Const		C_PlayerCardBackgrounColorMultiplier		0.5
 
 Text GetManialink() {
 	declare Integer PlayersPerPage = 6;
@@ -44,6 +44,7 @@ Text GetManialink() {
 	<stylesheet>
 	<style class="text" textsize="2" textfont="GameFontRegular" valign="center2" />
 	<style class="header" textsize="2" textfont="GameFontSemiBold" valign="center2" />
+	<style class="uiButtonElement" focusareacolor2="fff8" />
 	</stylesheet>
 	<framemodel id="player-card-left">
 	<quad pos="0 0" z-index="-1" size="64 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame2" colorize="00d" halign="left"/>
@@ -63,23 +64,23 @@ Text GetManialink() {
 	<label pos="0 32" z-index="0" size="93.6 7.89" text="FlagRush" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
 	<frame pos="0 15" class="uiContainer uiButton">
 	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Resume" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Resume"/>
+	<label size="49 7" text="Resume" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Resume"/>
 	</frame>
 	<frame pos="0 5" class="uiContainer uiButton">
 	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Spectate" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Spectate" />
+	<label size="49 7" text="Spectate" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Spectate" />
 	</frame>
 	<frame pos="0 -5" class="uiContainer uiButton">
 	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Teams..." class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Teams"/>
+	<label size="49 7" text="Teams..." class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Teams"/>
 	</frame>
 	<frame pos="0 -15" class="uiContainer uiButton">
 	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Mode settings..." class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Setup" />
+	<label size="49 7" text="Mode settings..." class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Setup" />
 	</frame>
 	<frame pos="0 -25" class="uiContainer uiButton">
 	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Quit" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Quit" />
+	<label size="49 7" text="Quit" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Quit" />
 	</frame>
 	</frame>
 	<frame z-index="5000" hidden="0" id="teams-menu">
@@ -89,14 +90,14 @@ Text GetManialink() {
 	{{{PlayerCardFrameInstancesTeam1Xml}}}
 	<frame pos="30 10" class="uiContainer uiButton" scale="0.8" >
 	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="29 7" text="Join Team" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3afa" scriptevents="1" translate="0" textsize="1.2" data-action="JoinTeam1" />
+	<label size="29 7" text="Join Team" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" scriptevents="1" translate="0" textsize="1.2" data-action="JoinTeam1" />
 	</frame>
 	</frame>
 	<frame pos="5 20">
 	{{{PlayerCardFrameInstancesTeam2Xml}}}
 	<frame pos="30 10" class="uiContainer uiButton" scale="0.8">
 	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="29 7" text="Join Team" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3afa" scriptevents="1" translate="0" textsize="1.2" data-action="JoinTeam2" />
+	<label size="29 7" text="Join Team" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" scriptevents="1" translate="0" textsize="1.2" data-action="JoinTeam2" />
 	</frame>
 	</frame>
 
@@ -107,11 +108,11 @@ Text GetManialink() {
 	</frame>
 	<frame pos="-16 -38" class="uiContainer uiButton">
 	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="29 7" text="AutoBalance" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="Balance" />
+	<label size="29 7" text="AutoBalance" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" scriptevents="1" translate="0" textsize="1.2" data-action="Balance" />
 	</frame>
 	<frame pos="16 -38" class="uiContainer uiButton">
 	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="29 7" text="Back" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="3ada" scriptevents="1" translate="0" textsize="1.2" data-action="ShowMenu" />
+	<label size="29 7" text="Back" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="ShowMenu" />
 	</frame>
 	</frame>
 	<script><!--
@@ -325,6 +326,19 @@ Text GetManialink() {
 				}
 			}
 			foreach(Event in PendingEvents) {
+				if (Event.Type == CMlScriptEvent::Type::MouseOver) {
+					if (Event.Control.HasClass("uiButtonElement")) {
+						AnimMgr.Flush(Event.Control.Parent);
+						AnimMgr.Add(Event.Control.Parent, "<elem scale=\"1.1\" />", 250, CAnimManager::EAnimManagerEasing::ElasticOut);
+					}
+				}
+				if (Event.Type == CMlScriptEvent::Type::MouseOut) {
+					if (Event.Control.HasClass("uiButtonElement")) {
+						AnimMgr.Flush(Event.Control.Parent);
+						AnimMgr.Add(Event.Control.Parent, "<elem scale=\"1\" />", 250, CAnimManager::EAnimManagerEasing::ElasticOut);
+					}
+				}
+
 				if (Event.Type == CMlScriptEvent::Type::KeyPress) {
 					if (Page.MainFrame.Visible == True && Event.KeyName == "Escape") {
 						CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);

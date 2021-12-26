@@ -163,7 +163,7 @@ Text GetManialink() {
 					case {{{GameplayPhase::C_Warmup}}}: {
 						LabelTimeLimit.TextPrefix = "$f90";
 						LabelFlagCarrier.TextPrefix = "$f90";
-						LabelFlagCarrier.Value = "WarmUp - First to " ^ Net_FlagRush_NbRoundsToWinMap;
+						LabelFlagCarrier.Value = "WarmUp - First to " ^ Net_FlagRush_NbMapsToWinMatch ;
 						QuadCenterFlag.Colorize = {{{FlagRush_Teams::C_DefaultNeutralColor}}};
 					}
 					case {{{GameplayPhase::C_Overtime}}}: {

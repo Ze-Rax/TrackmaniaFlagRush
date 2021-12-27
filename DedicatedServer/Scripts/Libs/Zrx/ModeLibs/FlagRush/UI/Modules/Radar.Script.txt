@@ -162,13 +162,6 @@ Text GetManialink() {
 			declare CMlSlider Customization_BackgroundOpacitySlider;
 			declare CMlSlider Customization_DetailOpacitySlider;
 
-			/* Variables to track some states */
-			declare Boolean Dragging;
-			declare Vec2 DraggingOffset;
-
-			declare Boolean HoverSettingsButton;
-			declare Boolean HoverDragActivator;
-
 			/* Common Functions */
 			{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 			{{{ UIShared::GetUtilFunctions() }}}
@@ -176,77 +169,76 @@ Text GetManialink() {
 			/**
 			 * Assigns all the needed CMlControl references.
 			 */
-			Void AssignReferences() {
-				RadarFrame = (Page.GetFirstChild("radar") as CMlFrame);
-				CustomizationSettingsDialogFrame = (Page.GetFirstChild("customization-settings-dialog") as CMlFrame);
-				DragFrame = (RadarFrame.GetFirstChild("drag") as CMlFrame);
-				BackgroundFrame = (RadarFrame.GetFirstChild("background") as CMlFrame);
-				MarkersFrame = (RadarFrame.GetFirstChild("markers") as CMlFrame);
+			***AssignMlControlReferences***
+			***
+			RadarFrame = (Page.GetFirstChild("radar") as CMlFrame);
+			CustomizationSettingsDialogFrame = (Page.GetFirstChild("customization-settings-dialog") as CMlFrame);
+			DragFrame = (RadarFrame.GetFirstChild("drag") as CMlFrame);
+			BackgroundFrame = (RadarFrame.GetFirstChild("background") as CMlFrame);
+			MarkersFrame = (RadarFrame.GetFirstChild("markers") as CMlFrame);
 
-				Radar_SettingsButton = (DragFrame.GetFirstChild("settings-toggle") as CMlQuad);
-				Radar_DragActivator = (DragFrame.GetFirstChild("drag-activator") as CMlQuad);
+			Radar_SettingsButton = (DragFrame.GetFirstChild("settings-toggle") as CMlQuad);
+			Radar_DragActivator = (DragFrame.GetFirstChild("drag-activator") as CMlQuad);
 
-				Radar_Background_Base = (BackgroundFrame.GetFirstChild("base") as CMlQuad);
-				Radar_Background_Border =(BackgroundFrame.GetFirstChild("border") as CMlQuad);
-				Radar_Background_Details = [];
-				for (I, 1, 6) Radar_Background_Details.add(BackgroundFrame.GetFirstChild("detail-"^I) as CMlQuad);
+			Radar_Background_Base = (BackgroundFrame.GetFirstChild("base") as CMlQuad);
+			Radar_Background_Border =(BackgroundFrame.GetFirstChild("border") as CMlQuad);
+			Radar_Background_Details = [];
+			for (I, 1, 6) Radar_Background_Details.add(BackgroundFrame.GetFirstChild("detail-"^I) as CMlQuad);
 
-				Radar_Markers_FlagFrame = (MarkersFrame.GetFirstChild("marker-flag") as CMlFrame);
-				Radar_Markers_FlagIcon = (Radar_Markers_FlagFrame.GetFirstChild("icon") as CMlQuad);
-				Radar_Markers_FlagGlow = (Radar_Markers_FlagFrame.GetFirstChild("glow") as CMlQuad);
-				Radar_Markers_FlagUp = (Radar_Markers_FlagFrame.GetFirstChild("up") as CMlQuad);
-				Radar_Markers_FlagDown = (Radar_Markers_FlagFrame.GetFirstChild("down") as CMlQuad);
-				for (I, 0, {{{ PlayerMarkerInstances.count -1 }}}) Radar_Markers_PlayerFrames.add((MarkersFrame.GetFirstChild("marker-player-"^I) as CMlFrame));
+			Radar_Markers_FlagFrame = (MarkersFrame.GetFirstChild("marker-flag") as CMlFrame);
+			Radar_Markers_FlagIcon = (Radar_Markers_FlagFrame.GetFirstChild("icon") as CMlQuad);
+			Radar_Markers_FlagGlow = (Radar_Markers_FlagFrame.GetFirstChild("glow") as CMlQuad);
+			Radar_Markers_FlagUp = (Radar_Markers_FlagFrame.GetFirstChild("up") as CMlQuad);
+			Radar_Markers_FlagDown = (Radar_Markers_FlagFrame.GetFirstChild("down") as CMlQuad);
+			for (I, 0, {{{ PlayerMarkerInstances.count -1 }}}) Radar_Markers_PlayerFrames.add((MarkersFrame.GetFirstChild("marker-player-"^I) as CMlFrame));
 
-				Customization_PositionXEntry = (CustomizationSettingsDialogFrame.GetFirstChild("position-x") as CMlEntry);
-				Customization_PositionYEntry = (CustomizationSettingsDialogFrame.GetFirstChild("position-y") as CMlEntry);
-				Customization_ScaleSlider = (CustomizationSettingsDialogFrame.GetFirstChild("slider-scale") as CMlSlider);
-				Customization_BackgroundOpacitySlider = (CustomizationSettingsDialogFrame.GetFirstChild("slider-background-opacity") as CMlSlider);
-				Customization_DetailOpacitySlider = (CustomizationSettingsDialogFrame.GetFirstChild("slider-detail-opacity") as CMlSlider);
-			}
+			Customization_PositionXEntry = (CustomizationSettingsDialogFrame.GetFirstChild("position-x") as CMlEntry);
+			Customization_PositionYEntry = (CustomizationSettingsDialogFrame.GetFirstChild("position-y") as CMlEntry);
+			Customization_ScaleSlider = (CustomizationSettingsDialogFrame.GetFirstChild("slider-scale") as CMlSlider);
+			Customization_BackgroundOpacitySlider = (CustomizationSettingsDialogFrame.GetFirstChild("slider-background-opacity") as CMlSlider);
+			Customization_DetailOpacitySlider = (CustomizationSettingsDialogFrame.GetFirstChild("slider-detail-opacity") as CMlSlider);
+			***
 
 			/**
 			 * Inits all MlControls. This includes setting slider ranges and default values.
 			 */
-			Void InitMlControls() {
-				Customization_PositionXEntry.SetValueType(CMlEntry::ValueType::Ml_Real3Decimals);
-				Customization_PositionYEntry.SetValueType(CMlEntry::ValueType::Ml_Real3Decimals);
-				Customization_ScaleSlider.MinRange = 0.1;
-				Customization_ScaleSlider.MaxRange = 1.;
-				Customization_BackgroundOpacitySlider.MinRange = 0.;
-				Customization_BackgroundOpacitySlider.MaxRange = 1.;
-				Customization_DetailOpacitySlider.MinRange = 0.;
-				Customization_DetailOpacitySlider.MaxRange = 1.;
+			***InitMlControls***
+			***
+			Customization_PositionXEntry.SetValueType(CMlEntry::ValueType::Ml_Real3Decimals);
+			Customization_PositionYEntry.SetValueType(CMlEntry::ValueType::Ml_Real3Decimals);
+			Customization_ScaleSlider.MinRange = 0.1;
+			Customization_ScaleSlider.MaxRange = 1.;
+			Customization_BackgroundOpacitySlider.MinRange = 0.;
+			Customization_BackgroundOpacitySlider.MaxRange = 1.;
+			Customization_DetailOpacitySlider.MinRange = 0.;
+			Customization_DetailOpacitySlider.MaxRange = 1.;
 
-				declare K_RadarUserConfig RadarConfig for LocalUser;
-				Customization_ScaleSlider.Value = RadarConfig.Scale;
-				Customization_BackgroundOpacitySlider.Value = RadarConfig.BackgroundOpacity;
-				Customization_DetailOpacitySlider.Value = RadarConfig.DetailOpacity;
-			}
+			Customization_ScaleSlider.Value = RadarConfig.Scale;
+			Customization_BackgroundOpacitySlider.Value = RadarConfig.BackgroundOpacity;
+			Customization_DetailOpacitySlider.Value = RadarConfig.DetailOpacity;
+			***
 
 			/**
 			 * Loads the radar config for the player.
 			 * If player doesn't have a config, then the default server config is used.
 			 */
-			 Void LoadRadarUserConfig() {
-				 declare Boolean RadarConfigLoaded for LocalUser;
-				if(!RadarConfigLoaded) {
-					declare K_RadarUserConfig RadarConfig for LocalUser;
-					declare persistent Text Persistent_FlagRush_RadarUserConfigJson for UserMgr.MainUser = "{{{ TL::Replace(G_Config.tojson(), "\"", "\\\"") }}}";
-					RadarConfig.fromjson(Persistent_FlagRush_RadarUserConfigJson);
-					RadarConfigLoaded = True;
-				}
+			***LoadRadarUserConfig***
+			***
+			if(RadarConfig == K_RadarUserConfig{}) {	// Config not loaded yet
+				declare persistent Text Persistent_FlagRush_RadarUserConfigJson for UserMgr.MainUser = "{{{ TL::Replace(G_Config.tojson(), "\"", "\\\"") }}}";
+				RadarConfig.fromjson(Persistent_FlagRush_RadarUserConfigJson);
 			}
+			***
 
 			/**
 			 * Persistently saves the radar config the player.
 			 */
-			Void SaveRadarUserConfig() {
-				declare K_RadarUserConfig RadarConfig for LocalUser;
-				declare persistent Text Persistent_FlagRush_RadarUserConfigJson for UserMgr.MainUser;
-				Persistent_FlagRush_RadarUserConfigJson = RadarConfig.tojson();
-				UserMgr.MainUser.PersistentSave();
-			}
+			***SaveRadarUserConfig***
+			***
+			declare persistent Text Persistent_FlagRush_RadarUserConfigJson for UserMgr.MainUser;
+			Persistent_FlagRush_RadarUserConfigJson = RadarConfig.tojson();
+			UserMgr.MainUser.PersistentSave();
+			***
 
 			/**
 			 * Clamps the radar position so it stays inside the screen.
@@ -259,45 +251,119 @@ Text GetManialink() {
 			/**
 			 * Updates the radar settings dialog settings
 			 */
-			 Void UpdateRadarSettings() {
-				declare K_RadarUserConfig RadarConfig for LocalUser;
+			***UpdateRadarSettings***
+			***
+			// Validate entries
+			declare Real PosX = TL::ToReal(Customization_PositionXEntry.Value);
+			if (PosX == -1.) PosX = RadarConfig.Position.X;
 
-				// Validate entries
-				declare Real PosX = TL::ToReal(Customization_PositionXEntry.Value);
-				if (PosX == -1.) PosX = RadarConfig.Position.X;
+			declare Real PosY = TL::ToReal(Customization_PositionYEntry.Value);
+			if (PosY == -1.) PosY = RadarConfig.Position.Y;
 
-				declare Real PosY = TL::ToReal(Customization_PositionYEntry.Value);
-				if (PosY == -1.) PosY = RadarConfig.Position.Y;
+			// Clamp to screen and write to persistent variable
+			RadarConfig.Position = ClampToScreen(<PosX, PosY>);
 
-				// Clamp to screen and write to persistent variable
-				RadarConfig.Position = ClampToScreen(<PosX, PosY>);
+			// Update the entries if window was moved by mouse
+			Customization_PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
+			Customization_PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
 
-				// Update the entries if window was moved by mouse
-				Customization_PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
-				Customization_PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
-
-				// Update the slider values
-				RadarConfig.Scale = Customization_ScaleSlider.Value;
-				RadarConfig.BackgroundOpacity = Customization_BackgroundOpacitySlider.Value;
-				RadarConfig.DetailOpacity = Customization_DetailOpacitySlider.Value;
-			}
+			// Update the slider values
+			RadarConfig.Scale = Customization_ScaleSlider.Value;
+			RadarConfig.BackgroundOpacity = Customization_BackgroundOpacitySlider.Value;
+			RadarConfig.DetailOpacity = Customization_DetailOpacitySlider.Value;
+			***
 
 			/**
 			 * Applies all customizations done by the player to the radar. (Scale, Position, ...)
 			 */
-			Void ApplyRadarSettings() {
-				declare K_RadarUserConfig RadarConfig for LocalUser;
+			***ApplyRadarSettings***
+			***
+			RadarFrame.RelativePosition_V3 = RadarConfig.Position;
+			RadarFrame.RelativeScale = RadarConfig.Scale;
+			Radar_Background_Base.Opacity = RadarConfig.BackgroundOpacity;
+			foreach (Detail in Radar_Background_Details) Detail.Opacity = RadarConfig.DetailOpacity;
+			***
 
+			/**
+			 * Handles what should happen if the user is dragging the radar
+			 */
+			 ***HandleDragging***
+			 ***
+			if (MouseLeftButton && GUIPlayer != Null) { // Mouse down = still dragging
+				RadarConfig.Position = Input.MousePos + DraggingOffset;
 				RadarFrame.RelativePosition_V3 = RadarConfig.Position;
-				RadarFrame.RelativeScale = RadarConfig.Scale;
-				Radar_Background_Base.Opacity = RadarConfig.BackgroundOpacity;
-				foreach (Detail in Radar_Background_Details) Detail.Opacity = RadarConfig.DetailOpacity;
+				Customization_PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
+				Customization_PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
+			} else {	// Finish dragging and save persistently
+				Dragging = False;
+				RadarConfig.Position = ClampToScreen(RadarConfig.Position);
+				+++SaveRadarUserConfig+++
 			}
+			***
+
+			/**
+			 * Hides the radar and does some necessary handling.
+			 */
+			***HideRadar***
+			***
+			RadarFrame.Hide();
+			if (Dragging) {
+				Dragging = False;
+				+++SaveRadarUserConfig+++
+			}
+			***
+
+			/**
+			 * Handles all kinds of Manialink events.
+			 */
+			***HandleEvents***
+			***
+			foreach (Event in PendingEvents) {
+				switch (Event.Type) {
+					case CMlScriptEvent::Type::MouseClick: {
+						if (Event.ControlId == "drag-activator") {
+							Dragging = True;
+							DraggingOffset = RadarFrame.AbsolutePosition_V3 - Input.MousePos;
+						} else if (TL::StartsWith("settings-toggle", Event.ControlId)) {
+							declare Boolean SettingsVisibility for LocalUser;
+							if (SettingsVisibility) +++SaveRadarUserConfig+++
+							SettingsVisibility = !SettingsVisibility;
+						}
+					}
+					case CMlScriptEvent::Type::MouseRightClick: {
+						if (Event.ControlId == "drag-activator") {
+							Dragging = False;
+							RadarConfig.Position = {{{ G_Config.Position }}};
+							Customization_PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
+							Customization_PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
+							+++SaveRadarUserConfig+++
+						} else if (Event.Control == Customization_ScaleSlider) {
+							RadarConfig.Scale = {{{ G_Config.Scale }}};
+							Customization_ScaleSlider.Value = {{{ G_Config.Scale }}};
+						} else if (Event.Control == Customization_BackgroundOpacitySlider) {
+							RadarConfig.BackgroundOpacity = {{{ G_Config.BackgroundOpacity }}};
+							Customization_BackgroundOpacitySlider.Value = {{{ G_Config.BackgroundOpacity }}};
+						} else if (Event.Control == Customization_DetailOpacitySlider) {
+							RadarConfig.DetailOpacity = {{{ G_Config.DetailOpacity }}};
+							Customization_DetailOpacitySlider.Value = {{{ G_Config.DetailOpacity }}};
+						}
+					}
+					case CMlScriptEvent::Type::MouseOver: {
+						if (Event.ControlId == "drag-activator") HoverDragActivator = True;
+						else if (Event.Control == Radar_SettingsButton) HoverDragActivator = True;
+					}
+					case CMlScriptEvent::Type::MouseOut: {
+						if (Event.ControlId == "drag-activator") HoverDragActivator = False;
+						else if (Event.Control == Radar_SettingsButton) HoverDragActivator = False;
+					}
+				}
+			}
+			***
 
 			/**
 			 * Rotates a given vector around a given angle.
 			 */
-			 Vec2 Rotate(Real Angle, Vec2 Vector) {
+			Vec2 Rotate(Real Angle, Vec2 Vector) {
 				declare Real Cosinus = ML::Cos(Angle);
 				declare Real Sinus = ML::Sin(Angle);
 				return <Cosinus, Sinus> * Vector.X + <Sinus, - Cosinus> * Vector.Y;
@@ -306,7 +372,7 @@ Text GetManialink() {
 			/**
 			 * Updates the flag marker frame.
 			 */
-			Void UpdateFlagMarker() {
+			 Void UpdateFlagMarker() {
 				// Determine releative position on radar
 				declare netread Vec3 Net_FlagRush_FlagPosition for Teams[0];
 				declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
@@ -409,100 +475,34 @@ Text GetManialink() {
 				}
 			}
 
-			/**
-			 * Handles what should happen if the user is dragging the radar
-			 */
-			 Void HandleDragging() {
-				declare K_RadarUserConfig RadarConfig for LocalUser;
-				if (MouseLeftButton && GUIPlayer != Null) { // Mouse down = still dragging
-					RadarConfig.Position = Input.MousePos + DraggingOffset;
-					RadarFrame.RelativePosition_V3 = RadarConfig.Position;
-					Customization_PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
-					Customization_PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
-				} else {	// Finish dragging and save persistently
-					Dragging = False;
-					RadarConfig.Position = ClampToScreen(RadarConfig.Position);
-					SaveRadarUserConfig();
-				}
-			}
-
-			/**
-			 * Hides the radar and does some necessary handling.
-			 */
-			Void HideRadar() {
-				RadarFrame.Hide();
-				if (Dragging) {
-					Dragging = False;
-					SaveRadarUserConfig();
-				}
-			}
-
-			/**
-			 * Handles all kinds of Manialink events.
-			 */
-			Void HandleEvents() {
-				declare K_RadarUserConfig RadarConfig for LocalUser;
-				foreach (Event in PendingEvents) {
-					switch (Event.Type) {
-						case CMlScriptEvent::Type::MouseClick: {
-							if (Event.ControlId == "drag-activator") {
-								Dragging = True;
-								DraggingOffset = RadarFrame.AbsolutePosition_V3 - Input.MousePos;
-							} else if (TL::StartsWith("settings-toggle", Event.ControlId)) {
-								declare Boolean SettingsVisibility for LocalUser;
-								if (SettingsVisibility) SaveRadarUserConfig();
-								SettingsVisibility = !SettingsVisibility;
-							}
-						}
-						case CMlScriptEvent::Type::MouseRightClick: {
-							if (Event.ControlId == "drag-activator") {
-								Dragging = False;
-								RadarConfig.Position = {{{ G_Config.Position }}};
-								Customization_PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
-								Customization_PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
-								SaveRadarUserConfig();
-							} else if (Event.Control == Customization_ScaleSlider) {
-								RadarConfig.Scale = {{{ G_Config.Scale }}};
-								Customization_ScaleSlider.Value = {{{ G_Config.Scale }}};
-							} else if (Event.Control == Customization_BackgroundOpacitySlider) {
-								RadarConfig.BackgroundOpacity = {{{ G_Config.BackgroundOpacity }}};
-								Customization_BackgroundOpacitySlider.Value = {{{ G_Config.BackgroundOpacity }}};
-							} else if (Event.Control == Customization_DetailOpacitySlider) {
-								RadarConfig.DetailOpacity = {{{ G_Config.DetailOpacity }}};
-								Customization_DetailOpacitySlider.Value = {{{ G_Config.DetailOpacity }}};
-							}
-						}
-						case CMlScriptEvent::Type::MouseOver: {
-							if (Event.ControlId == "drag-activator") HoverDragActivator = True;
-							else if (Event.Control == Radar_SettingsButton) HoverDragActivator = True;
-						}
-						case CMlScriptEvent::Type::MouseOut: {
-							if (Event.ControlId == "drag-activator") HoverDragActivator = False;
-							else if (Event.Control == Radar_SettingsButton) HoverDragActivator = False;
-						}
-					}
-				}
-			}
-
 			main() {
-				LoadRadarUserConfig();
-				AssignReferences();
-				InitMlControls();
-
+				/* Variables to track some states */
+				// Some delcares for LocalUser to survive re-inits
+				declare K_RadarUserConfig RadarConfig for LocalUser;
 				declare Boolean SettingsVisibility for LocalUser;
+				declare Boolean Dragging for LocalUser;
+				declare Vec2 DraggingOffset for LocalUser;
+
+				declare Boolean HoverSettingsButton;
+				declare Boolean HoverDragActivator;
+
+				// Init
+				+++LoadRadarUserConfig+++
+				+++AssignMlControlReferences+++
+				+++InitMlControls+++
 
 				while(True) {
 					// Handle events
-					if (Dragging) HandleDragging();
-					HandleEvents();
+					if (Dragging) +++HandleDragging+++
+					+++HandleEvents+++
 
 					// Show or hide Settings dialog
 					CustomizationSettingsDialogFrame.Visible = SettingsVisibility;
-					if (SettingsVisibility) UpdateRadarSettings();
+					if (SettingsVisibility) +++UpdateRadarSettings+++
 
 					// Some operations should or can only be done when there is a GUIPlayer
 					if (GUIPlayer == Null) {
-						if(RadarFrame.Visible) HideRadar();
+						if(RadarFrame.Visible) +++HideRadar+++
 						yield;
 						continue;
 					}
@@ -512,7 +512,7 @@ Text GetManialink() {
 					Radar_SettingsButton.Visible = (HoverSettingsButton || HoverDragActivator) && !Dragging;
 
 					// Update visual appearance
-					ApplyRadarSettings();
+					+++ApplyRadarSettings+++
 					Radar_Background_Border.ModulateColor = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
 
 					// Update the markers

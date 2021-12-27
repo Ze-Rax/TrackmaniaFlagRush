@@ -80,9 +80,9 @@ Text GetManialink() {
 
 			<!-- Markers -->
 			<frame id="markers" z-index="1">
-				{{{ TL::Join("\n", PlayerMarkerInstances) }}}
-				<frameinstance modelid="marker-player" id="marker-self" scale="{{{ G_Config.MarkerScale }}}"/>
 				<frameinstance modelid="marker-flag" id="marker-flag" scale="{{{ G_Config.MarkerScale }}}"/>
+				<frameinstance modelid="marker-player" id="marker-self" scale="{{{ G_Config.MarkerScale }}}"/>
+				{{{ TL::Join("\n", PlayerMarkerInstances) }}}
 			</frame>
 
 		</frame>
@@ -265,12 +265,15 @@ Text GetManialink() {
 			***
 
 			/**
-			 * Clamps the radar position so it stays inside the screen.
-			 * Else it could be unrecoverable
+			 * Applies all customizations done by the player to the radar. (Scale, Position, ...)
 			 */
-			 Vec2 ClampToScreen(Vec2 Position) {
-				return < ML::Clamp(Position.X, -160., 160.), ML::Clamp(Position.Y, -90., 90.) >;
-			}
+			 ***ApplyRadarSettings***
+			 ***
+			 RadarFrame.RelativePosition_V3 = RadarConfig.Position;
+			 RadarFrame.RelativeScale = RadarConfig.Scale;
+			 Radar_Background_Base.Opacity = RadarConfig.BackgroundOpacity;
+			 foreach (Detail in Radar_Background_Details) Detail.Opacity = RadarConfig.DetailOpacity;
+			 ***
 
 			/**
 			 * Updates the radar settings dialog settings
@@ -295,17 +298,8 @@ Text GetManialink() {
 			RadarConfig.Scale = Customization_ScaleSlider.Value;
 			RadarConfig.BackgroundOpacity = Customization_BackgroundOpacitySlider.Value;
 			RadarConfig.DetailOpacity = Customization_DetailOpacitySlider.Value;
-			***
 
-			/**
-			 * Applies all customizations done by the player to the radar. (Scale, Position, ...)
-			 */
-			***ApplyRadarSettings***
-			***
-			RadarFrame.RelativePosition_V3 = RadarConfig.Position;
-			RadarFrame.RelativeScale = RadarConfig.Scale;
-			Radar_Background_Base.Opacity = RadarConfig.BackgroundOpacity;
-			foreach (Detail in Radar_Background_Details) Detail.Opacity = RadarConfig.DetailOpacity;
+			+++ApplyRadarSettings+++
 			***
 
 			/**
@@ -318,6 +312,8 @@ Text GetManialink() {
 				RadarFrame.RelativePosition_V3 = RadarConfig.Position;
 				Customization_PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
 				Customization_PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
+
+				+++ApplyRadarSettings+++
 			} else {	// Finish dragging and save persistently
 				Dragging = False;
 				RadarConfig.Position = ClampToScreen(RadarConfig.Position);
@@ -385,6 +381,14 @@ Text GetManialink() {
 			***
 
 			/**
+			 * Clamps the radar position so it stays inside the screen.
+			 * Else it could be unrecoverable
+			 */
+			Vec2 ClampToScreen(Vec2 Position) {
+				return < ML::Clamp(Position.X, -160., 160.), ML::Clamp(Position.Y, -90., 90.) >;
+			}
+
+			/**
 			 * Rotates a given vector around a given angle.
 			 */
 			Vec2 Rotate(Real Angle, Vec2 Vector) {
@@ -394,9 +398,17 @@ Text GetManialink() {
 			}
 
 			/**
+			 * Updates the GUIPlayer marker
+			 */
+			Void UpdateSelfMarker() {
+				SelfMarker.Frame.ZIndex = GetPlayerPosition(GUIPlayer).Y;
+				SelfMarker.Icon.Colorize = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
+			}
+
+			/**
 			 * Updates the flag marker frame.
 			 */
-			 Void UpdateFlagMarker() {
+			Void UpdateFlagMarker() {
 				// Determine releative position on radar
 				declare netread Vec3 Net_FlagRush_FlagPosition for Teams[0];
 				declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
@@ -438,7 +450,7 @@ Text GetManialink() {
 
 				// Determine relative position on radar
 				declare Vec3 RelativePosition = GetPlayerPosition(Player) - GetPlayerPosition(GUIPlayer);
-				declare Vec2 RelativeRadarPosition = Rotate(-GetPlayerYaw(GUIPlayer), <-RelativePosition.X, -RelativePosition.Z>) * {{{ G_Config.Zoom }}};
+				declare Vec2 RelativeRadarPosition = Rotate(-GetPlayerYaw(GUIPlayer), -<RelativePosition.X, RelativePosition.Z>) * {{{ G_Config.Zoom }}};
 
 				// Hide when outside
 				declare OffsetPercentage = ML::Distance(<0., 0.> , RelativeRadarPosition) / {{{ C_RadarBaseSize / 2 }}};
@@ -463,13 +475,14 @@ Text GetManialink() {
 				// Update marker frame
 				PlayerMarker.Frame.RelativePosition_V3 = RelativeRadarPosition;
 				PlayerMarker.Frame.ZIndex = GetPlayerPosition(Player).Y;
-				PlayerMarker.Frame.RelativeRotation = -RelativeYaw / ML::Pi * 180;
+				PlayerMarker.Frame.RelativeRotation = ML::RadToDeg(-RelativeYaw);
+				PlayerMarker.Icon.Colorize = GetTeamPrimaryColor(Player.CurrentClan);
 				PlayerMarker.Icon.Opacity = Opacity * {{{ C_PlayerMarkerIconOpacity }}};
 				PlayerMarker.Glow.Opacity = Opacity * {{{ C_PlayerMarkerGlowOpacity }}};
 			}
 
 			/**
-			 * Updates that markers for all player.
+			 * Updates that markers for all other player.
 			 * Also differentiates between actual players and spectators.
 			 */
 			Void UpdatePlayerMarkers() {
@@ -483,21 +496,16 @@ Text GetManialink() {
 					// Position Marker
 					declare K_PlayerMarker PlayerMarker = PlayerMarkers[ActualPlayerIndex];
 					UpdatePlayerMarker(Player, PlayerMarker);
-
-					// Change Icon Color
-					PlayerMarker.Icon.Colorize = GetTeamPrimaryColor(Player.CurrentClan);
 				}
 			}
 
-			Void UpdateSelfMarker() {
-				SelfMarker.Frame.ZIndex = GUIPlayer.Position.Y;
-				SelfMarker.Icon.Colorize = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
-			}
-
+			/**
+			 * Updates all markers on the radar
+			 */
 			Void UpdateMarkers() {
 				UpdateSelfMarker();
-				UpdatePlayerMarkers();
 				UpdateFlagMarker();
+				UpdatePlayerMarkers();
 			}
 
 			main() {

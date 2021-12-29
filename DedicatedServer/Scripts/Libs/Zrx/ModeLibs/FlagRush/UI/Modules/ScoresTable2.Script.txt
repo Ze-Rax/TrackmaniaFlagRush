@@ -348,11 +348,6 @@ Text GetManialink() {
 	}
 	***
 
-	***UpdateTeamNames***
-	***
-	for (Index, 0, 1) TeamScoreboards[Index].TeamName.Value = Teams[Index].Name;
-	***
-
 	***UpdateTeamStatistics***
 	***
 	for (Team, 0, 1) {
@@ -462,6 +457,13 @@ Text GetManialink() {
 	 CSmPlayer GetPlayer(Text Login) {
 		foreach (Player in Players) if (Player.User.Login == Login) return Player;
 		return Null;
+	}
+
+	/**
+	 * Updates the names of the teams in the header of the scoreboard
+	 */
+	Void UpdateTeamNames() {
+		for (Index, 0, 1) TeamScoreboards[Index].TeamName.Value = Teams[Index].Name;
 	}
 
 	/**
@@ -589,7 +591,7 @@ Text GetManialink() {
 				+++UpdatePageState+++
 			}
 
-			+++UpdateTeamNames+++
+			UpdateTeamNames();
 			+++UpdateTeamStatistics+++
 
 			// Conditional full updates update all player cards. Else update one playercard per yield

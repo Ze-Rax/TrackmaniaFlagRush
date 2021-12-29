@@ -40,31 +40,30 @@ Text GetManialink() {
 
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-	<manialink version="3">
+	<manialink version="3" name="FlagRush_Menu">
 	<stylesheet>
 	<style class="text" textsize="2" textfont="GameFontRegular" valign="center2" />
 	<style class="header" textsize="2" textfont="GameFontSemiBold" valign="center2" />
 	<style class="uiButtonElement" focusareacolor2="fff8" />
+	<style class="uiConfirmButtonElement" focusareacolor2="fff8" />
 	</stylesheet>
 	<framemodel id="player-card-left">
-	<quad pos="0 0" z-index="-1" size="64 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame2" colorize="00d" halign="left"/>
-	<quad pos="0 0" z-index="1" size="6 6" bgcolor="FFF" valign="center" id="avatar" halign="left"/>
-	<label pos="10 0" z-index="1" size="15 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
-	<quad pos="8 0" z-index="2" size="3 3" halign="center" valign="center" id="info-icon" style="Icons64x64_2" substyle="Disconnected" hidden="0" />
+	<quad pos="0 0" z-index="-1" size="50 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000" halign="left"/>
+	<quad pos="2 0" z-index="1" size="5 5" bgcolor="FFF" valign="center" id="avatar" halign="left" keepratio="Fit"/>
+	<label pos="8 0" z-index="1" size="15 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
 	</framemodel>
 	<framemodel id="player-card-right">
-	<quad pos="0 0" z-index="-1" size="64 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame2" colorize="900" halign="left"/>
-	<quad pos="0 0" z-index="1" size="6 6" bgcolor="FFF" valign="center" id="avatar" halign="left"/>
-	<label pos="10 0" z-index="1" size="15 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
-	<quad pos="8 0" z-index="2" size="3 3" halign="center" valign="center" id="info-icon" style="Icons64x64_2" substyle="Disconnected" hidden="0" />
+	<quad pos="0 0" z-index="-1" size="50 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000" halign="left"/>
+	<quad pos="2 0" z-index="1" size="5 5" bgcolor="FFF" valign="center" id="avatar" halign="left" keepratio="Fit"/>
+	<label pos="8 0" z-index="1" size="15 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
 	</framemodel>
 	<frame z-index="5000" id="main-menu" hidden="1">
 	<quad id="background" z-index="-2" pos="0 0" size="70 80" opacity="1" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" halign="center"  modulatecolor="115EFFFF" valign="center"/>
-	<quad pos="0 24" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
 	<label pos="0 32" z-index="0" size="93.6 7.89" text="FlagRush" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
+	<quad pos="0 24" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
 	<frame pos="0 15" class="uiContainer uiButton">
 	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Resume" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Resume"/>
+	<label size="49 7" text="Resume" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Resume" />
 	</frame>
 	<frame pos="0 5" class="uiContainer uiButton">
 	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
@@ -80,45 +79,152 @@ Text GetManialink() {
 	</frame>
 	<frame pos="0 -25" class="uiContainer uiButton">
 	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Quit" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Quit" />
+	<label size="49 7" text="Quit" class="uiConfirmButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Quit" />
 	</frame>
 	</frame>
-	<frame z-index="5000" hidden="0" id="teams-menu">
-	<quad id="background" z-index="-2" pos="0 0" size="160 90" opacity="1" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" modulatecolor="115EFFFF" valign="center" halign="center"/>
-	<label class="header" pos="0 40" size="120 8" text="$iTeams" textsize="6" textfont="GameFontExtraBold" halign="center" valign="center"/>
-	<frame pos="-70 20">
+	<frame z-index="5000" id="teams-menu" hidden="1">
+	<quad id="background" z-index="-2" pos="0 0" size="120 90" opacity="1" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" modulatecolor="115EFFFF" valign="center" halign="center"/>
+	<label pos="0 40" z-index="0" size="93.6 7.89" text="Teams" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
+	<quad pos="0 35" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
+	<frame pos="-55 20">
 	{{{PlayerCardFrameInstancesTeam1Xml}}}
-	<frame pos="30 10" class="uiContainer uiButton" scale="0.8" >
-	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="29 7" text="Join Team" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" scriptevents="1" translate="0" textsize="1.2" data-action="JoinTeam1" />
+	<frame pos="25 9" class="uiContainer uiButton">
+	<quad size="40 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center" />
+	<label id="team1-name" size="39 7" text="Team1" class="uiButtonElement" halign="center" valign="center" focusareacolor1="1717e590" focusareacolor2="1717e5e0" scriptevents="1" translate="0" textsize="1.2" data-action="JoinTeam1"  textprefix="Join "/>
 	</frame>
 	</frame>
 	<frame pos="5 20">
 	{{{PlayerCardFrameInstancesTeam2Xml}}}
-	<frame pos="30 10" class="uiContainer uiButton" scale="0.8">
-	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="29 7" text="Join Team" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" scriptevents="1" translate="0" textsize="1.2" data-action="JoinTeam2" />
+	<frame pos="25 9" class="uiContainer uiButton">
+	<quad size="40 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
+	<label id="team2-name" size="39 7" text="Team2" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="c027" focusareacolor2="c02a" scriptevents="1" translate="0" textsize="1.2" data-action="JoinTeam2"  textprefix="Join "/>
 	</frame>
 	</frame>
-
 	<frame id="page-controls" pos="0 -22" z-index="2">
-	<quad pos="0 0" z-index="1" size="3 3" halign="right" valign="center" style="UICommon64_2" substyle="ArrowUpSlim_light" scriptevents="1" id="page-previous"/>
-	<quad pos="0 0" z-index="1" size="3 3" halign="left" style="UICommon64_2" substyle="ArrowDownSlim_light" scriptevents="1" id="page-next" valign="center"/>
-	<quad pos="0 1.5" z-index="0" size="280 6" bgcolor="000" opacity="0.4" halign="center" valign="top" style="UICommon64_1" substyle="BgFrame1" colorize="000" scale="0.5"/>
+	<quad pos="0 0" z-index="1" size="6 6" halign="right" valign="center" style="UICommon64_2" substyle="ArrowUpSlim_light" scriptevents="1" id="page-previous"/>
+	<quad pos="0 0" z-index="1" size="6 6" halign="left" style="UICommon64_2" substyle="ArrowDownSlim_light" scriptevents="1" id="page-next" valign="center"/>
 	</frame>
-	<frame pos="-16 -38" class="uiContainer uiButton">
+	<frame pos="0 -30">
+	<frame class="uiContainer uiButton">
 	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="29 7" text="AutoBalance" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000" scriptevents="1" translate="0" textsize="1.2" data-action="Balance" />
+	<label size="29 7" text="Balance Teams" class="uiConfirmButtonElement" halign="center" valign="center2" focusareacolor1="0000" scriptevents="1" translate="0" textsize="1.2" data-action="Balance" />
 	</frame>
-	<frame pos="16 -38" class="uiContainer uiButton">
+	</frame>
+	<frame pos="0 -39">
+	<frame class="uiContainer uiButton">
 	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
 	<label size="29 7" text="Back" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="ShowMenu" />
+	</frame>
 	</frame>
 	</frame>
 	<script><!--
 	#Include "TextLib" as TL
 	#Include "MathLib" as ML
 	#Include "ColorLib" as CL
+
+	declare CMlFrame MenuFrame;
+	declare CMlFrame FocusedButton;
+	declare Boolean MenuStatusOld;
+
+	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+
+	Void FocusElement(CMlFrame Frame) {
+		FocusedButton = Frame;
+		Page.GetClassChildren("uiButton", MenuFrame, True);
+		foreach (i => Elem in Page.GetClassChildren_Result) {
+			if (Elem != FocusedButton) {
+				AnimMgr.Flush(Frame);
+				AnimMgr.Add(Frame, "<elem scale=\"1.0\" />", 100, CAnimManager::EAnimManagerEasing::QuadOut);
+			}
+		}
+		Frame.Controls[1].Focus();
+		AnimMgr.Flush(Frame);
+		AnimMgr.Add(Frame, "<elem scale=\"1.1\" />", 100, CAnimManager::EAnimManagerEasing::QuadOut);
+	}
+
+	Void Focus(Integer direction) {
+		declare Integer CurrentButton = -1;
+		Page.GetClassChildren("uiButton", MenuFrame, True);
+		foreach (i => Elem in Page.GetClassChildren_Result) {
+			if (Elem == FocusedButton) {
+				CurrentButton = i;
+			}
+		}
+		declare index =  (CurrentButton+direction) % Page.GetClassChildren_Result.count;
+		if (index < 0) index = Page.GetClassChildren_Result.count-1;
+		FocusElement(Page.GetClassChildren_Result[index] as CMlFrame);
+	}
+
+	Void ShowMenu(Text MenuName) {
+		foreach (Elem in Page.MainFrame.Controls) {
+			Elem.Hide();
+			if (Elem.ControlId == MenuName) {
+				declare CMlFrame Frame = (Elem as CMlFrame);
+				MenuFrame = Frame;
+				FocusedButton = Null;
+				Frame.Show();
+				declare Vec3 TeamColor = GetTeamPrimaryColor(InputPlayer.CurrentClan);
+				if (InputPlayer.CurrentClan == 0) TeamColor = CL::Hex3ToRgb("3af");
+				declare CMlQuad Background <=> (Frame.GetFirstChild("background") as CMlQuad);
+				Background.ModulateColor = TeamColor;
+				foreach (i => Elem2 in Frame.Controls) {
+					Elem2.RelativeScale = 0.;
+					AnimMgr.Flush(Elem2);
+					AnimMgr.Add(Elem2, "<elem scale=\"1\" />", Now - 200 + 75*i, 500, CAnimManager::EAnimManagerEasing::ElasticOut);
+				}
+			}
+		}
+	}
+
+	***OnInit***
+	***
+	MenuStatusOld = Playground.IsInGameMenuDisplayed;
+	Init();
+	MenuFrame = (Page.GetFirstChild("main-menu") as CMlFrame);
+	if (Playground.IsInGameMenuDisplayed)	ShowMenu("main-menu");
+	***
+
+	***IdleLoop***
+	***
+	if (Playground.IsInGameMenuDisplayed != MenuStatusOld) {
+		if (Playground.IsInGameMenuDisplayed) {
+			ShowMenu("main-menu");
+		}
+	}
+	MenuStatusOld = Playground.IsInGameMenuDisplayed;
+	***
+
+	***Loop***
+	***
+	MenuStatusOld = Playground.IsInGameMenuDisplayed;
+	***
+
+	***OnKeyPress***
+	***
+	if (Page.MainFrame.Visible == True && Event.KeyName == "Escape") {
+		CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+	}
+	***
+
+	***OnMouseClick***
+	***
+	switch(Event.ControlId) {
+		case "page-previous": {
+			CurrentPageIndex -= 1;
+			UpdateCurrentPage();
+			continue;
+		}
+		case "page-next": {
+			CurrentPageIndex += 1;
+			UpdateCurrentPage();
+			continue;
+		}
+	}
+	***
+
+
+
+
 	// ------------------------------ //
 	// Global Variables
 	// ------------------------------ //
@@ -134,8 +240,6 @@ Text GetManialink() {
 
 	/* Scores table control Variables */
 	declare Integer CurrentPageIndex;
-
-	{{{UIShared::GetTeamColorNetreadFunctions()}}}
 
 	/**
 	* Gets the player object for a given login.
@@ -172,6 +276,13 @@ Text GetManialink() {
 		FramePageControls.Visible = NbPages >= 2;
 		QuadPagePrevious.Visible = CurrentPageIndex >= 1;
 		QuadPageNext.Visible = CurrentPageIndex < NbPages - 1;
+
+		declare CMlLabel LabelTeam1Name = (Page.GetFirstChild("team1-name") as CMlLabel);
+		declare CMlLabel LabelTeam2Name = (Page.GetFirstChild("team2-name") as CMlLabel);
+
+		LabelTeam1Name.Value = Teams[0].Name;
+		LabelTeam2Name.Value = Teams[1].Name;
+
 	}
 
 	/**
@@ -192,7 +303,6 @@ Text GetManialink() {
 		declare CMlLabel LabelPlayerName = (PlayerCard.GetFirstChild("name") as CMlLabel);
 		declare CMlQuad QuadPlayerAvatar = (PlayerCard.GetFirstChild("avatar") as CMlQuad);
 		declare CMlQuad QuadPlayerBackground = (PlayerCard.GetFirstChild("background") as CMlQuad);
-		declare CMlQuad QuadInfo = (PlayerCard.GetFirstChild("info-icon") as CMlQuad);
 
 		/* General */
 		declare CTeam Team = Null;
@@ -202,14 +312,6 @@ Text GetManialink() {
 		/* Status / Info icon */
 		declare Boolean IsConnected = IsConnected(Score.User.Login);
 		declare CSmPlayer Player <=> GetPlayer(Score.User.Login);
-		QuadInfo.Visible = !IsConnected || Player.RequestsSpectate;
-		if(!IsConnected) {
-			QuadInfo.Style = "Icons64x64_2";
-			QuadInfo.Substyle = "Disconnected";
-		} else if (Player.RequestsSpectate) {
-			QuadInfo.Style = "UICommon64_1";
-			QuadInfo.Substyle = "Camera_light";
-		}
 
 		/* Background */
 		declare Vec3 BackgroundColor = TeamColor;
@@ -280,26 +382,6 @@ Text GetManialink() {
 		UpdatePagePlayerCards(ScoresToDisplay);
 	}
 
-
-	Void ShowMenu(Text MenuName) {
-		foreach (Elem in Page.MainFrame.Controls) {
-			Elem.Hide();
-			if (Elem.ControlId == MenuName) {
-				Elem.Show();
-				declare CMlFrame Frame = (Elem as CMlFrame);
-				declare Vec3 TeamColor = GetTeamPrimaryColor(InputPlayer.CurrentClan);
-				if (InputPlayer.CurrentClan == 0) TeamColor = CL::Hex3ToRgb("3af");
-				declare CMlQuad Background <=> (Frame.GetFirstChild("background") as CMlQuad);
-				Background.ModulateColor = TeamColor;
-				foreach (i => Elem2 in Frame.Controls) {
-					Elem2.RelativeScale = 0.;
-					AnimMgr.Flush(Elem2);
-					AnimMgr.Add(Elem2, "<elem scale=\"1\" />", Now - 200 + 75*i, 500, CAnimManager::EAnimManagerEasing::ElasticOut);
-				}
-			}
-		}
-	}
-
 	Void Init() {
 		// Body
 		PlayerCardFramesTeam1 = {{{PlayerCardFramesTeam1ScriptList}}};
@@ -311,91 +393,211 @@ Text GetManialink() {
 		CurrentPageIndex = 0;
 	}
 
-	main() {
-		declare Boolean MenuStatusOld = Playground.IsInGameMenuDisplayed;
-		Init();
-		if (Playground.IsInGameMenuDisplayed)	ShowMenu("main-menu");
-
-		while (True) {
-			yield;
-
-			if (Playground.IsInGameMenuDisplayed != MenuStatusOld ) {
-				MenuStatusOld = Playground.IsInGameMenuDisplayed;
-				if (Playground.IsInGameMenuDisplayed) {
-					ShowMenu("main-menu");
-				}
-			}
-			foreach(Event in PendingEvents) {
-				if (Event.Type == CMlScriptEvent::Type::MouseOver) {
-					if (Event.Control.HasClass("uiButtonElement")) {
-						AnimMgr.Flush(Event.Control.Parent);
-						AnimMgr.Add(Event.Control.Parent, "<elem scale=\"1.1\" />", 250, CAnimManager::EAnimManagerEasing::ElasticOut);
-					}
-				}
-				if (Event.Type == CMlScriptEvent::Type::MouseOut) {
-					if (Event.Control.HasClass("uiButtonElement")) {
-						AnimMgr.Flush(Event.Control.Parent);
-						AnimMgr.Add(Event.Control.Parent, "<elem scale=\"1\" />", 250, CAnimManager::EAnimManagerEasing::ElasticOut);
-					}
-				}
-
-				if (Event.Type == CMlScriptEvent::Type::KeyPress) {
-					if (Page.MainFrame.Visible == True && Event.KeyName == "Escape") {
+	***Loop***
+	***
+	foreach (Event in Input.PendingEvents) {
+		if (Event.Type == CInputEvent::EType::PadButtonPress)	 {
+			switch (Event.Button) {
+				case CInputEvent::EButton::LeftStick_Up: Focus(-1);
+				case CInputEvent::EButton::LeftStick_Down: Focus(1);
+				case CInputEvent::EButton::Up: Focus(-1);
+				case CInputEvent::EButton::Down: Focus(1);
+				case CInputEvent::EButton::Menu: {
+					if (Playground.IsInGameMenuDisplayed && MenuStatusOld) {
+						MenuStatusOld = False;
 						CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
-					}
-				}
-				if (Event.Type == CMlScriptEvent::Type::MouseClick) {
-					switch(Event.ControlId) {
-						case "page-previous": {
-							CurrentPageIndex -= 1;
-							UpdateCurrentPage();
-							continue;
-						}
-						case "page-next": {
-							CurrentPageIndex += 1;
-							UpdateCurrentPage();
-							continue;
-						}
-					}
-					declare Text action = Event.Control.DataAttributeGet("action");
-					switch (action) {
-						case "ShowMenu": {
-							ShowMenu("main-menu");
-						}
-						case "Teams": {
-							CurrentPageIndex = 0;
-							UpdateCurrentPage();
-							ShowMenu("teams-menu");
-						}
-						case "Setup": {
-							TriggerPageAction("maniaplanet:editsettings");
-						}
-						case "Resume": {
-							CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
-						}
-						case "Balance":  {
-							Playground.RequestAutoTeamBalance();
-							CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
-						}
-						case "Spectate": {
-							Playground.RequestSpectatorClient( !InputPlayer.RequestsSpectate );
-						}
-						case "JoinTeam1": {
-							Playground.JoinTeam1();
-							CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
-						}
-						case "JoinTeam2": {
-							Playground.JoinTeam2();
-							CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
-						}
-						case "Quit": {
-							Playground.QuitServer(True);
-						}
 					}
 				}
 			}
 		}
 	}
+	***
+
+	Void HandleButtonActions(Text action) {
+		switch (action) {
+			case "ShowMenu": {
+				ShowMenu("main-menu");
+			}
+			case "Teams": {
+				CurrentPageIndex = 0;
+				UpdateCurrentPage();
+				ShowMenu("teams-menu");
+			}
+			case "Setup": {
+				TriggerPageAction("maniaplanet:editsettings");
+			}
+			case "Resume": {
+				CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+			}
+			case "Balance":  {
+				Playground.RequestAutoTeamBalance();
+				CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+			}
+			case "Spectate": {
+				Playground.RequestSpectatorClient( !InputPlayer.RequestsSpectate );
+			}
+			case "JoinTeam1": {
+				Playground.JoinTeam1();
+				CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+			}
+			case "JoinTeam2": {
+				Playground.JoinTeam2();
+				CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+			}
+			case "Quit": {
+				Playground.QuitServer(False);
+			}
+		}
+	}
+
+
+	/* ------------------- Button ------------------------- */
+	Void TriggerButtonClick(CMlControl Control) {
+		declare Parent = Control.Parent;
+		if (Parent.HasClass("uiButton")) {
+			Parent.RelativeScale = 0.75;
+			AnimMgr.Flush(Parent);
+			AnimMgr.Add(Parent, "<elem scale=\"1.\" />", 200, CAnimManager::EAnimManagerEasing::QuadIn);
+			HandleButtonActions(Control.DataAttributeGet("action"));
+		}
+	}
+
+	Void TriggerButtonClick(Text ControlId) {
+		declare Control <=> Page.GetFirstChild(ControlId);
+		TriggerButtonClick(Control);
+	}
+
+	***OnMouseClick***
+	***
+	if (Event.Control.HasClass("uiButtonElement") ) {
+		TriggerButtonClick(Event.Control);
+	}
+	***
+
+	***OnMouseOver***
+	***
+	if (Event.Control.Parent.HasClass("uiButton")) {
+		FocusElement(Event.Control.Parent as CMlFrame);
+	}
+	***
+
+	***OnMouseOut***
+	***
+	if (Event.Control.Parent.HasClass("uiButton")) {
+		AnimMgr.Flush(Event.Control.Parent);
+		AnimMgr.Add(Event.Control.Parent, "<elem scale=\"1.\" />", 100, CAnimManager::EAnimManagerEasing::QuadOut);
+	}
+	***
+
+	/* ------------------- end Button ------------------------- */
+
+
+
+	/*  ------------------- ConfirmButton ------------------------- */
+
+	***OnInit***
+	***
+	declare Integer[Ident] pendingConfirms for Page;
+	declare Text[Ident] pendingConfirmIds for Page;
+	declare CMlLabel[Ident] pendingConfirmControls for Page;
+
+	pendingConfirms.clear();
+	pendingConfirmIds.clear();
+	pendingConfirmControls.clear();
+	***
+
+	***Loop***
+	***
+	foreach (Id => Time in pendingConfirms) {
+		if (Now > Time + (3 * 1000) ) {
+			if (pendingConfirmIds.existskey(Id))  {
+				pendingConfirmControls[Id].Value = pendingConfirmIds[Id];
+				pendingConfirmIds.removekey(Id);
+				pendingConfirms.removekey(Id);
+				pendingConfirmControls.removekey(Id);
+			}
+		}
+	}
+	***
+
+	***OnMouseClick***
+	***
+	if (Event.Control.HasClass("uiConfirmButtonElement") ) {
+		TriggerConfirmButtonClick((Event.Control as CMlLabel));
+	}
+	***
+
+
+	Void TriggerConfirmButtonClick(CMlLabel Control) {
+		declare Integer[Ident] pendingConfirms for Page;
+		declare Text[Ident] pendingConfirmIds for Page;
+		declare CMlLabel[Ident] pendingConfirmControls for Page;
+
+		if (Control.Parent.HasClass("uiButton")) {
+			if (pendingConfirmIds.existskey(Control.Id) == False) {
+				pendingConfirmIds[Control.Id] = Control.Value;
+				pendingConfirmControls[Control.Id] = Control;
+				pendingConfirms[Control.Id] = Now;
+				Control.Value = "Confirm ?";
+				Control.Parent.RelativeScale = 0.75;
+				AnimMgr.Flush(Control.Parent);
+				AnimMgr.Add(Control.Parent, "<elem scale=\"1.\" />", 200, CAnimManager::EAnimManagerEasing::QuadIn);
+			} else {
+				Control.Value = pendingConfirmIds[Control.Id];
+				pendingConfirmIds.removekey(Control.Id);
+				pendingConfirms.removekey(Control.Id);
+				pendingConfirmControls.removekey(Control.Id);
+				Control.Parent.RelativeScale = 0.75;
+				AnimMgr.Flush(Control.Parent);
+				AnimMgr.Add(Control.Parent, "<elem scale=\"1.\" />", 200, CAnimManager::EAnimManagerEasing::QuadIn);
+				HandleButtonActions(Control.DataAttributeGet("action"));
+			}
+		}
+	}
+
+	Void TriggerConfirmButtonClick(Text ControlId) {
+		declare CMlLabel Control = (Page.GetFirstChild(ControlId) as CMlLabel);
+		TriggerConfirmButtonClick(Control);
+	}
+
+	/*  ------------------- end ConfirmButton ------------------------- */
+	main() {
+		+++OnInit+++
+
+		while(True) {
+			yield;
+
+			+++IdleLoop+++
+
+			if (!PageIsVisible) {
+				continue;
+			}
+
+			foreach (Event in PendingEvents) {
+				switch (Event.Type) {
+					case CMlScriptEvent::Type::EntrySubmit: {
+						+++EntrySubmit+++
+					}
+					case CMlScriptEvent::Type::KeyPress: {
+						+++OnKeyPress+++
+					}
+					case CMlScriptEvent::Type::MouseClick: {
+						if (Event.Control != Null) +++OnMouseClick+++
+					}
+					case CMlScriptEvent::Type::MouseOut: {
+						if (Event.Control != Null) +++OnMouseOut+++
+					}
+					case CMlScriptEvent::Type::MouseOver: {
+						if (Event.Control != Null) +++OnMouseOver+++
+					}
+				}
+			}
+
+			+++Loop+++
+
+		}
+	}
+
 	--></script>
 	</manialink>
 	""";

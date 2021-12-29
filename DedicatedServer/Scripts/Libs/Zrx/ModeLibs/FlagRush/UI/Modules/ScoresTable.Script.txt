@@ -17,7 +17,7 @@ Text GetManialink() {
 
 	<framemodel id="playerstatistic-card">
 		<quad size="10 10.25" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" style="UICommon128_1" substyle="BgFrame1" modulatecolor="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" z-index="-1" id="background"/>
-		<label pos="0 1" z-index="0" size="10 5" text="0" textfont="GameFontExtraBold" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" textsize="4" halign="center" valign="center2" id="total"/>
+		<label pos="0 1" z-index="0" size="10 5" text="0" textfont="GameFontExtraBold" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" textsize="3" halign="center" valign="center2" id="total"/>
 		<label pos="0 -3" z-index="0" size="10 5" text="0" textprefix="+" textfont="GameFontSemiBold" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="center" valign="center2" textsize="1" id="add"/>
 	</framemodel>
 
@@ -504,16 +504,6 @@ Text GetManialink() {
 	}
 
 	/**
-	 * Determines if a given score should be displayed on the scoreboard.
-	 */
-	Boolean ShouldDisplayScore(CSmScore Score) {
-		declare netread Integer Net_FlagRush_Points_Match for Score;
-		if (Net_FlagRush_Points_Match > 0) return True;
-		if (GetPlayer(Score.User.Login) != Null) return True;
-		return False;
-	}
-
-	/**
 	 * Filters out scores that should not be displayed:
 	 *     - Do not display disconnected players or spectators with less than one point.
 	 *     - Do not display disconnected players or spectators in warmup, regardless of points.
@@ -527,13 +517,11 @@ Text GetManialink() {
 		foreach (Score in Scores) {
 			if(Score.TeamNum <= 0 || Score.TeamNum > 2) continue;
 			declare CSmPlayer ScorePlayer <=> GetPlayer(Score.User.Login);
-			declare netread Integer Net_FlagRush_Points_Match for Score;
-			declare Boolean PlayerHasPoints = Net_FlagRush_Points_Match > 0;
 			declare Boolean PlayerIsDisconnectedOrSpectator = ScorePlayer == Null || ScorePlayer.RequestsSpectate;
 
 			// In warmup, do not show disonnected or spectating players.
 			// Outside of warmup, do not show disconnected or spectating players with no points.
-			if(PlayerIsDisconnectedOrSpectator && (IsWarmup || !PlayerHasPoints)) continue;
+			if(PlayerIsDisconnectedOrSpectator && (IsWarmup || Score.Points <= 0)) continue;
 			ScoresToDisplay[Score.TeamNum - 1].add(Score);
 		}
 		return ScoresToDisplay;
@@ -573,23 +561,22 @@ Text GetManialink() {
 		}
 
 		// Statistics
-		declare netread Integer Net_FlagRush_Points_Match for Score;
-		Playercard.Points.Total.Value = TL::ToText(Net_FlagRush_Points_Match);
+		Playercard.Points.Total.Value = TL::ToText(Score.Points);
 		Playercard.Points.Add.Value = TL::ToText(Score.RoundPoints);
 
-		declare netread Integer Net_FlagRush_FlagsScored_Match for Score;
+		declare netread Integer Net_FlagRush_FlagsScored for Score;
 		declare netread Integer Net_FlagRush_FlagsScored_Round for Score;
-		Playercard.FlagsScored.Total.Value = TL::ToText(Net_FlagRush_FlagsScored_Match);
+		Playercard.FlagsScored.Total.Value = TL::ToText(Net_FlagRush_FlagsScored);
 		Playercard.FlagsScored.Add.Value = TL::ToText(Net_FlagRush_FlagsScored_Round);
 
-		declare netread Integer Net_FlagRush_FlagsStolen_Match for Score;
+		declare netread Integer Net_FlagRush_FlagsStolen for Score;
 		declare netread Integer Net_FlagRush_FlagsStolen_Round for Score;
-		Playercard.FlagsStolen.Total.Value = TL::ToText(Net_FlagRush_FlagsStolen_Match);
+		Playercard.FlagsStolen.Total.Value = TL::ToText(Net_FlagRush_FlagsStolen);
 		Playercard.FlagsStolen.Add.Value = TL::ToText(Net_FlagRush_FlagsStolen_Round);
 
-		declare netread Integer Net_FlagRush_FlagsAssists_Match for Score;
+		declare netread Integer Net_FlagRush_FlagsAssists for Score;
 		declare netread Integer Net_FlagRush_FlagsAssists_Round for Score;
-		Playercard.Assists.Total.Value = TL::ToText(Net_FlagRush_FlagsAssists_Match);
+		Playercard.Assists.Total.Value = TL::ToText(Net_FlagRush_FlagsAssists);
 		Playercard.Assists.Add.Value = TL::ToText(Net_FlagRush_FlagsAssists_Round);
 	}
 

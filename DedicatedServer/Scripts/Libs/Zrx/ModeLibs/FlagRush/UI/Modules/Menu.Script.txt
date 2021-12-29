@@ -40,7 +40,7 @@ Text GetManialink() {
 
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-	<manialink version="3">
+	<manialink version="3" name="FlagRush_Menu">
 	<stylesheet>
 	<style class="text" textsize="2" textfont="GameFontRegular" valign="center2" />
 	<style class="header" textsize="2" textfont="GameFontSemiBold" valign="center2" />
@@ -49,13 +49,13 @@ Text GetManialink() {
 	</stylesheet>
 	<framemodel id="player-card-left">
 	<quad pos="0 0" z-index="-1" size="50 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000" halign="left"/>
-	<quad pos="0 0" z-index="1" size="6 6" bgcolor="FFF" valign="center" id="avatar" halign="left" keepratio="Fit"/>
-	<label pos="7 0" z-index="1" size="15 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
+	<quad pos="2 0" z-index="1" size="5 5" bgcolor="FFF" valign="center" id="avatar" halign="left" keepratio="Fit"/>
+	<label pos="8 0" z-index="1" size="15 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
 	</framemodel>
 	<framemodel id="player-card-right">
 	<quad pos="0 0" z-index="-1" size="50 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000" halign="left"/>
-	<quad pos="0 0" z-index="1" size="6 6" bgcolor="FFF" valign="center" id="avatar" halign="left" keepratio="Fit"/>
-	<label pos="7 0" z-index="1" size="15 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
+	<quad pos="2 0" z-index="1" size="5 5" bgcolor="FFF" valign="center" id="avatar" halign="left" keepratio="Fit"/>
+	<label pos="8 0" z-index="1" size="15 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
 	</framemodel>
 	<frame z-index="5000" id="main-menu" hidden="1">
 	<quad id="background" z-index="-2" pos="0 0" size="70 80" opacity="1" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" halign="center"  modulatecolor="115EFFFF" valign="center"/>
@@ -63,11 +63,11 @@ Text GetManialink() {
 	<quad pos="0 24" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
 	<frame pos="0 15" class="uiContainer uiButton">
 	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Resume" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Resume"/>
+	<label size="49 7" text="Resume" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Resume" />
 	</frame>
 	<frame pos="0 5" class="uiContainer uiButton">
 	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Spectate" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Spectate" active="1"/>
+	<label size="49 7" text="Spectate" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Spectate" />
 	</frame>
 	<frame pos="0 -5" class="uiContainer uiButton">
 	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
@@ -104,13 +104,17 @@ Text GetManialink() {
 	<quad pos="0 0" z-index="1" size="6 6" halign="right" valign="center" style="UICommon64_2" substyle="ArrowUpSlim_light" scriptevents="1" id="page-previous"/>
 	<quad pos="0 0" z-index="1" size="6 6" halign="left" style="UICommon64_2" substyle="ArrowDownSlim_light" scriptevents="1" id="page-next" valign="center"/>
 	</frame>
-	<frame pos="0 -39" class="uiContainer uiButton">
+	<frame pos="0 -30">
+	<frame class="uiContainer uiButton">
+	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
+	<label size="29 7" text="Balance Teams" class="uiConfirmButtonElement" halign="center" valign="center2" focusareacolor1="0000" scriptevents="1" translate="0" textsize="1.2" data-action="Balance" />
+	</frame>
+	</frame>
+	<frame pos="0 -39">
+	<frame class="uiContainer uiButton">
 	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
 	<label size="29 7" text="Back" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="ShowMenu" />
 	</frame>
-	<frame pos="0 -30" class="uiContainer uiButton">
-	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="29 7" text="Balance Teams" class="uiConfirmButtonElement" halign="center" valign="center2" focusareacolor1="0000" scriptevents="1" translate="0" textsize="1.2" data-action="Balance" />
 	</frame>
 	</frame>
 	<script><!--
@@ -126,15 +130,21 @@ Text GetManialink() {
 
 	Void FocusElement(CMlFrame Frame) {
 		FocusedButton = Frame;
+		Page.GetClassChildren("uiButton", MenuFrame, True);
+		foreach (i => Elem in Page.GetClassChildren_Result) {
+			if (Elem != FocusedButton) {
+				AnimMgr.Flush(Frame);
+				AnimMgr.Add(Frame, "<elem scale=\"1.0\" />", 100, CAnimManager::EAnimManagerEasing::QuadOut);
+			}
+		}
 		Frame.Controls[1].Focus();
 		AnimMgr.Flush(Frame);
 		AnimMgr.Add(Frame, "<elem scale=\"1.1\" />", 100, CAnimManager::EAnimManagerEasing::QuadOut);
 	}
 
 	Void Focus(Integer direction) {
+		declare Integer CurrentButton = -1;
 		Page.GetClassChildren("uiButton", MenuFrame, True);
-		declare Integer CurrentButton;
-
 		foreach (i => Elem in Page.GetClassChildren_Result) {
 			if (Elem == FocusedButton) {
 				CurrentButton = i;
@@ -149,20 +159,16 @@ Text GetManialink() {
 		foreach (Elem in Page.MainFrame.Controls) {
 			Elem.Hide();
 			if (Elem.ControlId == MenuName) {
-				Elem.Show();
-				declare Boolean IsFocusCalled = False;
 				declare CMlFrame Frame = (Elem as CMlFrame);
 				MenuFrame = Frame;
+				FocusedButton = Null;
+				Frame.Show();
 				declare Vec3 TeamColor = GetTeamPrimaryColor(InputPlayer.CurrentClan);
 				if (InputPlayer.CurrentClan == 0) TeamColor = CL::Hex3ToRgb("3af");
 				declare CMlQuad Background <=> (Frame.GetFirstChild("background") as CMlQuad);
 				Background.ModulateColor = TeamColor;
 				foreach (i => Elem2 in Frame.Controls) {
 					Elem2.RelativeScale = 0.;
-					if (Elem.HasClass("uiButton") && !IsFocusCalled) {
-						FocusElement(Elem as CMlFrame);
-						IsFocusCalled = True;
-					}
 					AnimMgr.Flush(Elem2);
 					AnimMgr.Add(Elem2, "<elem scale=\"1\" />", Now - 200 + 75*i, 500, CAnimManager::EAnimManagerEasing::ElasticOut);
 				}
@@ -181,11 +187,16 @@ Text GetManialink() {
 	***IdleLoop***
 	***
 	if (Playground.IsInGameMenuDisplayed != MenuStatusOld) {
-		MenuStatusOld = Playground.IsInGameMenuDisplayed;
 		if (Playground.IsInGameMenuDisplayed) {
 			ShowMenu("main-menu");
 		}
 	}
+	MenuStatusOld = Playground.IsInGameMenuDisplayed;
+	***
+
+	***Loop***
+	***
+	MenuStatusOld = Playground.IsInGameMenuDisplayed;
 	***
 
 	***OnKeyPress***
@@ -387,24 +398,19 @@ Text GetManialink() {
 	foreach (Event in Input.PendingEvents) {
 		if (Event.Type == CInputEvent::EType::PadButtonPress)	 {
 			switch (Event.Button) {
-				case CInputEvent::EButton::LeftStick_Up: {
-					Focus(-1);
-				}
-				case CInputEvent::EButton::LeftStick_Down: {
-					Focus(1);
+				case CInputEvent::EButton::LeftStick_Up: Focus(-1);
+				case CInputEvent::EButton::LeftStick_Down: Focus(1);
+				case CInputEvent::EButton::Up: Focus(-1);
+				case CInputEvent::EButton::Down: Focus(1);
+				case CInputEvent::EButton::Menu: {
+					if (Playground.IsInGameMenuDisplayed && MenuStatusOld) {
+						MenuStatusOld = False;
+						CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+					}
 				}
 			}
 		}
 	}
-	foreach (Event in PendingEvents) {
-		if (Event.Type == CMlScriptEvent::Type::KeyPress)	 {
-			switch(Event.KeyName) {
-				case "Down": Focus(1);
-				case "Up": Focus(-1);
-			}
-		}
-	}
-
 	***
 
 	Void HandleButtonActions(Text action) {
@@ -450,6 +456,7 @@ Text GetManialink() {
 		declare Parent = Control.Parent;
 		if (Parent.HasClass("uiButton")) {
 			Parent.RelativeScale = 0.75;
+			AnimMgr.Flush(Parent);
 			AnimMgr.Add(Parent, "<elem scale=\"1.\" />", 200, CAnimManager::EAnimManagerEasing::QuadIn);
 			HandleButtonActions(Control.DataAttributeGet("action"));
 		}
@@ -470,8 +477,7 @@ Text GetManialink() {
 	***OnMouseOver***
 	***
 	if (Event.Control.Parent.HasClass("uiButton")) {
-		AnimMgr.Flush(Event.Control.Parent);
-		AnimMgr.Add(Event.Control.Parent, "<elem scale=\"1.1\" />", 100, CAnimManager::EAnimManagerEasing::QuadOut);
+		FocusElement(Event.Control.Parent as CMlFrame);
 	}
 	***
 
@@ -534,6 +540,7 @@ Text GetManialink() {
 				pendingConfirms[Control.Id] = Now;
 				Control.Value = "Confirm ?";
 				Control.Parent.RelativeScale = 0.75;
+				AnimMgr.Flush(Control.Parent);
 				AnimMgr.Add(Control.Parent, "<elem scale=\"1.\" />", 200, CAnimManager::EAnimManagerEasing::QuadIn);
 			} else {
 				Control.Value = pendingConfirmIds[Control.Id];
@@ -541,12 +548,12 @@ Text GetManialink() {
 				pendingConfirms.removekey(Control.Id);
 				pendingConfirmControls.removekey(Control.Id);
 				Control.Parent.RelativeScale = 0.75;
+				AnimMgr.Flush(Control.Parent);
 				AnimMgr.Add(Control.Parent, "<elem scale=\"1.\" />", 200, CAnimManager::EAnimManagerEasing::QuadIn);
 				HandleButtonActions(Control.DataAttributeGet("action"));
 			}
 		}
 	}
-
 
 	Void TriggerConfirmButtonClick(Text ControlId) {
 		declare CMlLabel Control = (Page.GetFirstChild(ControlId) as CMlLabel);
@@ -575,13 +582,13 @@ Text GetManialink() {
 						+++OnKeyPress+++
 					}
 					case CMlScriptEvent::Type::MouseClick: {
-						+++OnMouseClick+++
+						if (Event.Control != Null) +++OnMouseClick+++
 					}
 					case CMlScriptEvent::Type::MouseOut: {
-						+++OnMouseOut+++
+						if (Event.Control != Null) +++OnMouseOut+++
 					}
 					case CMlScriptEvent::Type::MouseOver: {
-						+++OnMouseOver+++
+						if (Event.Control != Null) +++OnMouseOver+++
 					}
 				}
 			}

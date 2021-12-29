@@ -401,8 +401,14 @@ Text GetManialink() {
 			 * Updates the GUIPlayer marker
 			 */
 			Void UpdateSelfMarker() {
-				SelfMarker.Frame.ZIndex = GetPlayerPosition(GUIPlayer).Y;
-				SelfMarker.Icon.Colorize = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
+				declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+				if (Net_FlagRush_FlagCarrierLogin == GUIPlayer.User.Login) {
+					SelfMarker.Frame.Hide();
+				} else {
+					SelfMarker.Frame.Show();
+					SelfMarker.Frame.ZIndex = GetPlayerPosition(GUIPlayer).Y;
+					SelfMarker.Icon.Colorize = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
+				}
 			}
 
 			/**

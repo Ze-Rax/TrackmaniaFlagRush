@@ -140,11 +140,12 @@ Text GetManialink() {
 	/**
 	 * Updates the round scores (flags scored) for the teams.
 	 */
-	***UpdateTeamScores***
+	***UpdateTeams***
 	***
 	for (Team, 0, 1) {
 		declare netread Integer Net_FlagRush_TeamRoundScore for Teams[Team];
 		TeamAreas[Team].Score.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
+		TeamAreas[Team].TeamName.Value = Teams[Team].Name;
 	}
 	***
 
@@ -238,7 +239,7 @@ Text GetManialink() {
 
 			FlagCarrierPlayer <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
 
-			+++UpdateTeamScores+++
+			+++UpdateTeams+++
 			+++UpdateTimer+++
 			+++UpdateCarrier+++
 		}

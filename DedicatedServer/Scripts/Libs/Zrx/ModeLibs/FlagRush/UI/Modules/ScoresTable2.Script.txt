@@ -325,9 +325,9 @@ Text GetManialink() {
 			declare K_PlayerCard Playercard = TeamScoreboards[0].Playercards[CardIndex];
 			Playercard.Avatar.BgColor = {{{ Colors::C_BlueBase }}};
 			declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
-			PlayercardBackgroundGradient.Base.BgColor = {{{ Colors::C_BlueBase }}} * 0.5;
-			PlayercardBackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_BlueDark }}} * 0.5;
-			PlayercardBackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_BlueLight }}} * 0.5;
+			PlayercardBackgroundGradient.Base.BgColor = {{{ Colors::C_BlueBase * 0.5 }}};
+			PlayercardBackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_BlueDark * 0.5 }}};
+			PlayercardBackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_BlueLight * 0.5 }}};
 		}
 	}
 	// Team Red
@@ -341,9 +341,9 @@ Text GetManialink() {
 			declare K_PlayerCard Playercard = TeamScoreboards[1].Playercards[CardIndex];
 			Playercard.Avatar.BgColor = {{{ Colors::C_RedBase }}};
 			declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
-			PlayercardBackgroundGradient.Base.BgColor = {{{ Colors::C_RedBase }}} * 0.5;
-			PlayercardBackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_RedLight }}} * 0.5;
-			PlayercardBackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_RedDark }}} * 0.5;
+			PlayercardBackgroundGradient.Base.BgColor = {{{ Colors::C_RedBase * 0.5 }}};
+			PlayercardBackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_RedLight * 0.5 }}};
+			PlayercardBackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_RedDark * 0.5 }}};
 		}
 	}
 	***
@@ -536,8 +536,20 @@ Text GetManialink() {
 	 * Updates a playercard with given index in the respective team.
 	 */
 	Void UpdatePlayercard(K_PlayerCard Playercard, CSmScore Score) {
+		declare netread Integer Net_GameplayPhase for Teams[0];
+		declare netread Boolean[Text] Net_FlagRush_WarmUpReadyStates for Teams[0];
+
 		// Basic infomration: Nama, Avatar, Status
 		Playercard.Name.Value = Score.User.Name;
+		if (Net_GameplayPhase == {{{ GameplayPhase::C_Warmup }}} && Net_FlagRush_WarmUpReadyStates.get(Score.User.Login, False)) {
+			Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_Success * 0.5 }}};
+		} else {
+			switch (Score.TeamNum) {
+				case 1: Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_BlueDark * 0.5 }}};
+				case 2: Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_RedLight * 0.5 }}};
+			}
+		}
+
 		Playercard.Avatar.ImageUrl = Score.User.CountryFlagUrl;
 
 		declare CSmPlayer ScorePlayer <=> GetPlayer(Score.User.Login);

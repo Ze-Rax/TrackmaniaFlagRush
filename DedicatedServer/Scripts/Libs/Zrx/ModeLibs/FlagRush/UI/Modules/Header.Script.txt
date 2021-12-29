@@ -18,36 +18,36 @@ Text GetManialink() {
 			<frame id="background" size="60 7.5" pos="-30" halign="center" valign="center">
 				<frameinstance modelid="gradient" id="gradient" scale="60"/>
 			</frame>
-			<label pos="-32.5 -0.5" z-index="1" size="35 8" text="Team Blue" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
+			<label pos="-32.5 -0.5" z-index="1" size="35 8" text="Team Blue" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
 
-			<quad pos="-60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="00f" halign="center"/>
-			<label pos="-60 -0.5" z-index="2" size="11.8 9" text="0" halign="center" valign="center2" textsize="5" id="score" textfont="GameFontBlack" />
+			<quad pos="-60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(Colors::C_BlueBase) }}}" halign="center"/>
+			<label pos="-60 -0.5" z-index="2" size="11.8 9" text="0" halign="center" valign="center2" textsize="5" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="score" textfont="GameFontBlack" />
 		</frame>
 
 		<frame id="team1" z-index="1">
 			<frame id="background" size="60 7.5" pos="30" halign="center" valign="center">
 				<frameinstance modelid="gradient" id="gradient" scale="60"/>
 			</frame>
-			<label pos="32.5 -0.5" z-index="1" size="35 8" text="Team Red" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
+			<label pos="32.5 -0.5" z-index="1" size="35 8" text="Team Red" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
 
-			<quad pos="60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="f00" halign="center"/>
-			<label pos="60 -0.5" z-index="2" size="11.8 9" text="0" halign="center" valign="center2" textsize="5" id="score" textfont="GameFontBlack" />
+			<quad pos="60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(Colors::C_RedBase) }}}" halign="center"/>
+			<label pos="60 -0.5" z-index="2" size="11.8 9" text="0" halign="center" valign="center2" textsize="5" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="score" textfont="GameFontBlack" />
 		</frame>
 
 		<frame id="timer" z-index="2">
-			<quad pos="0 0" size="20 8" id="background" valign="center" z-index="-1" style="UICommon64_1" substyle="BgFrame1" halign="center" colorize="000"/>
-			<label pos="0 0" z-index="1" size="25 8" text="00:00.00" id="timelimit" halign="center" valign="center" textsize="2" textfont="GameFontSemiBold"/>
+			<quad pos="0 0" size="20 8" id="background" valign="center" z-index="-1" style="UICommon64_1" substyle="BgFrame1" halign="center" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}"/>
+			<label pos="0 0" z-index="1" size="25 8" text="00:00" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="timelimit" halign="center" valign="center" textsize="2" textfont="GameFontSemiBold"/>
 			<quad pos="0 0" z-index="1" size="8 8" halign="center" valign="center" style="UIConstruction_Buttons" substyle="Validate" id="icon"/>
 		</frame>
 
 		<frame id="carrier" pos="0 -6.5">
 			<frame id="background">
-				<quad pos="-24 0" z-index="-1" size="6 6" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="0003" halign="center" rot="90"/>
-				<quad pos="0 0" z-index="-1" size="50 6" opacity="1" colorize="000" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame2"/>
-				<quad pos="24 0" z-index="-1" size="6 6" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="0003" halign="center"/>
+				<quad pos="-24 0" z-index="-1" size="6 6" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" halign="center" rot="90"/>
+				<quad pos="0 0" z-index="-1" size="50 6" opacity="1" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame2"/>
+				<quad pos="24 0" z-index="-1" size="6 6" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" halign="center"/>
 			</frame>
 
-			<label pos="0 0.5" z-index="1" size="70 8" text="Playername" id="name" halign="center" valign="center" textsize="3" textfont="GameFontRegular" />
+			<label pos="0 0.5" z-index="1" size="70 8" text="Playername" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="name" halign="center" valign="center" textsize="3" textfont="GameFontRegular" />
 		</frame>
 	</frame>
 

@@ -1,5 +1,8 @@
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
+#Include 	"ColorLib" as CL
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 #Include	"Libs/Zrx/ModeLibs/Common/GameplayPhase.Script.txt" as GameplayPhase
+
+#Const C_PlayersPerPage 5
 
 Text GetManialink() {
 	return """
@@ -13,9 +16,9 @@ Text GetManialink() {
 
 
 	<framemodel id="playerstatistic-card">
-		<quad size="10 10.25" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" style="UICommon128_1" substyle="BgFrame1" modulatecolor="000" z-index="-1" id="background"/>
-		<label pos="0 1" z-index="0" size="10 5" text="0" textfont="GameFontExtraBold" textsize="4" halign="center" valign="center2" id="total"/>
-		<label pos="0 -3" z-index="0" size="10 5" text="0" textprefix="+" textfont="GameFontSemiBold" halign="center" valign="center2" textsize="1" id="add"/>
+		<quad size="10 10.25" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" style="UICommon128_1" substyle="BgFrame1" modulatecolor="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" z-index="-1" id="background"/>
+		<label pos="0 1" z-index="0" size="10 5" text="0" textfont="GameFontExtraBold" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" textsize="4" halign="center" valign="center2" id="total"/>
+		<label pos="0 -3" z-index="0" size="10 5" text="0" textprefix="+" textfont="GameFontSemiBold" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="center" valign="center2" textsize="1" id="add"/>
 	</framemodel>
 
 	<framemodel id="playercard">
@@ -32,40 +35,40 @@ Text GetManialink() {
 
 		<!-- Data -->
 		<quad pos="-50" z-index="1" size="10 10" bgcolor="FFF" halign="left" valign="center" id="avatar"/>
-		<label pos="-37.5 0" z-index="0" size="30 10" text="Player Name" halign="left" valign="center2" textfont="GameFontRegular" id="name" textsize="2.5"/>
-		<quad  z-index="0" pos="-3" size="5 5" bgcolor="FFF" halign="center" valign="center" style="UICommon64_1" substyle="Camera_light" id="status"/>
+		<label pos="-37.5 0" z-index="0" size="30 10" text="Player Name" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="left" valign="center2" textfont="GameFontRegular" id="name" textsize="2.5"/>
+		<quad  z-index="0" pos="-3" size="5 5" bgcolor="FFF" halign="center" valign="center" style="UICommon64_1" substyle="Camera_light" id="status" hidden="1"/>
 
 	</framemodel>
 
 	<framemodel id="playerlist">
-		<quad  z-index="-1" size="102 60" bgcolor="000" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="top" pos="0" id="background"/>
+		<quad  z-index="-1" size="102 60" bgcolor="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="top" pos="0" id="background"/>
 
 		<frame id="legend">
-			<label pos="7 -2.5" z-index="0" size="10 5" text="Points" textfont="GameFontSemiBold" valign="center2" halign="center" textsize="1"/>
-			<label pos="19 -2.5" z-index="0" size="10 5" text="Scored" textfont="GameFontSemiBold" valign="center2" halign="center" textsize="1"/>
-			<label pos="31 -2.5" z-index="0" size="10 5" text="Stolen" textfont="GameFontSemiBold" valign="center2" halign="center" textsize="1"/>
-			<label pos="43 -2.5" z-index="0" size="10 5" text="Assists" textfont="GameFontSemiBold" valign="center2" halign="center" textsize="1"/>
+			<label pos="7 -2.5" z-index="0" size="10 5" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" text="Points" textfont="GameFontSemiBold" valign="center2" halign="center" textsize="1"/>
+			<label pos="19 -2.5" z-index="0" size="10 5" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" text="Scored" textfont="GameFontSemiBold" valign="center2" halign="center" textsize="1"/>
+			<label pos="31 -2.5" z-index="0" size="10 5" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" text="Stolen" textfont="GameFontSemiBold" valign="center2" halign="center" textsize="1"/>
+			<label pos="43 -2.5" z-index="0" size="10 5" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" text="Assists" textfont="GameFontSemiBold" valign="center2" halign="center" textsize="1"/>
 		</frame>
 
 		<frame id="playercards" pos="0 -10">
-			<frameinstance modelid="playercard" pos="0 0" id="playercard-0"/>
-			<frameinstance modelid="playercard" pos="0 -11" id="playercard-1"/>
-			<frameinstance modelid="playercard" pos="0 -22" id="playercard-2"/>
-			<frameinstance modelid="playercard" pos="0 -33" id="playercard-3"/>
-			<frameinstance modelid="playercard" pos="0 -44" id="playercard-4"/>
+			<frameinstance modelid="playercard" pos="0 0" id="playercard-0" hidden="1"/>
+			<frameinstance modelid="playercard" pos="0 -11" id="playercard-1" hidden="1"/>
+			<frameinstance modelid="playercard" pos="0 -22" id="playercard-2" hidden="1"/>
+			<frameinstance modelid="playercard" pos="0 -33" id="playercard-3" hidden="1"/>
+			<frameinstance modelid="playercard" pos="0 -44" id="playercard-4" hidden="1"/>
 		</frame>
 	</framemodel>
 
 	<framemodel id="teamstatistics-card">
 		<frame>
-			<quad pos="0 -5" z-index="-1" size="25 10" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" id="background" halign="center" valign="center" modulatecolor="000" style="UICommon128_1" substyle="BgFrame1"/>
-			<label pos="0 -3.5" z-index="0" size="20 5" text="Value" valign="center2" halign="center" textfont="GameFontExtraBold" textsize="2" id="value"/>
-			<label pos="0 -7.5" z-index="0" size="20 5" text="Statistic Name" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="1" id="name"/>
+			<quad pos="0 -5" z-index="-1" size="25 10" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" id="background" halign="center" valign="center" modulatecolor="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" style="UICommon128_1" substyle="BgFrame1"/>
+			<label pos="0 -3.5" z-index="0" size="20 5" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" text="Value" valign="center2" halign="center" textfont="GameFontExtraBold" textsize="2" id="value"/>
+			<label pos="0 -7.5" z-index="0" size="20 5" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" text="Statistic Name" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="1" id="name"/>
 		</frame>
 	</framemodel>
 
 	<framemodel id="teamstatistics">
-		<quad pos="0 0" z-index="-1" size="102 10" bgcolor="000" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="top"/>
+		<quad pos="0 0" z-index="-1" size="102 10" bgcolor="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="top"/>
 
 		<frameinstance modelid="teamstatistics-card" pos="-35" id="points"/>
 		<frameinstance modelid="teamstatistics-card" id="round-wins"/>
@@ -100,8 +103,8 @@ Text GetManialink() {
 				</frame>
 			</frame>
 			<frame id="teamnames" pos="0">
-				<label pos="-52 -5" z-index="0" size="100 10" text="Team Name" halign="center" valign="center2" textfont="GameFontRegular" textsize="5" id="teamname-0"/>
-				<label pos="52 -5" z-index="0" size="100 45" text="Team Name" halign="center" valign="center2" textfont="GameFontRegular" textsize="5" id="teamname-1"/>
+				<label pos="-52 -5" z-index="0" size="100 10" text="Team Name" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="center" valign="center2" textfont="GameFontRegular" textsize="5" id="teamname-0"/>
+				<label pos="52 -5" z-index="0" size="100 45" text="Team Name" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="center" valign="center2" textfont="GameFontRegular" textsize="5" id="teamname-1"/>
 			</frame>
 		</frame>
 
@@ -109,7 +112,7 @@ Text GetManialink() {
 		<frameinstance modelid="scorestable-team" id="scorestable-team-1" pos="52"/>
 
 		<frame id="pagecontrols" pos="0 -83">
-			<quad pos="0" z-index="-1" size="206 5" bgcolor="000" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="top"/>
+			<quad pos="0" z-index="-1" size="206 5" bgcolor="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="top"/>
 			<quad pos="-1 -2.5" size="5 5" halign="right" valign="center" style="UICommon64_2" substyle="ArrowUpSlim_light" scriptevents="1" id="page-previous"/>
 			<quad pos="1 -2.5" size="5 5" halign="left" valign="center" style="UICommon64_2" substyle="ArrowDownSlim_light" scriptevents="1" id="page-next"/>
 		</frame>
@@ -325,9 +328,11 @@ Text GetManialink() {
 			declare K_PlayerCard Playercard = TeamScoreboards[0].Playercards[CardIndex];
 			Playercard.Avatar.BgColor = {{{ Colors::C_BlueBase }}};
 			declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
-			PlayercardBackgroundGradient.Base.BgColor = {{{ Colors::C_BlueBase * 0.5 }}};
-			PlayercardBackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_BlueDark * 0.5 }}};
-			PlayercardBackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_BlueLight * 0.5 }}};
+			PlayercardBackgroundGradient.Base.Opacity = 0.;
+			PlayercardBackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_BlueDark }}};
+			PlayercardBackgroundGradient.LeftGradient.Opacity = {{{ Colors::C_TransparentBackgroundOpacity }}};
+			PlayercardBackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_BlueLight }}};
+			PlayercardBackgroundGradient.RightGradient.Opacity = {{{ Colors::C_TransparentBackgroundOpacity }}};
 		}
 	}
 	// Team Red
@@ -341,9 +346,11 @@ Text GetManialink() {
 			declare K_PlayerCard Playercard = TeamScoreboards[1].Playercards[CardIndex];
 			Playercard.Avatar.BgColor = {{{ Colors::C_RedBase }}};
 			declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
-			PlayercardBackgroundGradient.Base.BgColor = {{{ Colors::C_RedBase * 0.5 }}};
-			PlayercardBackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_RedLight * 0.5 }}};
-			PlayercardBackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_RedDark * 0.5 }}};
+			PlayercardBackgroundGradient.Base.Opacity = 0.;
+			PlayercardBackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_RedDark }}};
+			PlayercardBackgroundGradient.LeftGradient.Opacity = {{{ Colors::C_TransparentBackgroundOpacity }}};
+			PlayercardBackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_RedLight }}};
+			PlayercardBackgroundGradient.RightGradient.Opacity = {{{ Colors::C_TransparentBackgroundOpacity }}};
 		}
 	}
 	***
@@ -405,8 +412,8 @@ Text GetManialink() {
 	***
 	ScoresToDisplay = FilterScoresToDisplay();
 	PageScoresToDisplay = [
-		0 => ScoresToDisplay[0].slice(PageControls.CurrentPageIndex * 5, 5),
-		1 => ScoresToDisplay[1].slice(PageControls.CurrentPageIndex * 5, 5)
+		0 => ScoresToDisplay[0].slice(PageControls.CurrentPageIndex * {{{ C_PlayersPerPage }}}, {{{ C_PlayersPerPage }}}),
+		1 => ScoresToDisplay[1].slice(PageControls.CurrentPageIndex * {{{ C_PlayersPerPage }}}, {{{ C_PlayersPerPage }}})
 	];
 	***
 
@@ -415,7 +422,7 @@ Text GetManialink() {
 	 */
 	***UpdatePageState***
 	***
-	PageControls.PagesCount	= ((ML::Max(ScoresToDisplay[0].count, ScoresToDisplay[1].count) - 1) / 5) + 1;
+	PageControls.PagesCount	= ((ML::Max(ScoresToDisplay[0].count, ScoresToDisplay[1].count) - 1) / {{{ C_PlayersPerPage }}}) + 1;
 	PageControls.CurrentPageIndex = ML::Clamp(PageControls.CurrentPageIndex, 0, PageControls.PagesCount - 1);
 
 	// Show page controls if there is more than one page
@@ -542,11 +549,11 @@ Text GetManialink() {
 		// Basic infomration: Nama, Avatar, Status
 		Playercard.Name.Value = Score.User.Name;
 		if (Net_GameplayPhase == {{{ GameplayPhase::C_Warmup }}} && Net_FlagRush_WarmUpReadyStates.get(Score.User.Login, False)) {
-			Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_Success * 0.5 }}};
+			Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_Success }}};
 		} else {
 			switch (Score.TeamNum) {
-				case 1: Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_BlueDark * 0.5 }}};
-				case 2: Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_RedLight * 0.5 }}};
+				case 1: Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_BlueDark  }}};
+				case 2: Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_RedDark  }}};
 			}
 		}
 
@@ -590,7 +597,7 @@ Text GetManialink() {
 	 * Increments the counters for sequential playercard updates.
 	 */
 	Void IncrementCardCounter() {
-		PageControls.NextUpdateCard = (PageControls.NextUpdateCard + 1) % 5;
+		PageControls.NextUpdateCard = (PageControls.NextUpdateCard + 1) % {{{ C_PlayersPerPage }}};
 		if (PageControls.NextUpdateCard == 0) PageControls.NextUpdateClan = (PageControls.NextUpdateClan + 1) % 2;
 	}
 

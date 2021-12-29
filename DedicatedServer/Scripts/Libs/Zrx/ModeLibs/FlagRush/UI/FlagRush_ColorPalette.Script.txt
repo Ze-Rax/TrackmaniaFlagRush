@@ -13,7 +13,8 @@
 #Const C_Success <0., 1., 0.>
 
 // Other colors
-#Const C_TextWhite <1., 1., 1.>
+#Const C_NeutralDark <0., 0., 0.>
+#Const C_NeutralLight <1., 1., 1.>
 
 // Opacities
 #Const C_TransparentBackgroundOpacity 0.7

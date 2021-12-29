@@ -1,228 +1,250 @@
-// #RequireContext CSmMode
-
-#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
-#Include	"Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
+#Include 	"ColorLib" as CL
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 #Include	"Libs/Zrx/ModeLibs/Common/GameplayPhase.Script.txt" as GameplayPhase
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
 
 Text GetManialink() {
 	return """
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<manialink version="3" name="FlagRush_ScoresHeader">
-	<frame halign="center" valign="top" pos="0 83" scale="1">
-		<frame id="mapscores" pos="0 2.5">
-			<quad pos="0 0" z-index="-1" size="60 8" bgcolor="FFF" valign="center" style="UICommon64_1" substyle="BgFrameTilted1" colorize="000" halign="center" scale="0.5"/>
-			<label pos="0 0.25" z-index="0" size="30 10" text="Round Wins" halign="center" valign="center" textfont="GameFontRegular" textsize="1"/>
+	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3" name="FlagRush_ScoresHeader">
+	<framemodel id="gradient">
+		<quad pos="0 0" z-index="-1" size="1 1" bgcolor="c44" id="base" halign="center" valign="center"/>
+		<quad pos="0 0" z-index="0" size="1 1" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b24" id="gradient-left" valign="center" halign="center"/>
+		<quad pos="0 0" z-index="0" size="1 1" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b42" id="gradient-right" rot="180" valign="center" halign="center"/>
+	</framemodel>
 
-			<quad pos="-30 0" z-index="0" size="60 8" id="mapscore-background-team1" valign="center" halign="center" style="UICommon64_1" substyle="BgFrameTilted1" colorize="004" scale="0.5"/>
-			<quad pos="30 0" z-index="0" size="60 8" id="mapscore-background-team2" valign="center" halign="center" style="UICommon64_1" substyle="BgFrameTilted1" colorize="400" scale="0.5"/>
-			<gauge pos="-30 0" z-index="2" size="8 3" id="mapscore-gauge-team1" color="00F" halign="center" valign="center" style="ProgressBar" drawbg="0" drawblockbg="0" ratio="0.5"/>
-			<gauge pos="-30 0" z-index="1" size="8 3" id="mapscore-gauge-team1-background" color="FFF" halign="center" valign="center" style="ProgressBar" drawbg="0" ratio="1" grading="0.5"/>
-			<gauge pos="30 0" z-index="2" size="8 3" id="mapscore-gauge-team2" color="F00" valign="center" style="ProgressBar" halign="center" drawbg="0" ratio="0.5" grading="0.5" drawblockbg="0"/>
-			<gauge pos="30 0" z-index="1" size="8 3" id="mapscore-gauge-team2-background" color="FFF" halign="center" valign="center" style="ProgressBar" drawbg="0" grading="0.5"/>
+	<frame id="main" pos="0 82.5">
+		<frame id="team0" z-index="1">
+			<frame id="background" size="60 7.5" pos="-30" halign="center" valign="center">
+				<frameinstance modelid="gradient" id="gradient" scale="60"/>
+			</frame>
+			<label pos="-32.5 -0.5" z-index="1" size="35 8" text="Team Blue" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
+
+			<quad pos="-60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(Colors::C_BlueBase) }}}" halign="center"/>
+			<label pos="-60 -0.5" z-index="2" size="11.8 9" text="0" halign="center" valign="center2" textsize="5" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="score" textfont="GameFontBlack" />
 		</frame>
 
-		<frame id="main">
-			<frame id="team-stats">
-				<quad pos="-50 0" z-index="0" size="12 8" valign="top" halign="right" id="team1-score-background" style="UICommon64_1" substyle="BgFrame1" colorize="00f"/>
-				<quad pos="50 0" z-index="0" size="12 8" halign="left" id="team2-score-background" style="UICommon64_1" substyle="BgFrame1" colorize="f00"/>
-				<label pos="-30 -4.5" z-index="1" size="38 8" text="CarrierTeam Blue" halign="center" textsize="4" id="team1-name" textfont="GameFontRegular" valign="center2"/>
-				<label pos="30 -4.5" z-index="1" size="38 8" text="CarrierTeam Red" valign="center2" halign="center" textsize="4" id="team2-name" textfont="GameFontRegular"/>
-				<label pos="-56 -4.5" z-index="2" size="12 8" text="0" halign="center" valign="center2" textsize="5" id="team1-score" textfont="GameFontBlack" />
-				<label pos="56 -4.5" z-index="2" size="12 10" text="0" halign="center" valign="center2" textsize="5" id="team2-score" textfont="GameFontBlack"/>
-				<quad id="team2-score-background2" pos="0 0" z-index="0" size="60 8" opacity="1" halign="left" colorize="400" style="UICommon64_1" substyle="BgFrame1"/>
-				<quad id="team1-score-background2" pos="0 0" z-index="0" size="60 8" opacity="1" halign="right" colorize="004" style="UICommon64_1" substyle="BgFrame1"/>
+		<frame id="team1" z-index="1">
+			<frame id="background" size="60 7.5" pos="30" halign="center" valign="center">
+				<frameinstance modelid="gradient" id="gradient" scale="60"/>
+			</frame>
+			<label pos="32.5 -0.5" z-index="1" size="35 8" text="Team Red" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
+
+			<quad pos="60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(Colors::C_RedBase) }}}" halign="center"/>
+			<label pos="60 -0.5" z-index="2" size="11.8 9" text="0" halign="center" valign="center2" textsize="5" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="score" textfont="GameFontBlack" />
+		</frame>
+
+		<frame id="timer" z-index="2">
+			<quad pos="0 0" size="20 8" id="background" valign="center" z-index="-1" style="UICommon64_1" substyle="BgFrame1" halign="center" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}"/>
+			<label pos="0 0" z-index="1" size="25 8" text="00:00" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="timelimit" halign="center" valign="center" textsize="2" textfont="GameFontSemiBold"/>
+			<quad pos="0 0" z-index="1" size="8 8" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light" id="icon"/>
+		</frame>
+
+		<frame id="carrier" pos="0 -6.5">
+			<frame id="background">
+				<quad pos="-24 0" z-index="-1" size="6 6" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" halign="center" rot="90"/>
+				<quad pos="0 0" z-index="-1" size="50 6" opacity="1" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame2"/>
+				<quad pos="24 0" z-index="-1" size="6 6" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" halign="center"/>
 			</frame>
 
-			<frame id="center" pos="0 -4" z-index="1">
-				<quad pos="0 0" size="20 8" id="background" valign="center" z-index="-1" style="UICommon64_1" substyle="BgFrame1" halign="center" colorize="000"/>
-
-				<label pos="0 0" z-index="1" size="25 8" text="00:00.00" id="timelimit" halign="center" valign="center" textsize="2" textfont="GameFontSemiBold"/>
-				<quad pos="0 0" z-index="1" size="8 8" opacity="1" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light" id="center-flag"/>
-			</frame>
-
-			<frame id="flagcarrier" pos="0 -10" z-index="-2">
-				<label pos="0 -0.5" z-index="0" size="60 8" text="Playername" id="value" halign="center" valign="center" textsize="3" textfont="GameFontRegular" />
-				<quad pos="0 0" z-index="0" size="60 8" opacity="1" colorize="000" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame2"/>
-			</frame>
+			<label pos="0 0.5" z-index="1" size="70 8" text="Playername" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="name" halign="center" valign="center" textsize="3" textfont="GameFontRegular" />
 		</frame>
 	</frame>
+
 	<script><!--
-		#Include "MathLib" as ML
-		#Include "TextLib" as TL
-		#Include "ColorLib" as CL
+	#Include "MathLib" as ML
+	#Include "TextLib" as TL
 
-		#Const C_UpdateInterval 100
+	#Struct K_BackgroundGradient {
+		CMlQuad Base;
+		CMlQuad LeftGradient;
+		CMlQuad RightGradient;
+	}
 
-		{{{UIShared::GetTeamColorNetreadFunctions()}}}
+	#Struct K_TeamArea {
+		CMlFrame Frame;
+		K_BackgroundGradient BackgroundGradient;
+		CMlLabel TeamName;
+		CMlQuad ScoreBackground;
+		CMlLabel Score;
+	}
 
-		main() {
-			/* MlControl references */
-			// Mapscore, Round Wins
-			declare CMlFrame FrameMapScores = (Page.GetFirstChild("mapscores") as CMlFrame);
-			declare CMlQuad QuadTeam1MapScoreBackground = (Page.GetFirstChild("mapscore-background-team1") as CMlQuad);
-			declare CMlQuad QuadTeam2MapScoreBackground = (Page.GetFirstChild("mapscore-background-team2") as CMlQuad);
-			declare CMlGauge GaugeMapScoreTeam1 = (Page.GetFirstChild("mapscore-gauge-team1") as CMlGauge);
-			declare CMlGauge GaugeMapScoreTeam1Background = (Page.GetFirstChild("mapscore-gauge-team1-background") as CMlGauge);
-			declare CMlGauge GaugeMapScoreTeam2 = (Page.GetFirstChild("mapscore-gauge-team2") as CMlGauge);
-			declare CMlGauge GaugeMapScoreTeam2Background = (Page.GetFirstChild("mapscore-gauge-team2-background") as CMlGauge);
+	#Struct K_Timer {
+		CMlFrame Frame;
+		CMlLabel TimerLabel;
+		CMlQuad Icon;
+	}
 
-			// Main Stats
-			declare CMlFrame FrameMain = (Page.GetFirstChild("main") as CMlFrame);
-			declare CMlLabel LabelTeam1Name = (Page.GetFirstChild("team1-name") as CMlLabel);
-			declare CMlLabel LabelTeam2Name = (Page.GetFirstChild("team2-name") as CMlLabel);
-			declare CMlLabel LabelTeam1Score = (Page.GetFirstChild("team1-score") as CMlLabel);
-			declare CMlLabel LabelTeam2Score = (Page.GetFirstChild("team2-score") as CMlLabel);
-			declare CMlQuad QuadTeam1ScoreBackground = (Page.GetFirstChild("team1-score-background") as CMlQuad);
-			declare CMlQuad QuadTeam2ScoreBackground = (Page.GetFirstChild("team2-score-background") as CMlQuad);
-			declare CMlQuad QuadTeam1ScoreBackground2 = (Page.GetFirstChild("team1-score-background2") as CMlQuad);
-			declare CMlQuad QuadTeam2ScoreBackground2 = (Page.GetFirstChild("team2-score-background2") as CMlQuad);
+	#Struct K_Carrier {
+		CMlFrame Frame;
+		CMlLabel CarrierLabel;
+	}
 
-			// Center (Timer/Flag)
-			declare CMlFrame FrameCenter = (Page.GetFirstChild("center") as CMlFrame);
-			declare CMlLabel LabelTimeLimit = (FrameCenter.GetFirstChild("timelimit") as CMlLabel);
-			declare CMlQuad QuadCenterFlag = (Page.GetFirstChild("center-flag") as CMlQuad);
+	declare K_TeamArea[] TeamAreas;
+	declare K_Timer Timer;
+	declare K_Carrier Carrier;
 
-			// Flag Carrier
-			declare CMlFrame FrameFlagCarrier = (Page.GetFirstChild("flagcarrier") as CMlFrame);
-			declare CMlLabel LabelFlagCarrier = (FrameFlagCarrier.GetFirstChild("value") as CMlLabel);
+	/**
+	 * Assigns all needed MlControl references.
+	 */
+	Void AssignMlControlReferences() {
+		TeamAreas = [];
+		for (Team, 0, 1) {
+			declare CMlFrame TeamAreaFrame = (Page.GetFirstChild("team" ^ Team) as CMlFrame);
 
-			/* Netread variables */
-			declare netread Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
-			declare netread Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
+			declare CMlFrame GradientFrame = (TeamAreaFrame.GetFirstChild("gradient") as CMlFrame);
+			declare K_BackgroundGradient BackgroundGradient = K_BackgroundGradient {
+				Base = (GradientFrame.GetFirstChild("base") as CMlQuad),
+				LeftGradient = (GradientFrame.GetFirstChild("gradient-left") as CMlQuad),
+				RightGradient = (GradientFrame.GetFirstChild("gradient-right") as CMlQuad)
+			};
 
-			declare netread Integer Net_FlagRush_FlagCarrierClan for Teams[0];
-			declare netread Text Net_FlagRush_FlagCarrierName for Teams[0];
-			declare netread Integer Net_FlagRush_EndTime for Teams[0];
-			declare netread Integer Net_GameplayPhase for Teams[0];
-
-			declare Integer LastUpdate = -1;
-
-			/* Main Loop */
-			while(True) {
-				yield;
-
-				if(Now - LastUpdate < C_UpdateInterval) continue;
-				LastUpdate = Now;
-
-				/* Team names and colors */
-				LabelTeam1Name.Value = Teams[0].Name;
-				LabelTeam2Name.Value = Teams[1].Name;
-
-				declare Vec3 ColorTeam1 = GetTeamPrimaryColor(Teams[0]);
-				declare Vec3 ColorTeam2 = GetTeamPrimaryColor(Teams[1]);
-				declare Vec3 ColorTeam1Dark = CL::RgbToHsv(ColorTeam1);
-				ColorTeam1Dark.Z /= 3;
-				ColorTeam1Dark = CL::HsvToRgb(ColorTeam1Dark);
-				declare Vec3 ColorTeam2Dark = CL::RgbToHsv(ColorTeam2);
-				ColorTeam2Dark.Z /= 3;
-				ColorTeam2Dark = CL::HsvToRgb(ColorTeam2Dark);
-
-				QuadTeam1ScoreBackground.Colorize = ColorTeam1;
-				QuadTeam2ScoreBackground.Colorize = ColorTeam2;
-
-				QuadTeam1ScoreBackground2.Colorize = ColorTeam1Dark;
-				QuadTeam2ScoreBackground2.Colorize = ColorTeam2Dark;
-				QuadTeam1MapScoreBackground.Colorize = ColorTeam1Dark;
-				QuadTeam2MapScoreBackground.Colorize = ColorTeam2Dark;
-
-				GaugeMapScoreTeam1.Color = GetTeamPrimaryColor(Teams[0]);
-				GaugeMapScoreTeam2.Color = GetTeamPrimaryColor(Teams[1]);
-
-				/* General */
-				declare CTeam FlagCarrierTeam = Null;
-				if (Net_FlagRush_FlagCarrierClan > 0) FlagCarrierTeam <=> Teams[Net_FlagRush_FlagCarrierClan - 1];
-
-				/* Timer */
-				declare Integer RoundTimeLeft = Net_FlagRush_EndTime - GameTime;
-				declare Boolean IsTimeLeft = RoundTimeLeft > 0;
-				LabelTimeLimit.Visible = IsTimeLeft;
-
-				declare Text RoundTimeLeftText = "00:00";
-				if(IsTimeLeft) {
-					declare RoundMinutesLeft = RoundTimeLeft / 60000;
-					declare RoundSecondsLeft = (RoundTimeLeft - RoundMinutesLeft * 60000) / 1000;	// Just the portion
-
-					declare Text PotentialLeadingZero;
-					if (ML::Abs(RoundSecondsLeft) < 10) PotentialLeadingZero = "0";
-					RoundTimeLeftText = ML::Abs(RoundMinutesLeft)
-									^ ":" ^ PotentialLeadingZero
-									^ ML::Abs(RoundSecondsLeft);
-				}
-
-				/* Center Flag or TimeLimit */
-				LabelTimeLimit.TextPrefix = "$fff";
-				LabelTimeLimit.Value = RoundTimeLeftText;
-				LabelTimeLimit.Visible = IsTimeLeft;
-				QuadCenterFlag.Visible = !IsTimeLeft;
-				QuadCenterFlag.Colorize = GetTeamPrimaryColor(FlagCarrierTeam);
-
-				/* Flag Carrier */
-				LabelFlagCarrier.TextPrefix = "$" ^ CL::RgbToHex3(GetTeamPrimaryColor(FlagCarrierTeam));
-				LabelFlagCarrier.Value = Net_FlagRush_FlagCarrierName;
-
-				/* Override in special cases */
-				switch(Net_GameplayPhase) {
-					case {{{GameplayPhase::C_Warmup}}}: {
-						LabelTimeLimit.TextPrefix = "$f90";
-						LabelFlagCarrier.TextPrefix = "$f90";
-						LabelFlagCarrier.Value = "WarmUp";
-						QuadCenterFlag.Colorize = {{{FlagRush_Teams::C_DefaultNeutralColor}}};
-					}
-					case {{{GameplayPhase::C_Overtime}}}: {
-						LabelTimeLimit.TextPrefix = "$f90";
-						LabelTimeLimit.Value = "Overtime";
-						LabelTimeLimit.Visible = True;
-						QuadCenterFlag.Visible = False;
-					}
-					case {{{GameplayPhase::C_Round}}}: {
-						/* Low Time Color */
-						if (IsTimeLeft && RoundTimeLeft / 1000 < 30) {
-							LabelTimeLimit.TextPrefix = "$f00";
-						}
-					}
-				}
-
-				/* Round score */
-				for (Clan, 1, 2) {
-					declare netread Integer Net_FlagRush_TeamRoundScore for Teams[Clan-1];
-					if (Clan == 1) LabelTeam1Score.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
-					if (Clan == 2) LabelTeam2Score.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
-				}
-
-				/* Map score */
-				declare Boolean ShowRoundWins = Net_FlagRush_NbRoundsToWinMap >= 2;
-				FrameMapScores.Visible = ShowRoundWins;
-				FrameMain.RelativePosition_V3.Y = 3.5;
-				if(ShowRoundWins) {
-					FrameMain.RelativePosition_V3.Y = 0.;
-
-					// Gauge grading
-					declare Real GradingRatio = 1. / Net_FlagRush_NbRoundsToWinMap;
-
-					declare Real GaugeWidth = ML::Min(4. * Net_FlagRush_NbRoundsToWinMap, 25.);
-					GaugeMapScoreTeam1.Size = <GaugeWidth, 3.>;
-					GaugeMapScoreTeam1.GradingRatio = GradingRatio;
-
-					GaugeMapScoreTeam1Background.Size = <GaugeWidth, 3.>;
-					GaugeMapScoreTeam1Background.GradingRatio = GradingRatio;
-
-					GaugeMapScoreTeam2.Size = <GaugeWidth, 3.>;
-					GaugeMapScoreTeam2.GradingRatio = GradingRatio;
-
-					GaugeMapScoreTeam2Background.Size = <GaugeWidth, 3.>;
-					GaugeMapScoreTeam2Background.GradingRatio = GradingRatio;
-
-					// Gauge Ratio
-					for (Clan, 1, 2) {
-						declare netread Integer Net_FlagRush_TeamMapScore for Teams[Clan-1];
-						declare GaugeRatioTeam = ML::Min((0. + Net_FlagRush_TeamMapScore) / Net_FlagRush_NbRoundsToWinMap, 1.);
-						if (Clan == 1) GaugeMapScoreTeam1.Ratio = GaugeRatioTeam;
-						if (Clan == 2) GaugeMapScoreTeam2.Ratio = GaugeRatioTeam;
-					}
-				}
-			}
+			TeamAreas.add(K_TeamArea {
+				Frame = TeamAreaFrame,
+				BackgroundGradient = BackgroundGradient,
+				TeamName = (TeamAreaFrame.GetFirstChild("name") as CMlLabel),
+				ScoreBackground = (TeamAreaFrame.GetFirstChild("background-score") as CMlQuad),
+				Score = (TeamAreaFrame.GetFirstChild("score") as CMlLabel)
+			});
 		}
+
+		declare CMlFrame TimerFrame = (Page.GetFirstChild("timer") as CMlFrame);
+		Timer = K_Timer {
+			Frame = TimerFrame,
+			TimerLabel = (TimerFrame.GetFirstChild("timelimit") as CMlLabel),
+			Icon = (TimerFrame.GetFirstChild("icon") as CMlQuad)
+		};
+
+		declare CMlFrame CarrierFrame = (Page.GetFirstChild("carrier") as CMlFrame);
+		Carrier = K_Carrier {
+			Frame = CarrierFrame,
+			CarrierLabel = (CarrierFrame.GetFirstChild("name") as CMlLabel)
+		};
+	}
+
+	/**
+	 * Set the default values for all controls.
+	 */
+	Void InitMlControls() {
+		TeamAreas[0].BackgroundGradient.Base.BgColor = {{{ Colors::C_BlueBase }}};
+		TeamAreas[0].BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_BlueDark }}};
+		TeamAreas[0].BackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_BlueLight }}};
+		TeamAreas[0].ScoreBackground.ModulateColor = {{{ Colors::C_BlueBase }}};
+
+		TeamAreas[1].BackgroundGradient.Base.BgColor = {{{ Colors::C_BlueBase }}};
+		TeamAreas[1].BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_RedLight }}};
+		TeamAreas[1].BackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_RedDark }}};
+		TeamAreas[1].ScoreBackground.ModulateColor = {{{ Colors::C_RedBase }}};
+	}
+
+	/**
+	 * Updates the round scores (flags scored) for the teams.
+	 */
+	***UpdateTeams***
+	***
+	for (Team, 0, 1) {
+		declare netread Integer Net_FlagRush_TeamRoundScore for Teams[Team];
+		TeamAreas[Team].Score.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
+		TeamAreas[Team].TeamName.Value = Teams[Team].Name;
+	}
+	***
+
+	/**
+	 * Updates the center timer.
+	 */
+	***UpdateTimer***
+	***
+	declare Integer RoundTimeLeft = Net_FlagRush_EndTime - GameTime;
+	declare Boolean IsTimeLeft = RoundTimeLeft > 0;
+	if(IsTimeLeft) {
+		Timer.Icon.Hide();
+		Timer.TimerLabel.Show();
+		Timer.TimerLabel.Value = FormatTime(RoundTimeLeft);
+
+		if (Net_GameplayPhase == {{{ GameplayPhase::C_Warmup }}}) {
+			Timer.TimerLabel.TextColor = {{{ Colors::C_Warning }}};
+		} else if (IsTimeLeft && RoundTimeLeft / 1000 < 30) {
+			Timer.TimerLabel.TextColor = {{{ Colors::C_Error }}};
+		} else {
+			Timer.TimerLabel.TextColor = {{{ Colors::C_NeutralLight }}};
+		}
+	} else if (Net_GameplayPhase == {{{ GameplayPhase::C_Overtime }}}) {
+		Timer.Icon.Hide();
+		Timer.TimerLabel.Show();
+		Timer.TimerLabel.Value = "Overtime";
+		Timer.TimerLabel.TextColor = {{{ Colors::C_Warning }}};
+	} else {
+		Timer.Icon.Show();
+		Timer.TimerLabel.Hide();
+		if (FlagCarrierPlayer != Null && Teams.existskey(FlagCarrierPlayer.CurrentClan - 1)) Timer.Icon.Colorize = GetTeamPrimaryColor(Teams[FlagCarrierPlayer.CurrentClan - 1]);
+		else Timer.Icon.Colorize = {{{ Colors::C_NeutralLight }}};
+	}
+	***
+
+	/**
+	 * Updates the flag carrier display.
+	 */
+	***UpdateCarrier***
+	***
+	if (Net_GameplayPhase == {{{ GameplayPhase::C_Warmup }}}) {
+		Carrier.CarrierLabel.Value = "WarmUp";
+		Carrier.CarrierLabel.TextColor = {{{ Colors::C_Warning }}};
+	}
+	else if (FlagCarrierPlayer != Null) {
+		Carrier.CarrierLabel.Value = FlagCarrierPlayer.User.Name;
+		if (Teams.existskey(FlagCarrierPlayer.CurrentClan - 1)) {
+			Carrier.CarrierLabel.TextColor = GetTeamPrimaryColor(Teams[FlagCarrierPlayer.CurrentClan - 1]);
+		} else {
+			Carrier.CarrierLabel.TextColor = {{{ Colors::C_NeutralLight }}};
+		}
+	} else {
+		Carrier.CarrierLabel.Value = Net_FlagRush_FlagCarrierName;
+		Carrier.CarrierLabel.TextColor = {{{ Colors::C_NeutralLight }}};
+	}
+	***
+
+	/**
+	 * Formats given millis to a Text mm:ss.
+	 */
+	Text FormatTime(Integer Millis) {
+		declare RoundMinutesLeft = Millis / 60000;
+		declare RoundSecondsLeft = (Millis - RoundMinutesLeft * 60000) / 1000;	// Just the portion
+		declare Text PotentialLeadingZero;
+		if (ML::Abs(RoundSecondsLeft) < 10) PotentialLeadingZero = "0";
+
+		declare Text Time = ML::Abs(RoundMinutesLeft)
+						^ ":" ^ PotentialLeadingZero
+						^ ML::Abs(RoundSecondsLeft);
+		if (Millis < 0) Time = "-" ^ Time;
+		return Time;
+	}
+
+	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ UIShared::GetUtilFunctions() }}}
+
+	main() {
+
+		AssignMlControlReferences();
+		InitMlControls();
+
+		declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+		declare netread Text Net_FlagRush_FlagCarrierName for Teams[0];
+		declare netread Integer Net_FlagRush_EndTime for Teams[0];
+		declare netread Integer Net_GameplayPhase for Teams[0];
+
+		declare CSmPlayer FlagCarrierPlayer;
+
+		while (True) {
+			yield;
+
+			FlagCarrierPlayer <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
+
+			+++UpdateTeams+++
+			+++UpdateTimer+++
+			+++UpdateCarrier+++
+		}
+	}
 	--></script>
-</manialink>
-""";
+	</manialink>
+	""";
 }

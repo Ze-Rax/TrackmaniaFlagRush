@@ -82,7 +82,8 @@
 #Setting S_Team1Color 											"" 			as "Force Team 1 Color"
 #Setting S_Team2Name 												"" 			as "Force Team 2 Name"
 #Setting S_Team2Color 											"" 			as "Force Team 2 Color"
-#Setting S_UseClubTags											False		as "Use club tags for team names & colors"
+#Setting S_UseClubTags											True		as "Use club tags for team names"
+#Setting S_UseTeamSkins											True		as "Use colored skins for teams"
 
 // ModeCommands
 #Setting S_ModeCommands_AdminLoginsCsv 			"" 			as "<hidden>" // Admin logins for the mode commands ui
@@ -107,8 +108,7 @@
 #Command	Command_ResetFlag			(Boolean) as	"Reset flag"
 #Const		C_Command_ResetFlag									"ResetFlag"
 
-#Const		C_Command_AddBots										"AddBots"
-#Const		C_Command_RemoveBots								"RemoveBots"
+#Const		C_Command_SetBots										"SetBots"
 
 //////////////////////
 // Global Variables //
@@ -135,7 +135,6 @@ declare Boolean G_LastSettings_UseCollisions;
 declare Boolean G_LastSettings_UseCrudeExtrapolation;
 
 declare Integer G_LastPlayersCount;
-
 ///////////
 // Plugs //
 ///////////
@@ -176,6 +175,11 @@ ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light");
 HandleModeSettingsUpdate();
+***
+
+***Match_LoadItems***
+***
+FlagRush_Teams::LoadSkins();
 ***
 
 ***Match_StartMatch***
@@ -542,8 +546,12 @@ Void InitPlayer(CSmPlayer Player) {
 	Player.TrustClientSimu = True;
 	Player.UseCrudeExtrapolation = S_UseCrudeExtrapolation;
 	declare Integer PreviousClan for Player;
-
 	SetPlayerClan(Player, Player.RequestedClan);
+
+	if (S_UseTeamSkins) {
+		Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan-1);
+	}
+
 	if (Player.RequestedClan != PreviousClan) {
 		FlagRush_Teams::Init();
 		FlagRush_UI::UpdateDossards();
@@ -713,8 +721,13 @@ Void DropFlag(Vec3 GroundPosition) {
 		declare ColorText = "$" ^ CL::RgbToHex3(Color);
 		Message = """{{{ColorText}}}{{{FlagState::Get().Carrier.Name}}}$z dropped the {{{ColorText}}}flag$z!""";
 
-		// Reset Carrier handicaps
-		ResetHandicaps(FlagState::GetFlagCarrierPlayer());
+		// Reset Carrier handicaps and drop flag
+		declare CSmPlayer CarrierPlayer <=> FlagState::GetFlagCarrierPlayer();
+		if(CarrierPlayer != Null) {
+			declare Integer FlagRush_LastFlagDropDate for CarrierPlayer;
+			FlagRush_LastFlagDropDate = Now;
+			ResetHandicaps(CarrierPlayer);
+		}
 	}
 
 	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
@@ -910,6 +923,7 @@ Void HandleModeSettingsUpdate() {
 		|| G_LastSettings_Team2ForcedName != S_Team2Name
 		|| G_LastSettings_Team2ForcedColor != S_Team2Color
 		|| G_LastSettings_UseClubTags != S_UseClubTags;
+
 	if(NeedsReinitTeamConfigs) {
 		FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
 		FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
@@ -943,6 +957,14 @@ Void UpdatePlayers() {
 			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null
 		}
 
+		// Add spawn delay, if player was a specator
+		declare Boolean WasSpectator for Player.User;
+ 		if (WasSpectator) {
+			WasSpectator = False;
+		 	declare netwrite Integer Net_SpawnDate for Player;
+		 	Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+		}
+
 		// When using crude extrapolation, player position is not sent to other players
 		if(S_UseCrudeExtrapolation) {
 			declare netwrite Vec3 Net_Position for Player;
@@ -960,6 +982,8 @@ Void UpdatePlayers() {
 Void UpdateSpectators() {
 	foreach (Spectator in Spectators)
 	{
+		declare Boolean WasSpectator for Spectator.User;
+		WasSpectator = True;
 		if (FlagState::Get().Carrier == Spectator.User) DropFlag();
 	}
 }
@@ -1047,10 +1071,8 @@ Void HandleEvents() {
 			case CSmModeEvent::EType::OnPlayerRequestRespawn: {
 				declare CSmPlayer FlagCarrierPlayer <=> FlagState::GetFlagCarrierPlayer();
 				declare Boolean PlayerIsFlagCarrier = FlagCarrierPlayer != Null && FlagCarrierPlayer == Event.Player;
-				if(PlayerIsFlagCarrier) {
+				if (PlayerIsFlagCarrier) {
 					DropFlag();
-					declare Integer FlagRush_LastFlagDropDate for FlagCarrierPlayer;
-					FlagRush_LastFlagDropDate = Now;
 				} else {
 					declare netwrite Integer Net_SpawnDate for Event.Player;
 					if (S_RespawnWhenStill) {
@@ -1136,11 +1158,10 @@ Void HandleCommand(CommandUtils::K_Command Command) {
 			ResetHandicaps(FlagCarrierPlayer);
 			ResetFlag();
 		}
-		case CommandUtils::C_CommandPrefix ^ C_Command_AddBots: {
-			Users_SetNbFakeUsers(1, 1);
-		}
-		case CommandUtils::C_CommandPrefix ^ C_Command_RemoveBots: {
-			Users_SetNbFakeUsers(0, 0);
+		case CommandUtils::C_CommandPrefix ^ C_Command_SetBots: {
+			declare Integer Amount = Command.ValueInteger;
+			if (Amount < 0) Amount = 0;
+			Users_SetNbFakeUsers(Amount, Amount);
 		}
 	}
 }

@@ -20,6 +20,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt"						as FlagRush_UIHeader
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"								as FlagRush_UIMVP
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Menu.Script.txt"							as FlagRush_UIMenu
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_UIMarkers
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt"							as FlagRush_UISound
@@ -27,20 +28,20 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Respawn.Script.txt"						as FlagRush_UIRespawn
 
-#Const C_LayerName_Dialog						"Layer_FlagRush_Dialog"
-#Const C_LayerName_ScoresTable			"Layer_FlagRush_ScoresTable"
-#Const C_LayerName_ScoresHeader			"Layer_FlagRush_ScoresHeader"
-#Const C_LayerName_RoundUI					"Layer_FlagRush_RoundUI"
-#Const C_LayerName_MVP							"Layer_FlagRush_MVP"
-#Const C_LayerName_Markers					"Layer_FlagRush_Markers"
-#Const C_LayerName_Feed							"Layer_FlagRush_Feed"
-#Const C_LayerName_Flash						"Layer_FlagRush_Flash"
-#Const C_LayerName_Sound						"Layer_FlagRush_Sound"
-#Const C_LayerName_Spectator				"Layer_FlagRush_Spectator"
-#Const C_LayerName_Respawn					"Layer_FlagRush_Respawn"
-#Const C_LayerName_ModeCommands			"Layer_ModeCommands"
-#Const C_LayerName_RadarBackground	"Layer_RadarBackground"
-#Const C_LayerName_RadarMarkers			"Layer_RadarMarkers"
+#Const C_LayerName_Dialog							"Layer_FlagRush_Dialog"
+#Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
+#Const C_LayerName_ScoresHeader				"Layer_FlagRush_ScoresHeader"
+#Const C_LayerName_RoundUI						"Layer_FlagRush_RoundUI"
+#Const C_LayerName_MVP								"Layer_FlagRush_MVP"
+#Const C_LayerName_Markers						"Layer_FlagRush_Markers"
+#Const C_LayerName_Menu								"Layer_FlagRush_Menu"
+#Const C_LayerName_Feed								"Layer_FlagRush_Feed"
+#Const C_LayerName_Flash							"Layer_FlagRush_Flash"
+#Const C_LayerName_Sound							"Layer_FlagRush_Sound"
+#Const C_LayerName_Spectator					"Layer_FlagRush_Spectator"
+#Const C_LayerName_Respawn						"Layer_FlagRush_Respawn"
+#Const C_LayerName_ModeCommands				"Layer_ModeCommands"
+#Const C_LayerName_Radar							"Layer_FlagRush_Radar"
 
 #Const C_FlagCarrierName_Dropped 	"Dropped"
 #Const C_FlagCarrierName_Spawn		"Spawn"
@@ -159,15 +160,6 @@ Void InitMarkers() {
 }
 
 /**
- * Recreates only the markers for the radar.
- */
-Void InitRadarMarkers() {
-	Layers::Create(C_LayerName_RadarMarkers, FlagRush_UIRadar::GetMarkersManialink());
-	Layers::SetType(C_LayerName_RadarMarkers, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName_RadarMarkers);
-}
-
-/**
  * Creates the radar with markers for all players and bases.
  */
 Void InitRadar() {
@@ -175,14 +167,14 @@ Void InitRadar() {
 		Scale = 0.35,
 		MarkerScale = 1.5,
 		Position = <135., -65.>,
-		Zoom = 0.35};
+		Zoom = 0.35,
+		BackgroundOpacity = 0.7,
+		DetailOpacity = 0.1};
 	FlagRush_UIRadar::SetConfig(Config);
 
-	Layers::Create(C_LayerName_RadarBackground, FlagRush_UIRadar::GetBackgroundManialink());
-	Layers::SetType(C_LayerName_RadarBackground, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName_RadarBackground);
-
-	InitRadarMarkers();
+	Layers::Create(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());
+	Layers::SetType(C_LayerName_Radar, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Radar);
 }
 
 /**
@@ -195,7 +187,7 @@ Void Init(Text FlagRush_Version) {
 	Layers::Attach(C_LayerName_ScoresHeader);
 
 	// Scores table
-	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoresTable::GetManialink(6));
+	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoresTable::GetManialink());
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
 
@@ -235,6 +227,12 @@ Void Init(Text FlagRush_Version) {
 	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Sound);
 
+	// Menu
+	Layers::Create(C_LayerName_Menu, FlagRush_UIMenu::GetManialink());
+	Layers::SetType(C_LayerName_Menu, CUILayer::EUILayerType::InGameMenu);
+	Layers::Attach(C_LayerName_Menu);
+
+	//Welcome dialog
 	declare Text[] Matches = TL::RegexMatch("""-dev""", FlagRush_Version, "");
 	if (Matches[0] == "-dev") {
 		Layers::Create(C_LayerName_Dialog, FlagRush_UIDialog::GetVersionInfo(FlagRush_Version));
@@ -256,8 +254,7 @@ Void Init(Text FlagRush_Version) {
 	if (Player.CurrentClan <= 0) return;
 
 	// Color
-	declare Vec3 ColorPrimaryUI for Teams[Player.CurrentClan-1];
-	Player.Dossard_Color = ColorPrimaryUI;
+	Player.Dossard_Color = FlagRush_Teams::GetTeamDossardColor(Player.CurrentClan-1);
 	Player.Dossard_Number = "0" ^ Player.CurrentClan;
 
 	// Text

@@ -169,6 +169,8 @@ Text GetManialink() {
 	#Struct K_PageControls {
 		Integer PagesCount;
 		Integer CurrentPageIndex;
+		Integer NextUpdateClan;
+		Integer NextUpdateCard;
 		CMlFrame Frame;
 		CMlQuad Next;
 		CMlQuad Previous;
@@ -365,23 +367,38 @@ Text GetManialink() {
 	}
 	***
 
-	***UpdatePlayerStatistics***
+	***UpdateNextPlayerStatistics***
 	***
-	// Update playercards
-	foreach (Clan => ScoresInClan in PageScoresToDisplay) {
-		foreach (Index => Score in ScoresInClan) {
-			declare K_PlayerCard Playercard = TeamScoreboards[Score.TeamNum - 1].Playercards[Index];
-			UpdatePlayercard(Playercard, Score);
-			Playercard.Frame.Show();
-		}
+	declare K_PlayerCard NextUpdatePlayerCard = TeamScoreboards[PageControls.NextUpdateClan].Playercards[PageControls.NextUpdateCard];
+	if(PageScoresToDisplay[PageControls.NextUpdateClan].existskey(PageControls.NextUpdateCard)) {
+		declare CSmScore NextUpdateScore <=> PageScoresToDisplay[PageControls.NextUpdateClan][PageControls.NextUpdateCard];
+		UpdatePlayercard(NextUpdatePlayerCard, NextUpdateScore);
+		NextUpdatePlayerCard.Frame.Show();
+	} else {
+		NextUpdatePlayerCard.Frame.Hide();
 	}
+	***
 
-	// Hide unused playercards
-	for (Clan, 0, 1) {
-		for (CardIndex, PageScoresToDisplay[Clan].count, 4) {
-			TeamScoreboards[Clan].Playercards[CardIndex].Frame.Hide();
-		}
+	***UpdateAllPlayerStatistics***
+	***
+	+++UpdateScoresToDisplay+++
+	PageControls.NextUpdateClan = 0;
+	PageControls.NextUpdateCard = 0;
+	declare Boolean ShouldStop = False;
+	while (!ShouldStop) {
+		+++UpdateNextPlayerStatistics+++
+		IncrementCardCounter();
+		ShouldStop = PageControls.NextUpdateClan + PageControls.NextUpdateCard == 0;
 	}
+	***
+
+	***UpdateScoresToDisplay***
+	***
+	ScoresToDisplay = FilterScoresToDisplay();
+	PageScoresToDisplay = [
+		0 => ScoresToDisplay[0].slice(PageControls.CurrentPageIndex * 5, 5),
+		1 => ScoresToDisplay[1].slice(PageControls.CurrentPageIndex * 5, 5)
+	];
 	***
 
 	***UpdatePageState***
@@ -404,18 +421,38 @@ Text GetManialink() {
 		switch(Event.Type) {
 			case CMlScriptEvent::Type::KeyPress: {
 				switch(Event.KeyCode) {
-					case 104: PageControls.CurrentPageIndex -= 1; // Page up key
-					case 79: PageControls.CurrentPageIndex += 1;	// Page down key
+					case 104: +++PreviousPage+++ // Page up key
+					case 79: +++NextPage+++	// Page down key
 				}
 			}
 			case CMlScriptEvent::Type::MouseClick: {
 				switch(Event.ControlId) {
-					case "page-previous": PageControls.CurrentPageIndex -= 1;
-					case "page-next": PageControls.CurrentPageIndex += 1;
+					case "page-previous": +++PreviousPage+++
+					case "page-next": +++NextPage+++
 				}
 			}
 		}
 	}
+	***
+
+	/**
+	 * Requests the next page to be displayed
+	 */
+	***NextPage***
+	***
+	PageControls.CurrentPageIndex += 1;
+	+++UpdatePageState+++
+	+++UpdateAllPlayerStatistics+++
+	***
+
+	/**
+	 * Requests the previous page to be displayed
+	 */
+	***PreviousPage***
+	***
+	PageControls.CurrentPageIndex -= 1;
+	+++UpdatePageState+++
+	+++UpdateAllPlayerStatistics+++
 	***
 
 	/**
@@ -518,32 +555,51 @@ Text GetManialink() {
 		Playercard.Assists.Add.Value = TL::ToText(Net_FlagRush_FlagsAssists_Round);
 	}
 
+	Void IncrementCardCounter() {
+		PageControls.NextUpdateCard = (PageControls.NextUpdateCard + 1) % 5;
+		if (PageControls.NextUpdateCard == 0) PageControls.NextUpdateClan = (PageControls.NextUpdateClan + 1) % 2;
+	}
+
 	main() {
 		declare netread Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
 		declare netread Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
 
-		declare Integer LastUpdateDate = -1;
+		declare CSmScore[][Integer] ScoresToDisplay;
+		declare CSmScore[][Integer] PageScoresToDisplay;
 
 		+++AssignMlControlReferences+++
 		+++InitMlControls+++
+		+++UpdateScoresToDisplay+++
+
+		declare Boolean DoFullUpdate = False;
 
 		while(True) {
 			yield;
+			// Don't update the scoreboard if it's not visibible, but do a full update once it becomes visible
+			if (!PageIsVisible) {
+				DoFullUpdate = True;
+				continue;
+			}
 
 			+++HandleEvents+++
 
-			if(Now - LastUpdateDate < 200) continue;
-			LastUpdateDate = Now;
+			// Update pages only when update loop being (every 10 yields)
+			if(PageControls.NextUpdateClan + PageControls.NextUpdateCard == 0) {
+				+++UpdateScoresToDisplay+++
+				+++UpdatePageState+++
+			}
 
-			declare CSmScore[][Integer] ScoresToDisplay = FilterScoresToDisplay();
-			+++UpdatePageState+++
-			declare CSmScore[][Integer] PageScoresToDisplay = [
-				0 => ScoresToDisplay[0].slice(PageControls.CurrentPageIndex * 5, 5),
-				1 => ScoresToDisplay[1].slice(PageControls.CurrentPageIndex * 5, 5)
-			];
 			+++UpdateTeamNames+++
 			+++UpdateTeamStatistics+++
-			+++UpdatePlayerStatistics+++
+
+			// Conditional full updates update all player cards. Else update one playercard per yield
+			if (DoFullUpdate) {
+				+++UpdateAllPlayerStatistics+++
+				DoFullUpdate = False;
+			} else {
+				+++UpdateNextPlayerStatistics+++
+				IncrementCardCounter();
+			}
 		}
 	}
 

@@ -131,7 +131,7 @@ Text GetManialink() {
 		TeamAreas[0].BackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_BlueLight }}};
 		TeamAreas[0].ScoreBackground.ModulateColor = {{{ Colors::C_BlueBase }}};
 
-		TeamAreas[1].BackgroundGradient.Base.BgColor = {{{ Colors::C_BlueBase }}};
+		TeamAreas[1].BackgroundGradient.Base.BgColor = {{{ Colors::C_RedBase }}};
 		TeamAreas[1].BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_RedLight }}};
 		TeamAreas[1].BackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_RedDark }}};
 		TeamAreas[1].ScoreBackground.ModulateColor = {{{ Colors::C_RedBase }}};

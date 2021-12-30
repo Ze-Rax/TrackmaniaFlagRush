@@ -1,6 +1,8 @@
 #Include 	"ColorLib" as CL
 #Include	"Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 #Include	"Libs/Zrx/ModeLibs/Common/GameplayPhase.Script.txt" as GameplayPhase
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Logo.Script.txt" as Logo
+
 
 #Const C_PlayersPerPage 5
 
@@ -8,12 +10,13 @@ Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_ScoresTable">
+	{{{ Logo::GetLogoTransparentFramemodel() }}}
+
 	<framemodel id="gradient">
 		<quad pos="0 0" z-index="-1" size="1 1" bgcolor="c44" id="base" halign="center" valign="center"/>
 		<quad pos="0 0" z-index="0" size="1 1" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b24" id="gradient-left" valign="center" halign="center"/>
 		<quad pos="0 0" z-index="0" size="1 1" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b42" id="gradient-right" rot="180" valign="center" halign="center"/>
 	</framemodel>
-
 
 	<framemodel id="playerstatistic-card">
 		<quad size="10 10.25" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" style="UICommon128_1" substyle="BgFrame1" modulatecolor="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" z-index="-1" id="background"/>
@@ -96,11 +99,7 @@ Text GetManialink() {
 
 				<quad pos="0 -5" z-index="1" size="30 1" bgcolor="000" halign="center" valign="center" rot="-25"/>
 
-				<frame id="logo" z-index="2" pos="0 -5">
-					<label  z-index="0" size="20 5" text="$i$sFlag" halign="center" valign="center" textfont="GameFontExtraBold" pos="-8 2"/>
-					<label  z-index="0" size="10 10" text="$i$s" valign="center2" halign="center" textfont="GameFontExtraBold" textsize="5"/>
-					<label  z-index="0" size="20 5" text="$i$sRush" valign="center" halign="center" textfont="GameFontExtraBold" pos="8 -2"/>
-				</frame>
+				<frameinstance modelid="flagrush-logo" id="logo" z-index="2" pos="0 -4.5" />
 			</frame>
 			<frame id="teamnames" pos="0">
 				<label pos="-52 -5" z-index="0" size="100 10" text="Team Name" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="center" valign="center2" textfont="GameFontRegular" textsize="5" id="teamname-0"/>

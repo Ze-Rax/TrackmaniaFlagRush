@@ -80,9 +80,9 @@
 
 // Teams
 #Setting S_Team1Name 												"" 			as "Force Team 1 Name"
-#Setting S_Team1Color 											"" 			as "Force Team 1 Color"
+// #Setting S_Team1Color 											"" 			as "Force Team 1 Color"
 #Setting S_Team2Name 												"" 			as "Force Team 2 Name"
-#Setting S_Team2Color 											"" 			as "Force Team 2 Color"
+// #Setting S_Team2Color 											"" 			as "Force Team 2 Color"
 #Setting S_UseClubTags											True		as "Use club tags for team names"
 #Setting S_UseTeamSkins											True		as "Use colored skins for teams"
 
@@ -128,14 +128,15 @@ declare Integer G_LastSettings_NbRoundsToWinMap;
 declare Boolean G_LastSettings_UseReversedBases;
 
 declare Text G_LastSettings_Team1ForcedName;
-declare Text G_LastSettings_Team1ForcedColor;
+// declare Text G_LastSettings_Team1ForcedColor;
 declare Text G_LastSettings_Team2ForcedName;
-declare Text G_LastSettings_Team2ForcedColor;
+// declare Text G_LastSettings_Team2ForcedColor;
 declare Boolean G_LastSettings_UseClubTags;
 declare Boolean G_LastSettings_UseCollisions;
 declare Boolean G_LastSettings_UseCrudeExtrapolation;
 
 declare Integer G_LastPlayersCount;
+
 ///////////
 // Plugs //
 ///////////
@@ -920,16 +921,16 @@ Void HandleModeSettingsUpdate() {
 
 	declare Boolean NeedsReinitTeamConfigs =
 		G_LastSettings_Team1ForcedName != S_Team1Name
-		|| G_LastSettings_Team1ForcedColor != S_Team1Color
+		// || G_LastSettings_Team1ForcedColor != S_Team1Color
 		|| G_LastSettings_Team2ForcedName != S_Team2Name
-		|| G_LastSettings_Team2ForcedColor != S_Team2Color
+		// || G_LastSettings_Team2ForcedColor != S_Team2Color
 		|| G_LastSettings_UseClubTags != S_UseClubTags;
 
 	if(NeedsReinitTeamConfigs) {
 		FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
 		FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
-		FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
-		FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
+		// FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
+		// FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
 		FlagRush_Teams::UseClubTags(S_UseClubTags);
 		FlagRush_Teams::Init();
 		FlagRush_UI::UpdateDossards();

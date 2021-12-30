@@ -4,11 +4,12 @@
 
 # Maps
 
-You can find compatible maps on Maniaexchange:
-- https://trackmania.exchange/mapsearch2?mtype=FlagRushArena
+We recommend starting with our officially reviewed mapppacks:
+- 3v3 Mappack: https://trackmania.exchange/mappack/view/1155/flagrush-3v3-map-pool
+- 5v5 Mappack: https://trackmania.exchange/mappack/view/1156/flagrush-5v5-map-pool
 
-We recommend stating with our officially reviewed mapppack:
-- https://trackmania.exchange/mappack/view/1151/flagrush-accepted-maps
+You can find other compatible maps on Maniaexchange:
+- All FlagRush maps on TMX: https://trackmania.exchange/mapsearch2?mtype=FlagRushArena
 
 # Server How-to
 

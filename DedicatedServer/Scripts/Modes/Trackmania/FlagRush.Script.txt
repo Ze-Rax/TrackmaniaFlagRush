@@ -890,9 +890,9 @@ Void UpdateCriticalSettings() {
 	G_LastSettings_UseReversedBases = S_UseReversedBases;
 	G_LastSettings_UseCollisions = S_UseCollisions;
 	G_LastSettings_Team1ForcedName = S_Team1Name;
-	G_LastSettings_Team1ForcedColor = S_Team1Color;
+	// G_LastSettings_Team1ForcedColor = S_Team1Color;
 	G_LastSettings_Team2ForcedName = S_Team2Name;
-	G_LastSettings_Team2ForcedColor = S_Team2Color;
+	// G_LastSettings_Team2ForcedColor = S_Team2Color;
 	G_LastSettings_UseClubTags = S_UseClubTags;
 
 	G_LastSettings_UseCrudeExtrapolation = S_UseCrudeExtrapolation;

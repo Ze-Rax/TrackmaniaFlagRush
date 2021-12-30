@@ -2,12 +2,11 @@
 
 #Include "ColorLib"	as CL
 
-#Include "Libs/Zrx/Common/ColorUtils.Script.txt"									as ColorUtils
-#Include "Libs/Zrx/ModeLibs/Common/ClubTagUtils.Script.txt"				as ClubTagUtils
+#Include "Libs/Zrx/Common/ColorUtils.Script.txt"														as ColorUtils
+#Include "Libs/Zrx/ModeLibs/Common/ClubTagUtils.Script.txt"									as ClubTagUtils
+#Include "/Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt"	as Colors
 
-#Const	C_DefaultNeutralColor				<1., 1., 1.>
-#Const	C_DefaultTeamName						"???"
-#Const	C_DefaultTeamColors					[0 => <0.2, 0.2, 1.>	, 1 => <1., 0.2, 0.2>	]
+#Const	C_DefaultTeamName						"Unknown Team"
 #Const	C_DefaultTeamNames					[0 => "Team Blue"			, 1 => "Team Red"			]
 
 #Const	C_HueOverlapThreshold				0.166
@@ -107,15 +106,19 @@ K_TeamConfig GetConfig(Integer Clan) {
 /**
  * Gets the default team color for a given clan.
  */
-Vec3 GetDefaultTeamColor(Integer TeamNum) {
-	return C_DefaultTeamColors.get(TeamNum-1, C_DefaultNeutralColor);
+Vec3 GetDefaultTeamColor(Integer Clan) {
+	switch (Clan) {
+		case 1: return Colors::C_BlueBase;
+		case 2: return Colors::C_RedBase;
+	}
+	return Colors::C_NeutralLight;
 }
 
 /**
  * Gets the default team name for a given clan.
  */
-Text GetDefaultTeamName(Integer TeamNum) {
-	return C_DefaultTeamNames.get(TeamNum-1, C_DefaultTeamName);
+Text GetDefaultTeamName(Integer Clan) {
+	return C_DefaultTeamNames.get(Clan-1, C_DefaultTeamName);
 }
 
 /**

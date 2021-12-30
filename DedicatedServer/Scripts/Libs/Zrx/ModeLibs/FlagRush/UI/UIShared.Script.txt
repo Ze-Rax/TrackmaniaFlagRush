@@ -1,4 +1,4 @@
-#Include	"Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 
 #Const C_FlagMarkerHeightIndicatorThreshold	7.
 
@@ -8,13 +8,13 @@
  Text GetTeamColorNetreadFunctions() {
 	return """
 			Vec3 GetTeamPrimaryColor(CTeam Team) {
-				if (Team == Null) return {{{FlagRush_Teams::C_DefaultNeutralColor}}};
+				if (Team == Null) return {{{ Colors::C_NeutralLight }}};
 				declare netread Vec3 Net_FlagRush_PrimaryColor for Team;
 				return Net_FlagRush_PrimaryColor;
 			}
 
 			Vec3 GetTeamPrimaryColor(Integer Clan) {
-				if (Clan <= 0 || Clan > Teams.count) return {{{FlagRush_Teams::C_DefaultNeutralColor}}};
+				if (Clan <= 0 || Clan > Teams.count) return {{{ Colors::C_NeutralLight }}};
 				return GetTeamPrimaryColor(Teams[Clan-1]);
 			}
 """;

@@ -301,24 +301,36 @@ Void UpdateTeamScores() {
 Void UpdateScore(CSmScore Score) {
 	declare netwrite Integer Net_FlagRush_Points_Match for Score;
 	declare netwrite Integer Net_FlagRush_FlagsScored_Match for Score;
+	declare netwrite Integer Net_FlagRush_FlagsScored_Map for Score;
 	declare netwrite Integer Net_FlagRush_FlagsScored_Round for Score;
 	declare netwrite Integer Net_FlagRush_FlagsStolen_Match for Score;
+	declare netwrite Integer Net_FlagRush_FlagsStolen_Map for Score;
 	declare netwrite Integer Net_FlagRush_FlagsStolen_Round for Score;
 	declare netwrite Integer Net_FlagRush_FlagsAssists_Match for Score;
+	declare netwrite Integer Net_FlagRush_FlagsAssists_Map for Score;
 	declare netwrite Integer Net_FlagRush_FlagsAssists_Round for Score;
 
 	Net_FlagRush_Points_Match
 		= Scores::GetPlayerMatchPoints(Score);
+
 	Net_FlagRush_FlagsScored_Match
-		= Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored);
+			= Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored);
+	Net_FlagRush_FlagsScored_Map
+		= Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored);
 	Net_FlagRush_FlagsScored_Round
 		= Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored);
+
 	Net_FlagRush_FlagsStolen_Match
 		= Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen);
+	Net_FlagRush_FlagsStolen_Map
+		= Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen);
 	Net_FlagRush_FlagsStolen_Round
 		= Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen);
+
 	Net_FlagRush_FlagsAssists_Match
 		= Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists);
+	Net_FlagRush_FlagsAssists_Map
+		= Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists);
 	Net_FlagRush_FlagsAssists_Round
 		= Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists);
 }

@@ -44,7 +44,7 @@ Text GetManialink() {
 		</framemodel>
 
 		<framemodel id="marker-flag">
-			<quad size="10 10" halign="center" valign="center" style="UIConstruction_Buttons" substyle="Validate" id="icon"/>
+			<quad size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light" id="icon"/>
 			<quad size="17.5 17.5" halign="center" valign="center" style="Bgs1InRace" substyle="Glow" id="glow" opacity="0.5" hidden="1"/>
 			<quad id="up" pos="0 5.5" size="6 6" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" hidden="1" />
 			<quad id="down" pos="0 -5.5" size="6 6" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center" hidden="1"/>

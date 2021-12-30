@@ -30,7 +30,7 @@ Text GetManialink() {
 		</framemodel>
 
 		<framemodel id="model-marker-flag" hidden="1">
-			<quad pos="0 0.5" z-index="2" size="10 10" halign="center" style="UIConstruction_Buttons" substyle="Validate" id="quad-flag" valign="center"/>
+			<quad pos="0 0.5" z-index="2" size="10 10" halign="center" style="UICommon64_1" substyle="Flag_light" id="quad-flag" valign="center"/>
 			<quad id="up" pos="0 7.5" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" hidden="1" />
 			<quad id="down" pos="0 -5.5" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center" hidden="1"/>
 

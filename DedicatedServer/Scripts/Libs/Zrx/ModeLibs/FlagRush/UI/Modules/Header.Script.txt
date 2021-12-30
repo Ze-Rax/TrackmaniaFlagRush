@@ -37,7 +37,7 @@ Text GetManialink() {
 		<frame id="timer" z-index="2">
 			<quad pos="0 0" size="20 8" id="background" valign="center" z-index="-1" style="UICommon64_1" substyle="BgFrame1" halign="center" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}"/>
 			<label pos="0 0" z-index="1" size="25 8" text="00:00" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="timelimit" halign="center" valign="center" textsize="2" textfont="GameFontSemiBold"/>
-			<quad pos="0 0" z-index="1" size="8 8" halign="center" valign="center" style="UIConstruction_Buttons" substyle="Validate" id="icon"/>
+			<quad pos="0 0" z-index="1" size="8 8" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light" id="icon"/>
 		</frame>
 
 		<frame id="carrier" pos="0 -6.5">

@@ -175,7 +175,7 @@ ModeCommands::AddAdmin("EdbzfLXMS_aI_PjZCVaygQ");	// Reaby
 ModeCommands::AddQuickCommand(C_Command_EndWarmup, "Icons64x64_1", "ArrowGreen");
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
-ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UIConstruction_Buttons", "Validate");
+ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light");
 HandleModeSettingsUpdate();
 ***
 

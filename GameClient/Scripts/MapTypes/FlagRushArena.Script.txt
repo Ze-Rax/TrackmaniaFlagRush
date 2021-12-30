@@ -62,7 +62,7 @@ Void UpdateValidability() {
 	declare BasesTeam2Count = 0;
 	declare FlagSpawnsCount = 0;
 	declare DefaultFlagSpawnsCount = 0;
-	
+
 	foreach (Anchor in AnchorData) {
 		switch (Anchor.WaypointType) {
 			case CAnchorData::EWaypointType::Start: {
@@ -85,10 +85,10 @@ Void UpdateValidability() {
 			}
 		}
 	}
-	
+
 	declare IsValid = True;
 	declare Message = "$fff$sYour map is missing the following reqirements:\n";
-	
+
 	if (SpawnsTeam1Count != 1) {
 		IsValid = False;
 		Message ^= "\n" ^ """You must place exactly one $44f{{{C_StartTagPrefix}}}1$fff! ({{{SpawnsTeam1Count}}}/1)""";
@@ -122,7 +122,7 @@ Void UpdateValidability() {
 		Message ^= "\n" ^ """You cannot have more than one default {{{C_FlagSpawnTag}}}! ({{{DefaultFlagSpawnsCount}}}/1)""";
 	}
 	Message ^= "\n\n" ^ "Need help? Check out $4cf$l[https://docs.google.com/document/d/e/2PACX-1vRVujmSYunjz7mrLf5sTF4BDS7GwayxjWyY8clXgyiZzgH_EYz0d7mx2EJHu0FdNoyoJgPyEpkD-yoe/pub]this FlagRush Mapping Guide$l$fff by Realspace!";
-	
+
 	if (IsValid) {
 		ValidationStatus = CMapType::ValidationStatus::Validated;
 	} else {
@@ -149,7 +149,7 @@ Text GetEditAnchorManialink() {
 	declare Color_ButtonLabel_Neutral = <1., 1., 1.>;
 	declare Color_ButtonBackground_Neutral = Color_NeutralTwo;
 	declare Color_ButtonBackground_Neutral_Focus = ColorPalette::GetColorFive(Color_NeutralTwo);
-	
+
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="FlagRushArena_AnchorEdit">
@@ -158,16 +158,16 @@ Text GetEditAnchorManialink() {
 			<quad pos="0 0" z-index="0" size="50 10" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{Color_HeaderPanelBackground}}}" halign="center" valign="center" opacity="{{{C_UI_BackgroundOpacity}}}"/>
 			<label pos="0 0" z-index="1" size="45 8" text="LandmarkType" halign="center" valign="center" textsize="4" style="Default" textfont="GameFontSemiBold" id="label-header"/>
 		</frame>
-		
+
 		<frame id="body" pos="0 -25">
 			<frame id="body-teamselection" z-index="1" hidden="1">
 			<quad pos="0 0" z-index="0" size="50 35" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
 				<label pos="0 10" size="45 8" text="Team:" halign="center" valign="center" style="Default" textfont="GameFontRegular" textsize="3" z-index="1" textcolor="FFF"/>
-				
+
 				<quad pos="-12.5 0" z-index="1" size="20 8" id="button-team1-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Blue)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>
 				<label pos="-12.5 0" z-index="2" size="20 6" text="Team 1" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Blue)}}}" />
 				<quad pos="-12.5 0" z-index="3" size="20 8" id="button-team1-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
-				
+
 				<quad pos="12.5 0" z-index="1" size="20 8" id="button-team2-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Red)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>
 				<label pos="12.5 0" z-index="2" size="20 6" text="Team 2" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Red)}}}"/>
 				<quad pos="12.5 0" z-index="3" size="20 8" id="button-team2-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
@@ -176,11 +176,11 @@ Text GetEditAnchorManialink() {
 				<label pos="0 -10" z-index="2" size="45 6" text="None" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}"/>
 				<quad pos="0 -10" z-index="3" size="45 8" id="button-teamnone-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
 			</frame>
-			
+
 			<frame id="body-cpfunction" z-index="1" hidden="1">
 				<quad pos="0 -10" z-index="0" size="50 55" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
 				<label pos="0 10" size="45 8" text="Function:" halign="center" valign="center" style="Default" textfont="GameFontRegular" textsize="3" z-index="1" textcolor="FFF"/>
-				
+
 				<quad pos="0 0" z-index="1" size="45 8" id="button-cpfunctionflag-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{CL::RgbToHex6(Color_ButtonBackground_Neutral)}}}" opacity="{{{C_UI_ButtonOpacity}}}"/>
 				<label pos="0 0" z-index="2" size="45 6" text="Flag spawn" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}"/>
 				<quad pos="0 0" z-index="3" size="45 8" id="button-cpfunctionflag-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
@@ -198,19 +198,19 @@ Text GetEditAnchorManialink() {
 				<label pos="0 -30" z-index="2" size="45 6" text="None" halign="center" valign="center" style="Default" textfont="GameFontBlack" textcolor="{{{CL::RgbToHex6(Color_ButtonLabel_Neutral)}}}"/>
 				<quad pos="0 -30" z-index="3" size="45 8" id="button-cpfunctionnone-activator" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_Dbg_ButtonActivatorOpacity}}}" colorize="{{{C_Dbg_ButtonActivatorColor}}}" scriptevents="1"/>
 			</frame>
-			
+
 			<frame id="body-noedit" z-index="1" hidden="1">
 			<quad pos="0 0" z-index="0" size="50 35" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
 				<label pos="0 10" size="45 8" text="Unsupported:" halign="center" valign="center" style="Default" textfont="GameFontSemibold" textsize="3" z-index="1" textcolor="{{{ColorPalette::C_Color_Bad}}}"/>
 				<label pos="0 -5" size="45 18" text="This landmark is not supported and can therefore not be edited!" halign="center" valign="center" style="Default" textfont="GameFontRegular" textsize="2.5" z-index="1" autonewline="1" textcolor="FFF"/>
 			</frame>
 		</frame>
-		
+
 		<frame id="order" pos="-35 -15" hidden="1">
 			<quad pos="0 0" z-index="0" size="15 15" halign="center" valign="center" colorize="{{{Color_BodyPanelBackground}}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{C_UI_BackgroundOpacity}}}"/>
 			<label pos="0 3.5" z-index="1" size="10 5" text="Order" halign="center" valign="center" style="Default" textfont="GameFontRegular" textsize="2" textcolor="FFF"/>
 			<label pos="0 -1.5" z-index="1" size="10 8" text="0" halign="center" valign="center" style="Default" textfont="GameFontBlack" textsize="5" textcolor="FFF" id="label-ordervalue"/>
-			
+
 			<quad pos="0 10" z-index="0" size="8 5" bgcolor="FFF" opacity="0.7" style="UICommon64_2" substyle="ArrowUpSlim_light" valign="center" halign="center" scriptevents="1" id="button-order-up"/>
 			<quad pos="0 -10" z-index="0" size="8 5" bgcolor="FFF" opacity="0.7" style="UICommon64_2" substyle="ArrowDownSlim_light" valign="center" halign="center" scriptevents="1" id="button-order-down"/>
 		</frame>
@@ -218,7 +218,7 @@ Text GetEditAnchorManialink() {
 
 	<script><!--
 	#Include "TextLib" as TL
-	
+
 	main() {
 		declare CMlFrame FrameAnchorWindow = (Page.GetFirstChild("anchor-window") as CMlFrame);
 
@@ -251,30 +251,30 @@ Text GetEditAnchorManialink() {
 		declare CMlLabel LabelOrder = (Page.GetFirstChild("label-ordervalue") as CMlLabel);
 		declare CMlQuad ButtonOrderUp = (Page.GetFirstChild("button-order-up") as CMlQuad);
 		declare CMlQuad ButtonOrderDown = (Page.GetFirstChild("button-order-down") as CMlQuad);
-		
+
 		// Declare for Page
 		declare Boolean FlagRushArena_IsEditingAnchor for Page;
 
 		declare Boolean FlagRushArena_EditStart for Page;
 		declare Boolean FlagRushArena_EditFinish for Page;
 		declare Boolean FlagRushArena_EditCheckpoint for Page;
-		
+
 		declare Ident FlagRushArena_EditedAnchorId for Page;
 		declare Text FlagRushArena_EditedAnchorTag for Page;
 		declare Text FlagRushArena_EditedAnchorDefaultTag for Page;
 		declare Integer FlagRushArena_EditedAnchorOrder for Page;
-		
+
 		// Main loop
 		while(True) {
 			yield;
-			
+
 			// Show the right frames
 			FrameAnchorWindow.Visible = FlagRushArena_IsEditingAnchor;
 			FrameTeamselection.Visible = FlagRushArena_EditStart || FlagRushArena_EditFinish;
 			FrameOrder.Visible = False; // Order not used yet
 			FrameCPFunction.Visible = FlagRushArena_EditCheckpoint;
 			FrameNoEdit.Visible = !(FlagRushArena_EditStart || FlagRushArena_EditFinish || FlagRushArena_EditCheckpoint);
-			
+
 			// Put order value and right header text
 			LabelOrder.Value = TL::ToText(FlagRushArena_EditedAnchorOrder);
 			declare Text HeaderText;
@@ -302,7 +302,7 @@ Text GetEditAnchorManialink() {
 				HeaderText = FlagRushArena_EditedAnchorDefaultTag;
 			}
 			LabelHeaderLandmark.Value = HeaderText;
-			
+
 			// I'm sorry for the pain that these nested switch and if statements are
 			foreach(Event in PendingEvents) {
 				switch (Event.Type) {
@@ -388,7 +388,7 @@ Text GetEditAnchorManialink() {
 								BackgroundColor = {{{Color_ButtonBackground_Neutral_Focus}}};
 							}
 						}
-						
+
 						if(ButtonBackground != Null) {
 							ButtonBackground.Colorize = BackgroundColor;
 						}
@@ -426,7 +426,7 @@ Text GetEditAnchorManialink() {
 								BackgroundColor = {{{Color_ButtonBackground_Neutral}}};
 							}
 						}
-						
+
 						if(ButtonBackground != Null) {
 							ButtonBackground.Colorize = BackgroundColor;
 						}
@@ -443,7 +443,7 @@ Text GetEditAnchorManialink() {
 Void EditAnchorData(Ident _EditedAnchorDataId) {
 	declare Boolean FlagRushArena_IsEditingAnchor for ManialinkPage;
 	FlagRushArena_IsEditingAnchor = _EditedAnchorDataId != NullId;
-	
+
 	// Reset Data for Page
 	declare Boolean FlagRushArena_EditStart for ManialinkPage;
 	FlagRushArena_EditStart = False;
@@ -451,7 +451,7 @@ Void EditAnchorData(Ident _EditedAnchorDataId) {
 	FlagRushArena_EditCheckpoint = False;
 	declare Boolean FlagRushArena_EditFinish for ManialinkPage;
 	FlagRushArena_EditFinish = False;
-	
+
 	declare Ident FlagRushArena_EditedAnchorId for ManialinkPage;
 	declare Text FlagRushArena_EditedAnchorTag for ManialinkPage;
 	declare Text FlagRushArena_EditedAnchorDefaultTag for ManialinkPage;
@@ -460,16 +460,16 @@ Void EditAnchorData(Ident _EditedAnchorDataId) {
 	FlagRushArena_EditedAnchorTag = "";
 	FlagRushArena_EditedAnchorDefaultTag = "";
 	FlagRushArena_EditedAnchorOrder = -1;
-	
+
 	// Check if anchor exists
 	if (AnchorData.existskey(_EditedAnchorDataId)) {
 		declare Anchor <=> AnchorData[_EditedAnchorDataId];
-		
+
 		FlagRushArena_EditedAnchorId = _EditedAnchorDataId;
 		FlagRushArena_EditedAnchorTag = Anchor.Tag;
 		FlagRushArena_EditedAnchorDefaultTag = Anchor.DefaultTag;
 		FlagRushArena_EditedAnchorOrder = Anchor.Order;
-		
+
 		// Select right frame to show
 		switch (Anchor.WaypointType) {
 			case CAnchorData::EWaypointType::Start: {
@@ -516,16 +516,16 @@ main() {
 	HoldLoadingScreen = True;
 	ReportContext::SetContext(System, ReportContext::C_Context_MapEditor);
 	TMMapType::ApplyDecoImages();
-	
+
 	MapType::SetVersion(C_MapTypeVersion);
 	InitLandmarks();
 	UpdateValidability();
-	
+
 	HoldLoadingScreen = False;
 	EnableMapTypeStartTest = True; // The maptype will handle the 'StartTest' event
-	
+
 	CustomEditAnchorData = True;
-	
+
 	// Block properties
 	ManialinkText = GetEditAnchorManialink();
 	declare PrevAnchorTag = "";
@@ -533,20 +533,20 @@ main() {
 	declare Ident FlagRushArena_EditedAnchorId for ManialinkPage;
 	declare Text FlagRushArena_EditedAnchorTag for ManialinkPage;
 	declare Integer FlagRushArena_EditedAnchorOrder for ManialinkPage;
-	
+
 	while (True) {
 		yield;
-		
+
 		// Hide config windows when not in block property mode
 		if (PlaceMode != CMapEditorPlugin::PlaceMode::BlockProperty) {
 				EditAnchorData(NullId);
 		}
-		
+
 		// Update block property
 		if (PrevAnchorTag != FlagRushArena_EditedAnchorTag || PrevAnchorOrder != FlagRushArena_EditedAnchorOrder) {
 			PrevAnchorTag = FlagRushArena_EditedAnchorTag;
 			PrevAnchorOrder = FlagRushArena_EditedAnchorOrder;
-			
+
 			if (AnchorData.existskey(FlagRushArena_EditedAnchorId)) {
 				declare Anchor <=> AnchorData[FlagRushArena_EditedAnchorId];
 				Anchor.Order = FlagRushArena_EditedAnchorOrder;
@@ -562,7 +562,7 @@ main() {
 				}
 			}
 		}
-		
+
 		// Check Events
 		foreach(Event in PendingEvents) {
 			switch(Event.Type) {

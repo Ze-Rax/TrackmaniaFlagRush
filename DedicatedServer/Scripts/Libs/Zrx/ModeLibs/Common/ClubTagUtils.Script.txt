@@ -1,3 +1,5 @@
+// #RequireContext CSmMode
+
 #Include "TextLib"	as TL
 #Include "ColorLib"	as CL
 
@@ -66,8 +68,8 @@ K_TeamConfig GetTeamConfig(Integer Clan) {
 	declare Text ClubTagTeam = "";
 	declare Boolean ClubTagMissmatch;
 	foreach (Player in Players) {
-		if(Player.CurrentClan == Clan) {
-			if(ClubTagTeam != "" && Player.User.ClubTag != ClubTagTeam) {
+		if (Player.CurrentClan == Clan && !Player.RequestsSpectate) {
+			if (ClubTagTeam != "" && Player.User.ClubTag != ClubTagTeam) {
 				ClubTagMissmatch = True;
 				break;
 			}

@@ -102,7 +102,9 @@ Huge thanks to everyone who helped this project to become reality:
 
 - `Geekid` - for ideas and contributing code
 - `Reaby` - for ideas and contributing code
-- `RealSpace` - for maps, mapping tutorial and ideas
+- `Rxelux` - for ideas and contributing code
+- `RealSpace` - for maps, mapping tutorial and support, map management and ideas
+- `Nalax` - for map management and mapping support
 - `TuplaJ` - for mapping
 
 Join us in our [Discord Server](https://discord.gg/J6ApdyRqEZ)!

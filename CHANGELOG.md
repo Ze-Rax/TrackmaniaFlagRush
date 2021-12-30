@@ -12,6 +12,7 @@
 * Teambalance callvote is now available through the new ingame menu: `Ingame Menu (Escape key) > Teams... > Balance`
 * Disabled fine extrapolation
 	* We're using crude extrapolation again. Fine extrapolation was meant to improve player position prediction but apparently it lead to massive player desync where players would teleport over the whole map and be displayed at the wrong position on your screen. A side effect of this change is that the radar has a worse temporal resoluation now, since we don't have access to some variables with crud extrapolation.
+	* Fine extrapolation can still be reenabled by serveradmins using the setting `S_UseCrudeExtrapolation` (Set to `False`). It will also automatically be enabled when playing with collisions, as it's needed for collisions to work.
 * Some bug and crash fixes and general optimizations
 
 ## 1.1.2

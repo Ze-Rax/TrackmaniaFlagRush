@@ -91,7 +91,7 @@ Text GetManialink() {
 				}
 
 				foreach(InputEvent in Input.PendingEvents) {
-					if(InputEvent.Pad != Null && InputEvent.Pad.ButtonEvents.exists(CInputPad::EButton::View)) {
+					if(InputEvent.Pad != Null && InputEvent.Pad.ButtonEvents.exists(CInputPad::EButton::RightStick)) {
 						SetReady(!Ready);
 					}
 				}

@@ -428,7 +428,7 @@ HandleModeSettingsUpdate();
 
 TimeWarnings::Show();
 CheckRoundEndConditions();
-CheckRadarReinit();
+CheckPlayercountChanged();
 
 if(G_PauseRequested) {
 	MB_StopTurn();
@@ -473,11 +473,13 @@ Void SendWelcomeMessage(CSmPlayer Player) {
 	UI.SendChat("""Welcome to $l[https://discord.gg/J6ApdyRqEZ]$44f「$fffFlagRush$f44」$l $fff[{{{Version}}}]!""");
 }
 
-Void CheckRadarReinit() {
+Void CheckPlayercountChanged() {
 	if (Players.count != G_LastPlayersCount) {
 		FlagRush_UI::InitRadar();
+		FlagRush_Teams::Init();
+
+		G_LastPlayersCount = Players.count;
 	}
-	G_LastPlayersCount = Players.count;
 }
 
 // --------------------------------------------------
@@ -1280,7 +1282,7 @@ Void ExecWarmUp() {
 		HandleCommands();
 		HandleModeSettingsUpdate();
 		TimeWarnings::Show();
-		CheckRadarReinit();
+		CheckPlayercountChanged();
 	}
 
 	// End WarmUp

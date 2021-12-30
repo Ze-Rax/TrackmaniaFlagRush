@@ -546,7 +546,7 @@ Void CheckRoundEndConditions() {
  */
 Void InitPlayer(CSmPlayer Player) {
 	Player.TrustClientSimu = True;
-	Player.UseCrudeExtrapolation = S_UseCrudeExtrapolation;
+	Player.UseCrudeExtrapolation = !UsePvPCollisions && S_UseCrudeExtrapolation;
 	declare Integer PreviousClan for Player;
 	SetPlayerClan(Player, Player.RequestedClan);
 

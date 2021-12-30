@@ -39,8 +39,8 @@ Text GetManialink() {
 	<manialink version="3" name="FlagRush_Radar">
 		<!-- Framemodels -->
 		<framemodel id="marker-player">
-			<quad size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="ArrowUp_light" id="icon"/>
-			<quad size="15 15" halign="center" valign="center" style="Bgs1InRace" substyle="Glow" id="glow"/>
+			<label pos="0 -0.5" size="10 10" z-index="1" text="" textsize="5" rot="-45" halign="center" valign="center2" id="icon"/>
+			<quad size="15 15" halign="center" valign="center" style="Bgs1InRace" substyle="Glow" opacity="{{{ C_PlayerMarkerGlowOpacity }}}" id="glow"/>
 		</framemodel>
 
 		<framemodel id="marker-flag">
@@ -145,7 +145,7 @@ Text GetManialink() {
 
 			#Struct K_PlayerMarker {
 				CMlFrame Frame;
-				CMlQuad Icon;
+				CMlLabel Icon;
 				CMlQuad Glow;
 			}
 
@@ -204,14 +204,14 @@ Text GetManialink() {
 			FlagMarker.Down = (FlagMarker.Frame.GetFirstChild("down") as CMlQuad);
 
 			SelfMarker.Frame = (MarkersFrame.GetFirstChild("marker-self") as CMlFrame);
-			SelfMarker.Icon = (SelfMarker.Frame.GetFirstChild("icon") as CMlQuad);
+			SelfMarker.Icon = (SelfMarker.Frame.GetFirstChild("icon") as CMlLabel);
 			SelfMarker.Glow = (SelfMarker.Frame.GetFirstChild("glow") as CMlQuad);
 
 			for (I, 0, {{{ PlayerMarkerInstances.count -1 }}}) {
 				declare CMlFrame PlayerFrame = (MarkersFrame.GetFirstChild("marker-player-"^I) as CMlFrame);
 				PlayerMarkers.add(K_PlayerMarker {
 					Frame = PlayerFrame,
-					Icon = (PlayerFrame.GetFirstChild("icon") as CMlQuad),
+					Icon = (PlayerFrame.GetFirstChild("icon") as CMlLabel),
 					Glow = (PlayerFrame.GetFirstChild("glow") as CMlQuad)
 				});
 			}
@@ -407,7 +407,7 @@ Text GetManialink() {
 				} else {
 					SelfMarker.Frame.Show();
 					SelfMarker.Frame.ZIndex = GetPlayerPosition(GUIPlayer).Y;
-					SelfMarker.Icon.Colorize = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
+					SelfMarker.Icon.TextColor = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
 				}
 			}
 
@@ -482,7 +482,7 @@ Text GetManialink() {
 				PlayerMarker.Frame.RelativePosition_V3 = RelativeRadarPosition;
 				PlayerMarker.Frame.ZIndex = GetPlayerPosition(Player).Y;
 				PlayerMarker.Frame.RelativeRotation = ML::RadToDeg(-RelativeYaw);
-				PlayerMarker.Icon.Colorize = GetTeamPrimaryColor(Player.CurrentClan);
+				PlayerMarker.Icon.TextColor = GetTeamPrimaryColor(Player.CurrentClan);
 				PlayerMarker.Icon.Opacity = Opacity * {{{ C_PlayerMarkerIconOpacity }}};
 				PlayerMarker.Glow.Opacity = Opacity * {{{ C_PlayerMarkerGlowOpacity }}};
 			}

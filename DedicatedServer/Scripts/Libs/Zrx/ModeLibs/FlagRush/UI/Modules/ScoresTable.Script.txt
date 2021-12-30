@@ -563,19 +563,19 @@ Text GetManialink() {
 		Playercard.Points.Total.Value = TL::ToText(Score.Points);
 		Playercard.Points.Add.Value = TL::ToText(Score.RoundPoints);
 
-		declare netread Integer Net_FlagRush_FlagsScored for Score;
+		declare netread Integer Net_FlagRush_FlagsScored_Map for Score;
 		declare netread Integer Net_FlagRush_FlagsScored_Round for Score;
-		Playercard.FlagsScored.Total.Value = TL::ToText(Net_FlagRush_FlagsScored);
+		Playercard.FlagsScored.Total.Value = TL::ToText(Net_FlagRush_FlagsScored_Map);
 		Playercard.FlagsScored.Add.Value = TL::ToText(Net_FlagRush_FlagsScored_Round);
 
-		declare netread Integer Net_FlagRush_FlagsStolen for Score;
+		declare netread Integer Net_FlagRush_FlagsStolen_Map for Score;
 		declare netread Integer Net_FlagRush_FlagsStolen_Round for Score;
-		Playercard.FlagsStolen.Total.Value = TL::ToText(Net_FlagRush_FlagsStolen);
+		Playercard.FlagsStolen.Total.Value = TL::ToText(Net_FlagRush_FlagsStolen_Map);
 		Playercard.FlagsStolen.Add.Value = TL::ToText(Net_FlagRush_FlagsStolen_Round);
 
-		declare netread Integer Net_FlagRush_FlagsAssists for Score;
+		declare netread Integer Net_FlagRush_FlagsAssists_Map for Score;
 		declare netread Integer Net_FlagRush_FlagsAssists_Round for Score;
-		Playercard.Assists.Total.Value = TL::ToText(Net_FlagRush_FlagsAssists);
+		Playercard.Assists.Total.Value = TL::ToText(Net_FlagRush_FlagsAssists_Map);
 		Playercard.Assists.Add.Value = TL::ToText(Net_FlagRush_FlagsAssists_Round);
 	}
 

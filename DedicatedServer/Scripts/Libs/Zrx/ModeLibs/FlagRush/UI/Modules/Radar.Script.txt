@@ -1,6 +1,6 @@
 #Include "TextLib" as TL
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 
 
 #Const C_BackgroundZIndex					0
@@ -423,7 +423,7 @@ Text GetManialink() {
 				declare CSmPlayer FlagCarrierPlayer <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
 				if(Net_FlagRush_FlagCarrierLogin == "" || FlagCarrierPlayer == Null) {
 					RelativePosition = Net_FlagRush_FlagPosition - GetPlayerPosition(GUIPlayer);
-					FlagMarker.Icon.Colorize = {{{ FlagRush_Teams::C_DefaultNeutralColor}}};
+					FlagMarker.Icon.Colorize = {{{ Colors::C_NeutralLight }}};
 				} else {
 					RelativePosition = GetPlayerPosition(FlagCarrierPlayer) - GetPlayerPosition(GUIPlayer);
 					FlagMarker.Icon.Colorize = GetTeamPrimaryColor(FlagCarrierPlayer.CurrentClan);

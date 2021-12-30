@@ -27,9 +27,10 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_TimeWarnings.Script.txt"			as TimeWarnings
 
 /* UI */
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI.Script.txt"			as FlagRush_UI
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"	as FlagRush_UIFlash
-#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"					as EventFeed
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt"		as Colors
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI.Script.txt"								as FlagRush_UI
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"						as FlagRush_UIFlash
+#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"										as EventFeed
 
 /* Constants */
 #Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
@@ -310,7 +311,7 @@ if (G_RoundValid) {
 	else {	// There is a winning clan (1 or 2)
 		TeamPointsProgression::AddClanRoundsWon(RoundWinnerClan, 1);
 		declare Team <=> Teams[RoundWinnerClan - 1];
-		declare Vec3 ColorPrimaryUI for Team = FlagRush_Teams::C_DefaultNeutralColor;
+		declare Vec3 ColorPrimaryUI for Team = Colors::C_NeutralLight;
 		declare ColorText = "$" ^ CL::RgbToHex3(ColorPrimaryUI);
 		Message = """{{{ColorText}}}{{{Team.Name}}}$z won the round!""";
 	}
@@ -360,7 +361,7 @@ if (G_MapValid) {
 		TeamPointsProgression::AddClanMapsWon(MapWinnerClan, 1);
 
 		declare Team <=> Teams[MapWinnerClan - 1];
-		declare Vec3 ColorPrimaryUI for Team = FlagRush_Teams::C_DefaultNeutralColor;
+		declare Vec3 ColorPrimaryUI for Team = Colors::C_NeutralLight;
 		declare ColorText = "$" ^ CL::RgbToHex3(ColorPrimaryUI);
 		Message = """{{{ColorText}}}{{{Team.Name}}}$z won the map!""";
 	}
@@ -390,7 +391,7 @@ if(MapWinsTeam1 >= S_NbMapsToWinMatch || MapWinsTeam2 >= S_NbMapsToWinMatch)
 	}
 	else {	// There is a winning clan (1 or 2)
 		declare WinnerTeam <=> Teams[MatchWinnerClan - 1];
-		declare Vec3 ColorPrimaryUI for WinnerTeam = FlagRush_Teams::C_DefaultNeutralColor;
+		declare Vec3 ColorPrimaryUI for WinnerTeam = Colors::C_NeutralLight;
 		declare ColorText = "$" ^ CL::RgbToHex3(ColorPrimaryUI);
 		Message = """{{{ColorText}}}{{{WinnerTeam.Name}}}$z won the match!""";
 	}
@@ -614,7 +615,7 @@ Void OnPlayerPicksUpFlag(CSmPlayer Player) {
 
 	// Display a message to all players
 	MB_ClearAllMessages();
-	declare Color = FlagRush_Teams::C_DefaultNeutralColor;
+	declare Color = Colors::C_NeutralLight;
 	if(Player.CurrentClan > 0) {
 		declare Team <=> Teams[Player.CurrentClan - 1];
 		declare Vec3 ColorPrimaryUI for Team;
@@ -706,7 +707,7 @@ Void DropFlag(Vec3 GroundPosition) {
 
 	// Display a message to all players
 	declare Text Message = "The flag was dropped!";
-	declare Vec3 Color = FlagRush_Teams::C_DefaultNeutralColor;
+	declare Vec3 Color = Colors::C_NeutralLight;
 
 	if(FlagState::Get().Carrier != Null) {
 		FlagRush_Common::Log("""{{{FlagState::Get().Carrier.Name}}} dropped the flag!""");
@@ -997,7 +998,7 @@ Void OnPlayerDeath(CSmPlayer Player) {
 	declare Text ColorText = "";
 	if (Teams.existskey(Player.CurrentClan - 1)) {
 		Team <=> Teams[Player.CurrentClan - 1];
-		declare Vec3 ColorPrimaryUI for Team = FlagRush_Teams::C_DefaultNeutralColor;
+		declare Vec3 ColorPrimaryUI for Team = Colors::C_NeutralLight;
 		ColorText = "$" ^ CL::RgbToHex3(ColorPrimaryUI);
 	}
 	declare Text Message = """{{{ColorText}}}{{{Player.User.Name}}}$g went out of bounds!""";

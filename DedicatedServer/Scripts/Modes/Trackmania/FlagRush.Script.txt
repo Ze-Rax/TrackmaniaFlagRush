@@ -2,7 +2,7 @@
 
 /*
  * FlagRush
- * Gamemode by Ze-Rax, Reaby & Geekid
+ * Gamemode by Ze-Rax, Reaby, Geekid & Rxelux
  */
 
 #Extends "Libs/Zrx/ModeLibs/BaseModes/TeamFlagModeBase.Script.txt"
@@ -15,7 +15,7 @@
 #Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"				as ModeCommands
 #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"				as CommandUtils
-#Include "Libs/Zrx/ModeLibs/Common/Collision/CylinderHitbox.Script.txt"			as Hitbox
+#Include "Libs/Rx/ModeLibs/Common/Hitbox.Script.txt"												as Hitbox
 #Include "Libs/Zrx/ModeLibs/Common/GameplayPhase.Script.txt"								as GameplayPhase
 
 /* FlagRush Libs */
@@ -27,21 +27,22 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_TimeWarnings.Script.txt"			as TimeWarnings
 
 /* UI */
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI.Script.txt"			as FlagRush_UI
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"	as FlagRush_UIFlash
-#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"					as EventFeed
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt"		as Colors
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI.Script.txt"								as FlagRush_UI
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"						as FlagRush_UIFlash
+#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"										as EventFeed
 
 /* Constants */
 #Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version												"1.1.1"
+#Const	Version												"1.2.0"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
 #Const	C_SpawnAnimDuration						1500
 #Const	C_BigMessage_Duration					3000
 
-#Const	C_FlagHitbox_Diameter					6.
-#Const	C_FlagHitbox_Height						4.
 #Const 	C_RespawnSpeedLimitKmh 				30.
+
+#Const	C_AssistTimeDuration					5000
 
 #Const  C_Debug 											False
 #Const	C_Debug_NbFakeUsers						<0, 0>
@@ -79,10 +80,11 @@
 
 // Teams
 #Setting S_Team1Name 												"" 			as "Force Team 1 Name"
-#Setting S_Team1Color 											"" 			as "Force Team 1 Color"
+// #Setting S_Team1Color 											"" 			as "Force Team 1 Color"
 #Setting S_Team2Name 												"" 			as "Force Team 2 Name"
-#Setting S_Team2Color 											"" 			as "Force Team 2 Color"
-#Setting S_UseClubTags											False		as "Use club tags for team names & colors"
+// #Setting S_Team2Color 											"" 			as "Force Team 2 Color"
+#Setting S_UseClubTags											True		as "Use club tags for team names"
+#Setting S_UseTeamSkins											True		as "Use colored skins for teams"
 
 // ModeCommands
 #Setting S_ModeCommands_AdminLoginsCsv 			"" 			as "<hidden>" // Admin logins for the mode commands ui
@@ -107,6 +109,8 @@
 #Command	Command_ResetFlag			(Boolean) as	"Reset flag"
 #Const		C_Command_ResetFlag									"ResetFlag"
 
+#Const		C_Command_SetBots										"SetBots"
+
 //////////////////////
 // Global Variables //
 //////////////////////
@@ -124,11 +128,12 @@ declare Integer G_LastSettings_NbRoundsToWinMap;
 declare Boolean G_LastSettings_UseReversedBases;
 
 declare Text G_LastSettings_Team1ForcedName;
-declare Text G_LastSettings_Team1ForcedColor;
+// declare Text G_LastSettings_Team1ForcedColor;
 declare Text G_LastSettings_Team2ForcedName;
-declare Text G_LastSettings_Team2ForcedColor;
+// declare Text G_LastSettings_Team2ForcedColor;
 declare Boolean G_LastSettings_UseClubTags;
 declare Boolean G_LastSettings_UseCollisions;
+declare Boolean G_LastSettings_UseCrudeExtrapolation;
 
 declare Integer G_LastPlayersCount;
 
@@ -166,12 +171,17 @@ foreach(Login in ModeCommandsAdminLogins) {
 	ModeCommands::AddAdmin(Login);
 }
 ModeCommands::AddAdmin("W2ZNWNzVQV6z3hXuNgRMRg");	// Ze-Rax
+ModeCommands::AddAdmin("EdbzfLXMS_aI_PjZCVaygQ");	// Reaby
 ModeCommands::AddQuickCommand(C_Command_EndWarmup, "Icons64x64_1", "ArrowGreen");
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
-ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UIConstruction_Buttons", "Validate");
-
+ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light");
 HandleModeSettingsUpdate();
+***
+
+***Match_LoadItems***
+***
+FlagRush_Teams::LoadSkins();
 ***
 
 ***Match_StartMatch***
@@ -186,7 +196,7 @@ FlagRush_Map::InitLandmarks();
 Map::SetDefaultStart(FlagRush_Map::GetSpawn(1));
 FlagState::SetAtLandmark(FlagRush_Map::GetDefaultFlagSpawn());
 
-FlagRush_UI::Init();
+FlagRush_UI::Init(Version);
 InitPlayers();
 FlagRush_Teams::Init();
 FlagRush_UI::UpdateDossards();
@@ -294,7 +304,7 @@ if (G_RoundValid) {
 	declare Integer MessageDuration = 5000;
 	declare Text Message;
 	declare Integer RoundWinnerClan = MatchEvaluation::EvaluateRound();
-	
+
 	// Draw
 	if(RoundWinnerClan == 0) {
 		Message = """The round was a draw!""";
@@ -302,14 +312,14 @@ if (G_RoundValid) {
 	else {	// There is a winning clan (1 or 2)
 		TeamPointsProgression::AddClanRoundsWon(RoundWinnerClan, 1);
 		declare Team <=> Teams[RoundWinnerClan - 1];
-		declare Vec3 ColorPrimaryUI for Team = FlagRush_Teams::C_DefaultNeutralColor;
+		declare Vec3 ColorPrimaryUI for Team = Colors::C_NeutralLight;
 		declare ColorText = "$" ^ CL::RgbToHex3(ColorPrimaryUI);
 		Message = """{{{ColorText}}}{{{Team.Name}}}$z won the round!""";
 	}
-	
+
 	UIManager.UIAll.QueueMessage(MessageDuration, 2, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
 	EventFeed::SendMessage(Message, "info");
-	
+
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 	MB_Sleep(MessageDuration / 2);
 	// Update Scores & Telemetry with delay to show update in scoreboard
@@ -342,9 +352,8 @@ if (MatchEndRequested) G_MapValid = False;
 ***
 // Evaluate Current Map
 if (G_MapValid) {
-	declare MessageDuration = S_ChatTime * 1000;
 	declare Text Message;
-	
+
 	declare Integer MapWinnerClan = MatchEvaluation::EvaluateMap();
 	if(MapWinnerClan == 0) { // Draw
 		Message = "The map was a draw!";
@@ -353,15 +362,15 @@ if (G_MapValid) {
 		TeamPointsProgression::AddClanMapsWon(MapWinnerClan, 1);
 
 		declare Team <=> Teams[MapWinnerClan - 1];
-		declare Vec3 ColorPrimaryUI for Team = FlagRush_Teams::C_DefaultNeutralColor;
+		declare Vec3 ColorPrimaryUI for Team = Colors::C_NeutralLight;
 		declare ColorText = "$" ^ CL::RgbToHex3(ColorPrimaryUI);
 		Message = """{{{ColorText}}}{{{Team.Name}}}$z won the map!""";
 	}
-	
-	UIManager.UIAll.QueueMessage(MessageDuration, 2, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
+
+	UIManager.UIAll.QueueMessage(S_ChatTime * 1000, 2, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
 	EventFeed::SendMessage(Message, "info");
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-	MB_Sleep(MessageDuration);
+	MB_Sleep(S_ChatTime * 1000);
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 } else {
 	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 2, CUIConfig::EMessageDisplay::Big, "The map was skipped!", CUIConfig::EUISound::EndRound, 0);
@@ -373,9 +382,9 @@ declare MapWinsTeam1 = TeamPointsProgression::GetClanMapsWon(1);
 declare MapWinsTeam2 = TeamPointsProgression::GetClanMapsWon(2);
 if(MapWinsTeam1 >= S_NbMapsToWinMatch || MapWinsTeam2 >= S_NbMapsToWinMatch)
 {
-	declare MessageDuration = S_ChatTime * 1000;
+
 	declare Text Message;
-	
+
 	// Match_EndMatch is during Mapload, Finish here
 	declare Integer MatchWinnerClan = MatchEvaluation::EvaluateMatch();
 	if(MatchWinnerClan == 0) {	// Draw? Someone set points that should not be set
@@ -383,16 +392,16 @@ if(MapWinsTeam1 >= S_NbMapsToWinMatch || MapWinsTeam2 >= S_NbMapsToWinMatch)
 	}
 	else {	// There is a winning clan (1 or 2)
 		declare WinnerTeam <=> Teams[MatchWinnerClan - 1];
-		declare Vec3 ColorPrimaryUI for WinnerTeam = FlagRush_Teams::C_DefaultNeutralColor;
+		declare Vec3 ColorPrimaryUI for WinnerTeam = Colors::C_NeutralLight;
 		declare ColorText = "$" ^ CL::RgbToHex3(ColorPrimaryUI);
 		Message = """{{{ColorText}}}{{{WinnerTeam.Name}}}$z won the match!""";
 	}
-	UIManager.UIAll.QueueMessage(MessageDuration, 3, CUIConfig::EMessageDisplay::Big, Message,CUIConfig::EUISound::EndMatch, 0);
+	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 3, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndMatch, 0);
 	EventFeed::SendMessage(Message, "info");
-	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-	MB_Sleep(MessageDuration);
-	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
-	
+	MB_Sleep(C_BigMessage_Duration);
+	FlagRush_UI::ToggleMVP(True);
+	MB_Sleep(S_ChatTime * 1500);
+	FlagRush_UI::ToggleMVP(False);
 	MB_StopMatch();
 }
 
@@ -419,7 +428,7 @@ HandleModeSettingsUpdate();
 
 TimeWarnings::Show();
 CheckRoundEndConditions();
-CheckRadarReinit();
+CheckPlayercountChanged();
 
 if(G_PauseRequested) {
 	MB_StopTurn();
@@ -464,11 +473,13 @@ Void SendWelcomeMessage(CSmPlayer Player) {
 	UI.SendChat("""Welcome to $l[https://discord.gg/J6ApdyRqEZ]$44f「$fffFlagRush$f44」$l $fff[{{{Version}}}]!""");
 }
 
-Void CheckRadarReinit() {
+Void CheckPlayercountChanged() {
 	if (Players.count != G_LastPlayersCount) {
 		FlagRush_UI::InitRadar();
+		FlagRush_Teams::Init();
+
+		G_LastPlayersCount = Players.count;
 	}
-	G_LastPlayersCount = Players.count;
 }
 
 // --------------------------------------------------
@@ -537,16 +548,19 @@ Void CheckRoundEndConditions() {
  */
 Void InitPlayer(CSmPlayer Player) {
 	Player.TrustClientSimu = True;
-	Player.UseCrudeExtrapolation = False;
-	Player.Armor = 1;
+	Player.UseCrudeExtrapolation = !UsePvPCollisions && S_UseCrudeExtrapolation;
 	declare Integer PreviousClan for Player;
-	
 	SetPlayerClan(Player, Player.RequestedClan);
+
+	if (S_UseTeamSkins) {
+		Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan-1);
+	}
+
 	if (Player.RequestedClan != PreviousClan) {
 		FlagRush_Teams::Init();
 		FlagRush_UI::UpdateDossards();
 	}
-	
+
 	PreviousClan = Player.RequestedClan;
 }
 
@@ -563,92 +577,24 @@ Void InitPlayers() {
 // --------------------------------------------------
 
 /**
- *	Chooses the next flagspawn to use.
- */
-CMapLandmark NextFlagSpawn() {
-	declare Boolean ChooseRandom = S_RandomizeFlagSpawn || !S_UseTurns;
-	if(ChooseRandom) return FlagRush_Map::GetRandomFlagSpawn();
-	return FlagRush_Map::GetDefaultFlagSpawn();
-}
-
-Void SetFlagPosition(CMapLandmark FlagSpawn, Integer PickupableDate) {
-	// Update FlagState
-	FlagState::SetAtLandmark(FlagSpawn);
-	FlagState::SetPickupableDate(PickupableDate);
-	
-	FlagRush_UI::UpdateFlagMarker();
-	FlagRush_UI::UpdateFlagCarrierNetData();
-	FlagRush_UI::UpdateDossards();
-}
-
-Void SetFlagPosition(CSmPlayer Player, Integer PickupableDate) {
-	// Update FlagState
-	FlagState::SetAtCarrier(Player.User);
-	FlagState::SetPickupableDate(PickupableDate);
-	
-	FlagRush_UI::UpdateFlagMarker();
-	FlagRush_UI::UpdateFlagCarrierNetData();
-	FlagRush_UI::UpdateDossards();
-}
-
-Void SetFlagPosition(Vec3 Position, Integer PickupableDate) {
-	// Update FlagState
-	FlagState::SetAtPosition(Position);
-	FlagState::SetPickupableDate(PickupableDate);
-	
-	FlagRush_UI::UpdateFlagMarker();
-	FlagRush_UI::UpdateFlagCarrierNetData();
-	FlagRush_UI::UpdateDossards();
-}
-
-/**
- * Resets the flag to the flagspawn.
- */
-Void ResetFlag(Integer RespawnDelay, Boolean Silent) {
-	FlagRush_Common::Log("The flag was reset!");
-	
-	// Display a message to all players
-	if (!Silent) {
-		declare Message = "The flag was reset!";
-		UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Warning, 0);
-		EventFeed::SendMessage(Message, "flag");
-	}
-	
-	SetFlagPosition(NextFlagSpawn(), Now + RespawnDelay);
-}
-
-Void ResetFlag(Integer RespawnDelay) {
-	ResetFlag(RespawnDelay, False);
-}
-
-Void ResetFlag(Boolean Silent) {
-	ResetFlag(ML::NearestInteger(S_FlagRespawnDelaySeconds * 1000), Silent);
-}
-
-Void ResetFlag() {
-	ResetFlag(ML::NearestInteger(S_FlagRespawnDelaySeconds * 1000));
-}
-
-/**
  * Applies all handicaps for a player
  */
 Void ApplyHandicaps(CSmPlayer Player) {
-	
 	if (S_FlagCarrierControl != 1.) {
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 		SetPlayer_Delayed_ControlCoef(Player, S_FlagCarrierControl);
 	}
-	
+
 	if (S_FlagCarrierAcceleration != 1.) {
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 		SetPlayer_Delayed_AccelCoef(Player, S_FlagCarrierAcceleration);
 	}
-	
+
 	if (S_FlagCarrierAdherence != 1.) {
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 		SetPlayer_Delayed_AdherenceCoef(Player, S_FlagCarrierAdherence);
 	}
-	
+
 	if (S_FlagCarrierFragile) {
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 		SetPlayer_Delayed_Fragile(Player, S_FlagCarrierFragile);
@@ -665,14 +611,14 @@ Void ResetHandicaps(CSmPlayer Player) {
 }
 
 /**
- * Set a player as flag carrier. If player is Null, reset flag instead.
+ * Sends a message to all players and applies handicaps to the player.
  */
-Void SetFlagCarrier(CSmPlayer Player) {
+Void OnPlayerPicksUpFlag(CSmPlayer Player) {
 	FlagRush_Common::Log("""{{{Player.User.Name}}} got the flag!""");
-	
+
 	// Display a message to all players
 	MB_ClearAllMessages();
-	declare Color = FlagRush_Teams::C_DefaultNeutralColor;
+	declare Color = Colors::C_NeutralLight;
 	if(Player.CurrentClan > 0) {
 		declare Team <=> Teams[Player.CurrentClan - 1];
 		declare Vec3 ColorPrimaryUI for Team;
@@ -682,58 +628,137 @@ Void SetFlagCarrier(CSmPlayer Player) {
 	declare Message = """{{{ColorText}}}{{{Player.User.Name}}}$z got the {{{ColorText}}}flag$z!""";
 	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
 	EventFeed::SendMessage(Message, "flag", Color);
-	
-	// Update the flag carrier
-	SetFlagPosition(Player, Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
-	
+
 	// Apply handicaps
 	ApplyHandicaps(Player);
 }
 
 /**
- * Drops the flag at the position of the current carrier
+ *	Chooses the next flagspawn to use.
  */
-Void DropFlag() {
-	// If there's no carrier, it can't be dropped
-	if(FlagState::Get().Carrier == Null) return;
+CMapLandmark NextFlagSpawn() {
+	declare Boolean ChooseRandom = S_RandomizeFlagSpawn || !S_UseTurns;
+	if(ChooseRandom) return FlagRush_Map::GetRandomFlagSpawn();
+	return FlagRush_Map::GetDefaultFlagSpawn();
+}
 
-	FlagRush_Common::Log("""{{{FlagState::Get().Carrier.Name}}} dropped the flag!""");
+Void OnFlagPositionChanged(Integer PickupableDate) {
+	FlagState::SetPickupableDate(PickupableDate);
+	FlagRush_UI::UpdateFlagMarker();
+	FlagRush_UI::UpdateFlagCarrierNetData();
+	FlagRush_UI::UpdateDossards();
+}
+
+Void SetFlagPosition(CMapLandmark FlagSpawn, Integer PickupableDate) {
+	// Update FlagState
+	FlagState::SetAtLandmark(FlagSpawn);
+	OnFlagPositionChanged(PickupableDate);
+}
+
+Void SetFlagPosition(CSmPlayer Player, Integer PickupableDate) {
+	// Update FlagState
+	FlagState::SetAtCarrier(Player.User);
+	OnPlayerPicksUpFlag(Player);
+	OnFlagPositionChanged(PickupableDate);
+}
+
+Void SetFlagPosition(Vec3 Position, Integer PickupableDate) {
+	// Update FlagState
+	FlagState::SetAtPosition(Position);
+	OnFlagPositionChanged(PickupableDate);
+}
+
+Void PassFlag(CSmPlayer NewCarrier, Integer PickupableDate) {
+	// Update FlagState
+	FlagState::PassFlag(NewCarrier);
+	OnPlayerPicksUpFlag(NewCarrier);
+	OnFlagPositionChanged(PickupableDate);
+}
+
+/**
+ * Resets the flag to the flagspawn.
+ */
+Void ResetFlag(Integer RespawnDelay, Boolean Silent) {
+	FlagRush_Common::Log("The flag was reset!");
 
 	// Display a message to all players
-	declare CSmScore CarrierScore <=> GetScore(FlagState::Get().Carrier.Login);
-	declare Vec3 Color = FlagRush_Teams::C_DefaultNeutralColor;
-	if(CarrierScore != Null && CarrierScore.TeamNum > 0)
-	{
-		declare Team <=> Teams[CarrierScore.TeamNum - 1];
-		declare Vec3 ColorPrimaryUI for Team;
-		Color = ColorPrimaryUI;
+	if (!Silent) {
+		declare Message = "The flag was reset!";
+		UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Warning, 0);
+		EventFeed::SendMessage(Message, "flag");
 	}
-	declare ColorText = "$" ^ CL::RgbToHex3(Color);
-	declare Message = """{{{ColorText}}}{{{FlagState::Get().Carrier.Name}}}$z dropped the {{{ColorText}}}flag$z!""";
+
+	SetFlagPosition(NextFlagSpawn(), Now + RespawnDelay);
+}
+
+Void ResetFlag(Integer RespawnDelay) {
+	ResetFlag(RespawnDelay, False);
+}
+
+Void ResetFlag(Boolean Silent) {
+	ResetFlag(ML::NearestInteger(S_FlagRespawnDelaySeconds * 1000), Silent);
+}
+
+Void ResetFlag() {
+	ResetFlag(ML::NearestInteger(S_FlagRespawnDelaySeconds * 1000));
+}
+
+/**
+ * Drops the flag at the position of the current carrier
+ */
+Void DropFlag(Vec3 GroundPosition) {
+
+	// Display a message to all players
+	declare Text Message = "The flag was dropped!";
+	declare Vec3 Color = Colors::C_NeutralLight;
+
+	if(FlagState::Get().Carrier != Null) {
+		FlagRush_Common::Log("""{{{FlagState::Get().Carrier.Name}}} dropped the flag!""");
+
+		declare CSmScore CarrierScore <=> GetScore(FlagState::Get().Carrier.Login);
+		if(CarrierScore != Null && CarrierScore.TeamNum > 0)
+		{
+			declare Team <=> Teams[CarrierScore.TeamNum - 1];
+			declare Vec3 ColorPrimaryUI for Team;
+			Color = ColorPrimaryUI;
+		}
+		declare ColorText = "$" ^ CL::RgbToHex3(Color);
+		Message = """{{{ColorText}}}{{{FlagState::Get().Carrier.Name}}}$z dropped the {{{ColorText}}}flag$z!""";
+
+		// Reset Carrier handicaps and drop flag
+		declare CSmPlayer CarrierPlayer <=> FlagState::GetFlagCarrierPlayer();
+		if(CarrierPlayer != Null) {
+			declare Integer FlagRush_LastFlagDropDate for CarrierPlayer;
+			FlagRush_LastFlagDropDate = Now;
+			ResetHandicaps(CarrierPlayer);
+		}
+	}
+
 	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
 	EventFeed::SendMessage(Message, "flag", Color);
 
-	// Reset Carrier handicaps
-	ResetHandicaps(FlagState::GetFlagCarrierPlayer());
-
 	// Adjust the drop position
-	declare FlagPosition = FlagState::Get().Position;
-	FlagPosition.Y += Hitbox::GetCarSize(MapPlayerModelName).Y / 2;
+	declare FlagPosition = GroundPosition;
+	FlagPosition.Y += 0.5;
 
 	// Set the new flag position
 	SetFlagPosition(FlagPosition, Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000));
 	FlagState::SetLastDropDate(Now);
 }
 
+Void DropFlag() {
+	declare CSmPlayer FlagCarrierPlayer <=> FlagState::GetFlagCarrierPlayer();
+	if(FlagCarrierPlayer != Null) DropFlag(FlagCarrierPlayer.Position);
+	else DropFlag(FlagState::Get().Position);
+}
+
 /**
  * Handles what happens if a player scored a flag.
  */
 Void ScoreFlag(CSmPlayer Player) {
-	if(Player == Null) return;
-	if(Player.CurrentClan < 1) return;
-	
-	FlagRush_Common::Log("""{{{Player.User.Name}}} scored for {{{Teams[Player.CurrentClan - 1].Name}}}!""");
-	
+	assert(Player != Null);
+	assert(Player.CurrentClan >= 1);
+
 	// Display a message to all players
 	MB_ClearAllMessages();
 	declare Team <=> Teams[Player.CurrentClan - 1];
@@ -742,14 +767,29 @@ Void ScoreFlag(CSmPlayer Player) {
 	declare Teamname = Team.Name;
 	declare Message = """{{{ColorText}}}{{{Player.User.Name}}}$z scored for {{{ColorText}}}{{{Teamname}}}$z!""";
 	UIManager.UIAll.QueueMessage (C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Finish, 0);
+	FlagRush_UI::PlaySound(["file://Media/Sounds/Nadeo/CommonLibs/Game/KnockOutPlayer_01.wav", "file://Media/Sounds/Nadeo/CommonLibs/Game/ShowWinners.wav"]);
 	EventFeed::SendMessage(Message, "flag", ColorPrimaryUI);
+	FlagRush_Common::Log("""{{{Player.User.Name}}} scored for {{{Teamname}}}!""");
+
 	// Add the points
+	// Scoring player
 	Scores::AddClanRoundPoints(Player.CurrentClan, 1);
 	Scores::AddPlayerRoundPoints(Player.Score, FlagRush_Common::C_PointsValue_ScoreFlag);
-	Telemetry::AddPlayerRoundInteger(Player.Score, FlagRush_Common::C_Telemetry_Key_FlagsScored, 1);
 	FlagRush_UI::UpdateScore(Player.Score);
+	// Assisting player
+	declare FlagState::K_FlagPass LastPass = FlagState::Get().LastFlagPass;
+	if (Now - LastPass.Date < C_AssistTimeDuration && LastPass.OldCarrier != Null && Player.User != LastPass.OldCarrier) {
+		declare CSmScore AssistingPlayerScore <=> GetScore(LastPass.OldCarrier.Login);
+		if (AssistingPlayerScore.TeamNum == Player.Score.TeamNum) {
+			Scores::AddPlayerRoundPoints(AssistingPlayerScore, FlagRush_Common::C_PointsValue_ScoreFlagAssist);
+			Telemetry::AddPlayerRoundInteger(AssistingPlayerScore, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists, 1);
+			FlagRush_UI::UpdateScore(AssistingPlayerScore);
+		}
+	}
+	// Team
+	Telemetry::AddPlayerRoundInteger(Player.Score, FlagRush_Common::C_Telemetry_Key_FlagsScored, 1);
 	FlagRush_UI::UpdateTeamScores();
-	
+
 	ResetHandicaps(Player);
 	ResetFlag(True);
 	if(S_UseTurns) MB_StopTurn();
@@ -761,40 +801,37 @@ Void ScoreFlag(CSmPlayer Player) {
 Void StealFlag(CSmPlayer NewCarrier) {
 	declare CSmPlayer OldCarrier = FlagState::GetFlagCarrierPlayer();
 	if (NewCarrier == Null || OldCarrier == Null) return;
-	
-	declare FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
-	
-	if (FlagCarrierPlayer != OldCarrier) return;
+
 	FlagRush_Common::Log("""{{{NewCarrier.User.Name}}} stole the flag from {{{OldCarrier.User.Name}}}!""");
-	
+
 	if (NewCarrier.CurrentClan != OldCarrier.CurrentClan) {
 		// Add the points only if the flag carrier is at different team!
 		Scores::AddPlayerRoundPoints(NewCarrier.Score, FlagRush_Common::C_PointsValue_StealFlag);
 		Telemetry::AddPlayerRoundInteger(NewCarrier.Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen, 1);
 		FlagRush_UI::UpdateScore(NewCarrier.Score);
 	}
-	
+
 	// Reset old flag carrier handicaps
 	ResetHandicaps(OldCarrier);
-	
-	// Set the new flag carrier
-	SetFlagCarrier(NewCarrier);
+
+	// Pass the flag
+	PassFlag(NewCarrier, Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
 }
 
 /**
  * Unspawns a player and drops the flag if the player is the current flag carrier.
  */
 Void FlagRush_UnspawnPlayer(CSmPlayer Player) {
-	if(Player.User == FlagState::Get().Carrier) DropFlag();
+	if(Player == FlagState::GetFlagCarrierPlayer()) DropFlag(FlagState::Get().LastSafePosition);
 	UnspawnPlayer(Player);
 }
 
 /**
  * Unspawns all players.
- *See FlagRush_Functions::UnspawnPlayer(CSmPlayer).
+ * See FlagRush_Functions::UnspawnPlayer(CSmPlayer).
  */
 Void FlagRush_UnspawnPlayers() {
-	foreach(Player in Players) UnspawnPlayer(Player);
+	foreach(Player in Players) FlagRush_UnspawnPlayer(Player);
 }
 
 /**
@@ -802,15 +839,6 @@ Void FlagRush_UnspawnPlayers() {
  */
 Void SpawnPlayers() {
 	foreach (Player in Players) {
-		if (Player.Armor <= 0) {		// If Player has no armor, unspawn first (for example Offzone hit)
-			if(GameplayPhase::Get() != GameplayPhase::C_Warmup) {
-				declare netwrite Integer Net_SpawnDate for Player;
-				Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
-			}
-			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null			
-		}
-		
-		// Spawn unspawned players
 		declare netwrite Integer Net_SpawnDate for Player;
 		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && Net_SpawnDate <= Now) {
 			InitPlayer(Player);
@@ -832,7 +860,7 @@ Void UpdateFlag() {
 	declare Boolean FlagIsDropped = FlagCarrierPlayer == Null && FlagState::Get().Landmark == Null;
 
 	if(FlagCarrierPlayer != Null) FlagState::UpdatePosition();
-	
+
 	if(FlagState::Get().Carrier != Null && FlagCarrierPlayer == Null) { // Player left
 		DropFlag();
 	} else if (FlagIsDropped) {
@@ -840,17 +868,11 @@ Void UpdateFlag() {
 			ResetFlag();
 		}
 		else {
-			declare FlagHitbox = Hitbox::Struct_Hitbox {
-				Center = FlagState::Get().Position,
-				Diameter = C_FlagHitbox_Diameter,
-				Height = C_FlagHitbox_Height
-			};
-			
 			foreach (Player in Players) {
-				if (Hitbox::CheckOverlap(FlagHitbox, Hitbox::GetHitbox(Player))) {
+				if (Hitbox::AreColliding(Player,FlagState::Get().Position)) {
 					declare Integer FlagRush_LastFlagDropDate for Player = -1;
 					if(FlagRush_LastFlagDropDate != FlagState::Get().LastDropDate || Now - FlagRush_LastFlagDropDate > ML::NearestInteger(S_DropFlagPickupPenalty * 1000)) {
-						SetFlagCarrier(Player);
+						SetFlagPosition(Player, Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
 						break;
 					}
 				}
@@ -870,10 +892,12 @@ Void UpdateCriticalSettings() {
 	G_LastSettings_UseReversedBases = S_UseReversedBases;
 	G_LastSettings_UseCollisions = S_UseCollisions;
 	G_LastSettings_Team1ForcedName = S_Team1Name;
-	G_LastSettings_Team1ForcedColor = S_Team1Color;
+	// G_LastSettings_Team1ForcedColor = S_Team1Color;
 	G_LastSettings_Team2ForcedName = S_Team2Name;
-	G_LastSettings_Team2ForcedColor = S_Team2Color;
+	// G_LastSettings_Team2ForcedColor = S_Team2Color;
 	G_LastSettings_UseClubTags = S_UseClubTags;
+
+	G_LastSettings_UseCrudeExtrapolation = S_UseCrudeExtrapolation;
 }
 
 /**
@@ -887,32 +911,33 @@ Void HandleModeSettingsUpdate() {
 	if(G_LastSettings_NbMapsToWinMatch != S_NbMapsToWinMatch || G_LastSettings_NbRoundsToWinMap != S_NbRoundsToWinMap) {
 		FlagRush_UI::UpdateModeSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap);
 	}
-	
+
 	if (G_LastSettings_UseCollisions != S_UseCollisions) {
 		UsePvPCollisions = S_UseCollisions;
-
 	}
-	
+
 	declare Boolean NeedsRestartTurn = (G_LastSettings_UseReversedBases != S_UseReversedBases) ||
-																		 (G_LastSettings_UseCollisions != S_UseCollisions);
+																		 (G_LastSettings_UseCollisions != S_UseCollisions) ||
+																		 (G_LastSettings_UseCrudeExtrapolation != S_UseCrudeExtrapolation);
 	if(NeedsRestartTurn) if(MB_TurnIsRunning()) MB_StopTurn();
-	
+
 	declare Boolean NeedsReinitTeamConfigs =
 		G_LastSettings_Team1ForcedName != S_Team1Name
-		|| G_LastSettings_Team1ForcedColor != S_Team1Color
+		// || G_LastSettings_Team1ForcedColor != S_Team1Color
 		|| G_LastSettings_Team2ForcedName != S_Team2Name
-		|| G_LastSettings_Team2ForcedColor != S_Team2Color
+		// || G_LastSettings_Team2ForcedColor != S_Team2Color
 		|| G_LastSettings_UseClubTags != S_UseClubTags;
+
 	if(NeedsReinitTeamConfigs) {
 		FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
 		FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
-		FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
-		FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
+		// FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
+		// FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
 		FlagRush_Teams::UseClubTags(S_UseClubTags);
 		FlagRush_Teams::Init();
 		FlagRush_UI::UpdateDossards();
 	}
-	
+
 	UpdateCriticalSettings();
 }
 
@@ -920,11 +945,37 @@ Void HandleModeSettingsUpdate() {
  * Updates the players if their state changed (Change team, ...).
  */
 Void UpdatePlayers() {
-	// Update Clan
 	foreach (Player in Players) {
+		// Update Clan
 		if (Player.RequestedClan != Player.CurrentClan) {
 			FlagRush_UnspawnPlayer(Player);
 			InitPlayer(Player);
+		}
+
+		// Unspawn dead players
+		if (Player.Armor <= 0 && Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {		// If Player has no armor, unspawn first (for example Offzone hit)
+			if(GameplayPhase::Get() != GameplayPhase::C_Warmup) {
+				declare netwrite Integer Net_SpawnDate for Player;
+				Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+			}
+			FlagRush_UnspawnPlayer(Player);	// Has to be done here, since Player in OnArmorEmpty Event in Null
+		}
+
+		// Add spawn delay, if player was a specator
+		declare Boolean WasSpectator for Player.User;
+ 		if (WasSpectator) {
+			WasSpectator = False;
+		 	declare netwrite Integer Net_SpawnDate for Player;
+		 	Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+		}
+
+		// When using crude extrapolation, player position is not sent to other players
+		if(S_UseCrudeExtrapolation) {
+			declare netwrite Vec3 Net_Position for Player;
+			Net_Position = Player.Position;
+
+			declare netwrite Real Net_Yaw for Player;
+			Net_Yaw = Player.AimYaw;
 		}
 	}
 }
@@ -935,6 +986,8 @@ Void UpdatePlayers() {
 Void UpdateSpectators() {
 	foreach (Spectator in Spectators)
 	{
+		declare Boolean WasSpectator for Spectator.User;
+		WasSpectator = True;
 		if (FlagState::Get().Carrier == Spectator.User) DropFlag();
 	}
 }
@@ -948,7 +1001,7 @@ Void OnPlayerDeath(CSmPlayer Player) {
 	declare Text ColorText = "";
 	if (Teams.existskey(Player.CurrentClan - 1)) {
 		Team <=> Teams[Player.CurrentClan - 1];
-		declare Vec3 ColorPrimaryUI for Team = FlagRush_Teams::C_DefaultNeutralColor;
+		declare Vec3 ColorPrimaryUI for Team = Colors::C_NeutralLight;
 		ColorText = "$" ^ CL::RgbToHex3(ColorPrimaryUI);
 	}
 	declare Text Message = """{{{ColorText}}}{{{Player.User.Name}}}$g went out of bounds!""";
@@ -959,7 +1012,7 @@ Void OnPlayerDeath(CSmPlayer Player) {
 	if(UI != Null) UI.QueueMessage(2000, 1, CUIConfig::EMessageDisplay::Small, "", CUIConfig::EUISound::Capture, 1);
 
 	// Reset Flag and Unspawn
-	if(Player == FlagState::GetFlagCarrierPlayer()) ResetFlag();
+	if(Player == FlagState::GetFlagCarrierPlayer()) DropFlag(FlagState::Get().LastSafePosition);
 	UnspawnPlayer(Player);
 
 	// No respawn timer in warmup
@@ -1000,14 +1053,14 @@ Void HandleEvents() {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				if (Event.Landmark == FlagState::Get().Landmark) {
 					if (Event.Player != Null && FlagCarrierPlayer == Null && Now > FlagState::Get().PickupableDate) {
-						SetFlagCarrier(Event.Player);
+						SetFlagPosition(Event.Player, Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
 					}
 				} else if (FlagRush_Map::GetBases(1).exists(Event.Landmark)) {
 					if (S_UseReversedBases) {
 						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 1) ScoreFlag(Event.Player);
-					} else {
+						} else {
 						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
-					}
+						}
 				} else if (FlagRush_Map::GetBases(2).exists(Event.Landmark)) {
 					if (S_UseReversedBases) {
 						if (Event.Player == FlagCarrierPlayer && Event.Player.CurrentClan == 2) ScoreFlag(Event.Player);
@@ -1018,15 +1071,13 @@ Void HandleEvents() {
 					OnPlayerDeath(Event.Player);
 				}
 			}
-			
+
 			case CSmModeEvent::EType::OnPlayerRequestRespawn: {
 				declare CSmPlayer FlagCarrierPlayer <=> FlagState::GetFlagCarrierPlayer();
 				declare Boolean PlayerIsFlagCarrier = FlagCarrierPlayer != Null && FlagCarrierPlayer == Event.Player;
-				if(PlayerIsFlagCarrier) {
+				if (PlayerIsFlagCarrier) {
 					DropFlag();
-					declare Integer FlagRush_LastFlagDropDate for FlagCarrierPlayer;
-					FlagRush_LastFlagDropDate = Now;
-				} else {					
+				} else {
 					declare netwrite Integer Net_SpawnDate for Event.Player;
 					if (S_RespawnWhenStill) {
 						if (Event.Player.Speed < C_RespawnSpeedLimitKmh / 3.6) {
@@ -1041,7 +1092,7 @@ Void HandleEvents() {
 					}
 				}
 			}
-			
+
 			case CSmModeEvent::EType::OnPlayerAdded: {
 				SendWelcomeMessage(Event.Player);
 				FlagRush_Teams::Init();
@@ -1059,14 +1110,14 @@ Void HandleEvents() {
 			}
 		}
 	}
-	
+
 	// Collision detection using CylinderHitbox (based on Dommy's Lib)
 	if (FlagState::Get().Carrier != Null && FlagState::Get().PickupableDate < Now) {
 		declare CSmPlayer CarrierPlayer = FlagState::GetFlagCarrierPlayer();
 		declare CSmPlayer FlagStealer;
 		foreach (Player in Players) {
 			if (Player == CarrierPlayer) continue;
-			if (Hitbox::AreTouching(CarrierPlayer, Player)) {
+			if (Hitbox::AreColliding(CarrierPlayer, Player)) {
 				if(Player.CurrentClan != CarrierPlayer.CurrentClan || FlagStealer == Null) {
 					FlagStealer = Player;
 					if (Player.CurrentClan != CarrierPlayer.CurrentClan) break;
@@ -1095,6 +1146,7 @@ Void HandleEvents() {
  * Handles a single command.
  */
 Void HandleCommand(CommandUtils::K_Command Command) {
+	UIManager.UIAll.SendChat("""{{{FlagRush_Common::C_LogPrefix}}} Received Command: {{{ Command.Name }}}""");
 	switch(Command.Name) {
 		case CommandUtils::C_CommandPrefix ^ C_Command_EndWarmup: {
 			WarmUpReadyUp::Stop();
@@ -1109,6 +1161,11 @@ Void HandleCommand(CommandUtils::K_Command Command) {
 			declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
 			ResetHandicaps(FlagCarrierPlayer);
 			ResetFlag();
+		}
+		case CommandUtils::C_CommandPrefix ^ C_Command_SetBots: {
+			declare Integer Amount = Command.ValueInteger;
+			if (Amount < 0) Amount = 0;
+			Users_SetNbFakeUsers(Amount, Amount);
 		}
 	}
 }
@@ -1147,7 +1204,7 @@ Void HandleCommands() {
 	// Mode Events
 	foreach(Event in PendingEvents) {
 		if (!Valid(Event)) continue;
-		
+
 		switch(Event.Type) {
 			case CSmModeEvent::EType::OnPlayerAdded: {
 				InitPlayer(Event.Player);
@@ -1161,7 +1218,7 @@ Void HandleCommands() {
 				declare CSmPlayer EventPlayer = Event.Player;
 				// Need a second variable to prevent a runtime exception
 				// where PendingEvents[X] becomes Null
-				UnspawnPlayer(EventPlayer); 
+				UnspawnPlayer(EventPlayer);
 			}
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				if(FlagRush_Map::IsResetFlagTrigger(Event.Landmark)) {
@@ -1189,7 +1246,7 @@ Void HandleCommands() {
  */
 Void ExecWarmUp() {
 	FlagRush_Common::Log("Start WarmUp");
-	
+
 	// Show message
 	Race::StopSkipOutroAll();
 	declare Text Message = "$f90WarmUp";
@@ -1205,10 +1262,10 @@ Void ExecWarmUp() {
 	FlagRush_Teams::Init();
 	FlagRush_UI::InitMarkers();
 	FlagRush_UI::UpdateDossards();
-	
+
 	StartTime = Now;
 	SetEndTime(-1);
-	
+
 	// Start WarmUp
 	declare PrevUISequence = UIManager.UIAll.UISequence;
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
@@ -1225,9 +1282,9 @@ Void ExecWarmUp() {
 		HandleCommands();
 		HandleModeSettingsUpdate();
 		TimeWarnings::Show();
-		CheckRadarReinit();
+		CheckPlayercountChanged();
 	}
-	
+
 	// End WarmUp
 	+++Warmup_EndWarmUp+++
 	FlagRush_Common::Log("End WarmUp");

@@ -225,18 +225,18 @@ Void Clear() {
 
 Void AffectPlayerRoundToMapAndMatchTelemetry(CSmScore Score) {
 	declare Integer[Text] IntegerRoundTelemetry = GetPlayerRoundIntegers(Score);
-	
+
 	foreach(Key => Value in IntegerRoundTelemetry) {
 		AddPlayerMapInteger(Score, Key, Value);
 		AddPlayerMatchInteger(Score, Key, Value);
 	}
-	
+
 	declare Real[Text] RealRoundTelemetry = GetPlayerRoundReals(Score);
 	foreach(Key => Value in RealRoundTelemetry) {
 		AddPlayerMapReal(Score, Key, Value);
 		AddPlayerMatchReal(Score, Key, Value);
 	}
-	
+
 	Clear(Score, C_Level_Round);
 }
 

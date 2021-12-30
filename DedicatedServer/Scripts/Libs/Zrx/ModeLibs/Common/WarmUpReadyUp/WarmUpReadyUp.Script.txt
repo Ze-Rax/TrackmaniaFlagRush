@@ -1,6 +1,7 @@
+// #RequireContext CSmMode
 /*
  * WarmUp Library with infinite time and ready up mechanic.
- *	
+ *
  * Players need to ready up before the warmup end.
  * At least one player in every clan must be ready.
  * Warmup can be force stopped by calling Stop()
@@ -136,7 +137,7 @@ Void Private_UpdateWarmUpEndTime(Boolean AllClansAtLeastOnePlayerReady, Boolean 
 		} else if (G_TimeoutState.State == C_Timeout_State_OnePlayerReady) {
 			Private_UpdateTimeout(C_Timeout_State_AllPlayersReady, C_Timeout_AllPlayersReady);
 		}
-	} else if (AllClansAtLeastOnePlayerReady) {			
+	} else if (AllClansAtLeastOnePlayerReady) {
 		if (G_TimeoutState.State == C_Timeout_State_NotStarted) {
 			Private_StartTimeout(C_Timeout_State_OnePlayerReady, C_Timeout_AtLeastOnePlayerReady);
 		} else if (G_TimeoutState.State == C_Timeout_State_AllPlayersReady) {
@@ -160,10 +161,10 @@ Boolean Private_MatchCanStart() {
 		PlayerClanReadyState.NbPlayers += 1;
 		if(G_PlayersReady.get(Player.User.Login, False)) {
 			PlayerClanReadyState.NbPlayersReady += 1;
-		}				
+		}
 		ClanReadyStates[Player.CurrentClan] = PlayerClanReadyState;
 	}
-	
+
 	// There have to be at least two clans
 	if ((UseClans || UseMultiClans) && ClanReadyStates.count < 2) {
 		if(G_TimeoutState.State != C_Timeout_State_NotStarted) {
@@ -180,10 +181,10 @@ Boolean Private_MatchCanStart() {
 		AllClansAllPlayersReady = AllClansAllPlayersReady && (ReadyState.NbPlayersReady == ReadyState.NbPlayers);
 		AllClansAllPlayersReady = AllClansAllPlayersReady && AllClansAtLeastOnePlayerReady;
 	}
-	
+
 	// Update Warmup EndTime
 	Private_UpdateWarmUpEndTime(AllClansAtLeastOnePlayerReady, AllClansAllPlayersReady);
-	
+
 	// Check if the timeout ended
 	declare TimeoutEnded = G_TimeoutState.State != C_Timeout_State_NotStarted && Now > EndTime;
 	if(TimeoutEnded) {
@@ -203,6 +204,7 @@ Void Start() {
 	Layers::Create(WarmUpReadyUp_UI::C_ManialinkName, WarmUpReadyUp_UI::GetManialink());
 	Layers::SetType(WarmUpReadyUp_UI::C_ManialinkName, CUILayer::EUILayerType::Normal);
 	Layers::Attach(WarmUpReadyUp_UI::C_ManialinkName);
+	UIManager.UIAll.SendChat("""$f90Warmup!$fff Ready up by clicking the "Ready"-Button or pressing F7 / """);
 }
 
 /**
@@ -218,7 +220,7 @@ Void Stop() {
  * Checks for XmlRpc events that would stop the warmup.
  */
 Void Private_HandleXmlRpcEvents() {
-	foreach (XmlRpcEvent in XmlRpc.PendingEvents) {		
+	foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
 		switch (XmlRpcEvent.Type) {
 			case CXmlRpcEvent::EType::CallbackArray: {
 				switch (XmlRpcEvent.ParamArray1) {
@@ -257,7 +259,7 @@ Void Private_HandleUIEvents() {
  */
 Void Yield() {
 	PendingEvents = [];
-	
+
 	Private_HandleXmlRpcEvents();
 	Private_HandleUIEvents();
 

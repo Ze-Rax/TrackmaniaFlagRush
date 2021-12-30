@@ -1,127 +1,565 @@
-// #RequireContext CSmMlScriptIngame
+#Include "TextLib" as TL
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 
-#Include "Libs/MrLag/ModeLibs/AdvancedMinimap.Script.txt" as Minimap
 
-/** Inits minimap */
+#Const C_BackgroundZIndex					0
+#Const C_RadarBaseSize						100.
+#Const C_MarkerFadeStart					0.80
+#Const C_MarkerFadeEnd 						0.95
+#Const C_PlayerMarkerGlowOpacity	0.5
+#Const C_PlayerMarkerIconOpacity	1.
+
+// /!\ On changes, also change the necessary values in K_RadarUserConfig in Manialink script /!\
+#Struct K_Config {
+	Real Scale;
+	Real MarkerScale;
+	Real Zoom;
+	Vec2 Position;
+	Real BackgroundOpacity;
+	Real DetailOpacity;
+}
+
+declare K_Config G_Config;
+
+/**
+ * Sets the default config to be used for the radar
+ * Will be used for user config if no user config is given
+ */
+Void SetConfig(K_Config Config) {
+	G_Config = Config;
+}
+
 Text GetManialink() {
-	Minimap::ClearMarkers();
-	
-	Minimap::CreateMarker(
-		AllPlayers.count,
-		"MinimapFlag", 
-		"""
-		<quad halign="center" valign="center" pos="0 0" z-index="5" size="10 10" style="UIConstruction_Buttons" substyle="Validate" id="Icon"/>
-		""", 
-		"""
-		declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
-		if(GUIPlayer != Null && Net_FlagRush_FlagCarrierLogin == "") {
-			declare netread Vec3 Net_FlagRush_FlagPosition for Teams[0];
-			AbsPos = <
-				(GUIPlayer.Position.X - Net_FlagRush_FlagPosition.X) / 32 / 48,
-				(GUIPlayer.Position.Z - Net_FlagRush_FlagPosition.Z) / 32 / 48
-			>;
-		} else {
-			IsHidden = True;
-		}
-		""",
-		"""
-		if(GUIPlayer != Null) RelPos = Rotate(-GUIPlayer.AimYaw, AbsPos);
-		""", 
-		"""
-		FinPos = RelPos;
-		""", 
-		"""
-		IsHidden = True;
-		""");
+	declare Text[] PlayerMarkerInstances = [];
+	for (I, 0, Players.count-2) PlayerMarkerInstances.add("""<frameinstance modelid="marker-player" id="marker-player-{{{ I }}}" scale="{{{ G_Config.MarkerScale }}}"/>""");
 
-	foreach (i => Player in AllPlayers) {
-		Minimap::CreateMarker(
-			i,
-			"MinimapPlayer_"^i, 
-			"""
-			<quad halign="center" valign="center" pos="0 0" z-index="0" size="25 25" style="Bgs1InRace" substyle="Glow" opacity="0.5"/>
-			<quad halign="center" valign="center" pos="0 0" z-index="5" size="10 10" style="UICommon64_1" substyle="ArrowUp_light" id="Icon"/>
-			""", 
-			"""
-			if (Players.existskey({{{i}}})) {
-				declare CSmPlayer _Player <=> Players[{{{i}}}];
-				if (_Player == Null || GUIPlayer == Null) continue;
-				if (_Player.RequestsSpectate == True) IsHidden = True;
-				AbsRot = GUIPlayer.AimYaw - _Player.AimYaw;
-				AbsPos = <
-					(GUIPlayer.Position.X - _Player.Position.X) / 32 / 48,
-					(GUIPlayer.Position.Z - _Player.Position.Z) / 32 / 48
-				>;
+	return """
+	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3" name="FlagRush_Radar">
+		<!-- Framemodels -->
+		<framemodel id="marker-player">
+			<label pos="0 -0.5" size="10 10" z-index="1" text="" textsize="5" rot="-45" halign="center" valign="center2" id="icon"/>
+			<quad size="15 15" halign="center" valign="center" style="Bgs1InRace" substyle="Glow" opacity="{{{ C_PlayerMarkerGlowOpacity }}}" id="glow"/>
+		</framemodel>
+
+		<framemodel id="marker-flag">
+			<quad size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light" id="icon"/>
+			<quad size="17.5 17.5" halign="center" valign="center" style="Bgs1InRace" substyle="Glow" id="glow" opacity="0.5" hidden="1"/>
+			<quad id="up" pos="0 5.5" size="6 6" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" hidden="1" />
+			<quad id="down" pos="0 -5.5" size="6 6" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center" hidden="1"/>
+		</framemodel>
+
+		<!-- Radar area -->
+		<frame id="radar" scale="{{{ G_Config.Scale }}}" pos="{{{ G_Config.Position.X }}} {{{ G_Config.Position.Y }}}">
+			<!-- Drag activator -->
+			<frame id="drag" z-index="2">
+				<quad id="drag-activator" size="{{{C_RadarBaseSize}}} {{{C_RadarBaseSize}}}" valign="center" halign="center" bgcolor="f00" opacity="0" scriptevents="1"/>
+				<quad id="settings-toggle" z-index="1" pos="{{{C_RadarBaseSize / 2}}} {{{-C_RadarBaseSize / 2}}}" size="15 15" valign="bottom" halign="right" scriptevents="1" style="UICommon64_1" substyle="Parameters_light" hidden="1"/>
+			</frame>
+
+			<!-- Background -->
+			<frame id="background" z-index="0">
+
+				<!-- Base -->
+				<quad id="base" size="{{{C_RadarBaseSize}}} {{{C_RadarBaseSize}}}" image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga" valign="center" halign="center" modulatecolor="111" opacity="{{{G_Config.BackgroundOpacity}}}"/>
+
+				<!-- Border -->
+				<quad id="border" z-index="2" size="{{{C_RadarBaseSize * 1.02}}} {{{C_RadarBaseSize * 1.02}}}"  image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" valign="center" halign="center"/>
+
+				<!-- Inner decoration -->
+				<quad id="detail-1" z-index="1" pos="0 {{{C_RadarBaseSize / 2}}}" size="1 {{{C_RadarBaseSize * 0.375}}}" bgcolor="000" opacity="{{{G_Config.DetailOpacity}}}" halign="center" valign="top"/>
+				<quad id="detail-2" z-index="1" pos="0 {{{-C_RadarBaseSize / 2}}}" size="1 {{{C_RadarBaseSize * 0.375}}}" bgcolor="000" opacity="{{{G_Config.DetailOpacity}}}" halign="center" valign="bottom"/>
+				<quad id="detail-3" z-index="1" pos="{{{C_RadarBaseSize / 2}}} 0" size="{{{C_RadarBaseSize * 0.375}}} 1" bgcolor="000" opacity="{{{G_Config.DetailOpacity}}}" halign="right" valign="center"/>
+				<quad id="detail-4" z-index="1" pos="{{{-C_RadarBaseSize / 2}}} 0" size="{{{C_RadarBaseSize * 0.375}}} 1" bgcolor="000" opacity="{{{G_Config.DetailOpacity}}}" halign="left" valign="center"/>
+
+				<quad id="detail-5" z-index="1" size="{{{C_RadarBaseSize * 0.75}}} {{{C_RadarBaseSize * 0.75}}}" image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" valign="center" halign="center" modulatecolor="000" opacity="{{{G_Config.DetailOpacity}}}"/>
+				<quad id="detail-6" z-index="1" size="{{{C_RadarBaseSize * 0.5}}} {{{C_RadarBaseSize * 0.5}}}" image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" valign="center" halign="center" modulatecolor="000" opacity="{{{G_Config.DetailOpacity}}}"/>
+
+			</frame>
+
+			<!-- Markers -->
+			<frame id="markers" z-index="1">
+				<frameinstance modelid="marker-flag" id="marker-flag" scale="{{{ G_Config.MarkerScale }}}"/>
+				<frameinstance modelid="marker-player" id="marker-self" scale="{{{ G_Config.MarkerScale }}}"/>
+				{{{ TL::Join("\n", PlayerMarkerInstances) }}}
+			</frame>
+
+		</frame>
+
+		<!-- Customization Dialog -->
+		<frame id="customization-settings-dialog" z-index="1000" hidden="1">
+
+			<quad  size="50 25" style="UICommon128_1" substyle="BgFrame1" halign="center" valign="center" scale="2" colorize="000" opacity="0.75"/>
+
+			<frame id="header" z-index="1" pos="0 20">
+				<quad pos="0" size="50 5" opacity="0.75" style="UICommon128_1" substyle="BgFrame1" halign="center" colorize="000" scale="2" valign="center"/>
+				<label pos="0" z-index="1" size="90 10" text="Radar settings:" halign="center" valign="center" textfont="GameFontSemiBold" textsize="5"/>
+				<quad pos="45" z-index="1" size="7.5 7.5" bgcolor="FFF" halign="right" valign="center" style="UICommon64_1" substyle="Cross_light" scriptevents="1" id="settings-toggle-dialog"/>
+			</frame>
+
+			<frame id="body" z-index="1" pos="0 ">
+				<frame id="position" pos="0 10">
+					<label pos="-45" z-index="0" size="40 5" text="Position:" textfont="GameFontRegular" halign="left" valign="center"/>
+					<frame id="position-entries" pos="22.5">
+						<entry  size="20 5" halign="center" valign="center" pos="-12.5" scriptevents="1" id="position-x"/>
+						<entry  size="20 5" halign="center" valign="center" pos="12.5" scriptevents="1" id="position-y"/>
+					</frame>
+				</frame>
+
+				<frame id="scale">
+					<label pos="-45" z-index="0" size="40 5" text="Scale:" textfont="GameFontRegular" halign="left" valign="center"/>
+					<slider halign="right" pos="22.5 0" valign="center" size="45 10" id="slider-scale" scriptevents="1"></slider>
+				</frame>
+
+				<frame id="background-opacity" pos="0 -10">
+					<label pos="-45" z-index="0" size="40 5" text="Background Opacity:" textfont="GameFontRegular" halign="left" valign="center"/>
+					<slider halign="right" pos="22.5 0" valign="center" size="45 10" id="slider-background-opacity" scriptevents="1"></slider>
+				</frame>
+
+				<frame id="detail-opacity" pos="0 -20">
+					<label pos="-45" z-index="0" size="40 5" text="Line Opacity:" textfont="GameFontRegular" halign="left" valign="center"/>
+					<slider halign="right" pos="22.5 0" valign="center" size="45 10" id="slider-detail-opacity" scriptevents="1"></slider>
+				</frame>
+			</frame>
+		</frame>
+
+		<script><!--
+			#Include "MathLib" as ML
+			#Include "TextLib" as TL
+
+			#Struct K_RadarUserConfig {
+				Real Scale;
+				Vec2 Position;
+				Real BackgroundOpacity;
+				Real DetailOpacity;
 			}
-			""", 
-			"""
-			RelPos = AbsPos;
 
-			if (Players.existskey({{{i}}})) {
-				declare _Player <=> Players[{{{i}}}];				
-				if(_Player == GUIPlayer) {
-					RelRot = 0.;
-				} else {
-					if(GUIPlayer != Null)	RelPos = Rotate(-GUIPlayer.AimYaw, AbsPos);
-
-					declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
-					if (_Player.User.Login == Net_FlagRush_FlagCarrierLogin) RelRot = 0.;
-					else RelRot = AbsRot;
-				}
+			#Struct K_FlagMarker {
+				CMlFrame Frame;
+				CMlQuad Icon;
+				CMlQuad Glow;
+				CMlQuad Up;
+				CMlQuad Down;
 			}
-			""", 
-			"""
-			FinPos = RelPos;
-			FinRot = RelRot;
-			if (Players.existskey({{{i}}})) {
-				declare _Player <=> Players[{{{i}}}];
-				if (Teams.existskey(_Player.CurrentClan-1)) {
-					declare Frame <=> (Minimap.GetFirstChild(C_MarkerFrameIds[MarkerId]) as CMlFrame);
-					declare QuadIcon <=> (Frame.GetFirstChild("Icon") as CMlQuad);
 
-					declare netread Vec3 Net_FlagRush_PrimaryColor for Teams[_Player.CurrentClan-1];
-					QuadIcon.Colorize = Net_FlagRush_PrimaryColor;
-					QuadIcon.ZIndex = _Player.Position.Y;						
+			#Struct K_PlayerMarker {
+				CMlFrame Frame;
+				CMlLabel Icon;
+				CMlQuad Glow;
+			}
 
-					declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
-					if(Net_FlagRush_FlagCarrierLogin == _Player.User.Login) {
-						QuadIcon.Style = "UIConstruction_Buttons";
-						QuadIcon.Substyle = "Validate";
-					} else {
-						QuadIcon.Style = "UICommon64_1";
-						QuadIcon.Substyle = "ArrowUp_light";
+			/* References */
+			declare CMlFrame CustomizationSettingsDialogFrame;
+
+			declare CMlFrame RadarFrame;
+			declare CMlFrame DragFrame;
+			declare CMlFrame BackgroundFrame;
+			declare CMlFrame MarkersFrame;
+
+			declare CMlQuad Radar_DragActivator;
+			declare CMlQuad Radar_SettingsButton;
+
+			declare CMlQuad Radar_Background_Base;
+			declare CMlQuad Radar_Background_Border;
+			declare CMlQuad[] Radar_Background_Details;
+
+			declare CMlEntry Customization_PositionXEntry;
+			declare CMlEntry Customization_PositionYEntry;
+			declare CMlSlider Customization_ScaleSlider;
+			declare CMlSlider Customization_BackgroundOpacitySlider;
+			declare CMlSlider Customization_DetailOpacitySlider;
+
+			declare K_FlagMarker FlagMarker;
+			declare K_PlayerMarker SelfMarker;
+			declare K_PlayerMarker[] PlayerMarkers;
+
+			/* Common Functions */
+			{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+			{{{ UIShared::GetUtilFunctions() }}}
+
+			/**
+			 * Assigns all the needed CMlControl references.
+			 */
+			***AssignMlControlReferences***
+			***
+			RadarFrame = (Page.GetFirstChild("radar") as CMlFrame);
+			CustomizationSettingsDialogFrame = (Page.GetFirstChild("customization-settings-dialog") as CMlFrame);
+			DragFrame = (RadarFrame.GetFirstChild("drag") as CMlFrame);
+			BackgroundFrame = (RadarFrame.GetFirstChild("background") as CMlFrame);
+			MarkersFrame = (RadarFrame.GetFirstChild("markers") as CMlFrame);
+
+			Radar_SettingsButton = (DragFrame.GetFirstChild("settings-toggle") as CMlQuad);
+			Radar_DragActivator = (DragFrame.GetFirstChild("drag-activator") as CMlQuad);
+
+			Radar_Background_Base = (BackgroundFrame.GetFirstChild("base") as CMlQuad);
+			Radar_Background_Border = (BackgroundFrame.GetFirstChild("border") as CMlQuad);
+			Radar_Background_Details = [];
+			for (I, 1, 6) Radar_Background_Details.add(BackgroundFrame.GetFirstChild("detail-"^I) as CMlQuad);
+
+			FlagMarker.Frame = (MarkersFrame.GetFirstChild("marker-flag") as CMlFrame);
+			FlagMarker.Icon = (FlagMarker.Frame.GetFirstChild("icon") as CMlQuad);
+			FlagMarker.Glow = (FlagMarker.Frame.GetFirstChild("glow") as CMlQuad);
+			FlagMarker.Up = (FlagMarker.Frame.GetFirstChild("up") as CMlQuad);
+			FlagMarker.Down = (FlagMarker.Frame.GetFirstChild("down") as CMlQuad);
+
+			SelfMarker.Frame = (MarkersFrame.GetFirstChild("marker-self") as CMlFrame);
+			SelfMarker.Icon = (SelfMarker.Frame.GetFirstChild("icon") as CMlLabel);
+			SelfMarker.Glow = (SelfMarker.Frame.GetFirstChild("glow") as CMlQuad);
+
+			for (I, 0, {{{ PlayerMarkerInstances.count -1 }}}) {
+				declare CMlFrame PlayerFrame = (MarkersFrame.GetFirstChild("marker-player-"^I) as CMlFrame);
+				PlayerMarkers.add(K_PlayerMarker {
+					Frame = PlayerFrame,
+					Icon = (PlayerFrame.GetFirstChild("icon") as CMlLabel),
+					Glow = (PlayerFrame.GetFirstChild("glow") as CMlQuad)
+				});
+			}
+
+			Customization_PositionXEntry = (CustomizationSettingsDialogFrame.GetFirstChild("position-x") as CMlEntry);
+			Customization_PositionYEntry = (CustomizationSettingsDialogFrame.GetFirstChild("position-y") as CMlEntry);
+			Customization_ScaleSlider = (CustomizationSettingsDialogFrame.GetFirstChild("slider-scale") as CMlSlider);
+			Customization_BackgroundOpacitySlider = (CustomizationSettingsDialogFrame.GetFirstChild("slider-background-opacity") as CMlSlider);
+			Customization_DetailOpacitySlider = (CustomizationSettingsDialogFrame.GetFirstChild("slider-detail-opacity") as CMlSlider);
+			***
+
+			/**
+			 * Inits all MlControls. This includes setting slider ranges and default values.
+			 */
+			***InitMlControls***
+			***
+			Customization_PositionXEntry.SetValueType(CMlEntry::ValueType::Ml_Real3Decimals);
+			Customization_PositionYEntry.SetValueType(CMlEntry::ValueType::Ml_Real3Decimals);
+			Customization_ScaleSlider.MinRange = 0.1;
+			Customization_ScaleSlider.MaxRange = 1.;
+			Customization_BackgroundOpacitySlider.MinRange = 0.;
+			Customization_BackgroundOpacitySlider.MaxRange = 1.;
+			Customization_DetailOpacitySlider.MinRange = 0.;
+			Customization_DetailOpacitySlider.MaxRange = 1.;
+
+			Customization_ScaleSlider.Value = RadarConfig.Scale;
+			Customization_BackgroundOpacitySlider.Value = RadarConfig.BackgroundOpacity;
+			Customization_DetailOpacitySlider.Value = RadarConfig.DetailOpacity;
+			***
+
+			/**
+			 * Loads the radar config for the player.
+			 * If player doesn't have a config, then the default server config is used.
+			 */
+			***LoadRadarUserConfig***
+			***
+			if(RadarConfig == K_RadarUserConfig{}) {	// Config not loaded yet
+				declare persistent Text Persistent_FlagRush_RadarUserConfigJson for UserMgr.MainUser = "{{{ TL::Replace(G_Config.tojson(), "\"", "\\\"") }}}";
+				RadarConfig.fromjson(Persistent_FlagRush_RadarUserConfigJson);
+			}
+			***
+
+			/**
+			 * Persistently saves the radar config the player.
+			 */
+			***SaveRadarUserConfig***
+			***
+			declare persistent Text Persistent_FlagRush_RadarUserConfigJson for UserMgr.MainUser;
+			Persistent_FlagRush_RadarUserConfigJson = RadarConfig.tojson();
+			UserMgr.MainUser.PersistentSave();
+			***
+
+			/**
+			 * Applies all customizations done by the player to the radar. (Scale, Position, ...)
+			 */
+			 ***ApplyRadarSettings***
+			 ***
+			 RadarFrame.RelativePosition_V3 = RadarConfig.Position;
+			 RadarFrame.RelativeScale = RadarConfig.Scale;
+			 Radar_Background_Base.Opacity = RadarConfig.BackgroundOpacity;
+			 foreach (Detail in Radar_Background_Details) Detail.Opacity = RadarConfig.DetailOpacity;
+			 ***
+
+			/**
+			 * Updates the radar settings dialog settings
+			 */
+			***UpdateRadarSettings***
+			***
+			// Validate entries
+			declare Real PosX = TL::ToReal(Customization_PositionXEntry.Value);
+			if (PosX == -1.) PosX = RadarConfig.Position.X;
+
+			declare Real PosY = TL::ToReal(Customization_PositionYEntry.Value);
+			if (PosY == -1.) PosY = RadarConfig.Position.Y;
+
+			// Clamp to screen and write to persistent variable
+			RadarConfig.Position = ClampToScreen(<PosX, PosY>);
+
+			// Update the entries if window was moved by mouse
+			Customization_PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
+			Customization_PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
+
+			// Update the slider values
+			RadarConfig.Scale = Customization_ScaleSlider.Value;
+			RadarConfig.BackgroundOpacity = Customization_BackgroundOpacitySlider.Value;
+			RadarConfig.DetailOpacity = Customization_DetailOpacitySlider.Value;
+
+			+++ApplyRadarSettings+++
+			***
+
+			/**
+			 * Handles what should happen if the user is dragging the radar
+			 */
+			 ***HandleDragging***
+			 ***
+			if (MouseLeftButton && GUIPlayer != Null) { // Mouse down = still dragging
+				RadarConfig.Position = Input.MousePos + DraggingOffset;
+				RadarFrame.RelativePosition_V3 = RadarConfig.Position;
+				Customization_PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
+				Customization_PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
+
+				+++ApplyRadarSettings+++
+			} else {	// Finish dragging and save persistently
+				Dragging = False;
+				RadarConfig.Position = ClampToScreen(RadarConfig.Position);
+				+++SaveRadarUserConfig+++
+			}
+			***
+
+			/**
+			 * Hides the radar and does some necessary handling.
+			 */
+			***HideRadar***
+			***
+			RadarFrame.Hide();
+			if (Dragging) {
+				Dragging = False;
+				+++SaveRadarUserConfig+++
+			}
+			***
+
+			/**
+			 * Handles all kinds of Manialink events.
+			 */
+			***HandleEvents***
+			***
+			foreach (Event in PendingEvents) {
+				switch (Event.Type) {
+					case CMlScriptEvent::Type::MouseClick: {
+						if (Event.ControlId == "drag-activator") {
+							Dragging = True;
+							DraggingOffset = RadarFrame.AbsolutePosition_V3 - Input.MousePos;
+						} else if (TL::StartsWith("settings-toggle", Event.ControlId)) {
+							declare Boolean SettingsVisibility for LocalUser;
+							if (SettingsVisibility) +++SaveRadarUserConfig+++
+							SettingsVisibility = !SettingsVisibility;
+						}
+					}
+					case CMlScriptEvent::Type::MouseRightClick: {
+						if (Event.ControlId == "drag-activator") {
+							Dragging = False;
+							RadarConfig.Position = {{{ G_Config.Position }}};
+							Customization_PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
+							Customization_PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
+							+++SaveRadarUserConfig+++
+						} else if (Event.Control == Customization_ScaleSlider) {
+							RadarConfig.Scale = {{{ G_Config.Scale }}};
+							Customization_ScaleSlider.Value = {{{ G_Config.Scale }}};
+						} else if (Event.Control == Customization_BackgroundOpacitySlider) {
+							RadarConfig.BackgroundOpacity = {{{ G_Config.BackgroundOpacity }}};
+							Customization_BackgroundOpacitySlider.Value = {{{ G_Config.BackgroundOpacity }}};
+						} else if (Event.Control == Customization_DetailOpacitySlider) {
+							RadarConfig.DetailOpacity = {{{ G_Config.DetailOpacity }}};
+							Customization_DetailOpacitySlider.Value = {{{ G_Config.DetailOpacity }}};
+						}
+					}
+					case CMlScriptEvent::Type::MouseOver: {
+						if (Event.ControlId == "drag-activator") HoverDragActivator = True;
+						else if (Event.Control == Radar_SettingsButton) HoverDragActivator = True;
+					}
+					case CMlScriptEvent::Type::MouseOut: {
+						if (Event.ControlId == "drag-activator") HoverDragActivator = False;
+						else if (Event.Control == Radar_SettingsButton) HoverDragActivator = False;
 					}
 				}
 			}
-			""", 
-			"""
-			IsHidden = True;
-			"""
-		);
-	}
+			***
 
-	return Minimap::GetManialink(
-		"""
-		MinimapZoom = 7.5;
-		MinimapPosition = < 135., -65. >;
-		MinimapSize = .125;
-		""", 
-		"""
-		<quad halign="center" valign="center" pos="0 0" size="33 33" opacity="0.5" scale="3" bgcolor="000"/>		
-		""", 
-		
-		"""
-		if(GUIPlayer != Null) {
-			Minimap.Show();
-			if(GUIPlayer.CurrentClan > 0) {
-				declare CMlQuad RadarBorder = (Page.GetFirstChild("radar-border") as CMlQuad);
-				declare netread Vec3 Net_FlagRush_PrimaryColor for Teams[GUIPlayer.CurrentClan-1];
-				RadarBorder.ModulateColor = Net_FlagRush_PrimaryColor;				
+			/**
+			 * Clamps the radar position so it stays inside the screen.
+			 * Else it could be unrecoverable
+			 */
+			Vec2 ClampToScreen(Vec2 Position) {
+				return < ML::Clamp(Position.X, -160., 160.), ML::Clamp(Position.Y, -90., 90.) >;
 			}
-		} else {
-			Minimap.Hide();
-		}
-		""",
-		"", 
-		"");
-	}
+
+			/**
+			 * Rotates a given vector around a given angle.
+			 */
+			Vec2 Rotate(Real Angle, Vec2 Vector) {
+				declare Real Cosinus = ML::Cos(Angle);
+				declare Real Sinus = ML::Sin(Angle);
+				return <Cosinus, Sinus> * Vector.X + <Sinus, - Cosinus> * Vector.Y;
+			}
+
+			/**
+			 * Updates the GUIPlayer marker
+			 */
+			Void UpdateSelfMarker() {
+				declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+				if (Net_FlagRush_FlagCarrierLogin == GUIPlayer.User.Login) {
+					SelfMarker.Frame.Hide();
+				} else {
+					SelfMarker.Frame.Show();
+					SelfMarker.Frame.ZIndex = GetPlayerPosition(GUIPlayer).Y;
+					SelfMarker.Icon.TextColor = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
+				}
+			}
+
+			/**
+			 * Updates the flag marker frame.
+			 */
+			Void UpdateFlagMarker() {
+				// Determine releative position on radar
+				declare netread Vec3 Net_FlagRush_FlagPosition for Teams[0];
+				declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+
+				declare Vec3 RelativePosition;
+				declare CSmPlayer FlagCarrierPlayer <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
+				if(Net_FlagRush_FlagCarrierLogin == "" || FlagCarrierPlayer == Null) {
+					RelativePosition = Net_FlagRush_FlagPosition - GetPlayerPosition(GUIPlayer);
+					FlagMarker.Icon.Colorize = {{{ Colors::C_NeutralLight }}};
+				} else {
+					RelativePosition = GetPlayerPosition(FlagCarrierPlayer) - GetPlayerPosition(GUIPlayer);
+					FlagMarker.Icon.Colorize = GetTeamPrimaryColor(FlagCarrierPlayer.CurrentClan);
+				}
+				declare Vec2 RelativeRadarPosition = Rotate(-GetPlayerYaw(GUIPlayer), <-RelativePosition.X, -RelativePosition.Z>);
+
+				// If too far outside, still show on border
+				declare Distance = ML::Distance(<0., 0.> , RelativeRadarPosition);
+				declare Vec2 UnitDirection = RelativeRadarPosition * (1 / (ML::Abs(Distance) + 0.001));
+				RelativeRadarPosition = UnitDirection * ML::Clamp(Distance, {{{ -C_RadarBaseSize / 2 / G_Config.Zoom }}}, {{{ C_RadarBaseSize / 2 / G_Config.Zoom}}});
+
+				// Update marker frame
+				FlagMarker.Frame.RelativePosition_V3 = RelativeRadarPosition * {{{ G_Config.Zoom }}};
+				FlagMarker.Frame.ZIndex = 1000.;
+				FlagMarker.Glow.Visible = FlagCarrierPlayer != Null;
+				FlagMarker.Up.Visible = RelativePosition.Y >= {{{ UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+				FlagMarker.Down.Visible = RelativePosition.Y <= {{{ -UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+			}
+
+			/**
+			 * Updates a given marker frame with the information of a given player.
+			 */
+			Void UpdatePlayerMarker(CSmPlayer Player, K_PlayerMarker PlayerMarker) {
+				declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+
+				if (Player.User.Login == Net_FlagRush_FlagCarrierLogin) {
+					PlayerMarker.Frame.Hide();
+					return;
+				}
+
+				// Determine relative position on radar
+				declare Vec3 RelativePosition = GetPlayerPosition(Player) - GetPlayerPosition(GUIPlayer);
+				declare Vec2 RelativeRadarPosition = Rotate(-GetPlayerYaw(GUIPlayer), -<RelativePosition.X, RelativePosition.Z>) * {{{ G_Config.Zoom }}};
+
+				// Hide when outside
+				declare OffsetPercentage = ML::Distance(<0., 0.> , RelativeRadarPosition) / {{{ C_RadarBaseSize / 2 }}};
+				if (OffsetPercentage > {{{ C_MarkerFadeEnd }}}) {
+					PlayerMarker.Frame.Hide();
+					return;
+				}
+				PlayerMarker.Frame.Show();
+
+				// Determine relative rotation to the player
+				declare Real RelativeYaw;
+				if (Net_FlagRush_FlagCarrierLogin == Player.User.Login) RelativeYaw = 0.;
+				else RelativeYaw = GetPlayerYaw(Player) - GetPlayerYaw(GUIPlayer);
+
+				// Fade when close too the edge
+				declare Real Opacity = 1.0;
+				if (OffsetPercentage > {{{ C_MarkerFadeStart }}}) {
+					declare Real FadeProgress = ({{{ C_MarkerFadeEnd }}} - OffsetPercentage) / ({{{ C_MarkerFadeEnd - C_MarkerFadeStart }}});
+					Opacity = ML::Clamp(FadeProgress, 0., 1.);
+				}
+
+				// Update marker frame
+				PlayerMarker.Frame.RelativePosition_V3 = RelativeRadarPosition;
+				PlayerMarker.Frame.ZIndex = GetPlayerPosition(Player).Y;
+				PlayerMarker.Frame.RelativeRotation = ML::RadToDeg(-RelativeYaw);
+				PlayerMarker.Icon.TextColor = GetTeamPrimaryColor(Player.CurrentClan);
+				PlayerMarker.Icon.Opacity = Opacity * {{{ C_PlayerMarkerIconOpacity }}};
+				PlayerMarker.Glow.Opacity = Opacity * {{{ C_PlayerMarkerGlowOpacity }}};
+			}
+
+			/**
+			 * Updates that markers for all other player.
+			 * Also differentiates between actual players and spectators.
+			 */
+			Void UpdatePlayerMarkers() {
+				declare Integer ActualPlayerIndex = -1;
+				foreach (Player in Players) {
+					// Check if player is spectator or if we ran out of markers
+					if (Player.RequestsSpectate || Player == GUIPlayer) continue;
+					ActualPlayerIndex += 1;
+					if (ActualPlayerIndex >= PlayerMarkers.count) break;
+
+					// Position Marker
+					declare K_PlayerMarker PlayerMarker = PlayerMarkers[ActualPlayerIndex];
+					UpdatePlayerMarker(Player, PlayerMarker);
+				}
+			}
+
+			/**
+			 * Updates all markers on the radar
+			 */
+			Void UpdateMarkers() {
+				UpdateSelfMarker();
+				UpdateFlagMarker();
+				UpdatePlayerMarkers();
+			}
+
+			main() {
+				/* Variables to track some states */
+				// Some delcares for LocalUser to survive re-inits
+				declare K_RadarUserConfig RadarConfig for LocalUser;
+				declare Boolean SettingsVisibility for LocalUser;
+				declare Boolean Dragging for LocalUser;
+				declare Vec2 DraggingOffset for LocalUser;
+
+				declare Boolean HoverSettingsButton;
+				declare Boolean HoverDragActivator;
+
+				// Init
+				+++LoadRadarUserConfig+++
+				+++AssignMlControlReferences+++
+				+++InitMlControls+++
+
+				while(True) {
+					// Handle events
+					if (Dragging) +++HandleDragging+++
+					+++HandleEvents+++
+
+					// Show or hide Settings dialog
+					CustomizationSettingsDialogFrame.Visible = SettingsVisibility;
+					if (SettingsVisibility) +++UpdateRadarSettings+++
+
+					// Some operations should or can only be done when there is a GUIPlayer
+					if (GUIPlayer == Null) {
+						if(RadarFrame.Visible) +++HideRadar+++
+						yield;
+						continue;
+					}
+					RadarFrame.Show();
+
+					// Show or hide settings button next to map
+					Radar_SettingsButton.Visible = (HoverSettingsButton || HoverDragActivator) && !Dragging;
+
+					// Update visual appearance
+					+++ApplyRadarSettings+++
+					Radar_Background_Border.ModulateColor = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
+
+					UpdateMarkers();
+					yield;
+				}
+			}
+
+		--></script>
+	</manialink>
+	""";
+}

@@ -1,9 +1,17 @@
+#Struct K_FlagPass {
+	CUser OldCarrier;
+	CUser NewCarrier;
+	Integer Date;
+}
+
 #Struct K_FlagState {
 	CMapLandmark Landmark;
 	CUser Carrier;
 	Vec3 Position;
+	Vec3 LastSafePosition;
 	Integer LastDropDate;
 	Integer PickupableDate;
+	K_FlagPass LastFlagPass;
 }
 
 declare K_FlagState G_FlagState;
@@ -71,7 +79,7 @@ Void SetAtPosition(Vec3 Position) {
  */
 Void SetPickupableDate(Integer Date) {
 	G_FlagState.PickupableDate = Date;
-	
+
 	/* Gauge timing */
 	declare FlooredGaugeDuration = Date - Now;
 	if (FlooredGaugeDuration < 0) FlooredGaugeDuration = 0;
@@ -89,13 +97,21 @@ Void SetLastDropDate(Integer Date) {
 }
 
 /**
+ * Set the new flag carrier and also tracks the last pass
+ */
+Void PassFlag(CSmPlayer NewCarrier) {
+	assert(NewCarrier != GetFlagCarrierPlayer(), "Cannot pass the flag between same player");
+	G_FlagState.LastFlagPass = K_FlagPass{OldCarrier = G_FlagState.Carrier, NewCarrier = NewCarrier.User, Date = Now};
+	SetAtCarrier(NewCarrier);
+}
+
+/**
  * Updates the position of the flag when carried by a player.
  */
 Void UpdatePosition() {
-	if(G_FlagState.Carrier != Null) {
-		declare CSmPlayer CarrierPlayer = GetFlagCarrierPlayer();
-		if(CarrierPlayer != Null) {
-			G_FlagState.Position = CarrierPlayer.Position;
-		}
+	declare CSmPlayer CarrierPlayer = GetFlagCarrierPlayer();
+	if (CarrierPlayer != Null) {
+		G_FlagState.Position = CarrierPlayer.Position;
+		if (CarrierPlayer.WheelsContactCount >= 3) G_FlagState.LastSafePosition = CarrierPlayer.Position;
 	}
 }

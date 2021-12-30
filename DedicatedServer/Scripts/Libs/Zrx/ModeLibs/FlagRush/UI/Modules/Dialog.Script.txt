@@ -1,0 +1,59 @@
+/// #RequireContext CSmMlScriptIngame
+
+Text GetManialink(Text Header, Text SubHeader, Text Info) {
+	return """
+	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3" name="FlagRush_Dialog">
+		<frame id="content" pos="0 15" z-index="1000" >
+			<label pos="-3.33 -50" z-index="0" size="40 8" text="Ok" halign="center" valign="center" style="CardButtonMedium" scriptevents="1" id="lblOk"/>
+			<label pos="0 50" z-index="0" size="93.6 7.89" text="{{{Header}}}" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
+			<label pos="0 43" z-index="0" size="59.3 5" text="{{{SubHeader}}}" halign="center" valign="center" id="lblVersion" textfont="GameFontSemiBold"/>
+			<label pos="-74.2 36.7" z-index="0" size="150 80" text="{{{ Info }}}" autonewline="1" maxline="20" textsize="2" id="lblChanges" textfont="GameFontSemiBold" halign="left" valign="top"/>
+			<quad  z-index="0" size="160 110" bgcolor="000" opacity="0.3" halign="center" valign="center" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/MenuLibs/ScrollBar_Center.dds"  modulatecolor="000"/>
+			<quad  z-index="0" size="160 110" opacity="0.9"  alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" halign="center" valign="center"  modulatecolor="115EFFFF"/>
+		</frame>
+		<script><!--
+		main() {
+			declare Boolean Flagrush_Dialog_Hide for UI;
+			declare CMlFrame Frame <=> (Page.GetFirstChild("content") as CMlFrame);
+			declare Boolean run = True;
+
+			if (Flagrush_Dialog_Hide) {
+				Frame.Hide();
+				run = False;
+			}
+
+			while(run) {
+				yield;
+				foreach(Event in PendingEvents) {
+					if(Event.Type == CMlScriptEvent::Type::MouseClick) {
+						if (Event.ControlId == "lblOk") {
+							Flagrush_Dialog_Hide = True;
+							Frame.Hide();
+							run = False;
+						}
+					}
+				}
+			}
+		}
+		--></script>
+	</manialink>
+	""";
+}
+
+Text GetVersionInfo(Text Version) {
+	declare Text Info = "No changes right now.";
+	switch(Version) {
+		case "1.2.0-dev": {
+			Info = """
+Changes:
+	* Added new sounds for Scoring a Flag
+	* Added MVP display
+	* Fixed Flag Spawn randomization
+""";
+		}
+	}
+
+	return GetManialink("FlagRush Testing Server", """Script version: {{{ Version }}}""", Info);
+
+}

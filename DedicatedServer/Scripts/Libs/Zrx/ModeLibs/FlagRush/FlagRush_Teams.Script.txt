@@ -1,12 +1,12 @@
+// #RequireContext CSmMode
+
 #Include "ColorLib"	as CL
 
-#Include "Libs/Zrx/Common/ColorUtils.Script.txt"	as ColorUtils
+#Include "Libs/Zrx/Common/ColorUtils.Script.txt"														as ColorUtils
+#Include "Libs/Zrx/ModeLibs/Common/ClubTagUtils.Script.txt"									as ClubTagUtils
+#Include "/Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt"	as Colors
 
-#Include "Libs/Zrx/ModeLibs/Common/ClubTagUtils.Script.txt"					as ClubTagUtils
-
-#Const	C_DefaultNeutralColor				<1., 1., 1.>
-#Const	C_DefaultTeamName						"???"
-#Const	C_DefaultTeamColors					[0 => <0.2, 0.2, 1.>	, 1 => <1., 0.2, 0.2>	]
+#Const	C_DefaultTeamName						"Unknown Team"
 #Const	C_DefaultTeamNames					[0 => "Team Blue"			, 1 => "Team Red"			]
 
 #Const	C_HueOverlapThreshold				0.166
@@ -17,8 +17,15 @@
 	Vec3 Color;
 }
 
-declare K_TeamConfig[CTeam] G_TeamConfigs;
+#Struct K_TeamSkin {
+	Text SkinName;
+	Text SkinUrl;
+	Ident ItemId;
+	Vec3 Color;
+}
 
+declare K_TeamConfig[CTeam] G_TeamConfigs;
+declare K_TeamSkin[Integer] G_TeamSkins;
 declare Text[Integer] G_TeamNameOverrides;
 declare Text[Integer] G_TeamColorHexOverrides;
 declare Boolean G_UseClubTags;
@@ -44,10 +51,42 @@ Void UseClubTags(Boolean UseClubTags) {
 }
 
 /**
- * Gets the team config by the given clan number (>= 1).
+ * Load the skins
  */
-K_TeamConfig GetConfig(Integer Clan) {
-	return G_TeamConfigs.get(Teams[Clan-1], K_TeamConfig{});
+Void LoadSkins() {
+	declare Text[Integer] Names = [0 => "Skins/Models/CarSport/Stadium_Clan_dolphin.zip", 1 => "Skins/Models/CarSport/Stadium_Clan_ladybug.zip"];
+	declare Text[Integer] Urls = [0 => "", 1 => ""];
+	declare Vec3[Integer] Colors = [0 => CL::Hex6ToRgb("ffffff"), 1 => CL::Hex6ToRgb("ffffff")];
+
+	G_TeamSkins[0] = K_TeamSkin{SkinName=Names[0], SkinUrl=Urls[0], Color=Colors[0]};
+	G_TeamSkins[0].ItemId = ItemList_AddWithSkin("CarSport", Names[0]);
+
+	G_TeamSkins[1] = K_TeamSkin{SkinName=Names[1], SkinUrl=Urls[1], Color=Colors[1]};
+	G_TeamSkins[1].ItemId = ItemList_AddWithSkin("CarSport", Names[1]);
+}
+
+/**
+ * Get ModelId for team
+ */
+Ident GetSkinModelIdForTeam(Integer Team) {
+	if (G_TeamSkins.existskey(Team)) {
+		return G_TeamSkins[Team].ItemId;
+	}
+	return NullId;
+}
+
+/**
+ * Gets Team Dossard Color
+ */
+Vec3 GetTeamDossardColor(Integer TeamNum) {
+	return G_TeamSkins[TeamNum].Color;
+}
+
+/**
+ * Gets a team skin
+ */
+K_TeamSkin[Integer] GetTeamSkins() {
+ return G_TeamSkins;
 }
 
 /**
@@ -58,17 +97,28 @@ K_TeamConfig GetConfig(CTeam Team) {
 }
 
 /**
+ * Gets the team config by the given clan number (>= 1).
+ */
+K_TeamConfig GetConfig(Integer Clan) {
+	return GetConfig(Teams[Clan-1]);
+}
+
+/**
  * Gets the default team color for a given clan.
  */
-Vec3 GetDefaultTeamColor(Integer TeamNum) {
-	return C_DefaultTeamColors.get(TeamNum-1, C_DefaultNeutralColor);
+Vec3 GetDefaultTeamColor(Integer Clan) {
+	switch (Clan) {
+		case 1: return Colors::C_BlueBase;
+		case 2: return Colors::C_RedBase;
+	}
+	return Colors::C_NeutralLight;
 }
 
 /**
  * Gets the default team name for a given clan.
  */
-Text GetDefaultTeamName(Integer TeamNum) {
-	return C_DefaultTeamNames.get(TeamNum-1, C_DefaultTeamName);
+Text GetDefaultTeamName(Integer Clan) {
+	return C_DefaultTeamNames.get(Clan-1, C_DefaultTeamName);
 }
 
 /**
@@ -76,13 +126,11 @@ Text GetDefaultTeamName(Integer TeamNum) {
  */
 Void Private_Configs_InitFromClubTags() {
 	// Get TeamConfigs from ClubTags
-	declare ClubTagUtils::K_TeamConfig[] TeamConfigs = [
+	declare K_TeamConfig[] TeamConfigs = [
 		ClubTagUtils::GetTeamConfig(1),
 		ClubTagUtils::GetTeamConfig(2)
-	];	
-	
-	// Right now: ClubTagUtils::K_TeamConfig is the same as FlagRush_Team::K_TeamConfig
-	// and can be assigned directly
+	];
+
 	G_TeamConfigs = [Teams[0] => TeamConfigs[0], Teams[1] => TeamConfigs[1]];
 }
 
@@ -96,7 +144,7 @@ Void Private_Configs_OverrideEmptyFields() {
 			G_TeamConfigs[Team].Name = G_TeamNameOverrides[TeamIndex];
 		else if (G_TeamConfigs[Team].Name == "")					// Was empty
 			G_TeamConfigs[Team].Name = GetDefaultTeamName(TeamIndex + 1);
-			
+
 		if(G_TeamColorHexOverrides.get(TeamIndex, "") != "")
 			G_TeamConfigs[Team].Color = CL::Hex3ToRgb(G_TeamColorHexOverrides[TeamIndex]);
 		else if (G_TeamConfigs[Team].Color == ClubTagUtils::C_InvalidColor)
@@ -122,13 +170,13 @@ Void Private_Configs_OverrideEmptyFields() {
 Void Private_Configs_AdjustAvoidHueOverlap() {
 	declare Text Team1ColorOverride = G_TeamColorHexOverrides.get(0, "");
 	declare Text Team2ColorOverride = G_TeamColorHexOverrides.get(1, "");
-	
+
 	// Only adjust if at least one team color is not forced by settings
 	if (Team1ColorOverride == "" || Team2ColorOverride == "") {
 		// See table above
 		declare Boolean AdjustFirst = Team2ColorOverride != "" ||
 				(G_TeamConfigs[Teams[1]].ClubTag != "" && G_TeamConfigs[Teams[0]].ClubTag == "" && Team1ColorOverride == "");
-		
+
 		if (AdjustFirst) G_TeamConfigs[Teams[0]].Color = ColorUtils::AdjustHueOverlap(
 				G_TeamConfigs[Teams[1]].Color,
 				G_TeamConfigs[Teams[0]].Color,
@@ -147,15 +195,15 @@ Void Private_Configs_ApplyToTeams() {
 	for(TeamIndex, 0, 1) {
 		Teams[TeamIndex].Name = G_TeamConfigs[Teams[TeamIndex]].Name;
 		declare Vec3 PrimaryColor = G_TeamConfigs[Teams[TeamIndex]].Color;
-		
+
 		// Teams have automatic change for colors; Need full saturation and value (HSV)
 		Teams[TeamIndex].ColorPrimary = ColorUtils::ColorToFullSaturationAndValue(PrimaryColor);
 		Teams[TeamIndex].ColorSecondary = ColorUtils::ColorToFullSaturationAndValue(PrimaryColor);
-		
+
 		// Use "declare for" for actual colors for UI. Player Markers still use Teams[I].ColorPrimary
 		declare Vec3 ColorPrimaryUI for Teams[TeamIndex];
 		ColorPrimaryUI = PrimaryColor;
-		
+
 		declare netwrite Vec3 Net_FlagRush_PrimaryColor for Teams[TeamIndex];
 		Net_FlagRush_PrimaryColor = PrimaryColor;
 	}
@@ -166,7 +214,7 @@ Void Private_Configs_ApplyToTeams() {
  */
 Void Init() {
 	if (G_UseClubTags) Private_Configs_InitFromClubTags();
-	else G_TeamConfigs = [Teams[0] => K_TeamConfig {}, Teams[1] => K_TeamConfig {}];
+ 	else G_TeamConfigs = [Teams[0] => GetConfig(1), Teams[1] => GetConfig(2)];
 	Private_Configs_OverrideEmptyFields();
 	Private_Configs_AdjustAvoidHueOverlap();
 	Private_Configs_ApplyToTeams();

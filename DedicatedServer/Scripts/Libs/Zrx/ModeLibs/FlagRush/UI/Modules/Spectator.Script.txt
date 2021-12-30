@@ -11,17 +11,15 @@ Text GetManialink() {
 		<quad pos="-2.5 0" z-index="3" size="50 10" id="button-ready-activator" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" opacity="0" scriptevents="1"/>
 		<label pos="-4 0" z-index="5" size="40 8" text="Follow Flag Carrier" halign="center" valign="center" textsize="2" style="Default" textfont="GameFontSemiBold"/>
 	</frame>
-	
+
 	<script><!--
 	#Include "TextLib" as TL
 	#Include "MathLib" as ML
 	#Include "ColorLib" as CL
-	
+
 	#Const C_Color_Follow <0.1, 0.7, 0.1>
 	#Const C_Color_NoFollow <0.9, 0.1, 0.1>
-	
-	declare Boolean autoFollow;
-	
+
 	Vec3 TransformColor(Vec3 _BaseColor, Vec3 _Transformation) {
 		declare NewColor = _BaseColor;
 		NewColor = CL::RgbToHsv(NewColor);
@@ -30,26 +28,26 @@ Text GetManialink() {
 		if (NewColor.X > 1.) NewColor.X -= 1.;
 		NewColor.Y = ML::Clamp(NewColor.Y + _Transformation.Y, 0., 1.);
 		NewColor.Z = ML::Clamp(NewColor.Z + _Transformation.Z, 0., 1.);
-		
+
 		return CL::HsvToRgb(NewColor);
 	}
-	
+
 	Vec3 GetFocusColor(Vec3 _Color) {
 		return TransformColor(_Color, <-.0194, 0., -.57>);
 	}
-	
+
 	CSmPlayer GetPlayer(Text Login) {
 		foreach (Player in Players) {
 			if (Player.User.Login == Login) return Player;
 		}
 		return Null;
 	}
-	
+
 	Void Update() {
 		declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
 		declare login = Net_FlagRush_FlagCarrierLogin;
-		
-		if (autoFollow) {
+		declare Boolean FlagRush_AutoFollow for LocalUser;
+		if (FlagRush_AutoFollow) {
 			// spectate specific player
 			if (login != "") {
 				declare CSmPlayer Player <=> GetPlayer(login);
@@ -59,7 +57,7 @@ Text GetManialink() {
 				}
 			} else {
 				//spectate full map
-				ClientUI.Spectator_SetForcedTarget_AllMap();
+				ClientUI.Spectator_SetForcedTarget_AllPlayers();
 				ClientUI.SpectatorForceCameraType = -1;
 			}
 		} else {
@@ -67,45 +65,51 @@ Text GetManialink() {
 			ClientUI.SpectatorForceCameraType = -1;
 		}
 	}
-	
+
 	Vec3 GetColor(Boolean status) {
 		if (status) return C_Color_Follow;
 		return C_Color_NoFollow;
 	}
-	
-	main() {
+
+	Void UpdateButtonState() {
+		declare Boolean FlagRush_AutoFollow for LocalUser;
 		declare CMlLabel toggle = (Page.GetFirstChild("button-ready-icon") as CMlLabel);
 		declare CMlQuad toggleBg = (Page.GetFirstChild("button-ready-background") as CMlQuad);
+		toggle.Value = "";
+		if (FlagRush_AutoFollow) {
+			toggle.Value = "";
+		}
+		toggleBg.Colorize = GetFocusColor(GetColor(FlagRush_AutoFollow));
+		Update();
+	}
+
+	main() {
+		declare Boolean FlagRush_AutoFollow for LocalUser;
 		declare CMlFrame frame <=> (Page.GetFirstChild("Spectator-frame") as CMlFrame);
+		declare CMlQuad toggleBg = (Page.GetFirstChild("button-ready-background") as CMlQuad);
 		declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
 		declare oldLogin = "";
-		autoFollow = False;
-		toggleBg.Colorize = C_Color_NoFollow;
-		
+		UpdateButtonState();
+
 		while(True) {
 			yield;
 			if (InputPlayer != Null && InputPlayer.RequestsSpectate == True) {
 				frame.Show();
 				foreach (Event in PendingEvents) {
 					if (Event.ControlId == "button-ready-activator") {
-						declare Vec3 color = GetColor(autoFollow);
-						
+						declare Vec3 color = GetColor(FlagRush_AutoFollow);
+
 						if (Event.Type == CMlScriptEvent::Type::MouseOver) {
 							toggleBg.Colorize = GetFocusColor(color);
 						}
-						
+
 						if (Event.Type == CMlScriptEvent::Type::MouseOut) {
 							toggleBg.Colorize = color;
 						}
-						
+
 						if (Event.Type == CMlScriptEvent::Type::MouseClick) {
-							autoFollow = !autoFollow;
-							toggle.Value = "";
-							if (autoFollow) {
-								toggle.Value = "";
-							}
-							toggleBg.Colorize = GetFocusColor(GetColor(autoFollow));
-							Update();
+							FlagRush_AutoFollow = !FlagRush_AutoFollow;
+							UpdateButtonState();
 						}
 					}
 				}

@@ -2,6 +2,15 @@
 
 **`FlagRush`** is a Trackmania gamemode, where two teams compete in an arena to capture a flag and bring it to opposing team base. Mode plays best with a team size of 3 players per team.
 
+# Maps
+
+We recommend starting with our officially reviewed mapppacks:
+- 3v3 Mappack: https://trackmania.exchange/mappack/view/1155/flagrush-3v3-map-pool
+- 5v5 Mappack: https://trackmania.exchange/mappack/view/1156/flagrush-5v5-map-pool
+
+You can find other compatible maps on Maniaexchange:
+- All FlagRush maps on TMX: https://trackmania.exchange/mapsearch2?mtype=FlagRushArena
+
 # Server How-to
 
 1. Setup Trackmania2020 dedicated server. ([Tutorial](https://forums.ubisoft.com/showthread.php/2242192-Tutorial-Trackmania-2020-Dedicated-Server))
@@ -16,14 +25,14 @@ Linux:
 ./TrackmaniaServer /game_settings=MatchSettings/flagrush.txt /dedicated_cfg=dedicated_cfg.txt
 ```
 
-Windows: 
+Windows:
 ```powershell
 TrackmaniaServer.exe /game_settings=MatchSettings/flagrush.txt /dedicated_cfg=dedicated_cfg.txt
-``` 
+```
 
 # Mapping Guide
 
-Mapping for FlagRush is quite different compared to mapping for modes like regular TimeAttack, 
+Mapping for FlagRush is quite different compared to mapping for modes like regular TimeAttack,
 Rounds, etc. There are specific requirements that have to be met for the map to work in the mode.
 
 ## Preparations
@@ -47,20 +56,20 @@ Each team tries to **defend** flag scores at their `Team Base`, and **score** th
   - `Team 2` wants to score at `Team 1`'s bases
   - `Team 1` wants to stop `Team 2` from scoring at `Team 1` base
   - `Team 2` wants to stop `Team 1` from scoring at `Team 2` base
-  
+
 
 Each team needs exactly one `Team Spawn` (any `Start` block) and one or more `Team Base` (any `Finish` block). This means that the `Team 1 Base` should be on the same side as the `Team 1 Spawn`.
 
 You need to assign each team the `Spawn` and the `Base` by using the `Edit Block Properties`-tool. (`Block with cogwheel` icon in the `map editor toolbar`)
 
---- 
+---
 
 The `Flag Spawn` is a green, semi-transparent, spehere-shaped item with no collision that marks the location of where the Flag may spawn. Multiple flag spawns are allowed but at least one has to be present. Additionally, one of the flag spawns needs to be set as the `Default Flag Spawn` using the `Edit Block Properties`-tool.
 Technically any `Checkpoint` block can be used as a `Flag Spawn`, but it's recommended to use the provided item for it's point-symmetrical nature which makes it accessible from each direction the same way.
 
 The mode has two options for how flag spawns are chosen in-match; One will force only the `Default Flag Spawn` to be used, and the other will choose a random `Flag Spawn` among all `Flag Spawns` (including the `Default Flag Spawn`).
 
---- 
+---
 
 The `Player Reset` is a small, gold, sphere-shaped item that is used to make sure the gamemode can register a player crossing a `Flag Spawn` or `Base` at any time in the match. This has rather complicated techinical reasons. Just place exactly one somewhere roughly near the middle of the map.
 
@@ -94,27 +103,11 @@ Huge thanks to everyone who helped this project to become reality:
 
 - `Geekid` - for ideas and contributing code
 - `Reaby` - for ideas and contributing code
-- `RealSpace` - for maps, mapping tutorial and ideas
+- `Rxelux` - for ideas and contributing code
+- `RealSpace` - for maps, mapping tutorial and support, map management and ideas
+- `Nalax` - for map management and mapping support
 - `TuplaJ` - for mapping
 
 Join us in our [Discord Server](https://discord.gg/J6ApdyRqEZ)!
 
 The project is licensed under the [MIT License](LICENSE).
-
-# Changelog
-
-## 1.1.0
-+ Added a radar ("minimap") on screen, which shows the location of nearby players and the flag
-+ Added a flag reset trigger for mapping. If you pass it, the flag will instantly be reset at the player will be unspawned. (Similar to offzone)
-+ Added a visual respawn timer which counts down how much time is left until you respawn ("reverse progress bar")
-+ Added a setting for player collision (Experimental; disabled by default)
-  *  Collisions have several issues. For once, TM collisions can be very weird. Apart from that there are Hitbox issues, so sometimes flagsteals from the front or back won't work! Keep that in mind, we will improve on it in the future
-+ Added warnings when timelimit is about to run out (60 seconds remaining, 30 seconds remaining)
-* Increased default player respawn delay: 1.5s -> 3.0s
-* Flag stealing now gives priority to the opposing team, which makes it easier to steal the flag when two teammates are stacked on each other
-* Disabled crude extrapolation for hopefully slightly better player synchronization
-* Some optimizations have been made to make the UI more performant
-* Fixed multiple bugs and crashes
-
-## 1.1.1
-* Fixed an small issue with the radar not displaying some players correctly when in spectator

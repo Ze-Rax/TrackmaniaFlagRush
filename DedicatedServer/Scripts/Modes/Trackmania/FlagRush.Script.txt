@@ -2,7 +2,7 @@
 
 /*
  * FlagRush
- * Gamemode by Ze-Rax, Reaby & Geekid
+ * Gamemode by Ze-Rax, Reaby, Geekid & Rxelux
  */
 
 #Extends "Libs/Zrx/ModeLibs/BaseModes/TeamFlagModeBase.Script.txt"
@@ -34,7 +34,7 @@
 
 /* Constants */
 #Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version												"1.2.0-dev"
+#Const	Version												"1.2.0"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
 #Const	C_SpawnAnimDuration						1500

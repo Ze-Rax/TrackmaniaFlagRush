@@ -58,7 +58,7 @@ Text GetManialink() {
 	<label pos="8 0" z-index="1" size="15 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
 	</framemodel>
 	<frame z-index="5000" id="main-menu" hidden="1">
-	<quad id="background" z-index="-2" pos="0 0" size="70 80" opacity="1" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" halign="center"  modulatecolor="115EFFFF" valign="center"/>
+	<quad id="background" z-index="-2" pos="0 0" size="70 80" opacity="0.7" halign="center" valign="center" bgcolor="000"/>
 	<label pos="0 32" z-index="0" size="93.6 7.89" text="FlagRush" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
 	<quad pos="0 24" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
 	<frame pos="0 15" class="uiContainer uiButton">
@@ -83,7 +83,7 @@ Text GetManialink() {
 	</frame>
 	</frame>
 	<frame z-index="5000" id="teams-menu" hidden="1">
-	<quad id="background" z-index="-2" pos="0 0" size="120 90" opacity="1" alphamask="file://Media/Manialinks/Nadeo/TMNext/Menus/PageMatchmakingMain/Matchmaking_lobby_mode_mask.dds" image="file://Media/Manialinks/Nadeo/TMNext/Menus/Background_marketing.dds" modulatecolor="115EFFFF" valign="center" halign="center"/>
+	<quad id="background" z-index="-2" pos="0 0" size="120 90" opacity="0.7" halign="center" valign="center" bgcolor="000"/>
 	<label pos="0 40" z-index="0" size="93.6 7.89" text="Teams" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
 	<quad pos="0 35" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
 	<frame pos="-55 20">
@@ -163,10 +163,7 @@ Text GetManialink() {
 				MenuFrame = Frame;
 				FocusedButton = Null;
 				Frame.Show();
-				declare Vec3 TeamColor = GetTeamPrimaryColor(InputPlayer.CurrentClan);
-				if (InputPlayer.CurrentClan == 0) TeamColor = CL::Hex3ToRgb("3af");
-				declare CMlQuad Background <=> (Frame.GetFirstChild("background") as CMlQuad);
-				Background.ModulateColor = TeamColor;
+
 				foreach (i => Elem2 in Frame.Controls) {
 					Elem2.RelativeScale = 0.;
 					AnimMgr.Flush(Elem2);

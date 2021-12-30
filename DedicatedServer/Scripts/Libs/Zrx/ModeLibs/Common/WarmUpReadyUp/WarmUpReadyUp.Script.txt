@@ -204,7 +204,7 @@ Void Start() {
 	Layers::Create(WarmUpReadyUp_UI::C_ManialinkName, WarmUpReadyUp_UI::GetManialink());
 	Layers::SetType(WarmUpReadyUp_UI::C_ManialinkName, CUILayer::EUILayerType::Normal);
 	Layers::Attach(WarmUpReadyUp_UI::C_ManialinkName);
-	UIManager.UIAll.SendChat("""$f90Warmup!$fff Ready up by clicking the "Ready"-Button or pressing F7 / """);
+	UIManager.UIAll.SendChat("""$f90Warmup!$fff Ready up by clicking the "Ready"-Button or pressing F7 / """);
 }
 
 /**

@@ -1,6 +1,7 @@
 #Include "TextLib" as TL
 
 #Const 	C_CommandPrefix		"Command_"
+#Const	C_Source_Mode			"CSmModeEvent"
 
 #Struct K_Command {
 	Text		Name;
@@ -76,7 +77,7 @@ K_Command FromEvent(CSmModeEvent Event) {
 		ValueVec3			= Event.CommandValueVec3,
 		ValueInt2			= Event.CommandValueInt2,
 		ValueInt3			= Event.CommandValueInt3,
-		Source				= "CSmModeEvent"
+		Source				= C_Source_Mode
 	};
 }
 

@@ -12,6 +12,9 @@
 #Const C_Warning <1., 0.5, 0.>
 #Const C_Success <0., 1., 0.>
 
+#Const C_Enabled <0.1, 0.7, 0.1>
+#Const C_Disabled <0.9, 0.1, 0.1>
+
 // Other colors
 #Const C_NeutralDark <0., 0., 0.>
 #Const C_NeutralLight <1., 1., 1.>

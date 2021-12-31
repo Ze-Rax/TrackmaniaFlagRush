@@ -1,5 +1,8 @@
 //#RequireContext CSmMlScriptIngame
 
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
+
+
 Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
@@ -20,6 +23,8 @@ Text GetManialink() {
 	#Const C_Color_Follow <0.1, 0.7, 0.1>
 	#Const C_Color_NoFollow <0.9, 0.1, 0.1>
 
+	{{{ UIShared::GetLoginMappingFunctions() }}}
+
 	Vec3 TransformColor(Vec3 _BaseColor, Vec3 _Transformation) {
 		declare NewColor = _BaseColor;
 		NewColor = CL::RgbToHsv(NewColor);
@@ -34,13 +39,6 @@ Text GetManialink() {
 
 	Vec3 GetFocusColor(Vec3 _Color) {
 		return TransformColor(_Color, <-.0194, 0., -.57>);
-	}
-
-	CSmPlayer GetPlayer(Text Login) {
-		foreach (Player in Players) {
-			if (Player.User.Login == Login) return Player;
-		}
-		return Null;
 	}
 
 	Void Update() {

@@ -1,3 +1,6 @@
+// #RequireContext CSmMlScriptIngame
+
+
 Text GetLogoTransparentFramemodel() {
 	return """
 	<framemodel id="flagrush-logo">

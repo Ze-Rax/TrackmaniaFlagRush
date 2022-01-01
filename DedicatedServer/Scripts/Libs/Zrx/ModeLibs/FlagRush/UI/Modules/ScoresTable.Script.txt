@@ -1,11 +1,13 @@
+// #RequireContext CSmMlScriptIngame
+
 #Include 	"ColorLib" as CL
 #Include	"Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 #Include	"Libs/Zrx/ModeLibs/Common/GameplayPhase.Script.txt" as GameplayPhase
 #Include	"Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Logo.Script.txt" as Logo
 
-
 #Const C_PlayersPerPage 5
 
+/** Return Manialink */
 Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
@@ -37,11 +39,13 @@ Text GetManialink() {
 		<frameinstance modelid="playerstatistic-card" pos="43" id="playerstatistic-assists"/>
 
 		<!-- Data -->
-		<quad pos="-50" z-index="1" size="10 10" bgcolor="FFF" halign="left" valign="center" id="avatar"/>
-		<label pos="-37.5 0" z-index="0" size="30 10" text="Player Name" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="left" valign="center2" textfont="GameFontRegular" id="name" textsize="2.5"/>
+		<quad pos="-49 0" z-index="1" size="10 10" bgcolor="FFF" halign="left" valign="center" id="avatar" keepratio="Fit"/>
+		<label pos="-37.5 0" z-index="0" size="30 10" text="Player Name" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="left" valign="center2" textfont="GameFontRegular" id="name" textsize="2.5" />
 		<quad  z-index="0" pos="-3" size="5 5" bgcolor="FFF" halign="center" valign="center" style="UICommon64_1" substyle="Camera_light" id="status" hidden="1"/>
 
-	</framemodel>
+		<!-- BoundingBox -->
+		<quad pos="-50" z-index="2" size="100 10" bgcolor="0000" halign="left" valign="center" scriptevents="1" id="boundingbox"/>
+		</framemodel>
 
 	<framemodel id="playerlist">
 		<quad  z-index="-1" size="102 60" bgcolor="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="top" pos="0" id="background"/>
@@ -107,8 +111,8 @@ Text GetManialink() {
 			</frame>
 		</frame>
 
-		<frameinstance modelid="scorestable-team" id="scorestable-team-0" pos="-52"/>
-		<frameinstance modelid="scorestable-team" id="scorestable-team-1" pos="52"/>
+		<frameinstance modelid="scorestable-team" id="scorestable-team-0" pos="-52" />
+		<frameinstance modelid="scorestable-team" id="scorestable-team-1" pos="52" />
 
 		<frame id="pagecontrols" pos="0 -83">
 			<quad pos="0" z-index="-1" size="206 5" bgcolor="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="top"/>
@@ -444,6 +448,9 @@ Text GetManialink() {
 				}
 			}
 			case CMlScriptEvent::Type::MouseClick: {
+				if (Event.ControlId == "boundingbox") {
+					SetSpectateTarget(Event.Control.Parent.DataAttributeGet("playerlogin"));
+				}
 				switch(Event.ControlId) {
 					case "page-previous": +++PreviousPage+++
 					case "page-next": +++NextPage+++
@@ -533,7 +540,10 @@ Text GetManialink() {
 		declare netread Integer Net_GameplayPhase for Teams[0];
 		declare netread Boolean[Text] Net_FlagRush_WarmUpReadyStates for Teams[0];
 
-		// Basic infomration: Nama, Avatar, Status
+		// SpectatorInfo
+		Playercard.Frame.DataAttributeSet("playerlogin", Score.User.Login);
+
+		// Basic information: Nama, Avatar, Status
 		Playercard.Name.Value = Score.User.Name;
 		if (Net_GameplayPhase == {{{ GameplayPhase::C_Warmup }}} && Net_FlagRush_WarmUpReadyStates.get(Score.User.Login, False)) {
 			Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_Success }}};

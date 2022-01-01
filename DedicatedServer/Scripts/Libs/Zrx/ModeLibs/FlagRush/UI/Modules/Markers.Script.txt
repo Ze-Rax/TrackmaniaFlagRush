@@ -129,6 +129,9 @@ Text GetManialink() {
 
 						QuadFlagDown.Visible = Distance <= {{{ -UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
 						QuadFlagUp.Visible = Distance >= {{{ UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+					} else {
+						QuadFlagDown.Hide();
+						QuadFlagUp.Hide();
 					}
 
 					/* Gauge animation */

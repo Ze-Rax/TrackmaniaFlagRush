@@ -52,7 +52,6 @@ Text GetManialink() {
 	declare K_Item[] Items;
 
 	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
-	{{{ UIShared::GetUtilFunctions() }}}
 
 	/**
 	* Get matchpoints, order is from z to a

@@ -204,7 +204,7 @@ Text GetManialink() {
 	***
 
 	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
-	{{{ UIShared::GetUtilFunctions() }}}
+	{{{ UIShared::GetLoginMappingFunctions() }}}
 
 	main() {
 

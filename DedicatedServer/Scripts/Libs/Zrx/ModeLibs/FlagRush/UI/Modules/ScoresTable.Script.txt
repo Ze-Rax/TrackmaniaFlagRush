@@ -39,7 +39,8 @@ Text GetManialink() {
 		<frameinstance modelid="playerstatistic-card" pos="43" id="playerstatistic-assists"/>
 
 		<!-- Data -->
-		<quad pos="-49 0" z-index="1" size="10 10" bgcolor="FFF" halign="left" valign="center" id="avatar" keepratio="Fit"/>
+		<quad pos="-49 0" z-index="1" size="8 8" bgcolor="FFF" halign="left" valign="center" id="avatar" keepratio="Fit"/>
+		<quad pos="-50 0" z-index="0" size="10 10" bgcolor="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="left" valign="center" />
 		<label pos="-37.5 0" z-index="0" size="30 10" text="Player Name" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="left" valign="center2" textfont="GameFontRegular" id="name" textsize="2.5" />
 		<quad  z-index="0" pos="-3" size="5 5" bgcolor="FFF" halign="center" valign="center" style="UICommon64_1" substyle="Camera_light" id="status" hidden="1"/>
 

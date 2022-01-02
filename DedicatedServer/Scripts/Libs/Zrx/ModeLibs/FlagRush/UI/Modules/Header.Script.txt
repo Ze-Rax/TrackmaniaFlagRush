@@ -159,7 +159,10 @@ Text GetManialink() {
 	if(IsTimeLeft) {
 		Timer.Icon.Hide();
 		Timer.TimerLabel.Show();
-		Timer.TimerLabel.Value = TL::TimeToText(ML::Max(RoundTimeLeft, 0), RoundTimeLeft < 10000);
+		Timer.TimerLabel.Value = TL::TimeToText(
+			ML::Max(RoundTimeLeft, 0),
+			RoundTimeLeft < 10000 && Net_GameplayPhase != {{{ GameplayPhase::C_Warmup }}}
+		);
 
 		if (Net_GameplayPhase == {{{ GameplayPhase::C_Warmup }}}) {
 			Timer.TimerLabel.TextColor = {{{ Colors::C_Warning }}};

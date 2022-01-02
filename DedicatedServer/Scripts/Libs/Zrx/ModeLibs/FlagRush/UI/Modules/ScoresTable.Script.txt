@@ -520,7 +520,7 @@ Text GetManialink() {
 
 			// In warmup, do not show disonnected or spectating players.
 			// Outside of warmup, do not show disconnected or spectating players with no points.
-			if(PlayerIsDisconnectedOrSpectator && (IsWarmup || Score.Points <= 0)) continue;
+			if(PlayerIsDisconnectedOrSpectator && (IsWarmup || Score.Points + Score.RoundPoints <= 0)) continue;
 			ScoresToDisplay[Score.TeamNum - 1].add(Score);
 		}
 		return ScoresToDisplay;

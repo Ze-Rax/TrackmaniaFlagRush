@@ -36,7 +36,7 @@ Text GetManialink() {
 
 		<frame id="timer" z-index="2">
 			<quad pos="0 0" size="20 8" id="background" valign="center" z-index="-1" style="UICommon64_1" substyle="BgFrame1" halign="center" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}"/>
-			<label pos="0 0" z-index="1" size="25 8" text="00:00" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="timelimit" halign="center" valign="center" textsize="2" textfont="GameFontSemiBold"/>
+			<label pos="0 0" z-index="1" size="20 8" text="00:00" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="timelimit" halign="center" valign="center" textsize="2" textfont="GameFontSemiBold"/>
 			<quad pos="0 0" z-index="1" size="8 8" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light" id="icon"/>
 		</frame>
 
@@ -159,7 +159,10 @@ Text GetManialink() {
 	if(IsTimeLeft) {
 		Timer.Icon.Hide();
 		Timer.TimerLabel.Show();
-		Timer.TimerLabel.Value = FormatTime(RoundTimeLeft);
+		Timer.TimerLabel.Value = TL::TimeToText(
+			ML::Max(RoundTimeLeft, 0),
+			RoundTimeLeft < 10000 && Net_GameplayPhase != {{{ GameplayPhase::C_Warmup }}}
+		);
 
 		if (Net_GameplayPhase == {{{ GameplayPhase::C_Warmup }}}) {
 			Timer.TimerLabel.TextColor = {{{ Colors::C_Warning }}};
@@ -203,24 +206,8 @@ Text GetManialink() {
 	}
 	***
 
-	/**
-	 * Formats given millis to a Text mm:ss.
-	 */
-	Text FormatTime(Integer Millis) {
-		declare RoundMinutesLeft = Millis / 60000;
-		declare RoundSecondsLeft = (Millis - RoundMinutesLeft * 60000) / 1000;	// Just the portion
-		declare Text PotentialLeadingZero;
-		if (ML::Abs(RoundSecondsLeft) < 10) PotentialLeadingZero = "0";
-
-		declare Text Time = ML::Abs(RoundMinutesLeft)
-						^ ":" ^ PotentialLeadingZero
-						^ ML::Abs(RoundSecondsLeft);
-		if (Millis < 0) Time = "-" ^ Time;
-		return Time;
-	}
-
 	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
-	{{{ UIShared::GetUtilFunctions() }}}
+	{{{ UIShared::GetLoginMappingFunctions() }}}
 
 	main() {
 

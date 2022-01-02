@@ -1,3 +1,8 @@
+## 1.2.1
++ New mode commands (Callvotes, ModeCommandsUI) for setting match/map/round points and auto team balance.
+* Fix scorestable player statistics
+* Bug fixes and optimizations
+
 ## 1.2.0
 + New Hitboxes! Completely new and very precise player hit detection.
 + Added Radar customization: Drag and move the radar around, or open the radar settings menu to change opcaity, scale and position

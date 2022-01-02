@@ -32,9 +32,9 @@
 #Const C_Timeout_AtLeastOnePlayerReady	60000
 #Const C_Timeout_AllPlayersReady				5000
 
-#Const C_Timeout_State_NotStarted				"NotStarted"
-#Const C_Timeout_State_OnePlayerReady		"AtLeastOnePlayerReady"
-#Const C_Timeout_State_AllPlayersReady	"AllPlayersReady"
+#Const C_Timeout_State_NotStarted				0
+#Const C_Timeout_State_OnePlayerReady		1
+#Const C_Timeout_State_AllPlayersReady	2
 
 #Struct K_WarmUpReadyUpEvent {
 	Text Type;
@@ -47,7 +47,7 @@
 }
 
 #Struct K_TimeoutState {
-	Text State;
+	Integer State;
 	Integer StartTime;
 }
 
@@ -90,7 +90,7 @@ Void Private_AddEvent(Text Type, Text[] Params) {
 /**
  * Start the timeout
  */
-Void Private_StartTimeout(Text State, Integer Timeout) {
+Void Private_StartTimeout(Integer State, Integer Timeout) {
 	G_TimeoutState.State = State;
 	G_TimeoutState.StartTime = Now;
 	EndTime = Now + Timeout;
@@ -100,7 +100,7 @@ Void Private_StartTimeout(Text State, Integer Timeout) {
 /**
  * Update the Timeout
  */
-Void Private_UpdateTimeout(Text State, Integer RemainingTime) {
+Void Private_UpdateTimeout(Integer State, Integer RemainingTime) {
 	G_TimeoutState.State = State;
 	EndTime = Now + RemainingTime;
 	Private_AddEvent(C_Event_Type_TimeoutUpdate, [TL::ToText(RemainingTime)]);
@@ -157,6 +157,7 @@ Boolean Private_MatchCanStart() {
 	// Check players and clans
 	declare K_ClanReadyState[Integer] ClanReadyStates;
 	foreach (Player in Players) {
+		if ((UseClans || UseMultiClans) && Player.CurrentClan == 0) continue;
 		declare K_ClanReadyState PlayerClanReadyState = ClanReadyStates.get(Player.CurrentClan, K_ClanReadyState{});
 		PlayerClanReadyState.NbPlayers += 1;
 		if(G_PlayersReady.get(Player.User.Login, False)) {
@@ -178,8 +179,7 @@ Boolean Private_MatchCanStart() {
 	declare Boolean AllClansAllPlayersReady = True;
 	foreach (Clan => ReadyState in ClanReadyStates) {
 		AllClansAtLeastOnePlayerReady = AllClansAtLeastOnePlayerReady && (ReadyState.NbPlayersReady >= 1);
-		AllClansAllPlayersReady = AllClansAllPlayersReady && (ReadyState.NbPlayersReady == ReadyState.NbPlayers);
-		AllClansAllPlayersReady = AllClansAllPlayersReady && AllClansAtLeastOnePlayerReady;
+		AllClansAllPlayersReady = AllClansAllPlayersReady && (ReadyState.NbPlayersReady == ReadyState.NbPlayers) && AllClansAtLeastOnePlayerReady;
 	}
 
 	// Update Warmup EndTime
@@ -200,6 +200,7 @@ Void Start() {
 	G_WarmUpShouldStop = False;
 	PendingEvents = [];
 	G_PlayersReady = [];
+	G_TimeoutState = K_TimeoutState{};
 
 	Layers::Create(WarmUpReadyUp_UI::C_ManialinkName, WarmUpReadyUp_UI::GetManialink());
 	Layers::SetType(WarmUpReadyUp_UI::C_ManialinkName, CUILayer::EUILayerType::Normal);

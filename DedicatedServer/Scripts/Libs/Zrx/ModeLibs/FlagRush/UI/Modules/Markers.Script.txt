@@ -54,7 +54,8 @@ Text GetManialink() {
 			#Include "MathLib" as ML
 
 			{{{ UIShared::GetTeamColorNetreadFunctions() }}}
-			{{{ UIShared::GetUtilFunctions() }}}
+			{{{ UIShared::GetLoginMappingFunctions() }}}
+			{{{ UIShared::GetPlayerPositionFunctions() }}}
 
 			/** render progress between 0.0 - 1.0 */
 			Void RenderProgress(CMlFrame Frame, Real Value) {
@@ -129,6 +130,9 @@ Text GetManialink() {
 
 						QuadFlagDown.Visible = Distance <= {{{ -UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
 						QuadFlagUp.Visible = Distance >= {{{ UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+					} else {
+						QuadFlagDown.Hide();
+						QuadFlagUp.Hide();
 					}
 
 					/* Gauge animation */

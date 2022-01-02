@@ -34,7 +34,7 @@
 
 /* Constants */
 #Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version												"1.2.0"
+#Const	Version												"1.2.1"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
 #Const	C_SpawnAnimDuration						1500
@@ -97,19 +97,40 @@
 // Constants value has to be the same as the name of the respective command without the Command_ prefix.
 // The Parameter for the Command has to be sent with the Event in the Params array.
 // In case of Vec2/Vec3/Int2/Int3 commands, X, Y & Z each take a seperate entry in the params array.
-#Command	Command_PauseRound		(Boolean) as	"Pause round"
-#Const		C_Command_Pause											"PauseRound"
+#Command	Command_PauseRound							(Boolean) as		"Pause round"
+#Const		C_Command_Pause																	"PauseRound"
 
-#Command	Command_EndWarmup			(Boolean) as 	"End warmup"
-#Const		C_Command_EndWarmup									"EndWarmup"
+#Command	Command_EndWarmup								(Boolean) as 		"End warmup"
+#Const		C_Command_EndWarmup															"EndWarmup"
 
-// #Command	Command_SkipMap				(Boolean) as	"Skip map"
-#Const		C_Command_SkipMap										"SkipMap"
+// #Command	Command_SkipMap									(Boolean) as				"Skip map"
+#Const		C_Command_SkipMap																"SkipMap"
 
-#Command	Command_ResetFlag			(Boolean) as	"Reset flag"
-#Const		C_Command_ResetFlag									"ResetFlag"
+#Command	Command_ResetFlag								(Boolean) as		"Reset flag"
+#Const		C_Command_ResetFlag															"ResetFlag"
 
-#Const		C_Command_SetBots										"SetBots"
+#Command	Command_SetTeam1RoundScore			(Integer) as		"Set Team 1 Round Score"
+#Const		C_Command_SetTeam1RoundScore										"SetTeam1RoundScore"
+
+#Command	Command_SetTeam2RoundScore			(Integer) as		"Set Team 2 Round Score"
+#Const		C_Command_SetTeam2RoundScore										"SetTeam2RoundScore"
+
+#Command	Command_SetTeam1MapScore				(Integer) as		"Set Team 1 Map Score"
+#Const		C_Command_SetTeam1MapScore											"SetTeam1MapScore"
+
+#Command	Command_SetTeam2MapScore				(Integer) as		"Set Team 2 Map Score"
+#Const		C_Command_SetTeam2MapScore											"SetTeam2MapScore"
+
+#Command	Command_SetTeam1MatchScore			(Integer) as		"Set Team 1 Match Score"
+#Const		C_Command_SetTeam1MatchScore										"SetTeam1MatchScore"
+
+#Command	Command_SetTeam2MatchScore			(Integer) as		"Set Team 2 Match Score"
+#Const		C_Command_SetTeam2MatchScore										"SetTeam2MatchScore"
+
+// #Command	Command_BalanceTeams						(Boolean) as		"Balance Teams"
+#Const		C_Command_BalanceTeams													"BalanceTeams"
+
+#Const		C_Command_SetBots																"SetBots"
 
 //////////////////////
 // Global Variables //
@@ -334,11 +355,7 @@ if (G_RoundValid) {
 }
 
 // Check if map is finished
-declare RoundWinsTeam1 = TeamPointsProgression::GetClanRoundsWon(1);
-declare RoundWinsTeam2 = TeamPointsProgression::GetClanRoundsWon(2);
-if(RoundWinsTeam1 >= S_NbRoundsToWinMap || RoundWinsTeam2 >= S_NbRoundsToWinMap) {
-	MB_StopMap();
-}
+if (CheckMapEndConditions()) MB_StopMap();
 ***
 
 ***Match_EndMap***
@@ -378,9 +395,7 @@ if (G_MapValid) {
 }
 
 // Check if match is finished
-declare MapWinsTeam1 = TeamPointsProgression::GetClanMapsWon(1);
-declare MapWinsTeam2 = TeamPointsProgression::GetClanMapsWon(2);
-if(MapWinsTeam1 >= S_NbMapsToWinMatch || MapWinsTeam2 >= S_NbMapsToWinMatch)
+if(CheckMatchEndConditions())
 {
 
 	declare Text Message;
@@ -427,7 +442,7 @@ HandleCommands();
 HandleModeSettingsUpdate();
 
 TimeWarnings::Show();
-CheckRoundEndConditions();
+if (CheckRoundEndConditions()) MB_StopRound();
 CheckPlayercountChanged();
 
 if(G_PauseRequested) {
@@ -452,6 +467,17 @@ ModeCommands::Yield();
 CSmScore GetScore(Text Login) {
 	foreach(Score in Scores) {
 		if(Score.User.Login == Login) return Score;
+	}
+	return Null;
+}
+
+/**
+ * Gets the user for a given login.
+ * Returns null if there is no user for the given login.
+ */
+CUser GetUser(Text Login) {
+	foreach (User in Users) {
+		if(User.Login == Login) return User;
 	}
 	return Null;
 }
@@ -507,12 +533,11 @@ Boolean TimeLimitReached() {
 /**
  * Checks if the conditions to end a round is met.
  */
-Void CheckRoundEndConditions() {
-
+Boolean CheckRoundEndConditions() {
 	switch(GameplayPhase::Get()) {
 		case GameplayPhase::C_Round: {
 			// Check Flags scores
-			if (FlagLimitReached()) MB_StopRound();
+			if (FlagLimitReached()) return True;
 
 			// Check Timelimit
 			if (TimeLimitReached()) {
@@ -526,17 +551,32 @@ Void CheckRoundEndConditions() {
 					declare Text Message = "Time is up!";
 					UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::VictoryPoint, 0);
 					EventFeed::SendMessage(Message, "chrono");
-					MB_StopRound();
+					return True;
 				}
 			}
 		}
 		case GameplayPhase::C_Overtime: {
 			// Check flags scores
 			if(!MatchEvaluation::RoundIsTied()) {
-				MB_StopRound();
+				return True;
 			}
 		}
 	}
+	return False;
+}
+
+/**
+ * Checks if the conditions to end a map is met.
+ */
+Boolean CheckMapEndConditions() {
+	return ML::Max(TeamPointsProgression::GetClanRoundsWon(1), TeamPointsProgression::GetClanRoundsWon(2)) >= S_NbRoundsToWinMap;
+}
+
+/**
+ * Checks if the conditions to end a match is met.
+ */
+Boolean CheckMatchEndConditions() {
+	return ML::Max(TeamPointsProgression::GetClanMapsWon(1), TeamPointsProgression::GetClanMapsWon(2)) >= S_NbMapsToWinMatch;
 }
 
 // --------------------------------------------------
@@ -1146,28 +1186,92 @@ Void HandleEvents() {
  * Handles a single command.
  */
 Void HandleCommand(CommandUtils::K_Command Command) {
-	UIManager.UIAll.SendChat("""{{{FlagRush_Common::C_LogPrefix}}} Received Command: {{{ Command.Name }}}""");
+	// Display a message in chat
+	declare Text CommandSource;
+	if (Command.Source == "") CommandSource = "Unknown Source";
+	else if (GetUser(Command.Source) != Null) CommandSource = GetUser(Command.Source).Name;
+	else CommandSource = Command.Source;
+	declare Text CommandText = "";
+
+	// Handle the command
 	switch(Command.Name) {
 		case CommandUtils::C_CommandPrefix ^ C_Command_EndWarmup: {
 			WarmUpReadyUp::Stop();
+			CommandText = "The warmup was ended.";
 		}
 		case CommandUtils::C_CommandPrefix ^ C_Command_Pause: {
 			G_PauseRequested = True;
+			CommandText = "The round was paused.";
 		}
 		case CommandUtils::C_CommandPrefix ^ C_Command_SkipMap: {
 			MatchEndRequested = True;
+			CommandText = "The map was skipped.";
 		}
 		case CommandUtils::C_CommandPrefix ^ C_Command_ResetFlag: {
 			declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
 			ResetHandicaps(FlagCarrierPlayer);
 			ResetFlag();
+			CommandText = "The flag was reset.";
+		}
+		case CommandUtils::C_CommandPrefix ^ C_Command_SetTeam1RoundScore: {
+			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbFlagsToWinRound);
+			Scores::SetClanRoundPoints(1, Value);
+			FlagRush_UI::UpdateTeamScores();
+			CommandText = """Set {{{ Teams[0].Name }}} round score to {{{ Value }}}.""";
+			if(MB_RoundIsRunning() && CheckRoundEndConditions()) MB_StopRound();
+		}
+		case CommandUtils::C_CommandPrefix ^ C_Command_SetTeam2RoundScore: {
+			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbFlagsToWinRound);
+			Scores::SetClanRoundPoints(2, Value);
+			FlagRush_UI::UpdateTeamScores();
+			CommandText = """Set {{{ Teams[1].Name }}} round score to {{{ Value }}}.""";
+			if(MB_RoundIsRunning() && CheckRoundEndConditions()) MB_StopRound();
+		}
+		case CommandUtils::C_CommandPrefix ^ C_Command_SetTeam1MapScore: {
+			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbRoundsToWinMap);
+			TeamPointsProgression::SetClanRoundsWon(1, Value);
+			FlagRush_UI::UpdateTeamScores();
+			CommandText = """Set {{{ Teams[0].Name }}} map score to {{{ Value }}}.""";
+			if(MB_MapIsRunning() && CheckMapEndConditions()) MB_StopMap();
+		}
+		case CommandUtils::C_CommandPrefix ^ C_Command_SetTeam2MapScore: {
+			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbRoundsToWinMap);
+			TeamPointsProgression::SetClanRoundsWon(2, Value);
+			FlagRush_UI::UpdateTeamScores();
+			CommandText = """Set {{{ Teams[1].Name }}} map score to {{{ Value }}}.""";
+			if(MB_MapIsRunning() && CheckMapEndConditions()) MB_StopMap();
+		}
+		case CommandUtils::C_CommandPrefix ^ C_Command_SetTeam1MatchScore: {
+			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbMapsToWinMatch);
+			TeamPointsProgression::SetClanMapsWon(1, Value);
+			FlagRush_UI::UpdateTeamScores();
+			CommandText = """Set {{{ Teams[0].Name }}} match score to {{{ Value }}}.""";
+			if(MB_MatchIsRunning() && CheckMatchEndConditions()) MB_StopMatch();
+		}
+		case CommandUtils::C_CommandPrefix ^ C_Command_SetTeam2MatchScore: {
+			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbMapsToWinMatch);
+			TeamPointsProgression::SetClanMapsWon(2, Value);
+			FlagRush_UI::UpdateTeamScores();
+			CommandText = """Set {{{ Teams[1].Name }}} match score to {{{ Value }}}.""";
+			if(MB_MatchIsRunning() && CheckMatchEndConditions()) MB_StopMatch();
+		}
+		case CommandUtils::C_CommandPrefix ^ C_Command_BalanceTeams: {
+			ServerAdmin.AutoTeamBalance();
+			CommandText = "The teams were balanced.";
 		}
 		case CommandUtils::C_CommandPrefix ^ C_Command_SetBots: {
-			declare Integer Amount = Command.ValueInteger;
-			if (Amount < 0) Amount = 0;
+			declare Integer Amount = ML::Max(Command.ValueInteger, 0);
 			Users_SetNbFakeUsers(Amount, Amount);
+			CommandText = """Set {{{ Amount }}} bots.""";
+		}
+		default: {
+			CommandText = "Unknown command.";
 		}
 	}
+
+	declare Message = """{{{FlagRush_Common::C_LogPrefix}}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ CommandSource }}}.""";
+	if (CommandText != "") Message ^= " " ^ CommandText;
+	UIManager.UIAll.SendChat(Message);
 }
 
 /**

@@ -176,7 +176,8 @@ Text GetManialink() {
 
 			/* Common Functions */
 			{{{ UIShared::GetTeamColorNetreadFunctions() }}}
-			{{{ UIShared::GetUtilFunctions() }}}
+			{{{ UIShared::GetLoginMappingFunctions() }}}
+			{{{ UIShared::GetPlayerPositionFunctions() }}}
 
 			/**
 			 * Assigns all the needed CMlControl references.

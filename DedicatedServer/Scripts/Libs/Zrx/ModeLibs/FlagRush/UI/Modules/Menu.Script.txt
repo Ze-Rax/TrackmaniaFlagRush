@@ -443,6 +443,7 @@ Text GetManialink() {
 			}
 			case "Quit": {
 				Playground.QuitServer(False);
+				CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Quit);
 			}
 		}
 	}

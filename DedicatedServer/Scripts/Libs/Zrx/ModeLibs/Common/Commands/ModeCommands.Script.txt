@@ -1,7 +1,7 @@
 #Include "TextLib" as TL
 #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt" as CommandUtils
 
-#Const C_UIPosition_Y							65.
+#Const C_UIPosition_Y							20.
 #Const C_InternalCommandPrefix		"MC:"
 
 #Const C_InternalCommand_AddAdmin									"AddAdmin"

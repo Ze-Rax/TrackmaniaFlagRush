@@ -261,7 +261,7 @@ FlagRush_Common::Log("Start Round");
 FlagRush_UI::UpdateScores();
 TimeWarnings::EnableWithTimelimit(S_RoundTimeLimitSeconds);
 
-declare Text Message = "Round Start";
+declare Text Message = "Round " ^ MB_GetRoundCount() ^ " starting...";
 EventFeed::SendMessage(Message, "info");
 UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
 MB_Sleep(C_BigMessage_Duration);

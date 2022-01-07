@@ -25,6 +25,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"					as FlagState
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as MatchEvaluation
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_TimeWarnings.Script.txt"			as TimeWarnings
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_RpcEvents.Script.txt"					as FlagRush_RpcEvent
 
 /* UI */
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt"		as Colors
@@ -198,6 +199,7 @@ ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light");
 HandleModeSettingsUpdate();
+FlagRush_RpcEvent::Init();
 ***
 
 ***Match_LoadItems***
@@ -240,7 +242,9 @@ MB_Sleep(5000);
 
 if(S_UseWarmUp) {
 	FlagRush_Common::Log("Warmup Phase");
+	FlagRush_RpcEvent::SendWarmupStart();
 	ExecWarmUp();
+	FlagRush_RpcEvent::SendWarmupEnd();
 }
 ***
 
@@ -546,6 +550,7 @@ Boolean CheckRoundEndConditions() {
 					declare Text Message = "$f90Overtime";
 					EventFeed::SendMessage(Message, "info");
 					UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
+					FlagRush_RpcEvent::SendOvertime();
 				} else {
 					// Round ends due to time out
 					declare Text Message = "Time is up!";
@@ -668,7 +673,7 @@ Void OnPlayerPicksUpFlag(CSmPlayer Player) {
 	declare Message = """{{{ColorText}}}{{{Player.User.Name}}}$z got the {{{ColorText}}}flag$z!""";
 	UIManager.UIAll.QueueMessage(1500, 1, CUIConfig::EMessageDisplay::Big, Message,	CUIConfig::EUISound::Checkpoint, 0);
 	EventFeed::SendMessage(Message, "flag", Color);
-
+	FlagRush_RpcEvent::SendFlagPickup(Player);
 	// Apply handicaps
 	ApplyHandicaps(Player);
 }
@@ -729,6 +734,7 @@ Void ResetFlag(Integer RespawnDelay, Boolean Silent) {
 	}
 
 	SetFlagPosition(NextFlagSpawn(), Now + RespawnDelay);
+	FlagRush_RpcEvent::SendFlagReset();
 }
 
 Void ResetFlag(Integer RespawnDelay) {
@@ -782,6 +788,7 @@ Void DropFlag(Vec3 GroundPosition) {
 	FlagPosition.Y += 0.5;
 
 	// Set the new flag position
+	FlagRush_RpcEvent::SendFlagDrop(FlagState::GetFlagCarrierPlayer(), GroundPosition);
 	SetFlagPosition(FlagPosition, Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000));
 	FlagState::SetLastDropDate(Now);
 }
@@ -818,18 +825,20 @@ Void ScoreFlag(CSmPlayer Player) {
 	FlagRush_UI::UpdateScore(Player.Score);
 	// Assisting player
 	declare FlagState::K_FlagPass LastPass = FlagState::Get().LastFlagPass;
+	declare CSmPlayer AssistingPlayer;
 	if (Now - LastPass.Date < C_AssistTimeDuration && LastPass.OldCarrier != Null && Player.User != LastPass.OldCarrier) {
 		declare CSmScore AssistingPlayerScore <=> GetScore(LastPass.OldCarrier.Login);
 		if (AssistingPlayerScore.TeamNum == Player.Score.TeamNum) {
 			Scores::AddPlayerRoundPoints(AssistingPlayerScore, FlagRush_Common::C_PointsValue_ScoreFlagAssist);
 			Telemetry::AddPlayerRoundInteger(AssistingPlayerScore, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists, 1);
 			FlagRush_UI::UpdateScore(AssistingPlayerScore);
+			AssistingPlayer <=> GetPlayer(LastPass.OldCarrier.Login);
 		}
 	}
 	// Team
 	Telemetry::AddPlayerRoundInteger(Player.Score, FlagRush_Common::C_Telemetry_Key_FlagsScored, 1);
 	FlagRush_UI::UpdateTeamScores();
-
+	FlagRush_RpcEvent::SendFlagScore(Player, AssistingPlayer);
 	ResetHandicaps(Player);
 	ResetFlag(True);
 	if(S_UseTurns) MB_StopTurn();
@@ -851,6 +860,7 @@ Void StealFlag(CSmPlayer NewCarrier) {
 		FlagRush_UI::UpdateScore(NewCarrier.Score);
 	}
 
+	FlagRush_RpcEvent::SendStealFlag(OldCarrier, NewCarrier);
 	// Reset old flag carrier handicaps
 	ResetHandicaps(OldCarrier);
 
@@ -1060,6 +1070,7 @@ Void OnPlayerDeath(CSmPlayer Player) {
 		declare netwrite Integer Net_SpawnDate for Player;
 		Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
 	}
+	FlagRush_RpcEvent::SendPlayerDeath(Player);
 }
 
 // --------------------------------------------------

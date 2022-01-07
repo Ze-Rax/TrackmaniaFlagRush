@@ -1,0 +1,127 @@
+// #RequireContext CSmMode
+
+#Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"							 	as XmlRpc
+#Include "Libs/Zrx/ModeLibs/Common/TeamPointsProgression.Script.txt" 		as TeamPointsProgression
+#Include "Libs/Nadeo/TMxSM/Race/Scores.Script.txt"											as Scores
+
+// XMLRPC events
+#Const		C_XMLRPC_FlagSteal															"FlagRush.Flag.Steal"
+#Const		C_XMLRPC_FlagDrop																"FlagRush.Flag.Drop"
+#Const		C_XMLRPC_FlagReset															"FlagRush.Flag.Reset"
+#Const		C_XMLRPC_FlagScored															"FlagRush.Flag.Scored"
+#Const 		C_XMLRPC_FlagPickup															"FlagRush.Flag.Pickup"
+#Const		C_XMLRPC_PlayerDeath														"FlagRush.PlayerDeath"
+#Const		C_XMLRPC_Overtime																"FlagRush.Overtime"
+#Const 		C_XMLRPC_WarmUpStart 														"Trackmania.WarmUp.Start"
+#Const 		C_XMLRPC_WarmUpEnd 															"Trackmania.WarmUp.End"
+#Const 		C_XMLRPC_WarmUpStatus 													"Trackmania.WarmUp.Status"
+#Const 		C_Method_WarmUpGetStatus 												"Trackmania.WarmUp.GetStatus"
+
+// Structs
+#Struct K_RpcPlayer {
+	Text Login;
+	Text Name;
+	Integer Team;
+	Text TeamName;
+	Vec3 Position;
+}
+#Struct K_RpcTeam {
+	Integer Id;
+	Text Name;
+	Integer RoundScore;
+	Integer MapScore;
+	Integer MatchScore;
+}
+
+
+#Struct K_RpcFlag {
+	Vec3 Position;
+	K_RpcPlayer Carrier;
+}
+
+#Struct K_RpcCbCarrierFlag {
+	K_RpcPlayer OldCarrier;
+	K_RpcFlag Flag;
+}
+
+#Struct K_RpcCbPlayer {
+	K_RpcPlayer Player;
+}
+
+#Struct K_RpcCbScoreFlag {
+	K_RpcPlayer AssistPlayer;
+	K_RpcPlayer ScorePlayer;
+	K_RpcTeam Team1;
+	K_RpcTeam Team2;
+}
+
+
+Void Init() {
+	XmlRpc::RegisterCallback(C_XMLRPC_FlagPickup, "Called when player picks up the flag");
+	XmlRpc::RegisterCallback(C_XMLRPC_FlagSteal, "Called when flag is stealed");
+	XmlRpc::RegisterCallback(C_XMLRPC_FlagDrop, 	"Called when flag is droped");
+	XmlRpc::RegisterCallback(C_XMLRPC_FlagScored, "Called when flag is scored");
+	XmlRpc::RegisterCallback(C_XMLRPC_FlagReset, "Called when flag is reset");
+	XmlRpc::RegisterCallback(C_XMLRPC_Overtime, "Called when flag is reset");
+	XmlRpc::RegisterCallback(C_XMLRPC_PlayerDeath, "Called when player gets out of bounds");
+
+
+	XmlRpc::RegisterMethod(C_Method_WarmUpGetStatus, "Get warmup status");
+}
+
+K_RpcPlayer GetRpcPlayer(CSmPlayer Player) {
+	if (Player == Null) return K_RpcPlayer{};
+	declare CTeam Team <=> Teams[Player.CurrentClan - 1];
+	return K_RpcPlayer{Login = Player.User.Login, Name = Player.User.Name, Team = Player.CurrentClan, TeamName = Team.Name, Position = Player.Position};
+}
+
+K_RpcTeam GetRpcTeam(Integer Clan) {
+	declare CTeam Team <=> Teams[Clan - 1];
+	declare RoundScore = Scores::GetClanRoundPoints(Clan);
+	declare MapScore	 = TeamPointsProgression::GetClanRoundsWon(Clan);
+	declare MatchScore = TeamPointsProgression::GetClanMapsWon(Clan);
+	return K_RpcTeam{Id = Clan, Name = Team.Name, RoundScore = RoundScore, MapScore = MapScore, MatchScore = MatchScore };
+}
+
+Void SendWarmupStart() {
+	XmlRpc::SendCallback(C_XMLRPC_WarmUpStart, ["{}"]);
+}
+
+Void SendWarmupEnd() {
+	XmlRpc::SendCallback(C_XMLRPC_WarmUpEnd, ["{}"]);
+}
+
+Void SendOvertime() {
+	XmlRpc::SendCallback(C_XMLRPC_Overtime, ["{}"]);
+}
+
+Void SendFlagDrop(CSmPlayer OldCarrier, Vec3 Position) {
+	declare Flag = K_RpcFlag{Position = Position, Carrier = K_RpcPlayer{} };
+	declare K_RpcCbCarrierFlag Data = K_RpcCbCarrierFlag{OldCarrier = GetRpcPlayer(OldCarrier), Flag = Flag};
+	XmlRpc::SendCallback(C_XMLRPC_FlagDrop, Data.tojson());
+}
+
+Void SendStealFlag(CSmPlayer OldCarrier, CSmPlayer NewCarrier) {
+	declare Flag = K_RpcFlag{Position = NewCarrier.Position, Carrier = GetRpcPlayer(NewCarrier) };
+	declare K_RpcCbCarrierFlag Data = K_RpcCbCarrierFlag{OldCarrier = GetRpcPlayer(OldCarrier), Flag = Flag};
+	XmlRpc::SendCallback(C_XMLRPC_FlagSteal, Data.tojson());
+}
+
+Void SendFlagReset() {
+	XmlRpc::SendCallback(C_XMLRPC_FlagReset, ["{}"]);
+}
+
+Void SendFlagScore(CSmPlayer ScorePlayer, CSmPlayer AssistPlayer) {
+	declare K_RpcCbScoreFlag Data = K_RpcCbScoreFlag{ ScorePlayer = GetRpcPlayer(ScorePlayer), AssistPlayer = GetRpcPlayer(AssistPlayer), Team1 = GetRpcTeam(1), Team2 = GetRpcTeam(2) };
+	XmlRpc::SendCallback(C_XMLRPC_FlagScored, Data.tojson());
+}
+
+Void SendPlayerDeath(CSmPlayer Player) {
+	declare K_RpcCbPlayer Data = K_RpcCbPlayer{Player = GetRpcPlayer(Player)};
+	XmlRpc::SendCallback(C_XMLRPC_PlayerDeath, Data.tojson());
+}
+
+Void SendFlagPickup(CSmPlayer Player) {
+	declare K_RpcCbPlayer Data = K_RpcCbPlayer{Player = GetRpcPlayer(Player)};
+	XmlRpc::SendCallback(C_XMLRPC_FlagPickup, Data.tojson());
+}

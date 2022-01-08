@@ -323,7 +323,6 @@ SetEndTime(EndTime + C_BigMessage_Duration);
 ***
 FlagRush_Common::Log("Round End");
 EventFeed::SendMessage("Round End", "info");
-FlagRush_RpcEvent::SendFlowEvent(FlagRush_RpcEvent::C_XMLRPC_RoundEnd);
 SetEndTime(-1);
 MB_ClearAllMessages();
 GameplayPhase::Set(GameplayPhase::C_None);
@@ -362,6 +361,7 @@ if (G_RoundValid) {
 	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 2, CUIConfig::EMessageDisplay::Big, "The round was skipped!", CUIConfig::EUISound::EndRound, 0);
 	MB_Sleep(C_BigMessage_Duration);
 }
+FlagRush_RpcEvent::SendFlowEvent(FlagRush_RpcEvent::C_XMLRPC_RoundEnd);
 
 // Check if map is finished
 if (CheckMapEndConditions()) MB_StopMap();

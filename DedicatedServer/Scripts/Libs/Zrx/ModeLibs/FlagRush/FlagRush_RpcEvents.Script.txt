@@ -44,6 +44,13 @@
 	K_RpcPlayer Carrier;
 }
 
+#Struct K_RpcMap {
+	Text AuthorLogin;
+	Text AuthorName;
+	Text Name;
+}
+
+
 #Struct K_RpcCbCarrierFlag {
 	Integer Time;
 	K_RpcPlayer OldCarrier;
@@ -58,9 +65,9 @@
 #Struct K_RpcCbScoreFlag {
 	Integer Time;
 	K_RpcPlayer AssistPlayer;
-	K_RpcPlayer ScorePlayer;
-	K_RpcTeam Team1;
-	K_RpcTeam Team2;
+	K_RpcPlayer Player;
+	K_RpcTeam Team1Score;
+	K_RpcTeam Team2Score;
 }
 
 #Struct K_RpcCbTime {
@@ -68,7 +75,8 @@
 }
 
 #Struct K_RpcCbFlow {
-	Integer Time;
+	Integer		Time;
+	K_RpcMap 	Map;
 	K_RpcTeam Team1Score;
 	K_RpcTeam Team2Score;
 }
@@ -103,7 +111,8 @@ Integer GetMatchTime() {
 
 K_RpcPlayer GetRpcPlayer(CSmPlayer Player) {
 	if (Player == Null) return K_RpcPlayer{};
-	declare CTeam Team <=> Teams[Player.CurrentClan - 1];
+	declare CTeam Team;
+	if (Player.CurrentClan > 0) Team <=> Teams[Player.CurrentClan - 1];
 	return K_RpcPlayer{Login = Player.User.Login, Name = Player.User.Name, Team = Player.CurrentClan, TeamName = Team.Name, Position = Player.Position};
 }
 
@@ -163,6 +172,10 @@ Void SendFlagPickup(CSmPlayer Player) {
 }
 
 Void SendFlowEvent(Text RPCEvent) {
-	declare K_RpcCbFlow Data = K_RpcCbFlow{Team1Score = GetRpcTeam(1), Team2Score = GetRpcTeam(2), Time = GetMatchTime()};
+	declare K_RpcMap _Map;
+	if (Map != Null) {
+	_Map = K_RpcMap{ Name= Map.MapName, AuthorLogin = Map.AuthorLogin, AuthorName = Map.AuthorNickName };
+	}
+	declare K_RpcCbFlow Data = K_RpcCbFlow{Map = _Map, Team1Score = GetRpcTeam(1), Team2Score = GetRpcTeam(2), Time = GetMatchTime()};
 	XmlRpc::SendCallback(RPCEvent, [Data.tojson()]);
 }

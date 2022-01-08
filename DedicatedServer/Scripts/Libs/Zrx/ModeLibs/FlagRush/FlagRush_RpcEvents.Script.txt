@@ -98,13 +98,13 @@ Void SendOvertime() {
 Void SendFlagDrop(CSmPlayer OldCarrier, Vec3 Position) {
 	declare Flag = K_RpcFlag{Position = Position, Carrier = K_RpcPlayer{} };
 	declare K_RpcCbCarrierFlag Data = K_RpcCbCarrierFlag{OldCarrier = GetRpcPlayer(OldCarrier), Flag = Flag};
-	XmlRpc::SendCallback(C_XMLRPC_FlagDrop, Data.tojson());
+	XmlRpc::SendCallback(C_XMLRPC_FlagDrop, [Data.tojson()]);
 }
 
 Void SendStealFlag(CSmPlayer OldCarrier, CSmPlayer NewCarrier) {
 	declare Flag = K_RpcFlag{Position = NewCarrier.Position, Carrier = GetRpcPlayer(NewCarrier) };
 	declare K_RpcCbCarrierFlag Data = K_RpcCbCarrierFlag{OldCarrier = GetRpcPlayer(OldCarrier), Flag = Flag};
-	XmlRpc::SendCallback(C_XMLRPC_FlagSteal, Data.tojson());
+	XmlRpc::SendCallback(C_XMLRPC_FlagSteal, [Data.tojson()]);
 }
 
 Void SendFlagReset() {
@@ -113,15 +113,15 @@ Void SendFlagReset() {
 
 Void SendFlagScore(CSmPlayer ScorePlayer, CSmPlayer AssistPlayer) {
 	declare K_RpcCbScoreFlag Data = K_RpcCbScoreFlag{ ScorePlayer = GetRpcPlayer(ScorePlayer), AssistPlayer = GetRpcPlayer(AssistPlayer), Team1 = GetRpcTeam(1), Team2 = GetRpcTeam(2) };
-	XmlRpc::SendCallback(C_XMLRPC_FlagScored, Data.tojson());
+	XmlRpc::SendCallback(C_XMLRPC_FlagScored, [Data.tojson()]);
 }
 
 Void SendPlayerDeath(CSmPlayer Player) {
 	declare K_RpcCbPlayer Data = K_RpcCbPlayer{Player = GetRpcPlayer(Player)};
-	XmlRpc::SendCallback(C_XMLRPC_PlayerDeath, Data.tojson());
+	XmlRpc::SendCallback(C_XMLRPC_PlayerDeath, [Data.tojson()]);
 }
 
 Void SendFlagPickup(CSmPlayer Player) {
 	declare K_RpcCbPlayer Data = K_RpcCbPlayer{Player = GetRpcPlayer(Player)};
-	XmlRpc::SendCallback(C_XMLRPC_FlagPickup, Data.tojson());
+	XmlRpc::SendCallback(C_XMLRPC_FlagPickup, [Data.tojson()]);
 }

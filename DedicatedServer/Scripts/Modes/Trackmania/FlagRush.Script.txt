@@ -193,6 +193,8 @@ foreach(Login in ModeCommandsAdminLogins) {
 }
 ModeCommands::AddAdmin("W2ZNWNzVQV6z3hXuNgRMRg");	// Ze-Rax
 ModeCommands::AddAdmin("EdbzfLXMS_aI_PjZCVaygQ");	// Reaby
+ModeCommands::AddAdmin("BiC3-GdBTzaUQxlcSw-qbQ"); // Geekid
+ModeCommands::AddAdmin("pTuyJG9STcCN_11BiU3t0Q"); // Rxelux
 ModeCommands::AddQuickCommand(C_Command_EndWarmup, "Icons64x64_1", "ArrowGreen");
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");

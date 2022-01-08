@@ -371,7 +371,6 @@ if (CheckMapEndConditions()) MB_StopMap();
 ***
 FlagRush_Common::Log("Map End");
 EventFeed::SendMessage("Map End", "info");
-FlagRush_RpcEvent::SendFlowEvent(FlagRush_RpcEvent::C_XMLRPC_MapEnd);
 if (MatchEndRequested) G_MapValid = False;
 ***
 
@@ -403,6 +402,7 @@ if (G_MapValid) {
 	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 2, CUIConfig::EMessageDisplay::Big, "The map was skipped!", CUIConfig::EUISound::EndRound, 0);
 	MB_Sleep(C_BigMessage_Duration);
 }
+FlagRush_RpcEvent::SendFlowEvent(FlagRush_RpcEvent::C_XMLRPC_MapEnd);
 
 // Check if match is finished
 if(CheckMatchEndConditions())

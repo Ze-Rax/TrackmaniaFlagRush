@@ -12,10 +12,15 @@
 #Const 		C_XMLRPC_FlagPickup															"FlagRush.Flag.Pickup"
 #Const		C_XMLRPC_PlayerDeath														"FlagRush.PlayerDeath"
 #Const		C_XMLRPC_Overtime																"FlagRush.Overtime"
+#Const		C_XMLRPC_MatchStart															"FlagRush.Flow.MatchStart"
+#Const		C_XMLRPC_MatchEnd																"FlagRush.Flow.MatchEnd"
+#Const		C_XMLRPC_MapStart																"FlagRush.Flow.MapStart"
+#Const		C_XMLRPC_MapEnd																	"FlagRush.Flow.MapEnd"
+#Const		C_XMLRPC_RoundStart															"FlagRush.Flow.RoundStart"
+#Const		C_XMLRPC_RoundEnd																"FlagRush.Flow.RoundEnd"
 #Const 		C_XMLRPC_WarmUpStart 														"Trackmania.WarmUp.Start"
 #Const 		C_XMLRPC_WarmUpEnd 															"Trackmania.WarmUp.End"
-#Const 		C_XMLRPC_WarmUpStatus 													"Trackmania.WarmUp.Status"
-#Const 		C_Method_WarmUpGetStatus 												"Trackmania.WarmUp.GetStatus"
+
 
 // Structs
 #Struct K_RpcPlayer {
@@ -40,23 +45,38 @@
 }
 
 #Struct K_RpcCbCarrierFlag {
+	Integer Time;
 	K_RpcPlayer OldCarrier;
 	K_RpcFlag Flag;
 }
 
 #Struct K_RpcCbPlayer {
+	Integer Time;
 	K_RpcPlayer Player;
 }
 
 #Struct K_RpcCbScoreFlag {
+	Integer Time;
 	K_RpcPlayer AssistPlayer;
 	K_RpcPlayer ScorePlayer;
 	K_RpcTeam Team1;
 	K_RpcTeam Team2;
 }
 
+#Struct K_RpcCbTime {
+	Integer Time;
+}
+
+#Struct K_RpcCbFlow {
+	Integer Time;
+	K_RpcTeam Team1Score;
+	K_RpcTeam Team2Score;
+}
+
+declare Integer G_MatchStartTime;
 
 Void Init() {
+	G_MatchStartTime = Now;
 	XmlRpc::RegisterCallback(C_XMLRPC_FlagPickup, "Called when player picks up the flag");
 	XmlRpc::RegisterCallback(C_XMLRPC_FlagSteal, "Called when flag is stealed");
 	XmlRpc::RegisterCallback(C_XMLRPC_FlagDrop, 	"Called when flag is droped");
@@ -65,8 +85,20 @@ Void Init() {
 	XmlRpc::RegisterCallback(C_XMLRPC_Overtime, "Called when flag is reset");
 	XmlRpc::RegisterCallback(C_XMLRPC_PlayerDeath, "Called when player gets out of bounds");
 
+	XmlRpc::RegisterCallback(C_XMLRPC_MatchStart, "Called when event occurs");
+	XmlRpc::RegisterCallback(C_XMLRPC_MatchEnd, "Called when event occurs");
+	XmlRpc::RegisterCallback(C_XMLRPC_MapStart, "Called when event occurs");
+	XmlRpc::RegisterCallback(C_XMLRPC_MapEnd, "Called when event occurs");
+	XmlRpc::RegisterCallback(C_XMLRPC_RoundStart, "Called when event occurs");
+	XmlRpc::RegisterCallback(C_XMLRPC_RoundEnd, "Called when event occurs");
+}
 
-	XmlRpc::RegisterMethod(C_Method_WarmUpGetStatus, "Get warmup status");
+Void SetMatchStart() {
+	G_MatchStartTime = Now;
+}
+
+Integer GetMatchTime() {
+	return Now - G_MatchStartTime;
 }
 
 K_RpcPlayer GetRpcPlayer(CSmPlayer Player) {
@@ -84,44 +116,53 @@ K_RpcTeam GetRpcTeam(Integer Clan) {
 }
 
 Void SendWarmupStart() {
-	XmlRpc::SendCallback(C_XMLRPC_WarmUpStart, ["{}"]);
+	declare K_RpcCbTime Data = K_RpcCbTime{Time = GetMatchTime()};
+	XmlRpc::SendCallback(C_XMLRPC_WarmUpStart, [Data.tojson()]);
 }
 
 Void SendWarmupEnd() {
-	XmlRpc::SendCallback(C_XMLRPC_WarmUpEnd, ["{}"]);
+	declare K_RpcCbTime Data = K_RpcCbTime{Time = GetMatchTime()};
+	XmlRpc::SendCallback(C_XMLRPC_WarmUpEnd, [Data.tojson()]);
 }
 
 Void SendOvertime() {
-	XmlRpc::SendCallback(C_XMLRPC_Overtime, ["{}"]);
+	declare K_RpcCbTime Data = K_RpcCbTime{Time = GetMatchTime()};
+	XmlRpc::SendCallback(C_XMLRPC_Overtime, [Data.tojson()]);
 }
 
 Void SendFlagDrop(CSmPlayer OldCarrier, Vec3 Position) {
 	declare Flag = K_RpcFlag{Position = Position, Carrier = K_RpcPlayer{} };
-	declare K_RpcCbCarrierFlag Data = K_RpcCbCarrierFlag{OldCarrier = GetRpcPlayer(OldCarrier), Flag = Flag};
+	declare K_RpcCbCarrierFlag Data = K_RpcCbCarrierFlag{OldCarrier = GetRpcPlayer(OldCarrier), Flag = Flag, Time = GetMatchTime()};
 	XmlRpc::SendCallback(C_XMLRPC_FlagDrop, [Data.tojson()]);
 }
 
 Void SendStealFlag(CSmPlayer OldCarrier, CSmPlayer NewCarrier) {
 	declare Flag = K_RpcFlag{Position = NewCarrier.Position, Carrier = GetRpcPlayer(NewCarrier) };
-	declare K_RpcCbCarrierFlag Data = K_RpcCbCarrierFlag{OldCarrier = GetRpcPlayer(OldCarrier), Flag = Flag};
+	declare K_RpcCbCarrierFlag Data = K_RpcCbCarrierFlag{OldCarrier = GetRpcPlayer(OldCarrier), Flag = Flag, Time = GetMatchTime()};
 	XmlRpc::SendCallback(C_XMLRPC_FlagSteal, [Data.tojson()]);
 }
 
 Void SendFlagReset() {
-	XmlRpc::SendCallback(C_XMLRPC_FlagReset, ["{}"]);
+	declare K_RpcCbTime Data = K_RpcCbTime{Time = GetMatchTime()};
+	XmlRpc::SendCallback(C_XMLRPC_FlagReset, [Data.tojson()]);
 }
 
 Void SendFlagScore(CSmPlayer ScorePlayer, CSmPlayer AssistPlayer) {
-	declare K_RpcCbScoreFlag Data = K_RpcCbScoreFlag{ ScorePlayer = GetRpcPlayer(ScorePlayer), AssistPlayer = GetRpcPlayer(AssistPlayer), Team1 = GetRpcTeam(1), Team2 = GetRpcTeam(2) };
+	declare K_RpcCbScoreFlag Data = K_RpcCbScoreFlag{ Time = GetMatchTime(),  ScorePlayer = GetRpcPlayer(ScorePlayer), AssistPlayer = GetRpcPlayer(AssistPlayer), Team1 = GetRpcTeam(1), Team2 = GetRpcTeam(2) };
 	XmlRpc::SendCallback(C_XMLRPC_FlagScored, [Data.tojson()]);
 }
 
 Void SendPlayerDeath(CSmPlayer Player) {
-	declare K_RpcCbPlayer Data = K_RpcCbPlayer{Player = GetRpcPlayer(Player)};
+	declare K_RpcCbPlayer Data = K_RpcCbPlayer{Player = GetRpcPlayer(Player), Time = GetMatchTime()};
 	XmlRpc::SendCallback(C_XMLRPC_PlayerDeath, [Data.tojson()]);
 }
 
 Void SendFlagPickup(CSmPlayer Player) {
-	declare K_RpcCbPlayer Data = K_RpcCbPlayer{Player = GetRpcPlayer(Player)};
+	declare K_RpcCbPlayer Data = K_RpcCbPlayer{Player = GetRpcPlayer(Player), Time = GetMatchTime()};
 	XmlRpc::SendCallback(C_XMLRPC_FlagPickup, [Data.tojson()]);
+}
+
+Void SendFlowEvent(Text RPCEvent) {
+	declare K_RpcCbFlow Data = K_RpcCbFlow{Team1Score = GetRpcTeam(1), Team2Score = GetRpcTeam(2), Time = GetMatchTime()};
+	XmlRpc::SendCallback(RPCEvent, [Data.tojson()]);
 }

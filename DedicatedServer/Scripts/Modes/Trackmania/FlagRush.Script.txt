@@ -211,6 +211,8 @@ FlagRush_Teams::LoadSkins();
 ***
 FlagRush_Common::Log("Start Match");
 EventFeed::SendMessage("Match Start", "info");
+FlagRush_RpcEvent::SetMatchStart();
+FlagRush_RpcEvent::SendFlowEvent(FlagRush_RpcEvent::C_XMLRPC_MatchStart);
 ***
 
 ***Match_InitMap***
@@ -246,6 +248,8 @@ if(S_UseWarmUp) {
 	ExecWarmUp();
 	FlagRush_RpcEvent::SendWarmupEnd();
 }
+
+FlagRush_RpcEvent::SendFlowEvent(FlagRush_RpcEvent::C_XMLRPC_MapStart);
 ***
 
 ***Match_InitRound***
@@ -264,6 +268,7 @@ FlagRush_Common::Log("Start Round");
 
 FlagRush_UI::UpdateScores();
 TimeWarnings::EnableWithTimelimit(S_RoundTimeLimitSeconds);
+FlagRush_RpcEvent::SendFlowEvent(FlagRush_RpcEvent::C_XMLRPC_RoundStart);
 
 declare Text Message = "Round Start";
 EventFeed::SendMessage(Message, "info");
@@ -318,7 +323,7 @@ SetEndTime(EndTime + C_BigMessage_Duration);
 ***
 FlagRush_Common::Log("Round End");
 EventFeed::SendMessage("Round End", "info");
-
+FlagRush_RpcEvent::SendFlowEvent(FlagRush_RpcEvent::C_XMLRPC_RoundEnd);
 SetEndTime(-1);
 MB_ClearAllMessages();
 GameplayPhase::Set(GameplayPhase::C_None);
@@ -366,6 +371,7 @@ if (CheckMapEndConditions()) MB_StopMap();
 ***
 FlagRush_Common::Log("Map End");
 EventFeed::SendMessage("Map End", "info");
+FlagRush_RpcEvent::SendFlowEvent(FlagRush_RpcEvent::C_XMLRPC_MapEnd);
 if (MatchEndRequested) G_MapValid = False;
 ***
 
@@ -431,6 +437,7 @@ Layers::DestroyAll();
 ***
 FlagRush_Common::Log("Match End");
 EventFeed::SendMessage("Match End", "info");
+FlagRush_RpcEvent::SendFlowEvent(FlagRush_RpcEvent::C_XMLRPC_MatchEnd);
 ***
 
 ***Match_PlayLoop***

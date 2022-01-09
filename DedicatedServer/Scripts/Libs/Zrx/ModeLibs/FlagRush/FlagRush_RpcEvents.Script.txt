@@ -157,7 +157,7 @@ Void SendFlagReset() {
 }
 
 Void SendFlagScore(CSmPlayer ScorePlayer, CSmPlayer AssistPlayer) {
-	declare K_RpcCbScoreFlag Data = K_RpcCbScoreFlag{ Time = GetMatchTime(),  ScorePlayer = GetRpcPlayer(ScorePlayer), AssistPlayer = GetRpcPlayer(AssistPlayer), Team1 = GetRpcTeam(1), Team2 = GetRpcTeam(2) };
+	declare K_RpcCbScoreFlag Data = K_RpcCbScoreFlag{ Time = GetMatchTime(),  Player = GetRpcPlayer(ScorePlayer), AssistPlayer = GetRpcPlayer(AssistPlayer), Team1Score = GetRpcTeam(1), Team2Score = GetRpcTeam(2) };
 	XmlRpc::SendCallback(C_XMLRPC_FlagScored, [Data.tojson()]);
 }
 

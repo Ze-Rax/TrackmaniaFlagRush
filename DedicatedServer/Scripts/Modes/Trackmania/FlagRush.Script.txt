@@ -35,7 +35,7 @@
 
 /* Constants */
 #Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version												"1.2.1"
+#Const	Version												"1.3.0-dev"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
 #Const	C_SpawnAnimDuration						1500
@@ -249,7 +249,7 @@ if(S_UseWarmUp) {
 	FlagRush_RpcEvent::SendWarmupEnd();
 }
 
-FlagRush_RpcEvent::SendFlowEvent(FlagRush_RpcEvent::C_XMLRPC_MapStart);
+FlagRush_RpcEvent::SendPlayerFlowEvent(FlagRush_RpcEvent::C_XMLRPC_MapStart);
 ***
 
 ***Match_InitRound***
@@ -437,7 +437,7 @@ Layers::DestroyAll();
 ***
 FlagRush_Common::Log("Match End");
 EventFeed::SendMessage("Match End", "info");
-FlagRush_RpcEvent::SendFlowEvent(FlagRush_RpcEvent::C_XMLRPC_MatchEnd);
+FlagRush_RpcEvent::SendPlayerFlowEvent(FlagRush_RpcEvent::C_XMLRPC_MatchEnd);
 ***
 
 ***Match_PlayLoop***

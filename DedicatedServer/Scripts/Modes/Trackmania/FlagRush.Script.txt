@@ -589,6 +589,8 @@ Boolean CheckMatchEndConditions() {
 Void InitPlayer(CSmPlayer Player) {
 	Player.TrustClientSimu = True;
 	Player.UseCrudeExtrapolation = !UsePvPCollisions && S_UseCrudeExtrapolation;
+	Player.Dossard_Number = "  ";
+	Player.Dossard_Color = <1., 1., 1.>;
 	declare Integer PreviousClan for Player;
 	SetPlayerClan(Player, Player.RequestedClan);
 

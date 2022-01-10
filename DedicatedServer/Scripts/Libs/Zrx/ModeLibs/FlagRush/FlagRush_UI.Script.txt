@@ -46,11 +46,6 @@
 #Const C_FlagCarrierName_Dropped 	"Dropped"
 #Const C_FlagCarrierName_Spawn		"Spawn"
 
-#Const C_Trigram_FlagCarrier			"FLG"
-#Const C_Trigram_FlagOwnTeam 			"OWN"
-#Const C_Trigram_FlagOpponent			"OPP"
-#Const C_Trigram_FlagNoCarrier		"   "
-
 #Const C_FlagMarker_Box_Player		<0., 1., 0.>
 #Const C_FlagMarker_Box_Landmark	<0., 3., 0.>
 #Const C_FlagMarker_Box_Position	<0., 0., 0.>
@@ -245,40 +240,6 @@ Void Init(Text FlagRush_Version) {
 
 	// Radar
 	InitRadar();
-}
-
-/**
- * Updates the dossard for a specific player.
- */
- Void UpdateDossard(CSmPlayer Player) {
-	if (Player.CurrentClan <= 0) return;
-
-	// Color
-	Player.Dossard_Color = FlagRush_Teams::GetTeamDossardColor(Player.CurrentClan-1);
-	Player.Dossard_Number = "0" ^ Player.CurrentClan;
-
-	// Text
-	declare FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
-	if (FlagCarrierPlayer != Null) {
-		if(FlagCarrierPlayer == Player) {
-			Player.Dossard_Trigram = C_Trigram_FlagCarrier;
-		} else if (FlagCarrierPlayer.CurrentClan == Player.CurrentClan) {
-			Player.Dossard_Trigram = C_Trigram_FlagOwnTeam;
-		} else {
-			Player.Dossard_Trigram = C_Trigram_FlagOpponent;
-		}
-	} else {
-		Player.Dossard_Trigram = C_Trigram_FlagNoCarrier;
-	}
-}
-
-/**
- * Updates the dossard for all players.
- */
-Void UpdateDossards() {
-	foreach (Player in Players) {
-		UpdateDossard(Player);
-	}
 }
 
 /**

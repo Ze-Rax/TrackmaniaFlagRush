@@ -202,7 +202,7 @@ K_RpcPlayerScore GetRpcPlayerFromScore(CSmScore Score, K_Team _Team) {
 
 K_RpcTeam GetRpcTeam(Integer Clan) {
 	declare CTeam Team <=> Teams[Clan - 1];
-	TeamName = "";
+	declare Text TeamName = "";
 	if (Team != Null) TeamName = Team.Name;
 	declare RoundScore = Scores::GetClanRoundPoints(Clan);
 	declare MapScore	 = TeamPointsProgression::GetClanRoundsWon(Clan);

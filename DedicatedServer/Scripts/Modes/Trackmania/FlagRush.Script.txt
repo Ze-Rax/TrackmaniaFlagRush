@@ -867,7 +867,7 @@ Void StealFlag(CSmPlayer NewCarrier) {
 		FlagRush_UI::UpdateScore(NewCarrier.Score);
 	}
 
-	FlagRush_RpcEvent::SendStealFlag(OldCarrier, NewCarrier);
+	FlagRush_RpcEvent::SendFlagSteal(OldCarrier, NewCarrier);
 	// Reset old flag carrier handicaps
 	ResetHandicaps(OldCarrier);
 

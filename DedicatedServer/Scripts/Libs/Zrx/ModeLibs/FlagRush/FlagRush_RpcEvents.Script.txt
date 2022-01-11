@@ -231,7 +231,7 @@ Void SendFlagDrop(CSmPlayer OldCarrier, Vec3 Position) {
 	XmlRpc::SendCallback(C_XMLRPC_FlagDrop, [Data.tojson()]);
 }
 
-Void SendStealFlag(CSmPlayer OldCarrier, CSmPlayer NewCarrier) {
+Void SendFlagSteal(CSmPlayer OldCarrier, CSmPlayer NewCarrier) {
 	declare Flag = K_RpcFlag{Position = NewCarrier.Position, Carrier = GetRpcPlayer(NewCarrier) };
 	declare K_RpcCbCarrierFlag Data = K_RpcCbCarrierFlag{OldCarrier = GetRpcPlayer(OldCarrier), Flag = Flag, Time = GetMatchTime()};
 	XmlRpc::SendCallback(C_XMLRPC_FlagSteal, [Data.tojson()]);

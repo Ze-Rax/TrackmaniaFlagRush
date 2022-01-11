@@ -145,9 +145,10 @@ Integer GetMatchTime() {
 
 K_Team GetTeamFromLogin(Text Login) {
 	declare CSmPlayer Player <=> GetPlayer(Login);
-	if (Player == Null) return K_Team{};
 	declare CTeam Team;
+	if (Player == Null) return K_Team{};
 	if (Player.CurrentClan > 0) Team <=> Teams[Player.CurrentClan - 1];
+	if (Team == Null) return K_Team{};
 	return K_Team{Num = Player.CurrentClan, Name = Team.Name };
 }
 

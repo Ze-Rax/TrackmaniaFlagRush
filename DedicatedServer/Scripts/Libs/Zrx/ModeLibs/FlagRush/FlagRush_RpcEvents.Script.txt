@@ -184,6 +184,8 @@ K_RpcPlayer GetRpcPlayer(CSmPlayer Player) {
 	if (Player == Null) return K_RpcPlayer{};
 	declare CTeam Team;
 	if (Player.CurrentClan > 0) Team <=> Teams[Player.CurrentClan - 1];
+	if (Team == Null) return K_RpcPlayer{Login = Player.User.Login, Name = Player.User.Name,
+		Team = Player.CurrentClan, Position = Player.Position};
 	return K_RpcPlayer{Login = Player.User.Login, Name = Player.User.Name,
 		Team = Player.CurrentClan, TeamName = Team.Name, Position = Player.Position
 	};
@@ -200,10 +202,12 @@ K_RpcPlayerScore GetRpcPlayerFromScore(CSmScore Score, K_Team _Team) {
 
 K_RpcTeam GetRpcTeam(Integer Clan) {
 	declare CTeam Team <=> Teams[Clan - 1];
+	TeamName = "";
+	if (Team != Null) TeamName = Team.Name;
 	declare RoundScore = Scores::GetClanRoundPoints(Clan);
 	declare MapScore	 = TeamPointsProgression::GetClanRoundsWon(Clan);
 	declare MatchScore = TeamPointsProgression::GetClanMapsWon(Clan);
-	return K_RpcTeam{Id = Clan, Name = Team.Name, RoundScore = RoundScore, MapScore = MapScore, MatchScore = MatchScore };
+	return K_RpcTeam{Id = Clan, Name = TeamName, RoundScore = RoundScore, MapScore = MapScore, MatchScore = MatchScore};
 }
 
 Void SendWarmupStart() {
@@ -239,7 +243,7 @@ Void SendFlagReset() {
 }
 
 Void SendFlagScore(CSmPlayer ScorePlayer, CSmPlayer AssistPlayer) {
-	declare K_RpcCbScoreFlag Data = K_RpcCbScoreFlag{ Time = GetMatchTime(),  Player = GetRpcPlayer(ScorePlayer), AssistPlayer = GetRpcPlayer(AssistPlayer), Team1Score = GetRpcTeam(1), Team2Score = GetRpcTeam(2) };
+	declare K_RpcCbScoreFlag Data = K_RpcCbScoreFlag{ Time = GetMatchTime(), Player = GetRpcPlayer(ScorePlayer), AssistPlayer = GetRpcPlayer(AssistPlayer), Team1Score = GetRpcTeam(1), Team2Score = GetRpcTeam(2) };
 	XmlRpc::SendCallback(C_XMLRPC_FlagScored, [Data.tojson()]);
 }
 

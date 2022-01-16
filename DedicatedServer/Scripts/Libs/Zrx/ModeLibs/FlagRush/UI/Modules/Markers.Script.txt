@@ -3,6 +3,9 @@
 #Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt"	as UIShared
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"	as FlagRush_Map
 
+#Const C_FlagMarkerFrameId						"marker-flag"
+#Const C_FlagSpawnMarkerFrameIdPrefix	"marker-flag-spawn-"
+
 Text GetManialink() {
 
 	declare Text BasesFrameInstancesXml;
@@ -17,7 +20,7 @@ Text GetManialink() {
 	declare Text FlagSpawnMarkerFrameInstancesXml;
 	for(I, 0, FlagRush_Map::GetFlagSpawns().count - 1) {
 		FlagSpawnMarkerFrameInstancesXml ^= """
-		<frameinstance modelid="model-marker-flag" id="marker-flag-spawn-{{{I}}}" scale="0.7"/>
+		<frameinstance modelid="model-marker-flag" id="{{{C_FlagSpawnMarkerFrameIdPrefix ^ I}}}" scale="0.7"/>
 		""";
 	}
 
@@ -46,7 +49,7 @@ Text GetManialink() {
 
 		{{{BasesFrameInstancesXml}}}
 
-		<frameinstance modelid="model-marker-flag" id="marker-flag"/>
+		<frameinstance modelid="model-marker-flag" id="{{{ C_FlagMarkerFrameId }}}"/>
 
 		{{{FlagSpawnMarkerFrameInstancesXml}}}
 
@@ -89,7 +92,7 @@ Text GetManialink() {
 					Team2BaseMarkerFrames.add(FrameMarkerBase2);
 				}
 
-				declare CMlFrame FrameMarkerFlag = (Page.GetFirstChild("marker-flag") as CMlFrame);
+				declare CMlFrame FrameMarkerFlag = (Page.GetFirstChild("{{{ C_FlagMarkerFrameId }}}") as CMlFrame);
 				declare CMlFrame FrameGauge = (Page.GetFirstChild("gauge-frame") as CMlFrame);
 				declare CMlQuad QuadMarkerFlag = (FrameMarkerFlag.GetFirstChild("quad-flag") as CMlQuad);
 				declare CMlQuad QuadFlagUp = (FrameMarkerFlag.GetFirstChild("up") as CMlQuad);

@@ -200,6 +200,9 @@ ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light");
 HandleModeSettingsUpdate();
+
+// UI
+FlagRush_UI::Init(Version);
 ***
 
 ***Match_LoadItems***
@@ -218,8 +221,8 @@ EventFeed::SendMessage("Match Start", "info");
 FlagRush_Map::InitLandmarks();
 Map::SetDefaultStart(FlagRush_Map::GetSpawn(1));
 FlagState::SetAtLandmark(FlagRush_Map::GetDefaultFlagSpawn());
+FlagRush_UI::UpdateMapMarkers();
 
-FlagRush_UI::Init(Version);
 InitPlayers();
 FlagRush_Teams::Init();
 SetEndTime(-1);
@@ -250,7 +253,6 @@ if(S_UseWarmUp) {
 G_RoundValid = True;
 GameplayPhase::Set(GameplayPhase::C_Round);
 InitPlayers();
-FlagRush_UI::InitMarkers();
 FlagRush_Teams::Init();
 ***
 
@@ -419,14 +421,17 @@ if(CheckMatchEndConditions())
 	FlagRush_UI::ToggleMVP(False);
 	MB_StopMatch();
 }
-
-Layers::DestroyAll();
 ***
 
 ***Match_EndMatch***
 ***
 FlagRush_Common::Log("Match End");
 EventFeed::SendMessage("Match End", "info");
+***
+
+***Match_EndServer***
+***
+FlagRush_UI::Destroy();
 ***
 
 ***Match_PlayLoop***
@@ -501,7 +506,7 @@ Void SendWelcomeMessage(CSmPlayer Player) {
 
 Void CheckPlayercountChanged() {
 	if (Players.count != G_LastPlayersCount) {
-		FlagRush_UI::InitRadar();
+		FlagRush_UI::UpdateRadar();
 		FlagRush_Teams::Init();
 
 		G_LastPlayersCount = Players.count;
@@ -1134,7 +1139,7 @@ Void HandleEvents() {
 			case CSmModeEvent::EType::OnPlayerAdded: {
 				SendWelcomeMessage(Event.Player);
 				FlagRush_Teams::Init();
-				FlagRush_UI::InitRadar();
+				FlagRush_UI::UpdateRadar();
 			}
 
 			case CSmModeEvent::EType::OnPlayerRemoved: {
@@ -1142,7 +1147,7 @@ Void HandleEvents() {
 				// This is the reason why Carrier in FlagState is not CSmPlayer
 				if(FlagState::Get().Carrier == Event.User) DropFlag();
 				FlagRush_Teams::Init();
-				FlagRush_UI::InitRadar();
+				FlagRush_UI::UpdateRadar();
 			}
 		}
 	}
@@ -1309,10 +1314,10 @@ Void HandleCommands() {
 			case CSmModeEvent::EType::OnPlayerAdded: {
 				InitPlayer(Event.Player);
 				SendWelcomeMessage(Event.Player);
-				FlagRush_UI::InitRadar();
+				FlagRush_UI::UpdateRadar();
 			}
 			case CSmModeEvent::EType::OnPlayerRemoved: {
-				FlagRush_UI::InitRadar();
+				FlagRush_UI::UpdateRadar();
 			}
 			case CSmModeEvent::EType::OnPlayerRequestRespawn: {
 				declare CSmPlayer EventPlayer = Event.Player;
@@ -1360,7 +1365,8 @@ Void ExecWarmUp() {
 
 	InitPlayers();
 	FlagRush_Teams::Init();
-	FlagRush_UI::InitMarkers();
+	FlagRush_UI::ShowFlagSpawnMarkers();
+	FlagRush_UI::HideFlagMarker();
 
 	StartTime = Now;
 	SetEndTime(-1);
@@ -1398,7 +1404,8 @@ Void ExecWarmUp() {
 	// Cleanup
 	GameplayPhase::Set(PreviousGameplayPhase);
 	UIManager.UIAll.UISequence = PrevUISequence;
-	FlagRush_UI::InitMarkers();
+	FlagRush_UI::HideFlagSpawnMarkers();
+	FlagRush_UI::ShowFlagMarker();
 	foreach(Player in Players) {
 		UnspawnPlayer(Player);
 	}

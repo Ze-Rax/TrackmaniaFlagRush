@@ -31,7 +31,6 @@
 #Const C_LayerName_Dialog							"Layer_FlagRush_Dialog"
 #Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
 #Const C_LayerName_ScoresHeader				"Layer_FlagRush_ScoresHeader"
-#Const C_LayerName_RoundUI						"Layer_FlagRush_RoundUI"
 #Const C_LayerName_MVP								"Layer_FlagRush_MVP"
 #Const C_LayerName_Markers						"Layer_FlagRush_Markers"
 #Const C_LayerName_Menu								"Layer_FlagRush_Menu"
@@ -55,22 +54,55 @@
 declare CUIConfigMarker G_FlagMarker;
 
 /**
- * Puts a marker above every flag spawn.
+ * Destroys all the FlagRush UI layers.
  */
-Void InitFlagSpawnMarkers() {
-	// Create a marker for each spawn
-	foreach(I => FlagSpawn in FlagRush_Map::GetFlagSpawns()) {
-		declare Marker = UIManager.UIAll.AddMarker(FlagSpawn);
-		Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
-		Marker.ManialinkFrameId = "marker-flag-spawn-"^I;
-		Marker.Box = <0., 3.3, 0.>;
-	}
+Void Destroy() {
+	Layers::Destroy(C_LayerName_Dialog);
+	Layers::Destroy(C_LayerName_ScoresTable);
+	Layers::Destroy(C_LayerName_ScoresHeader);
+	Layers::Destroy(C_LayerName_MVP);
+	Layers::Destroy(C_LayerName_Markers);
+	Layers::Destroy(C_LayerName_Menu);
+	Layers::Destroy(C_LayerName_Feed);
+	Layers::Destroy(C_LayerName_Flash);
+	Layers::Destroy(C_LayerName_Sound);
+	Layers::Destroy(C_LayerName_Spectator);
+	Layers::Destroy(C_LayerName_Respawn);
+	Layers::Destroy(C_LayerName_ModeCommands);
+	Layers::Destroy(C_LayerName_Radar);
+}
+
+/**
+ * Changes the flag markers visibility to "Always".
+ */
+Void ShowFlagMarker() {
+	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+}
+
+/**
+ * Changes the flag markers visibility to "Never".
+ */
+Void HideFlagMarker() {
+	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
 }
 
 /**
  * Destroys the old flag marker and places a new one at the corresponding location.
  */
- Void InitFlagMarker() {
+ Void UpdateFlagMarker() {
+	// Remove old Flag marker
+	// IMPORTANT: Cannot remove G_FlagMarker from UIAll, because UIAll.Markers more or less references a list of UI.Markers for all UIs!
+	// Trying to use UIAll.RemoveMarker(G_FlagMarker) after a new map loaded will lead to an access error for a specific UI ("Element not found in Array").
+	// Fortunately, removing corresponding markers from every specific UI individually apparently also removes it from UIAll.
+	foreach (UI in UIManager.UI) {
+		foreach (Marker in UI.Markers) {
+			if(Marker.ManialinkFrameId == FlagRush_UIMarkers::C_FlagMarkerFrameId) {
+				UI.RemoveMarker(Marker);
+				break;
+			}
+		}
+	}
+
 	// Create a new marker
 	declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
 	if (FlagCarrierPlayer != Null) {
@@ -84,57 +116,37 @@ Void InitFlagSpawnMarkers() {
 		G_FlagMarker.Box = C_FlagMarker_Box_Position;
 	}
 
-	G_FlagMarker.ManialinkFrameId = "marker-flag";
-	G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+	G_FlagMarker.ManialinkFrameId = FlagRush_UIMarkers::C_FlagMarkerFrameId;
+	ShowFlagMarker();
 }
 
 /**
- * Updates the flag marker and puts it at the right position.
- * Actually does the same as InitFlagMarker.
- * This exists to prevent confusion when InitFlagMarker would be called in the middle of a round/event.
+ * Changes all flag spawn marker visibilities to "WhenInFrustum".
  */
-Void UpdateFlagMarker() { InitFlagMarker(); }
-
-/**
- * Send data about the flag carrier, i.e. name and clan to the UIs via netwrite
- */
- Void UpdateFlagCarrierNetData() {
-	declare FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
-
-	// Carrier Clan Index (for color)
-	declare netwrite Integer Net_FlagRush_FlagCarrierClan for Teams[0];
-	if (FlagCarrierPlayer == Null) Net_FlagRush_FlagCarrierClan = 0;
-	else Net_FlagRush_FlagCarrierClan = FlagCarrierPlayer.CurrentClan;
-
-	// Carrier name and login
-	declare netwrite Text Net_FlagRush_FlagCarrierName for Teams[0];
-	declare netwrite Text Net_FlagRush_FlagCarrierLogin for Teams[0];
-	Net_FlagRush_FlagCarrierLogin = "";
-	if (FlagCarrierPlayer != Null) {
-		Net_FlagRush_FlagCarrierName = FlagCarrierPlayer.User.Name;
-		Net_FlagRush_FlagCarrierLogin = FlagCarrierPlayer.User.Login;
-	}
-	else if (FlagState::Get().Landmark != Null) Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Spawn;
-	else Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Dropped;
-
-	// Flag Position
-	declare netwrite Vec3 Net_FlagRush_FlagPosition for Teams[0];
-	Net_FlagRush_FlagPosition = FlagState::Get().Position;
+Void ShowFlagSpawnMarkers() {
+	foreach (Marker in UIManager.UIAll.Markers)
+		if(TL::StartsWith(FlagRush_UIMarkers::C_FlagSpawnMarkerFrameIdPrefix, Marker.ManialinkFrameId))
+			Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
 }
 
 /**
- * Creates Markers for the bases and the flag for each player.
+ * Changes all flag spawn marker visibilities to "Never".
  */
-Void InitMarkers() {
-	declare Boolean IsWarmup = GameplayPhase::Get() == GameplayPhase::C_Warmup;
+Void HideFlagSpawnMarkers() {
+	foreach (Marker in UIManager.UIAll.Markers)
+		if(TL::StartsWith(FlagRush_UIMarkers::C_FlagSpawnMarkerFrameIdPrefix, Marker.ManialinkFrameId))
+			Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
+}
 
+/**
+ * Creates Markers for the bases and the flag.
+ */
+Void UpdateMapMarkers() {
 	// Clear old markers
 	UIManager.UIAll.ClearMarkers();
 
-	// Create Layer for all UIs
-	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
-	Layers::SetType(C_LayerName_Markers, CUILayer::EUILayerType::Markers);
-	Layers::Attach(C_LayerName_Markers);
+	// Update Layer
+	Layers::Update(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
 
 	// Create Markers for the Bases
 	for(Clan, 1, 2) {
@@ -146,36 +158,31 @@ Void InitMarkers() {
 		}
 	}
 
-	// Create Markers for the flag and flagspawns
-	if (IsWarmup) {
-		InitFlagSpawnMarkers();
-	} else {
-		InitFlagMarker();
+	// Create a marker for each flag spawn
+	foreach(I => FlagSpawn in FlagRush_Map::GetFlagSpawns()) {
+		declare Marker = UIManager.UIAll.AddMarker(FlagSpawn);
+		Marker.ManialinkFrameId = FlagRush_UIMarkers::C_FlagSpawnMarkerFrameIdPrefix ^ I;
+		Marker.Box = <0., 3.3, 0.>;
 	}
+	HideFlagSpawnMarkers();
+
+	// Main flag marker
+	UpdateFlagMarker();
 }
 
 /**
  * Creates the radar with markers for all players and bases.
  */
-Void InitRadar() {
-	declare FlagRush_UIRadar::K_Config Config = FlagRush_UIRadar::K_Config {
-		Scale = 0.35,
-		MarkerScale = 1.5,
-		Position = <135., -65.>,
-		Zoom = 0.35,
-		BackgroundOpacity = 0.7,
-		DetailOpacity = 0.1};
-	FlagRush_UIRadar::SetConfig(Config);
-
-	Layers::Create(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());
-	Layers::SetType(C_LayerName_Radar, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName_Radar);
+Void UpdateRadar() {
+	Layers::Update(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());
 }
 
 /**
- * Creates the UI Layers and initializes the markers for each player.
+ * Creates the UI Layers and initializes the markers.
  */
 Void Init(Text FlagRush_Version) {
+	Destroy();
+
 	// Scores header
 	Layers::Create(C_LayerName_ScoresHeader, FlagRush_UIHeader::GetManialink());
 	Layers::SetType(C_LayerName_ScoresHeader, CUILayer::EUILayerType::Normal);
@@ -236,10 +243,50 @@ Void Init(Text FlagRush_Version) {
 	}
 
 	// Markers
-	InitMarkers();
+	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
+	Layers::SetType(C_LayerName_Markers, CUILayer::EUILayerType::Markers);
+	Layers::Attach(C_LayerName_Markers);
 
 	// Radar
-	InitRadar();
+	declare FlagRush_UIRadar::K_Config Config = FlagRush_UIRadar::K_Config {
+		Scale = 0.35,
+		MarkerScale = 1.5,
+		Position = <135., -65.>,
+		Zoom = 0.35,
+		BackgroundOpacity = 0.7,
+		DetailOpacity = 0.1
+	};
+	FlagRush_UIRadar::SetConfig(Config);
+	Layers::Create(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());
+	Layers::SetType(C_LayerName_Radar, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Radar);
+}
+
+/**
+ * Send data about the flag carrier, i.e. name and clan to the UIs via netwrite
+ */
+ Void UpdateFlagCarrierNetData() {
+	declare FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
+
+	// Carrier Clan Index (for color)
+	declare netwrite Integer Net_FlagRush_FlagCarrierClan for Teams[0];
+	if (FlagCarrierPlayer == Null) Net_FlagRush_FlagCarrierClan = 0;
+	else Net_FlagRush_FlagCarrierClan = FlagCarrierPlayer.CurrentClan;
+
+	// Carrier name and login
+	declare netwrite Text Net_FlagRush_FlagCarrierName for Teams[0];
+	declare netwrite Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+	Net_FlagRush_FlagCarrierLogin = "";
+	if (FlagCarrierPlayer != Null) {
+		Net_FlagRush_FlagCarrierName = FlagCarrierPlayer.User.Name;
+		Net_FlagRush_FlagCarrierLogin = FlagCarrierPlayer.User.Login;
+	}
+	else if (FlagState::Get().Landmark != Null) Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Spawn;
+	else Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Dropped;
+
+	// Flag Position
+	declare netwrite Vec3 Net_FlagRush_FlagPosition for Teams[0];
+	Net_FlagRush_FlagPosition = FlagState::Get().Position;
 }
 
 /**

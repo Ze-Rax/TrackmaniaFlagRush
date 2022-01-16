@@ -222,7 +222,6 @@ FlagState::SetAtLandmark(FlagRush_Map::GetDefaultFlagSpawn());
 FlagRush_UI::Init(Version);
 InitPlayers();
 FlagRush_Teams::Init();
-FlagRush_UI::UpdateDossards();
 SetEndTime(-1);
 SetFlagPosition(FlagRush_Map::GetDefaultFlagSpawn(), Now);
 
@@ -253,7 +252,6 @@ GameplayPhase::Set(GameplayPhase::C_Round);
 InitPlayers();
 FlagRush_UI::InitMarkers();
 FlagRush_Teams::Init();
-FlagRush_UI::UpdateDossards();
 ***
 
 ***Match_StartRound***
@@ -591,6 +589,8 @@ Boolean CheckMatchEndConditions() {
 Void InitPlayer(CSmPlayer Player) {
 	Player.TrustClientSimu = True;
 	Player.UseCrudeExtrapolation = !UsePvPCollisions && S_UseCrudeExtrapolation;
+	Player.Dossard_Number = "  ";
+	Player.Dossard_Color = <1., 1., 1.>;
 	declare Integer PreviousClan for Player;
 	SetPlayerClan(Player, Player.RequestedClan);
 
@@ -600,7 +600,6 @@ Void InitPlayer(CSmPlayer Player) {
 
 	if (Player.RequestedClan != PreviousClan) {
 		FlagRush_Teams::Init();
-		FlagRush_UI::UpdateDossards();
 	}
 
 	PreviousClan = Player.RequestedClan;
@@ -688,7 +687,6 @@ Void OnFlagPositionChanged(Integer PickupableDate) {
 	FlagState::SetPickupableDate(PickupableDate);
 	FlagRush_UI::UpdateFlagMarker();
 	FlagRush_UI::UpdateFlagCarrierNetData();
-	FlagRush_UI::UpdateDossards();
 }
 
 Void SetFlagPosition(CMapLandmark FlagSpawn, Integer PickupableDate) {
@@ -887,7 +885,6 @@ Void SpawnPlayers() {
 			declare CMapLandmark SpawnLandmark = FlagRush_Map::GetSpawn(Player);
 			if (SpawnLandmark != Null) {
 				SpawnPlayer(Player, Player.CurrentClan, 1, SpawnLandmark.PlayerSpawn, Now + C_SpawnAnimDuration);
-				FlagRush_UI::UpdateDossard(Player);
 				Net_SpawnDate = 0;
 			}
 		}
@@ -977,7 +974,6 @@ Void HandleModeSettingsUpdate() {
 		// FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
 		FlagRush_Teams::UseClubTags(S_UseClubTags);
 		FlagRush_Teams::Init();
-		FlagRush_UI::UpdateDossards();
 	}
 
 	UpdateCriticalSettings();
@@ -1138,7 +1134,6 @@ Void HandleEvents() {
 			case CSmModeEvent::EType::OnPlayerAdded: {
 				SendWelcomeMessage(Event.Player);
 				FlagRush_Teams::Init();
-				FlagRush_UI::UpdateDossards();
 				FlagRush_UI::InitRadar();
 			}
 
@@ -1147,7 +1142,6 @@ Void HandleEvents() {
 				// This is the reason why Carrier in FlagState is not CSmPlayer
 				if(FlagState::Get().Carrier == Event.User) DropFlag();
 				FlagRush_Teams::Init();
-				FlagRush_UI::UpdateDossards();
 				FlagRush_UI::InitRadar();
 			}
 		}
@@ -1367,7 +1361,6 @@ Void ExecWarmUp() {
 	InitPlayers();
 	FlagRush_Teams::Init();
 	FlagRush_UI::InitMarkers();
-	FlagRush_UI::UpdateDossards();
 
 	StartTime = Now;
 	SetEndTime(-1);

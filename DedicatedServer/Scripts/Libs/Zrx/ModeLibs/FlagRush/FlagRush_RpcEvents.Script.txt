@@ -24,15 +24,10 @@
 #Const 		C_XMLRPC_WarmUpEnd 															"Trackmania.WarmUp.End"
 
 
-#Struct K_Team {
-	Integer Num;
-	Text Name;
-}
-
 #Struct K_RpcScore {
 	Integer MatchPoints;
 	Integer FlagsScored;
-	Integer FlagsStealed;
+	Integer FlagsStolen;
 	Integer FlagsAssists;
 }
 
@@ -143,20 +138,11 @@ Integer GetMatchTime() {
 	return Now - G_MatchStartTime;
 }
 
-K_Team GetTeamFromLogin(Text Login) {
-	declare CSmPlayer Player <=> GetPlayer(Login);
-	declare CTeam Team;
-	if (Player == Null) return K_Team{};
-	if (Player.CurrentClan > 0) Team <=> Teams[Player.CurrentClan - 1];
-	if (Team == Null) return K_Team{};
-	return K_Team{Num = Player.CurrentClan, Name = Team.Name };
-}
-
 K_RpcScore GetMatchScore(CSmScore Score) {
 	return K_RpcScore{
 		MatchPoints = Scores::GetPlayerMatchPoints(Score),
 		FlagsScored = Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored),
-		FlagsStealed = Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen),
+		FlagsStolen = Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen),
 		FlagsAssists = Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists)
 	};
 }
@@ -165,7 +151,7 @@ K_RpcScore GetMapScore(CSmScore Score) {
 	return K_RpcScore{
 		MatchPoints = Scores::GetPlayerMatchPoints(Score),
 		FlagsScored = Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored),
-		FlagsStealed = Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen),
+		FlagsStolen = Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen),
 		FlagsAssists = Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists)
 	};
 }
@@ -175,7 +161,7 @@ K_RpcScore GetRoundScore(CSmScore Score) {
 	return K_RpcScore{
 		MatchPoints = Scores::GetPlayerMatchPoints(Score),
 		FlagsScored = Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored),
-		FlagsStealed = Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen),
+		FlagsStolen = Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen),
 		FlagsAssists = Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists)
 	};
 }
@@ -183,18 +169,19 @@ K_RpcScore GetRoundScore(CSmScore Score) {
 K_RpcPlayer GetRpcPlayer(CSmPlayer Player) {
 	if (Player == Null) return K_RpcPlayer{};
 	declare CTeam Team;
-	if (Player.CurrentClan > 0) Team <=> Teams[Player.CurrentClan - 1];
-	if (Team == Null) return K_RpcPlayer{Login = Player.User.Login, Name = Player.User.Name,
-		Team = Player.CurrentClan, Position = Player.Position};
+	declare Text TeamName = "";
+	if (Teams.existskey(Player.CurrentClan - 1)) TeamName = Teams[Player.CurrentClan - 1].Name;
 	return K_RpcPlayer{Login = Player.User.Login, Name = Player.User.Name,
-		Team = Player.CurrentClan, TeamName = Team.Name, Position = Player.Position
+		Team = Player.CurrentClan, TeamName = TeamName, Position = Player.Position
 	};
 }
 
-K_RpcPlayerScore GetRpcPlayerFromScore(CSmScore Score, K_Team _Team) {
+K_RpcPlayerScore GetRpcPlayerFromScore(CSmScore Score) {
 	if (Score == Null || Score.User == Null) return K_RpcPlayerScore{};
+	declare Text TeamName = "";
+	if (Teams.existskey(Score.TeamNum-1)) TeamName = Teams[Score.TeamNum-1].Name;
 	return K_RpcPlayerScore{Login = Score.User.Login, Name = Score.User.Name,
-		Team = _Team.Num, TeamName = _Team.Name,
+		Team = Score.TeamNum, TeamName = TeamName,
 		RoundScore = GetRoundScore(Score), MapScore = GetMapScore(Score),
 		MatchScore = GetMatchScore(Score)
 	};
@@ -273,7 +260,7 @@ Void SendPlayerFlowEvent(Text RPCEvent) {
 	}
 	declare K_RpcPlayerScore[] _Players;
 	foreach (Score in Scores) {
-		_Players.add(GetRpcPlayerFromScore(Score, GetTeamFromLogin(Score.User.Login)));
+		_Players.add(GetRpcPlayerFromScore(Score));
 	}
 	declare K_RpcCbPlayerFlow Data = K_RpcCbPlayerFlow{Players = _Players, Map = _Map, Team1Score = GetRpcTeam(1), Team2Score = GetRpcTeam(2), Time = GetMatchTime()};
 	XmlRpc::SendCallback(RPCEvent, [Data.tojson()]);

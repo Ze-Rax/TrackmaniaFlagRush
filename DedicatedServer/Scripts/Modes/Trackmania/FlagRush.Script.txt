@@ -424,6 +424,7 @@ if(CheckMatchEndConditions())
 	UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 3, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndMatch, 0);
 	EventFeed::SendMessage(Message, "info");
 	MB_Sleep(C_BigMessage_Duration);
+	FlagRush_RpcEvent::SendPlayerFlowEvent(FlagRush_RpcEvent::C_XMLRPC_MatchEnd);
 	FlagRush_UI::ToggleMVP(True);
 	MB_Sleep(S_ChatTime * 1500);
 	FlagRush_UI::ToggleMVP(False);
@@ -437,7 +438,6 @@ Layers::DestroyAll();
 ***
 FlagRush_Common::Log("Match End");
 EventFeed::SendMessage("Match End", "info");
-FlagRush_RpcEvent::SendPlayerFlowEvent(FlagRush_RpcEvent::C_XMLRPC_MatchEnd);
 ***
 
 ***Match_PlayLoop***

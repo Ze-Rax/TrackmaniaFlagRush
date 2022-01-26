@@ -55,8 +55,13 @@ Real WeightedDistanceSquared(Vec3 _A, Vec3 _B, Vec3 _V, Vec3 _W) {
 * according to the player orientation
 */
 Vec3 PlayerEllipsoid(CSmPlayer Player){
-	declare Real Sideness = 1-ML::Abs(Player.Upwardness-0.5)*2;
-	return C_CarEllipsoid + C_CarEllipsoidOffset * Sideness;
+	declare Real FdU = ML::Abs(ML::DotProduct(<0.,0.,1.>,Player.UpDirection));//"pitch"
+	declare Real LdU = ML::Abs(ML::DotProduct(<1.,0.,0.>,Player.UpDirection));//"roll"
+	FdU = FdU*FdU;
+	LdU = LdU*LdU;
+	return <C_CarEllipsoid.X + LdU * C_CarEllipsoidOffset.X,
+				C_CarEllipsoid.Y + LdU+FdU * C_CarEllipsoidOffset.Y,
+				C_CarEllipsoid.Z + FdU * C_CarEllipsoidOffset.Z>;
 }
 
 /**
@@ -64,7 +69,7 @@ Vec3 PlayerEllipsoid(CSmPlayer Player){
 * offset upward according to the player orientation
 */
 Struct_Vec3Vec3 PlayerSegment(CSmPlayer Player){
-	declare Vec3 Up = <0.,1.,0.> * (C_UpOffset * (Player.Upwardness-0.5)*2);
+	declare Vec3 Up = C_UpOffset * Player.UpDirection;
   declare Vec3 Front = Player.AimDirection * C_FrontOffset + Up;
   declare Vec3 Back = Player.AimDirection * -C_BackOffset + Up;
 	return Struct_Vec3Vec3 {

@@ -1152,7 +1152,7 @@ Void HandleEvents() {
 		}
 	}
 
-	// Collision detection using CylinderHitbox (based on Dommy's Lib)
+	// Collision detection using ElipsoidHitbox
 	if (FlagState::Get().Carrier != Null && FlagState::Get().PickupableDate < Now) {
 		declare CSmPlayer CarrierPlayer = FlagState::GetFlagCarrierPlayer();
 		declare CSmPlayer FlagStealer;

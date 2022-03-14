@@ -25,6 +25,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"					as FlagState
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as MatchEvaluation
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_TimeWarnings.Script.txt"			as TimeWarnings
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_RpcEvents.Script.txt"					as FlagRush_XmlRpc
 
 /* UI */
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt"		as Colors
@@ -34,7 +35,7 @@
 
 /* Constants */
 #Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version												"1.2.1"
+#Const	Version												"1.3.0-dev"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
 #Const	C_SpawnAnimDuration						1500
@@ -199,6 +200,9 @@ ModeCommands::AddQuickCommand(C_Command_EndWarmup, "Icons64x64_1", "ArrowGreen")
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light");
+
+FlagRush_XmlRpc::RegisterCallbacks();
+
 HandleModeSettingsUpdate();
 
 // UI
@@ -214,6 +218,7 @@ FlagRush_Teams::LoadSkins();
 ***
 FlagRush_Common::Log("Start Match");
 EventFeed::SendMessage("Match Start", "info");
+FlagRush_XmlRpc::Send_MatchStart();
 ***
 
 ***Match_InitMap***
@@ -246,12 +251,12 @@ if(S_UseWarmUp) {
 	FlagRush_Common::Log("Warmup Phase");
 	ExecWarmUp();
 }
+FlagRush_XmlRpc::Send_MapStart();
 ***
 
 ***Match_InitRound***
 ***
 G_RoundValid = True;
-GameplayPhase::Set(GameplayPhase::C_Round);
 InitPlayers();
 FlagRush_Teams::Init();
 ***
@@ -259,6 +264,8 @@ FlagRush_Teams::Init();
 ***Match_StartRound***
 ***
 FlagRush_Common::Log("Start Round");
+GameplayPhase::Set(GameplayPhase::C_Round);
+FlagRush_XmlRpc::Send_RoundStart();
 
 FlagRush_UI::UpdateScores();
 TimeWarnings::EnableWithTimelimit(S_RoundTimeLimitSeconds);
@@ -316,7 +323,6 @@ SetEndTime(EndTime + C_BigMessage_Duration);
 ***
 FlagRush_Common::Log("Round End");
 EventFeed::SendMessage("Round End", "info");
-
 SetEndTime(-1);
 MB_ClearAllMessages();
 GameplayPhase::Set(GameplayPhase::C_None);
@@ -356,6 +362,8 @@ if (G_RoundValid) {
 	MB_Sleep(C_BigMessage_Duration);
 }
 
+FlagRush_XmlRpc::Send_RoundEnd();
+
 // Check if map is finished
 if (CheckMapEndConditions()) MB_StopMap();
 ***
@@ -364,6 +372,7 @@ if (CheckMapEndConditions()) MB_StopMap();
 ***
 FlagRush_Common::Log("Map End");
 EventFeed::SendMessage("Map End", "info");
+FlagRush_XmlRpc::Send_MapEnd();
 if (MatchEndRequested) G_MapValid = False;
 ***
 
@@ -426,6 +435,7 @@ if(CheckMatchEndConditions())
 ***Match_EndMatch***
 ***
 FlagRush_Common::Log("Match End");
+FlagRush_XmlRpc::Send_MatchEnd();
 EventFeed::SendMessage("Match End", "info");
 ***
 
@@ -548,6 +558,7 @@ Boolean CheckRoundEndConditions() {
 			if (TimeLimitReached()) {
 				if(MatchEvaluation::RoundIsTied() && S_UseOvertime) {
 					GameplayPhase::Set(GameplayPhase::C_Overtime);
+					FlagRush_XmlRpc::Send_OverTime();
 					declare Text Message = "$f90Overtime";
 					EventFeed::SendMessage(Message, "info");
 					UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
@@ -677,6 +688,8 @@ Void OnPlayerPicksUpFlag(CSmPlayer Player) {
 
 	// Apply handicaps
 	ApplyHandicaps(Player);
+
+	FlagRush_XmlRpc::Send_FlagPickup(FlagState::Get());
 }
 
 /**
@@ -714,10 +727,14 @@ Void SetFlagPosition(Vec3 Position, Integer PickupableDate) {
 }
 
 Void PassFlag(CSmPlayer NewCarrier, Integer PickupableDate) {
+	declare CSmPlayer OldCarrier <=> FlagState::GetFlagCarrierPlayer();
+
 	// Update FlagState
 	FlagState::PassFlag(NewCarrier);
 	OnPlayerPicksUpFlag(NewCarrier);
 	OnFlagPositionChanged(PickupableDate);
+
+	FlagRush_XmlRpc::Send_FlagPass(FlagState::Get(), OldCarrier);
 }
 
 /**
@@ -734,6 +751,8 @@ Void ResetFlag(Integer RespawnDelay, Boolean Silent) {
 	}
 
 	SetFlagPosition(NextFlagSpawn(), Now + RespawnDelay);
+
+	FlagRush_XmlRpc::Send_FlagReset(FlagState::Get());
 }
 
 Void ResetFlag(Integer RespawnDelay) {
@@ -757,10 +776,11 @@ Void DropFlag(Vec3 GroundPosition) {
 	declare Text Message = "The flag was dropped!";
 	declare Vec3 Color = Colors::C_NeutralLight;
 
-	if(FlagState::Get().Carrier != Null) {
-		FlagRush_Common::Log("""{{{FlagState::Get().Carrier.Name}}} dropped the flag!""");
+	declare CUser OldCarrier = FlagState::Get().Carrier;
+	if(OldCarrier != Null) {
+		FlagRush_Common::Log("""{{{OldCarrier.Name}}} dropped the flag!""");
 
-		declare CSmScore CarrierScore <=> GetScore(FlagState::Get().Carrier.Login);
+		declare CSmScore CarrierScore <=> GetScore(OldCarrier.Login);
 		if(CarrierScore != Null && CarrierScore.TeamNum > 0)
 		{
 			declare Team <=> Teams[CarrierScore.TeamNum - 1];
@@ -768,7 +788,7 @@ Void DropFlag(Vec3 GroundPosition) {
 			Color = ColorPrimaryUI;
 		}
 		declare ColorText = "$" ^ CL::RgbToHex3(Color);
-		Message = """{{{ColorText}}}{{{FlagState::Get().Carrier.Name}}}$z dropped the {{{ColorText}}}flag$z!""";
+		Message = """{{{ColorText}}}{{{OldCarrier.Name}}}$z dropped the {{{ColorText}}}flag$z!""";
 
 		// Reset Carrier handicaps and drop flag
 		declare CSmPlayer CarrierPlayer <=> FlagState::GetFlagCarrierPlayer();
@@ -789,6 +809,8 @@ Void DropFlag(Vec3 GroundPosition) {
 	// Set the new flag position
 	SetFlagPosition(FlagPosition, Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000));
 	FlagState::SetLastDropDate(Now);
+
+	FlagRush_XmlRpc::Send_FlagDrop(FlagState::Get(), OldCarrier);
 }
 
 Void DropFlag() {
@@ -823,20 +845,25 @@ Void ScoreFlag(CSmPlayer Player) {
 	FlagRush_UI::UpdateScore(Player.Score);
 	// Assisting player
 	declare FlagState::K_FlagPass LastPass = FlagState::Get().LastFlagPass;
+	declare CUser AssistingUser;
 	if (Now - LastPass.Date < C_AssistTimeDuration && LastPass.OldCarrier != Null && Player.User != LastPass.OldCarrier) {
 		declare CSmScore AssistingPlayerScore <=> GetScore(LastPass.OldCarrier.Login);
 		if (AssistingPlayerScore.TeamNum == Player.Score.TeamNum) {
 			Scores::AddPlayerRoundPoints(AssistingPlayerScore, FlagRush_Common::C_PointsValue_ScoreFlagAssist);
 			Telemetry::AddPlayerRoundInteger(AssistingPlayerScore, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists, 1);
 			FlagRush_UI::UpdateScore(AssistingPlayerScore);
+			AssistingUser <=> LastPass.OldCarrier;
 		}
 	}
+
 	// Team
 	Telemetry::AddPlayerRoundInteger(Player.Score, FlagRush_Common::C_Telemetry_Key_FlagsScored, 1);
 	FlagRush_UI::UpdateTeamScores();
-
 	ResetHandicaps(Player);
 	ResetFlag(True);
+
+	FlagRush_XmlRpc::Send_FlagScored(Player, AssistingUser);
+
 	if(S_UseTurns) MB_StopTurn();
 }
 
@@ -1063,6 +1090,8 @@ Void OnPlayerDeath(CSmPlayer Player) {
 		declare netwrite Integer Net_SpawnDate for Player;
 		Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
 	}
+
+	FlagRush_XmlRpc::Send_PlayerDeath(Player);
 }
 
 // --------------------------------------------------
@@ -1362,6 +1391,7 @@ Void ExecWarmUp() {
 	// Init
 	declare Integer PreviousGameplayPhase = GameplayPhase::Get();
 	GameplayPhase::Set(GameplayPhase::C_Warmup);
+	FlagRush_XmlRpc::Send_WarmUpStart();
 
 	InitPlayers();
 	FlagRush_Teams::Init();
@@ -1403,6 +1433,7 @@ Void ExecWarmUp() {
 
 	// Cleanup
 	GameplayPhase::Set(PreviousGameplayPhase);
+	FlagRush_XmlRpc::Send_WarmUpEnd();
 	UIManager.UIAll.UISequence = PrevUISequence;
 	FlagRush_UI::HideFlagSpawnMarkers();
 	FlagRush_UI::ShowFlagMarker();

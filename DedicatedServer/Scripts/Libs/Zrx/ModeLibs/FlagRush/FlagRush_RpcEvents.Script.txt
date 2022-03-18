@@ -16,7 +16,7 @@
 #Const 		C_XMLRPC_FlagPickup															"FlagRush.Flag.Pickup"
 #Const		C_XMLRPC_FlagScored															"FlagRush.Flag.Scored"
 
-#Const		C_XMLRPC_PlayerDeath														"FlagRush.PlayerDeath"
+#Const		C_XMLRPC_PlayerDeath														"FlagRush.Player.Death"
 
 #Const		C_XMLRPC_MatchStart															"FlagRush.Flow.MatchStart"
 #Const		C_XMLRPC_MatchEnd																"FlagRush.Flow.MatchEnd"

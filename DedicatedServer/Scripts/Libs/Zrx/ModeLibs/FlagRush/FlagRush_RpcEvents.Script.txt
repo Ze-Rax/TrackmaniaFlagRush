@@ -1,5 +1,7 @@
 // #RequireContext CSmMode
 
+#Include "TextLib" as TL
+
 #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"							 	as XmlRpc
 #Include "Libs/Zrx/ModeLibs/Common/TeamPointsProgression.Script.txt" 		as TeamPointsProgression
 #Include "Libs/Nadeo/TMxSM/Race/Scores.Script.txt"											as Scores
@@ -45,7 +47,7 @@
 }
 
 #Struct K_Rpc_FlagSpawn {
-	Ident LandmarkId;
+	Integer LandmarkId;
 	Vec3 Position;
 }
 
@@ -88,47 +90,49 @@
 /* Events */
 
 #Struct K_Rpc_FlagPass {
-	Integer Date;
+	Integer Time;
 	K_Rpc_Player OldCarrier;
 	K_Rpc_Flag Flag;
 }
 
 #Struct K_Rpc_FlagDrop {
-	Integer Date;
+	Integer Time;
 	K_Rpc_Player OldCarrier;
 	K_Rpc_Flag Flag;
 }
 
 #Struct K_Rpc_FlagReset {
-	Integer Date;
+	Integer Time;
 	K_Rpc_Flag Flag;
 }
 
 #Struct K_Rpc_FlagPickup {
-	Integer Date;
+	Integer Time;
 	K_Rpc_Flag Flag;
 }
 
 #Struct K_Rpc_FlagScored {
-	Integer Date;
+	Integer Time;
 	K_Rpc_Player Scorer;
 	K_Rpc_Player Assist;
 	K_Rpc_TeamScore[] TeamScores;
 }
 
 #Struct K_Rpc_PlayerDeath {
-	Integer Date;
+	Integer Time;
 	K_Rpc_Player Player;
 }
 
 #Struct K_Rpc_Flow {
-	Integer Date;
+	Integer Time;
 	K_Rpc_Map Map;
+	Boolean Valid;
 }
 
 #Struct K_Rpc_FlowScores {
-	Integer Date;
+	Integer Time;
 	K_Rpc_Map Map;
+	Boolean Valid;
 	K_Rpc_PlayerScore[] PlayerScores;
 	K_Rpc_TeamScore[] TeamScores;
 }
@@ -226,7 +230,7 @@ K_Rpc_Player UserToRpcPlayer(CUser User) {
 
 K_Rpc_FlagSpawn LandmarkToRpcFlagSpawn(CMapLandmark Landmark) {
 	return K_Rpc_FlagSpawn {
-		LandmarkId = Landmark.Id,
+		LandmarkId = TL::ToInteger(TL::Replace("" ^ Landmark.Id, "#", "")),
 		Position = Landmark.Position
 	};
 }
@@ -239,8 +243,7 @@ K_Rpc_Flag FlagStateToRpcFlag(FlagState::K_FlagState FlagState) {
 
 	declare K_Rpc_FlagSpawn FlagSpawn;
 	if(FlagState.Landmark != Null) {
-		FlagSpawn.LandmarkId = FlagState.Landmark.Id;
-		FlagSpawn.Position = FlagState.Landmark.Position;
+		FlagSpawn = LandmarkToRpcFlagSpawn(FlagState.Landmark);
 	}
 
 	return K_Rpc_Flag {
@@ -300,7 +303,7 @@ K_Rpc_PlayerScore ScoreToRpcPlayerScore(CSmScore Score) {
 
 K_Rpc_Flow CurrentMatchStateToRpcFlow() {
 	return K_Rpc_Flow{
-		Date = Now,
+		Time = Now,
 		Map = CurrentMapToRpcMap()
 	};
 }
@@ -313,7 +316,7 @@ K_Rpc_FlowScores CurrentMatchStateToRpcFlowScores() {
 	}
 
 	return K_Rpc_FlowScores{
-		Date = Now,
+		Time = Now,
 		Map = CurrentMapToRpcMap(),
 		TeamScores = TeamScores,
 		PlayerScores = PlayerScores
@@ -324,7 +327,7 @@ K_Rpc_FlowScores CurrentMatchStateToRpcFlowScores() {
 
 Void Send_FlagReset(FlagState::K_FlagState FlagState) {
 	declare K_Rpc_FlagReset Data = K_Rpc_FlagReset{
-		Date = Now,
+		Time = Now,
 		Flag = CurrentFlagStateToRpcFlag()
 	};
 	XmlRpc::SendCallback(C_XMLRPC_FlagReset, Data.tojson());
@@ -332,7 +335,7 @@ Void Send_FlagReset(FlagState::K_FlagState FlagState) {
 
 Void Send_FlagPickup(FlagState::K_FlagState FlagState) {
 	declare K_Rpc_FlagPickup Data = K_Rpc_FlagPickup{
-		Date = Now,
+		Time = Now,
 		Flag = CurrentFlagStateToRpcFlag()
 	};
 	XmlRpc::SendCallback(C_XMLRPC_FlagPickup, Data.tojson());
@@ -345,7 +348,7 @@ Void Send_FlagDrop(FlagState::K_FlagState FlagState, CUser OldCarrierNullable) {
 	}
 
 	declare K_Rpc_FlagDrop Data = K_Rpc_FlagDrop{
-		Date = Now,
+		Time = Now,
 		Flag = CurrentFlagStateToRpcFlag(),
 		OldCarrier = OldCarrier
 	};
@@ -354,7 +357,7 @@ Void Send_FlagDrop(FlagState::K_FlagState FlagState, CUser OldCarrierNullable) {
 
 Void Send_FlagPass(FlagState::K_FlagState FlagState, CSmPlayer OldCarrier) {
 	declare K_Rpc_FlagPass Data = K_Rpc_FlagPass{
-		Date = Now,
+		Time = Now,
 		OldCarrier = PlayerToRpcPlayer(OldCarrier),
 		Flag = CurrentFlagStateToRpcFlag()
 	};
@@ -369,7 +372,7 @@ Void Send_FlagScored(CSmPlayer _Scorer, CUser _AssistNullable) {
 	}
 
 	declare K_Rpc_FlagScored Data = K_Rpc_FlagScored{
-		Date = Now,
+		Time = Now,
 		Scorer = Scorer,
 		Assist = Assist,
 		TeamScores = [TeamToRpcTeamScore(Teams[0]), TeamToRpcTeamScore(Teams[1])]
@@ -381,7 +384,7 @@ Void Send_FlagScored(CSmPlayer _Scorer, CUser _AssistNullable) {
 
 Void Send_PlayerDeath(CSmPlayer Player) {
 	declare K_Rpc_PlayerDeath Data = K_Rpc_PlayerDeath{
-		Date = Now,
+		Time = Now,
 		Player = PlayerToRpcPlayer(Player)
 	};
 	XmlRpc::SendCallback(C_XMLRPC_PlayerDeath, Data.tojson());
@@ -396,6 +399,7 @@ Void Send_MatchStart() {
 
 Void Send_MatchEnd() {
 	declare K_Rpc_FlowScores Data = CurrentMatchStateToRpcFlowScores();
+	Data.Valid = True;
 	XmlRpc::SendCallback(C_XMLRPC_MatchEnd, Data.tojson());
 }
 
@@ -404,8 +408,9 @@ Void Send_MapStart() {
 	XmlRpc::SendCallback(C_XMLRPC_MapStart, Data.tojson());
 }
 
-Void Send_MapEnd() {
+Void Send_MapEnd(Boolean Valid) {
 	declare K_Rpc_FlowScores Data = CurrentMatchStateToRpcFlowScores();
+	Data.Valid = Valid;
 	XmlRpc::SendCallback(C_XMLRPC_MapEnd, Data.tojson());
 }
 
@@ -414,8 +419,9 @@ Void Send_RoundStart() {
 	XmlRpc::SendCallback(C_XMLRPC_RoundStart, Data.tojson());
 }
 
-Void Send_RoundEnd() {
+Void Send_RoundEnd(Boolean Valid) {
 	declare K_Rpc_FlowScores Data = CurrentMatchStateToRpcFlowScores();
+	Data.Valid = Valid;
 	XmlRpc::SendCallback(C_XMLRPC_RoundEnd, Data.tojson());
 }
 

@@ -36,7 +36,7 @@ These events are being sent via Xml-Rpc Callbacks. For the actual payload defini
 
 ## Player related events
 
-### FlagRush.PlayerDeath
+### FlagRush.Player.Death
 
 - Sent when a player goes out of bounds, i.e. triggers a death trigger / „Flag reset“ landmark
 - Payload: `K_Rpc_PlayerDeath`

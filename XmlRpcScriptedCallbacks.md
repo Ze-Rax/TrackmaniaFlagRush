@@ -98,69 +98,65 @@ These are the structs that are actually being sent by the callbacks. Definition 
 
 ```
 #Struct K_Rpc_FlagPass {
-Integer Time;
-K_Rpc_Player OldCarrier;
-K_Rpc_Flag Flag;
+	Integer Time;
+	K_Rpc_Player OldCarrier;
+	K_Rpc_Flag Flag;
 }
 ```
 
 ```
 #Struct K_Rpc_FlagDrop {
-Integer Time;
-K_Rpc_Player OldCarrier;
-K_Rpc_Flag Flag;
+	Integer Time;
+	K_Rpc_Player OldCarrier;
+	K_Rpc_Flag Flag;
 }
 ```
 
 ```
 #Struct K_Rpc_FlagReset {
-Integer Time;
-K_Rpc_Flag Flag;
+	Integer Time;
+	K_Rpc_Flag Flag;
 }
 ```
 
 ```
 #Struct K_Rpc_FlagPickup {
-Integer Time;
-K_Rpc_Flag Flag;
+	Integer Time;
+	K_Rpc_Flag Flag;
 }
 ```
 
 ```
 #Struct K_Rpc_FlagScored {
-Integer Time;
-K_Rpc_Player Scorer;
-K_Rpc_Player Assist;
-K_Rpc_TeamScore[] TeamScores;
+	Integer Time;
+	K_Rpc_Player Scorer;
+	K_Rpc_Player Assist;
+	K_Rpc_TeamScore[] TeamScores;
 }
 ```
 
 ```
 #Struct K_Rpc_PlayerDeath {
-Integer Time;
-K_Rpc_Player Player;
+	Integer Time;
+	K_Rpc_Player Player;
 }
 ```
 
 ```
 #Struct K_Rpc_Flow {
-Integer Time;
-K_Rpc_Map Map;
-Boolean Valid;
+	Integer Time;
+	K_Rpc_Map Map;
+	Boolean Valid;
 }
 ```
 
 ```
 #Struct K_Rpc_FlowScores {
-Integer Time;
-}
-```
-
-```
-#Struct K_Rpc_Map Map;
-Boolean Valid;
-K_Rpc_PlayerScore[] PlayerScores;
-K_Rpc_TeamScore[] TeamScores;
+	Integer Time;
+	K_Rpc_Map Map;
+	Boolean Valid;
+	K_Rpc_PlayerScore[] PlayerScores;
+	K_Rpc_TeamScore[] TeamScores;
 }
 ```
 
@@ -170,68 +166,68 @@ These are structs that represent objects present on the server with their most r
 
 ```
 #Struct K_Rpc_Team {
-Integer Num;
-Text Name;
+	Integer Num;
+	Text Name;
 }
 ```
 
 ```
 #Struct K_Rpc_Player {
-Text Login;
-Text Name;
-K_Rpc_Team Team;
-Vec3 Position;
+	Text Login;
+	Text Name;
+	K_Rpc_Team Team;
+	Vec3 Position;
 }
 ```
 
 ```
 #Struct K_Rpc_FlagSpawn {
-Integer LandmarkId;
-Vec3 Position;
+	Integer LandmarkId;
+	Vec3 Position;
 }
 ```
 
 ```
 #Struct K_Rpc_Flag {
-Vec3 Position;
-K_Rpc_Player Carrier;
-K_Rpc_FlagSpawn Spawn;
+	Vec3 Position;
+	K_Rpc_Player Carrier;
+	K_Rpc_FlagSpawn Spawn;
 }
 ```
 
 ```
 #Struct K_Rpc_TeamScore {
-K_Rpc_Team Team;
-Integer MatchPoints;
-Integer MapPoints;
-Integer RoundPoints;
+	K_Rpc_Team Team;
+	Integer MatchPoints;
+	Integer MapPoints;
+	Integer RoundPoints;
 }
 ```
 
 ```
 #Struct K_Rpc_PlayerScore {
-K_Rpc_Player Player;
-Integer RoundPoints;
-Integer MapPoints;
-Integer MatchPoints;
-Integer FlagsScoredRound;
-Integer FlagsScoredMap;
-Integer FlagsScoredMatch;
-Integer FlagsStolenRound;
-Integer FlagsStolenMap;
-Integer FlagsStolenMatch;
-Integer AssistsRound;
-Integer AssistsMap;
-Integer AssistsMatch;
+	K_Rpc_Player Player;
+	Integer RoundPoints;
+	Integer MapPoints;
+	Integer MatchPoints;
+	Integer FlagsScoredRound;
+	Integer FlagsScoredMap;
+	Integer FlagsScoredMatch;
+	Integer FlagsStolenRound;
+	Integer FlagsStolenMap;
+	Integer FlagsStolenMatch;
+	Integer AssistsRound;
+	Integer AssistsMap;
+	Integer AssistsMatch;
 }
 ```
 
 ```
 #Struct K_Rpc_Map {
-Text Name;
-Text Uid;
-Text AuthorLogin;
-Text AuthorName;
+	Text Name;
+	Text Uid;
+	Text AuthorLogin;
+	Text AuthorName;
 }
 ```
 

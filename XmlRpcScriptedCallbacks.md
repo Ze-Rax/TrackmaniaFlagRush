@@ -2,25 +2,27 @@
 
 Note: Callback names and payload are subject to change and may be editied in the future. Changes will be noted in the changelog for the mode.
 
+
 ## Events
 
 These events are being sent via Xml-Rpc Callbacks. For the actual payload definition, see [Structs](#Structs).
+
 
 ## Flag related events
 
 ### FlagRush.Flag.Pickup
 
-- Sent when a Player picks up the flag from the ground or a flag spawn.
+- Sent when a player picks up the flag. This includes picking it up from the ground, a flag spawn or on passes.
 - Payload: `K_Rpc_FlagPickup`
 
 ### FlagRush.Flag.Drop
 
-- Sent when a Player drops the flag on the ground.
+- Sent when a player drops the flag on the ground.
 - Payload: `K_Rpc_FlagDrop`
 
 ### FlagRush.Flag.Pass
 
-- Sent when athe flag is passed between two players. This includes passes between teammates and stealing the flag from the opponent
+- Sent when the flag is passed between two players. This includes passes between teammates and stealing the flag from the opponent.
 
 - Payload: `K_Rpc_FlagPass`
 
@@ -34,11 +36,12 @@ These events are being sent via Xml-Rpc Callbacks. For the actual payload defini
 - Sent when the flag is scored at one of the team bases.
 - Payload: `K_Rpc_FlagScored`
 
+
 ## Player related events
 
 ### FlagRush.Player.Death
 
-- Sent when a player goes out of bounds, i.e. triggers a death trigger / „Flag reset“ landmark
+- Sent when a player goes out of bounds, i.e. triggers a death trigger / „FlagReset“ landmark
 - Payload: `K_Rpc_PlayerDeath`
 
 
@@ -46,32 +49,32 @@ These events are being sent via Xml-Rpc Callbacks. For the actual payload defini
 
 ### FlagRush.Flow.MatchStart
 
-- Sent when the match starts.
+- Sent when a match starts.
 - Payload: `K_Rpc_Flow`
 
 ### FlagRush.Flow.MatchEnd
 
-- Sent when the match ends.
+- Sent when a match ends.
 - Payload: `K_Rpc_FlowScores`
 
 ### FlagRush.Flow.MapStart
 
-- Sent when the map starts.
+- Sent when a map starts.
 - Payload: `K_Rpc_Flow`
 
 ### FlagRush.Flow.MapEnd
 
-- Sent when the map ends.
+- Sent when a map ends.
 - Payload: `K_Rpc_FlowScores`
 
 ### FlagRush.Flow.RoundStart
 
-- Sent when the round starts.
+- Sent when a round starts.
 - Payload: `K_Rpc_Flow`
 
 ### FlagRush.Flow.RoundEnd
 
-- Sent when the round ends.
+- Sent when a round ends.
 - Payload: `K_Rpc_FlowScores`
 
 ### FlagRush.Flow.Overtime
@@ -81,12 +84,12 @@ These events are being sent via Xml-Rpc Callbacks. For the actual payload defini
 
 ### FlagRush.Flow.WarmUpStart
 
-- Sent when warm up starts.
+- Sent when a warm up starts.
 - Payload: `K_Rpc_Flow`
 
 ### FlagRush.Flow.WarmUpEnd
 
-- Sent when warm up ends.
+- Sent when a warm up ends.
 - Payload: `K_Rpc_Flow`
 
 

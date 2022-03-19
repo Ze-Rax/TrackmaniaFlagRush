@@ -322,6 +322,7 @@ SetEndTime(EndTime + C_BigMessage_Duration);
 ***Match_EndRound***
 ***
 FlagRush_Common::Log("Round End");
+FlagRush_XmlRpc::Send_RoundEnd(G_RoundValid);
 EventFeed::SendMessage("Round End", "info");
 SetEndTime(-1);
 MB_ClearAllMessages();
@@ -364,8 +365,6 @@ if (G_RoundValid) {
 
 // Check if map is finished
 if (CheckMapEndConditions()) MB_StopMap();
-
-FlagRush_XmlRpc::Send_RoundEnd(G_RoundValid);
 ***
 
 ***Match_EndMap***
@@ -377,6 +376,8 @@ if (MatchEndRequested) G_MapValid = False;
 
 ***Match_PodiumSequence***
 ***
+FlagRush_XmlRpc::Send_MapEnd(G_MapValid);
+
 // Evaluate Current Map
 if (G_MapValid) {
 	declare Text Message;
@@ -404,11 +405,12 @@ if (G_MapValid) {
 	MB_Sleep(C_BigMessage_Duration);
 }
 
-FlagRush_XmlRpc::Send_MapEnd(G_MapValid);
-
 // Check if match is finished
 if(CheckMatchEndConditions())
 {
+	FlagRush_XmlRpc::Send_MatchEnd();
+	EventFeed::SendMessage("Match End", "info");
+
 	declare Text Message;
 
 	// Match_EndMatch is during Mapload, Finish here
@@ -435,8 +437,6 @@ if(CheckMatchEndConditions())
 ***Match_EndMatch***
 ***
 FlagRush_Common::Log("Match End");
-FlagRush_XmlRpc::Send_MatchEnd();
-EventFeed::SendMessage("Match End", "info");
 ***
 
 ***Match_EndServer***

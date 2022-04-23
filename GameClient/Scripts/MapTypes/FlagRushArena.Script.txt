@@ -532,22 +532,22 @@ Void PlayTestRun() {
 
 
 	RaceTest::StartMap();
-	declare CMapLandmark						F_DefaultFlagSpawn;
-	declare CMapLandmark[]					F_FlagSpawns;
-	declare CMapLandmark[Integer]		F_Spawns;
-	declare CMapLandmark[][Integer]	F_Bases = [1 => [], 2 => []];
+	declare CMapLandmark						DefaultFlagSpawn;
+	declare CMapLandmark[]					FlagSpawns;
+	declare CMapLandmark[Integer]		Spawns;
+	declare CMapLandmark[][Integer]	Bases = [1 => [], 2 => []];
 	declare Boolean PlayerIsFlagCarrier = False;
 
 	foreach (Landmark in Mode.MapLandmarks) {
 		switch (Landmark.Tag) {
-			case """{{{C_StartTagPrefix}}}1""": if (Landmark.PlayerSpawn != Null) F_Spawns[1] = Landmark;
-			case """{{{C_StartTagPrefix}}}2""": if (Landmark.PlayerSpawn != Null) F_Spawns[2] = Landmark;
-			case """{{{C_FinishTagPrefix}}}1""": if (Landmark.Waypoint != Null) F_Bases[1].add(Landmark);
-			case """{{{C_FinishTagPrefix}}}1""": if (Landmark.Waypoint != Null) F_Bases[2].add(Landmark);
-			case C_FlagSpawnTag: if (Landmark.Waypoint != Null) F_FlagSpawns.add(Landmark);
+			case """{{{C_StartTagPrefix}}}1""": if (Landmark.PlayerSpawn != Null) Spawns[1] = Landmark;
+			case """{{{C_StartTagPrefix}}}2""": if (Landmark.PlayerSpawn != Null) Spawns[2] = Landmark;
+			case """{{{C_FinishTagPrefix}}}1""": if (Landmark.Waypoint != Null) Bases[1].add(Landmark);
+			case """{{{C_FinishTagPrefix}}}1""": if (Landmark.Waypoint != Null) Bases[2].add(Landmark);
+			case C_FlagSpawnTag: if (Landmark.Waypoint != Null) FlagSpawns.add(Landmark);
 			case C_DefaultFlagSpawnTag: if (Landmark.Waypoint != Null) {
-				F_FlagSpawns.add(Landmark);
-				F_DefaultFlagSpawn = Landmark;
+				FlagSpawns.add(Landmark);
+				DefaultFlagSpawn = Landmark;
 			}
 		}
 	}
@@ -560,7 +560,7 @@ Void PlayTestRun() {
 			switch(Event.Type) {
 				case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 
-					if (F_FlagSpawns.exists(Event.Landmark)) {
+					if (FlagSpawns.exists(Event.Landmark)) {
 						if (Event.Player != Null && !PlayerIsFlagCarrier) {
 							PlayerIsFlagCarrier = True;
 							Mode.SetPlayer_Delayed_Fragile(Event.Player, True);

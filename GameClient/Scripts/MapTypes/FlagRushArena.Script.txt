@@ -504,8 +504,107 @@ Void InitLandmarks() {
 	}
 }
 
+
+/**
+* Checks for valid event
+*/
+Boolean Valid(CSmModeEvent Event) {
+	switch (Event.Type) {
+		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
+			if(Event.Player == Null) return False;
+		}
+		case CSmModeEvent::EType::OnPlayerRequestRespawn: {
+			if(Event.Player == Null) return False;
+		}
+	}
+	return True;
+}
+
+/**
+* Runs playtest with the minimal ruleset
+*/
 Void PlayTestRun() {
-	TMMapType::PlayTestRun_Yield();
+	RaceTest::StartServer();
+	Mode.CheckpointBehaviour = CSmMode::ECheckpointBehaviour::Custom;
+	MapType::EnterPlayground(1);
+	// Wait map load
+	while (Mode.Map == Null) yield;
+
+
+	RaceTest::StartMap();
+	declare CMapLandmark						F_DefaultFlagSpawn;
+	declare CMapLandmark[]					F_FlagSpawns;
+	declare CMapLandmark[Integer]		F_Spawns;
+	declare CMapLandmark[][Integer]	F_Bases = [1 => [], 2 => []];
+	declare Boolean PlayerIsFlagCarrier = False;
+
+	foreach (Landmark in Mode.MapLandmarks) {
+		switch (Landmark.Tag) {
+			case """{{{C_StartTagPrefix}}}1""": if (Landmark.PlayerSpawn != Null) F_Spawns[1] = Landmark;
+			case """{{{C_StartTagPrefix}}}2""": if (Landmark.PlayerSpawn != Null) F_Spawns[2] = Landmark;
+			case """{{{C_FinishTagPrefix}}}1""": if (Landmark.Waypoint != Null) F_Bases[1].add(Landmark);
+			case """{{{C_FinishTagPrefix}}}1""": if (Landmark.Waypoint != Null) F_Bases[2].add(Landmark);
+			case C_FlagSpawnTag: if (Landmark.Waypoint != Null) F_FlagSpawns.add(Landmark);
+			case C_DefaultFlagSpawnTag: if (Landmark.Waypoint != Null) {
+				F_FlagSpawns.add(Landmark);
+				F_DefaultFlagSpawn = Landmark;
+			}
+		}
+	}
+
+	while (!ValidationEndRequested) {
+		yield; // playing
+
+		foreach (Event in Mode.PendingEvents) {
+			if (!Valid(Event)) continue;
+			switch(Event.Type) {
+				case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
+
+					if (F_FlagSpawns.exists(Event.Landmark)) {
+						if (Event.Player != Null && !PlayerIsFlagCarrier) {
+							PlayerIsFlagCarrier = True;
+							Mode.SetPlayer_Delayed_Fragile(Event.Player, True);
+							Mode.SetPlayer_Delayed_AccelCoef(Event.Player, 0.8);
+							declare Text Message = """$f00{{{Event.Player.User.Name}}}$g Picked up the flag!""";
+
+							declare CUIConfig UI = UIManager.GetUI(Event.Player);
+							if (UI != Null) UI.QueueMessage(2000, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Notice, 1);
+
+						}
+					} else if (Event.Landmark.Tag == C_FlagResetTag  && Event.Player != Null) {
+						Mode.SetPlayer_Delayed_Fragile(Event.Player, False);
+						Mode.SetPlayer_Delayed_AccelCoef(Event.Player, 1.);
+						PlayerIsFlagCarrier = False;
+						declare Text Message = """$f00{{{Event.Player.User.Name}}}$g went out of bounds!""";
+						declare CUIConfig UI = UIManager.GetUI(Event.Player);
+						if (UI != Null) UI.QueueMessage(2000, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Capture, 1);
+						Mode.UnspawnPlayer(Event.Player);
+					}
+				}
+
+				case CSmModeEvent::EType::OnPlayerRequestRespawn: {
+					if (PlayerIsFlagCarrier) {
+						PlayerIsFlagCarrier = False;
+						Mode.SetPlayer_Delayed_Fragile(Event.Player, False);
+						Mode.SetPlayer_Delayed_AccelCoef(Event.Player, 1.);
+						declare Text Message = """$f00{{{Event.Player.User.Name}}}$g Droped the flag!""";
+						declare CUIConfig UI = Mode.UIManager.GetUI(Event.Player);
+						if (UI != Null) UI.QueueMessage(2000, 1, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Notice, 1);
+						Mode.UnspawnPlayer(Event.Player);
+					}
+				}
+			}
+		}
+
+		RaceTest::PlayLoop();
+	}
+
+	RaceTest::EndMap();
+	MapType::LeavePlayground();
+	// Wait map unload
+	while (Mode.Map != Null) yield;
+	RaceTest::EndServer();
+
 	ReportContext::SetContext(System, ReportContext::C_Context_MapEditor);
 }
 

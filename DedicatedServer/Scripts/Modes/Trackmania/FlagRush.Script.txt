@@ -38,7 +38,6 @@
 #Const	Version												"1.3.0-dev"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
-#Const	C_SpawnAnimDuration						1500
 #Const	C_BigMessage_Duration					3000
 
 #Const 	C_RespawnSpeedLimitKmh 				30.
@@ -76,7 +75,7 @@
 #Setting S_FlagCarrierControl								1.0 		as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
 #Setting S_FlagCarrierAdherence							1.0 		as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
 #Setting S_RespawnWhenStill									True 		as "Players can respawn only when being still"
-#Setting S_RespawnDelay											3.0 		as "Respawn Delay (seconds)"
+#Setting S_RespawnDelay											4.0 		as "Respawn Delay (seconds) (+1.5s Spawn animation)"
 #Setting S_DropFlagPickupPenalty						3.			as "Flag pickup cooldown after dropping (seconds)"
 
 // Teams
@@ -277,7 +276,7 @@ MB_Sleep(C_BigMessage_Duration);
 
 StartTime = Now;
 if(S_RoundTimeLimitSeconds > 0) {
-	SetEndTime(Now + S_RoundTimeLimitSeconds * 1000 + C_SpawnAnimDuration);
+	SetEndTime(Now + S_RoundTimeLimitSeconds * 1000 + FlagRush_Common::C_SpawnAnimDuration);
 } else {
 	SetEndTime(-1);
 }
@@ -295,12 +294,12 @@ if(G_PauseRequested) {
 	SetEndTime(-1);
 	ExecWarmUp();
 	G_PauseRequested = False;
-	SetEndTime(Now + RoundTimeLeft + C_SpawnAnimDuration);
+	SetEndTime(Now + RoundTimeLeft + FlagRush_Common::C_SpawnAnimDuration);
 }
 
 EventFeed::SendMessage("Turn Start", "info");
 
-declare PickupableDate = Now + ML::NearestInteger(S_FlagInitialSpawnDelaySeconds * 1000) + C_SpawnAnimDuration;
+declare PickupableDate = Now + ML::NearestInteger(S_FlagInitialSpawnDelaySeconds * 1000) + FlagRush_Common::C_SpawnAnimDuration;
 SetFlagPosition(FlagRush_Map::GetDefaultFlagSpawn(), PickupableDate);
 
 SpawnPlayers();
@@ -916,8 +915,7 @@ Void SpawnPlayers() {
 			InitPlayer(Player);
 			declare CMapLandmark SpawnLandmark = FlagRush_Map::GetSpawn(Player);
 			if (SpawnLandmark != Null) {
-				SpawnPlayer(Player, Player.CurrentClan, 1, SpawnLandmark.PlayerSpawn, Now + C_SpawnAnimDuration);
-				Net_SpawnDate = 0;
+				SpawnPlayer(Player, Player.CurrentClan, 1, SpawnLandmark.PlayerSpawn, Now + FlagRush_Common::C_SpawnAnimDuration);
 			}
 		}
 	}

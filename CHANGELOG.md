@@ -1,3 +1,10 @@
+## 1.3.0
++ XML-RPC callbacks for mode related callsbacks, see `XmlRpcScriptedCallbacks.md`
++ Display round number on start of a round.
++ Display time spent in overtime in the scores header.
+* Adjust respawn timer UI to take spawn animation duration into account.
+* Adjust default repsawn delay to 4.0 seconds (from 3.0 seconds)
+
 ## 1.2.1
 + New mode commands (Callvotes, ModeCommandsUI) for setting match/map/round points and auto team balance.
 * Fix scorestable player statistics

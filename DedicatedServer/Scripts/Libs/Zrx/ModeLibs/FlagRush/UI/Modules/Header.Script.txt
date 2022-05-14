@@ -156,6 +156,8 @@ Text GetManialink() {
 	***
 	declare Integer RoundTimeLeft = Net_FlagRush_EndTime - GameTime;
 	declare Boolean IsTimeLeft = RoundTimeLeft > 0;
+	Timer.TimerLabel.TextSizeReal = 2.;
+	Timer.TimerLabel.AutoNewLine = False;
 	if(IsTimeLeft) {
 		Timer.Icon.Hide();
 		Timer.TimerLabel.Show();
@@ -174,7 +176,9 @@ Text GetManialink() {
 	} else if (Net_GameplayPhase == {{{ GameplayPhase::C_Overtime }}}) {
 		Timer.Icon.Hide();
 		Timer.TimerLabel.Show();
-		Timer.TimerLabel.Value = "Overtime";
+		Timer.TimerLabel.TextSizeReal = 1.5;
+		Timer.TimerLabel.AutoNewLine = True; // Else multi line string won't be centered
+		Timer.TimerLabel.Value = "Overtime" ^ "\n" ^ "+" ^ TL::TimeToText(-RoundTimeLeft);
 		Timer.TimerLabel.TextColor = {{{ Colors::C_Warning }}};
 	} else {
 		Timer.Icon.Show();

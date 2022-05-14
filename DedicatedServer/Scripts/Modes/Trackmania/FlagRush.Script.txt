@@ -238,6 +238,7 @@ G_MapValid = True;
 ***Match_StartMap***
 ***
 FlagRush_Common::Log("Start Map");
+FlagRush_XmlRpc::Send_MapStart();
 Users_SetNbFakeUsers(C_Debug_NbFakeUsers.X, C_Debug_NbFakeUsers.Y);
 
 FlagRush_UI::UpdateScores();
@@ -250,7 +251,6 @@ if(S_UseWarmUp) {
 	FlagRush_Common::Log("Warmup Phase");
 	ExecWarmUp();
 }
-FlagRush_XmlRpc::Send_MapStart();
 ***
 
 ***Match_InitRound***
@@ -321,6 +321,7 @@ SetEndTime(EndTime + C_BigMessage_Duration);
 ***Match_EndRound***
 ***
 FlagRush_Common::Log("Round End");
+FlagRush_XmlRpc::Send_RoundEnd(G_RoundValid);
 EventFeed::SendMessage("Round End", "info");
 SetEndTime(-1);
 MB_ClearAllMessages();
@@ -361,8 +362,6 @@ if (G_RoundValid) {
 	MB_Sleep(C_BigMessage_Duration);
 }
 
-FlagRush_XmlRpc::Send_RoundEnd();
-
 // Check if map is finished
 if (CheckMapEndConditions()) MB_StopMap();
 ***
@@ -371,12 +370,13 @@ if (CheckMapEndConditions()) MB_StopMap();
 ***
 FlagRush_Common::Log("Map End");
 EventFeed::SendMessage("Map End", "info");
-FlagRush_XmlRpc::Send_MapEnd();
 if (MatchEndRequested) G_MapValid = False;
 ***
 
 ***Match_PodiumSequence***
 ***
+FlagRush_XmlRpc::Send_MapEnd(G_MapValid);
+
 // Evaluate Current Map
 if (G_MapValid) {
 	declare Text Message;
@@ -407,6 +407,8 @@ if (G_MapValid) {
 // Check if match is finished
 if(CheckMatchEndConditions())
 {
+	FlagRush_XmlRpc::Send_MatchEnd();
+	EventFeed::SendMessage("Match End", "info");
 
 	declare Text Message;
 
@@ -434,8 +436,6 @@ if(CheckMatchEndConditions())
 ***Match_EndMatch***
 ***
 FlagRush_Common::Log("Match End");
-FlagRush_XmlRpc::Send_MatchEnd();
-EventFeed::SendMessage("Match End", "info");
 ***
 
 ***Match_EndServer***

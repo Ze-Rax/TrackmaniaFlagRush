@@ -6,6 +6,9 @@
 #Include	"Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Logo.Script.txt" as Logo
 
 #Const C_PlayersPerPage 5
+#Const C_PlayerCard_NameDefaultPosition <-37.5, 0.>
+#Const C_PlayerCard_NameOffset <0., 1.2>
+#Const C_PlayerCard_ClubTagOffset <0., -2.5>
 
 /** Return Manialink */
 Text GetManialink() {
@@ -42,6 +45,7 @@ Text GetManialink() {
 		<quad pos="-49 0" z-index="1" size="8 8" bgcolor="FFF" halign="left" valign="center" id="avatar" keepratio="Fit"/>
 		<quad pos="-50 0" z-index="0" size="10 10" bgcolor="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="left" valign="center" />
 		<label pos="-37.5 0" z-index="0" size="30 10" text="Player Name" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="left" valign="center2" textfont="GameFontRegular" id="name" textsize="2.5" />
+		<label pos="-37.5 0" z-index="0" size="30 10" text="Clubtag" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="left" valign="center2" textfont="GameFontRegular" id="clubtag" textsize="0.75" hidden="1" />
 		<quad  z-index="0" pos="-3" size="5 5" bgcolor="FFF" halign="center" valign="center" style="UICommon64_1" substyle="Camera_light" id="status" hidden="1"/>
 
 		<!-- BoundingBox -->
@@ -149,6 +153,7 @@ Text GetManialink() {
 		K_BackgroundGradient BackgroundGradient;
 		CMlQuad Avatar;
 		CMlLabel Name;
+		CMlLabel ClubTag;
 		CMlQuad Status;
 		K_PlayerStatistic Points;
 		K_PlayerStatistic FlagsScored;
@@ -176,8 +181,6 @@ Text GetManialink() {
 	#Struct K_PageControls {
 		Integer PagesCount;
 		Integer CurrentPageIndex;
-		Integer NextUpdateClan;
-		Integer NextUpdateCard;
 		CMlFrame Frame;
 		CMlQuad Next;
 		CMlQuad Previous;
@@ -234,8 +237,9 @@ Text GetManialink() {
 		for (CardIndex, 0, 4) {
 			declare CMlFrame PlayercardFrame = (PlayerList.GetFirstChild("playercard-"^CardIndex) as CMlFrame);
 
-			// Name, Avatar, Status
+			// Name, Clubtag, Avatar, Status
 			declare CMlLabel PlayerName = (PlayercardFrame.GetFirstChild("name") as CMlLabel);
+			declare CMlLabel PlayerClubtag = (PlayercardFrame.GetFirstChild("clubtag") as CMlLabel);
 			declare CMlQuad PlayerAvatar = (PlayercardFrame.GetFirstChild("avatar") as CMlQuad);
 			declare CMlQuad PlayerStatus = (PlayercardFrame.GetFirstChild("status") as CMlQuad);
 
@@ -278,6 +282,7 @@ Text GetManialink() {
 				BackgroundGradient = PlayercardBackgroundGradient,
 				Avatar = PlayerAvatar,
 				Name = PlayerName,
+				ClubTag = PlayerClubtag,
 				Status = PlayerStatus,
 				Points = PlayerStatisticPoints,
 				FlagsScored = PlayerStatisticFlagsScored,
@@ -377,35 +382,22 @@ Text GetManialink() {
 	***
 
 	/**
-	 * Updates a single playercard, depending on which is set to be updated next in the page controls.
+	 * Updates all the playercards withg the scores of the currently selected page.
 	 */
-	***UpdateNextPlayerStatistics***
+	***UpdatePlayerCards***
 	***
-	declare K_PlayerCard NextUpdatePlayerCard = TeamScoreboards[PageControls.NextUpdateClan].Playercards[PageControls.NextUpdateCard];
-	if(PageScoresToDisplay[PageControls.NextUpdateClan].existskey(PageControls.NextUpdateCard)) {
-		declare CSmScore NextUpdateScore <=> PageScoresToDisplay[PageControls.NextUpdateClan][PageControls.NextUpdateCard];
-		UpdatePlayercard(NextUpdatePlayerCard, NextUpdateScore);
-		NextUpdatePlayerCard.Frame.Show();
-	} else {
-		NextUpdatePlayerCard.Frame.Hide();
-	}
-	***
+	foreach (TeamIndex => TeamScoreboard in TeamScoreboards) {
+		foreach (PlayerIndex => Playercard in TeamScoreboard.Playercards)	 {
+			declare CSmScore[] TeamScores = ScoresToDisplay[TeamIndex];
+			declare Integer ScoreIndex = PageControls.CurrentPageIndex * {{{ C_PlayersPerPage }}} + PlayerIndex;
+			if(TeamScores.existskey(ScoreIndex)) {
+				Playercard.Frame.Show();
+				UpdatePlayercard(Playercard, TeamScores[ScoreIndex]);
+			} else {
+				Playercard.Frame.Hide();
+			}
 
-
-	/**
-	 * Updates all player cars in one yield.
-	 */
-	***UpdateAllPlayerStatistics***
-	***
-	+++UpdateScoresToDisplay+++
-	+++UpdatePageState+++
-	PageControls.NextUpdateClan = 0;
-	PageControls.NextUpdateCard = 0;
-	declare Boolean ShouldStop = False;
-	while (!ShouldStop) {
-		+++UpdateNextPlayerStatistics+++
-		IncrementCardCounter();
-		ShouldStop = PageControls.NextUpdateClan + PageControls.NextUpdateCard == 0;
+		}
 	}
 	***
 
@@ -468,7 +460,6 @@ Text GetManialink() {
 	***
 	PageControls.CurrentPageIndex += 1;
 	+++UpdatePageState+++
-	+++UpdateAllPlayerStatistics+++
 	***
 
 	/**
@@ -478,7 +469,6 @@ Text GetManialink() {
 	***
 	PageControls.CurrentPageIndex -= 1;
 	+++UpdatePageState+++
-	+++UpdateAllPlayerStatistics+++
 	***
 
 	/**
@@ -546,6 +536,15 @@ Text GetManialink() {
 
 		// Basic information: Nama, Avatar, Status
 		Playercard.Name.Value = Score.User.Name;
+		Playercard.ClubTag.Visible = Score.User.ClubTag != "";
+		if(Score.User.ClubTag != "") {
+			Playercard.Name.RelativePosition_V3 = {{{ C_PlayerCard_NameDefaultPosition }}} + {{{ C_PlayerCard_NameOffset }}};
+			Playercard.ClubTag.RelativePosition_V3 = {{{ C_PlayerCard_NameDefaultPosition }}} + {{{ C_PlayerCard_ClubTagOffset }}};
+			Playercard.ClubTag.Value = TL::RegexReplace("[\\r\\n\\t]", Score.User.ClubTag, "g", "");
+		} else {
+			Playercard.Name.RelativePosition_V3 = {{{ C_PlayerCard_NameDefaultPosition }}};
+		}
+
 		if (Net_GameplayPhase == {{{ GameplayPhase::C_Warmup }}} && Net_FlagRush_WarmUpReadyStates.get(Score.User.Login, False)) {
 			Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_Success }}};
 		} else {
@@ -590,14 +589,6 @@ Text GetManialink() {
 		Playercard.Assists.Add.Value = TL::ToText(Net_FlagRush_FlagsAssists_Round);
 	}
 
-	/**
-	 * Increments the counters for sequential playercard updates.
-	 */
-	Void IncrementCardCounter() {
-		PageControls.NextUpdateCard = (PageControls.NextUpdateCard + 1) % {{{ C_PlayersPerPage }}};
-		if (PageControls.NextUpdateCard == 0) PageControls.NextUpdateClan = (PageControls.NextUpdateClan + 1) % 2;
-	}
-
 	main() {
 		declare netread Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
 		declare netread Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
@@ -609,13 +600,9 @@ Text GetManialink() {
 		+++InitMlControls+++
 		+++UpdateScoresToDisplay+++
 
-		declare Boolean DoFullUpdate = False;
-
 		while(True) {
 			yield;
-			// Don't update the scoreboard if it's not visibible, but do a full update once it becomes visible
-			if (!PageIsVisible) {
-				DoFullUpdate = True;
+			if(!PageIsVisible) {
 				continue;
 			}
 
@@ -624,19 +611,9 @@ Text GetManialink() {
 			UpdateTeamNames();
 			+++UpdateTeamStatistics+++
 
-			// Conditional full updates update all player cards. Else update one playercard per yield
-			if (DoFullUpdate) {
-				+++UpdateAllPlayerStatistics+++
-				DoFullUpdate = False;
-			} else {
-				// Update page content only when update loop restarts (every 10 yields)
-				if(PageControls.NextUpdateClan + PageControls.NextUpdateCard == 0) {
-					+++UpdateScoresToDisplay+++
-					+++UpdatePageState+++
-				}
-				+++UpdateNextPlayerStatistics+++
-				IncrementCardCounter();
-			}
+			+++UpdateScoresToDisplay+++
+			+++UpdatePageState+++
+			+++UpdatePlayerCards+++
 		}
 	}
 

@@ -931,7 +931,7 @@ Void UpdateFlag() {
 			FlagState::UpdatePosition();
 
 			if (FlagState::CheckLag()) {
-				declare Text Message = "Flag carrier teleported";
+				declare Text Message = "Flag carrier teleported!";
 				EventFeed::SendMessage(Message, "info");
 				DropFlag(FlagState::Get().PrevPosition);
 			}

@@ -18,7 +18,7 @@
 	K_FlagPass LastFlagPass;
 }
 
-#Const C_TeleportThreshold 5 //min value 2.78
+#Const C_TeleportThreshold 32 // One block
 
 declare K_FlagState G_FlagState;
 

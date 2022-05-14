@@ -89,6 +89,11 @@
 // ModeCommands
 #Setting S_ModeCommands_AdminLoginsCsv 			"" 			as "<hidden>" // Admin logins for the mode commands ui
 
+// Twitch Rivals
+#Setting S_ProPlayerLoginsCSV "" as "Pro player logins (Comma separated)"
+#Setting S_FlagCarrierProAcceleration				0.6 		as "Flag carrier acceleration for Pros (0.0 - 1.0)"
+#Setting S_FlagCarrierProAdherence					0.8 		as "Flag carrier adherence for Pros (0.0 - 1.0)"
+
 //////////////
 // Commands //
 //////////////
@@ -636,19 +641,27 @@ Void InitPlayers() {
  * Applies all handicaps for a player
  */
 Void ApplyHandicaps(CSmPlayer Player) {
+	declare Text[] ProPlayerLogins = TL::Split(",", S_ProPlayerLoginsCSV);
+
 	if (S_FlagCarrierControl != 1.) {
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
 		SetPlayer_Delayed_ControlCoef(Player, S_FlagCarrierControl);
 	}
 
-	if (S_FlagCarrierAcceleration != 1.) {
+	if (S_FlagCarrierAcceleration != 1. || ProPlayerLogins.exists(Player.User.Login)) {
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
-		SetPlayer_Delayed_AccelCoef(Player, S_FlagCarrierAcceleration);
+		declare Real Acceleration = S_FlagCarrierAcceleration;
+		if (ProPlayerLogins.exists(Player.User.Login)) Acceleration = S_FlagCarrierProAcceleration;
+		SetPlayer_Delayed_AccelCoef(Player, Acceleration);
 	}
 
-	if (S_FlagCarrierAdherence != 1.) {
+	if (S_FlagCarrierAdherence != 1. || ProPlayerLogins.exists(Player.User.Login)) {
 		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
-		SetPlayer_Delayed_AdherenceCoef(Player, S_FlagCarrierAdherence);
+		declare Real Adherence = S_FlagCarrierAdherence;
+		if (ProPlayerLogins.exists(Player.User.Login)) {
+			Adherence = S_FlagCarrierProAdherence;
+		}
+		SetPlayer_Delayed_AdherenceCoef(Player, Adherence);
 	}
 
 	if (S_FlagCarrierFragile) {

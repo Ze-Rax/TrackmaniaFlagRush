@@ -925,14 +925,22 @@ Void SpawnPlayers() {
  * Updates the state of the flag every playloop if necessary
  */
 Void UpdateFlag() {
-	declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
-	declare Boolean FlagIsDropped = FlagCarrierPlayer == Null && FlagState::Get().Landmark == Null;
+	if (FlagState::Get().Carrier != Null) {
+		declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
+		if (FlagCarrierPlayer != Null) {
+			FlagState::UpdatePosition();
 
-	if(FlagCarrierPlayer != Null) FlagState::UpdatePosition();
+			if (FlagState::CheckLag()) {
+				declare Text Message = "Flag carrier teleported";
+				EventFeed::SendMessage(Message, "info");
+				DropFlag(FlagState::Get().PrevPosition);
+			}
+		} else { // Disconnected
+			DropFlag();
+		}
+	}
 
-	if(FlagState::Get().Carrier != Null && FlagCarrierPlayer == Null) { // Player left
-		DropFlag();
-	} else if (FlagIsDropped) {
+	if (FlagState::IsDropped()) {
 		if (FlagState::Get().PickupableDate < Now) {
 			ResetFlag();
 		}

@@ -1,3 +1,6 @@
+#Include "MathLib" as ML
+
+
 #Struct K_FlagPass {
 	CUser OldCarrier;
 	CUser NewCarrier;
@@ -8,11 +11,14 @@
 	CMapLandmark Landmark;
 	CUser Carrier;
 	Vec3 Position;
+	Vec3 PrevPosition;
 	Vec3 LastSafePosition;
 	Integer LastDropDate;
 	Integer PickupableDate;
 	K_FlagPass LastFlagPass;
 }
+
+#Const C_TeleportThreshold 5 //min value 2.78
 
 declare K_FlagState G_FlagState;
 
@@ -111,7 +117,21 @@ Void PassFlag(CSmPlayer NewCarrier) {
 Void UpdatePosition() {
 	declare CSmPlayer CarrierPlayer = GetFlagCarrierPlayer();
 	if (CarrierPlayer != Null) {
+		G_FlagState.PrevPosition = G_FlagState.Position;
 		G_FlagState.Position = CarrierPlayer.Position;
 		if (CarrierPlayer.WheelsContactCount >= 3) G_FlagState.LastSafePosition = CarrierPlayer.Position;
 	}
+}
+
+Boolean IsDropped() {
+	return G_FlagState.Carrier == Null && G_FlagState.Landmark == Null;
+}
+
+Boolean CheckDisconnect() {
+	declare CSmPlayer CarrierPlayer = GetFlagCarrierPlayer();
+	return G_FlagState.Carrier != Null && CarrierPlayer == Null;
+}
+
+Boolean CheckLag() {
+	return G_FlagState.Carrier != Null && ML::Distance(G_FlagState.PrevPosition,G_FlagState.Position) > C_TeleportThreshold;
 }

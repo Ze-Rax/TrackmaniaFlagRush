@@ -135,7 +135,6 @@ Text GetManialink() {
 
 	#Const C_PlayerStatus_Spectator ["style" => "UICommon64_1", "substyle" => "Camera_light"]
 	#Const C_PlayerStatus_Disconnected ["style" => "Icons64x64_2", "substyle" => "Disconnected"]
-	#Const C_TagForbiddenTags ["$h", "$l", "$<", "$>", "\\n", "\\r", "\\t"]
 
 	#Struct K_BackgroundGradient {
 		CMlQuad Base;

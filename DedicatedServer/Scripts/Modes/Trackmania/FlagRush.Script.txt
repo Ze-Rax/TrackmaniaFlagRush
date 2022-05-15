@@ -77,6 +77,7 @@
 #Setting S_RespawnWhenStill									True 		as "Players can respawn only when being still"
 #Setting S_RespawnDelay											4.0 		as "Respawn Delay (seconds) (+1.5s Spawn animation)"
 #Setting S_DropFlagPickupPenalty						3.			as "Flag pickup cooldown after dropping (seconds)"
+#Setting S_DropFlagOnTeleportDetection			True		as "<hidden>"
 
 // Teams
 #Setting S_Team1Name 												"" 			as "Force Team 1 Name"
@@ -930,7 +931,7 @@ Void UpdateFlag() {
 		if (FlagCarrierPlayer != Null) {
 			FlagState::UpdatePosition();
 
-			if (FlagState::CheckLag()) {
+			if (S_DropFlagOnTeleportDetection && FlagState::CheckLag()) {
 				declare Text Message = "Flag carrier teleported!";
 				EventFeed::SendMessage(Message, "info");
 				DropFlag(FlagState::Get().PrevPosition);

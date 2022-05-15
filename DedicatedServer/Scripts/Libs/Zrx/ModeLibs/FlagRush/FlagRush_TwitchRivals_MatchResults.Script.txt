@@ -1,0 +1,65 @@
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
+#Include "Libs/Nadeo/TMxSM/Race/Scores.Script.txt" as Scores
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt" as MatchEvaluation
+
+#Struct K_FlagScore {
+	Text playerName;
+	Text playerLogin;
+	Integer teamIndex;
+	Integer timestamp;
+}
+
+#Struct K_MatchResult {
+	Integer[] scores;
+	Integer winnerTeamIndex;
+	Text[] teamNames;
+	K_FlagScore[] flagScores;
+}
+
+declare K_MatchResult G_MatchResult;
+
+Void OnMatchStart() {
+	G_MatchResult = K_MatchResult{};
+}
+
+Void OnMatchEnd(Text MatchResultEndpoint, Text Authentication) {
+	G_MatchResult.scores = [Scores::GetClanRoundPoints(1), Scores::GetClanRoundPoints(2)];
+	G_MatchResult.teamNames = [FlagRush_Teams::GetConfig(1).Name, FlagRush_Teams::GetConfig(2).Name];
+	G_MatchResult.winnerTeamIndex = MatchEvaluation::EvaluateRound() - 1;
+
+	log("Match result: " ^ G_MatchResult.tojson());
+
+	UIManager.UIAll.SendChat("[FlagRush Twitch Rivals] Sending results...");
+	if (MatchResultEndpoint != "") {
+		log("Sending Match results to Twitch Rivals endpoint...");
+		declare CHttpRequest Request = Http.CreatePost(MatchResultEndpoint, G_MatchResult.tojson(), Authentication ^ "\nContent-Type: application/json");
+
+		declare Timeout = Now + 10000;
+		while (!Request.IsCompleted && Now < Timeout) {
+			yield;
+		}
+
+		declare Boolean RequestSuccess = Request.IsCompleted && Request.StatusCode >= 200 && Request.StatusCode < 300;
+		if (RequestSuccess) {
+			UIManager.UIAll.SendChat("[FlagRush Twitch Rivals] Results sent successfully!");
+		} else{
+			UIManager.UIAll.SendChat("[FlagRush Twitch Rivals] Results could not be sent! Please check the server log for match results and error message.");
+			if (!Request.IsCompleted) {
+				log("Results could not be sent. Request timed out!");
+			} else { // StatusCode not 2xx
+				log("""Results could not be sent. Status code: {{{ Request.StatusCode }}}. Response: {{{ Request.Result }}}""");
+			}
+		}
+		Http.Destroy(Request);
+	}
+}
+
+Void OnFlagScored(CSmPlayer Player) {
+	declare K_FlagScore FlagScore = K_FlagScore{
+		playerName = Player.User.Name,
+		playerLogin = Player.User.Login,
+		teamIndex = Player.CurrentClan - 1,
+		timestamp = Now
+	};
+	G_MatchResult.flagScores.add(FlagScore);
+}

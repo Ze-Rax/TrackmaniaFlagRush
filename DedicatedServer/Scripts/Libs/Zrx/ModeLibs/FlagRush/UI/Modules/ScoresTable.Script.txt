@@ -317,7 +317,7 @@ Text GetManialink() {
 	***InitMlControls***
 	***
 	for (Team, 0, 1) {
-		TeamScoreboards[Team].FlagsScored.Name.Value = "Points";
+		TeamScoreboards[Team].FlagsScored.Name.Value = "Flags scored";
 		TeamScoreboards[Team].FlagsScored.Value.Value = "0";
 		TeamScoreboards[Team].RoundWins.Name.Value = "Round wins";
 		TeamScoreboards[Team].RoundWins.Value.Value = C_CounterGlyphEmpty;
@@ -371,7 +371,12 @@ Text GetManialink() {
 	***
 	for (Team, 0, 1) {
 		declare netread Integer Net_FlagRush_TeamRoundScore for Teams[Team];
-		TeamScoreboards[Team].FlagsScored.Value.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
+		if (Net_FlagRush_NbFlagsToWinRound > 0) {
+			TeamScoreboards[Team].FlagsScored.Value.Value = Net_FlagRush_TeamRoundScore ^ "/" ^ Net_FlagRush_NbFlagsToWinRound;
+		} else {
+			TeamScoreboards[Team].FlagsScored.Value.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
+		}
+
 
 		declare netread Integer Net_FlagRush_TeamMapScore for Teams[Team];
 		TeamScoreboards[Team].RoundWins.Value.Value = TeamScoreToGlyphsOrRatio(Net_FlagRush_TeamMapScore, Net_FlagRush_NbRoundsToWinMap);
@@ -590,6 +595,7 @@ Text GetManialink() {
 	}
 
 	main() {
+		declare netread Integer Net_FlagRush_NbFlagsToWinRound for Teams[0];
 		declare netread Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
 		declare netread Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
 

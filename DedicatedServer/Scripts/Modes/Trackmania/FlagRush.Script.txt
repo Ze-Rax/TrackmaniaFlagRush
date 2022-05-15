@@ -64,19 +64,19 @@
 
 // Gameplay
 #Setting S_UseReversedBases									False 	as "<hidden>" // Switch team bases
-#Setting S_RandomizeFlagSpawn								True 		as "Randomize flag spawn location"
+#Setting S_RandomizeFlagSpawn								True 		as "<hidden>" // Randomize flag spawn location
 #Setting S_FlagInitialSpawnDelaySeconds			0. 			as "<hidden>" // Initial flag spawn delay (seconds)
 #Setting S_FlagRespawnDelaySeconds					0. 			as "<hidden>" // Flag respawn delay (seconds)
-#Setting S_FlagDropStateDurationSeconds			8. 			as "Flag drop state duration (seconds)"
+#Setting S_FlagDropStateDurationSeconds			8. 			as "<hidden>" // Flag drop state duration (seconds)
 #Setting S_FlagStealResistDurationSeconds		1. 			as "<hidden>" // Flag steal resistance (seconds)
-#Setting S_FlagSameTeamSteal								True		as "Team flag steal"
+#Setting S_FlagSameTeamSteal								True		as "<hidden>" // Team flag steal
 #Setting S_FlagCarrierFragile								True		as "Flag carrier becomes fragile"
 #Setting S_FlagCarrierAcceleration					0.7 		as "Flag carrier acceleration (0.0 - 1.0)"
 #Setting S_FlagCarrierControl								1.0 		as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
 #Setting S_FlagCarrierAdherence							1.0 		as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
-#Setting S_RespawnWhenStill									True 		as "Players can respawn only when being still"
+#Setting S_RespawnWhenStill									True 		as "<hidden>" // Players can respawn only when being still
 #Setting S_RespawnDelay											4.0 		as "Respawn Delay (seconds) (+1.5s Spawn animation)"
-#Setting S_DropFlagPickupPenalty						3.			as "Flag pickup cooldown after dropping (seconds)"
+#Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
 
 // Teams
 #Setting S_Team1Name 												"" 			as "Force Team 1 Name"

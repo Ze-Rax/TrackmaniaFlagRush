@@ -1,12 +1,12 @@
 ![FlagRush Logo](Assets/png/mark.png)
 
-**`FlagRush`** is a Trackmania gamemode, where two teams compete in an arena to capture a flag and bring it to opposing team base. Mode plays best with a team size of 3 players per team.
+**`FlagRush`** is a Trackmania gamemode, where two teams compete in an arena to capture a flag and bring it to opposing team base. Mode plays best with a team size of 4 players per team.
 
 # Maps
 
 We recommend starting with our officially reviewed mapppacks:
-- 3v3 Mappack: https://trackmania.exchange/mappack/view/1155/flagrush-3v3-map-pool
-- 5v5 Mappack: https://trackmania.exchange/mappack/view/1156/flagrush-5v5-map-pool
+- Curated Mappack: https://trackmania.exchange/mappack/view/1155/flagrush-curated-map-pool
+- Proving Grounds Mappack: https://trackmania.exchange/mappack/view/1151/flagrush-proving-grounds
 
 You can find other compatible maps on Maniaexchange:
 - All FlagRush maps on TMX: https://trackmania.exchange/mapsearch2?mtype=FlagRushArena
@@ -84,7 +84,7 @@ When you placed all required landmarks, go back to the `Edit Block Properties`-t
 
 ## 4. Validating
 
-When you have placed all the required landmarks and configured them appropriatly, then the map will automatically be validated; There is no need to drive the map and clicking the green validation flag won’t even have any function. If you’re map is still invalid and you don’t know why, then you can click on the red flag in the bottom right; An error message should pop up, telling you what requirements are not fullfilled.
+When you have placed all the required landmarks and configured them appropriatly, then the map will automatically be validated; There is no need to drive the map and clicking the green validation flag won’t even have any function. If your map is still invalid and you don’t know why, then you can click on the red flag in the bottom right; An error message should pop up, telling you what requirements are not fullfilled.
 
 
 ## 5. Optional FlagRush name tag

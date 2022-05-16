@@ -2,6 +2,9 @@
 #Include "Libs/Nadeo/TMxSM/Race/Scores.Script.txt" as Scores
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt" as MatchEvaluation
 
+#Include "TimeLib" as TiL
+#Include "TextLib" as TL
+
 #Struct K_FlagScore {
 	Text playerName;
 	Text playerLogin;
@@ -10,6 +13,7 @@
 }
 
 #Struct K_MatchResult {
+	Text gamemode;
 	Integer[] scores;
 	Integer winnerTeamIndex;
 	Text[] teamNames;
@@ -19,7 +23,7 @@
 declare K_MatchResult G_MatchResult;
 
 Void OnMatchStart() {
-	G_MatchResult = K_MatchResult{};
+	G_MatchResult = K_MatchResult{ gamemode = "FlagRush" };
 }
 
 Void OnMatchEnd(Text MatchResultEndpoint, Text Authentication) {
@@ -59,7 +63,7 @@ Void OnFlagScored(CSmPlayer Player) {
 		playerName = Player.User.Name,
 		playerLogin = Player.User.Login,
 		teamIndex = Player.CurrentClan - 1,
-		timestamp = Now
+		timestamp = TL::ToInteger(TiL::GetCurrent())
 	};
 	G_MatchResult.flagScores.add(FlagScore);
 }

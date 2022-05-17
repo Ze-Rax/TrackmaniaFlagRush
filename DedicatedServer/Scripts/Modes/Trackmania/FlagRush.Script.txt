@@ -1242,14 +1242,14 @@ Void HandleCommand(CommandUtils::K_Command Command) {
 			CommandText = "The flag was reset.";
 		}
 		case CommandUtils::C_CommandPrefix ^ C_Command_SetTeam1RoundScore: {
-			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbFlagsToWinRound);
+			declare Integer Value = ML::Max(Command.ValueInteger, 0);
 			Scores::SetClanRoundPoints(1, Value);
 			FlagRush_UI::UpdateTeamScores();
 			CommandText = """Set {{{ Teams[0].Name }}} round score to {{{ Value }}}.""";
 			if(MB_RoundIsRunning() && CheckRoundEndConditions()) MB_StopRound();
 		}
 		case CommandUtils::C_CommandPrefix ^ C_Command_SetTeam2RoundScore: {
-			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbFlagsToWinRound);
+			declare Integer Value = ML::Max(Command.ValueInteger, 0);
 			Scores::SetClanRoundPoints(2, Value);
 			FlagRush_UI::UpdateTeamScores();
 			CommandText = """Set {{{ Teams[1].Name }}} round score to {{{ Value }}}.""";

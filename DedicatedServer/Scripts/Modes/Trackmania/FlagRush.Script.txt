@@ -38,7 +38,7 @@
 
 /* Constants */
 #Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version												"1.3.0-dev"
+#Const	Version												"1.3.0-TR"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
 #Const	C_BigMessage_Duration					3000

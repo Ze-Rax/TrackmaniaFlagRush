@@ -354,12 +354,15 @@ Void UpdateScores() {
 /**
  * Sends relevant mode settings values to the clients via netwrite.
  */
-Void UpdateModeSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap) {
+Void UpdateModeSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap, Integer NbFlagsToWinRound) {
 	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
 	Net_FlagRush_NbMapsToWinMatch = NbMapsToWinMatch;
 
 	declare netwrite Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
 	Net_FlagRush_NbRoundsToWinMap = NbRoundsToWinMap;
+
+	declare netwrite Integer Net_FlagRush_NbFlagsToWinRound for Teams[0];
+	Net_FlagRush_NbFlagsToWinRound = NbFlagsToWinRound;
 }
 
 /**

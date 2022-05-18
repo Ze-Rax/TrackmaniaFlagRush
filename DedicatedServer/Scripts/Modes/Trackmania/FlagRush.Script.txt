@@ -145,6 +145,7 @@ declare Boolean G_PauseRequested;
 declare Integer G_LastSettings_RoundTimeLimitSeconds;
 declare Integer G_LastSettings_NbMapsToWinMatch;
 declare Integer G_LastSettings_NbRoundsToWinMap;
+declare Integer G_LastSettings_NbFlagsToWinRound;
 
 declare Boolean G_LastSettings_UseReversedBases;
 
@@ -957,6 +958,7 @@ Void UpdateCriticalSettings() {
 	G_LastSettings_RoundTimeLimitSeconds = S_RoundTimeLimitSeconds;
 	G_LastSettings_NbMapsToWinMatch = S_NbMapsToWinMatch;
 	G_LastSettings_NbRoundsToWinMap = S_NbRoundsToWinMap;
+	G_LastSettings_NbFlagsToWinRound = S_NbFlagsToWinRound;
 
 	G_LastSettings_UseReversedBases = S_UseReversedBases;
 	G_LastSettings_UseCollisions = S_UseCollisions;
@@ -977,8 +979,10 @@ Void HandleModeSettingsUpdate() {
 		SetEndTime(StartTime + S_RoundTimeLimitSeconds * 1000);
 	}
 
-	if(G_LastSettings_NbMapsToWinMatch != S_NbMapsToWinMatch || G_LastSettings_NbRoundsToWinMap != S_NbRoundsToWinMap) {
-		FlagRush_UI::UpdateModeSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap);
+	if(G_LastSettings_NbMapsToWinMatch != S_NbMapsToWinMatch
+		|| G_LastSettings_NbRoundsToWinMap != S_NbRoundsToWinMap
+		|| G_LastSettings_NbFlagsToWinRound != S_NbFlagsToWinRound) {
+		FlagRush_UI::UpdateModeSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
 	}
 
 	if (G_LastSettings_UseCollisions != S_UseCollisions) {

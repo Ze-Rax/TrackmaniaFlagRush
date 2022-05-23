@@ -15,21 +15,22 @@ You can find other compatible maps on Maniaexchange:
 
 # Server How-to
 
-1. Setup Trackmania2020 dedicated server. ([Tutorial](https://forums.ubisoft.com/showthread.php/2242192-Tutorial-Trackmania-2020-Dedicated-Server))
+1. Setup Trackmania2020 dedicated server. ([Tutorial](https://wiki.trackmania.io/en/dedicated-server/Setup/Windows))
 2. Download gamemode: [main.zip](https://github.com/Ze-Rax/TrackmaniaFlagRush/archive/refs/heads/main.zip), then extract the zip archive.
-   - or clone the repository, if you have `git` installed: \
+	- or clone the repository, if you have `git` installed: \
   	`git clone https://github.com/Ze-Rax/TrackmaniaFlagRush`
 3. Place the contents of `DedicatedServer` folder into your dedicated server's `UserData` folder.
+	- A minimal FlagRush matchsettings file is already included in `Map/MatchSettings/FlagRush.MatchSettings.txt` together with a map.
 4. Start the server:
 
 Linux:
 ```bash
-./TrackmaniaServer /game_settings=MatchSettings/flagrush.txt /dedicated_cfg=dedicated_cfg.txt
+./TrackmaniaServer /game_settings=MatchSettings/FlagRush.MatchSettings.txt /dedicated_cfg=dedicated_cfg.txt
 ```
 
 Windows:
 ```powershell
-TrackmaniaServer.exe /game_settings=MatchSettings/flagrush.txt /dedicated_cfg=dedicated_cfg.txt
+TrackmaniaServer.exe /game_settings=MatchSettings/FlagRush.MatchSettings.txt /dedicated_cfg=dedicated_cfg.txt
 ```
 
 # Mapping Guide

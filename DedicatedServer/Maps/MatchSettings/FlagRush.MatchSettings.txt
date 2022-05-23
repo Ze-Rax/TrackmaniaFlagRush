@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <playlist>
 	<gameinfos>
-		<script_name>Trackmania/FlagRush</script_name>
+		<script_name>Modes/TrackMania/FlagRush.Script.txt</script_name>
+		<comment></comment>
 	</gameinfos>
 
 	<filter>
@@ -9,6 +10,8 @@
 	</filter>
 
 	<mode_script_settings>
+		<setting name="S_ChatTime" type="integer" value="10"/>
+		<setting name="S_UseCrudeExtrapolation" type="boolean" value="1"/>
 		<setting name="S_UseWarmUp" type="boolean" value="1"/>
 		<setting name="S_UseCollisions" type="boolean" value="0"/>
 		<setting name="S_NbMapsToWinMatch" type="integer" value="1"/>
@@ -29,13 +32,13 @@
 		<setting name="S_FlagCarrierControl" type="real" value="1"/>
 		<setting name="S_FlagCarrierAdherence" type="real" value="1"/>
 		<setting name="S_RespawnWhenStill" type="boolean" value="1"/>
-		<setting name="S_RespawnDelay" type="real" value="3"/>
+		<setting name="S_RespawnDelay" type="real" value="4"/>
 		<setting name="S_DropFlagPickupPenalty" type="real" value="3"/>
+		<setting name="S_DropFlagOnTeleportDetection" type="boolean" value="1"/>
 		<setting name="S_Team1Name" type="text" value=""/>
-		<setting name="S_Team1Color" type="text" value=""/>
 		<setting name="S_Team2Name" type="text" value=""/>
-		<setting name="S_Team2Color" type="text" value=""/>
-		<setting name="S_UseClubTags" type="boolean" value="0"/>
+		<setting name="S_UseClubTags" type="boolean" value="1"/>
+		<setting name="S_UseTeamSkins" type="boolean" value="1"/>
 		<setting name="S_ModeCommands_AdminLoginsCsv" type="text" value=""/>
 	</mode_script_settings>
 

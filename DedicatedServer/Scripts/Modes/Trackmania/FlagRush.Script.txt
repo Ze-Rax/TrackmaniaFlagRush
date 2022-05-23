@@ -468,7 +468,6 @@ if(G_PauseRequested) {
 }
 ***
 
-// There's no public yield, so just use the private one
 ***Match_Yield***
 ***
 ModeCommands::Yield();

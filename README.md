@@ -6,7 +6,9 @@
 
 We recommend starting with our officially reviewed mapppacks:
 - Curated Mappack: https://trackmania.exchange/mappack/view/1155/flagrush-curated-map-pool
+	- Maps which have been deemed to be of good quality by the players and developers
 - Proving Grounds Mappack: https://trackmania.exchange/mappack/view/1151/flagrush-proving-grounds
+	- Maps which are fully functional but not up to the quality expectations of the curated mappack (yet)
 
 You can find other compatible maps on Maniaexchange:
 - All FlagRush maps on TMX: https://trackmania.exchange/mapsearch2?mtype=FlagRushArena

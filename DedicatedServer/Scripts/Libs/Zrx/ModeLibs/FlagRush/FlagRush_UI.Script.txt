@@ -192,6 +192,7 @@ Void Init(Text FlagRush_Version) {
 	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoresTable::GetManialink());
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
+	Layers::SetAnimationType(C_LayerName_ScoresTable, CUILayer::EUILayerAnimation::ScaleFast);
 
 	// Event Feed
 	EventFeed::ClearMessages();

@@ -2,7 +2,7 @@
 /**
 *	Base mode for flag based gamemodes, like FlagRush
 */
-#Extends "Libs/Nadeo/TMNext/TrackMania/Modes/TMNextBase.Script.txt"
+#Extends "Libs/Zrx/ModeLibs/BaseModes/PureModeBase.Script.txt"
 
 //////////////
 // Includes //

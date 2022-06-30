@@ -1,0 +1,518 @@
+/**
+ *	Base for a standard game mode
+ */
+ #RequireContext CSmMode
+
+ #Const C_MB_Version			"2021-04-29"
+ #Const C_MB_ScriptName	"Libs/Nadeo/ModeLibs/Common/ModeBase.Script.txt"
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Libraries
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ #Include "Libs/Nadeo/ModeLibs/Legacy/Layers2.Script.txt" as Layers
+ #Include "Libs/Nadeo/ModeLibs/Legacy/ModeInfo.Script.txt" as ModeInfo
+ #Include "Libs/Nadeo/TMxSM/Race/Scores.Script.txt" as Scores
+ #Include "Libs/Nadeo/TMxSM/Race/Race.Script.txt" as Race
+ #Include "Libs/Nadeo/TMxSM/Race/Map.Script.txt" as Map
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Settings
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ #Setting S_ChatTime 10 as _("Chat time") ///< Chat time at the end of a map or match
+ #Setting S_UseCrudeExtrapolation True as "<hidden>" ///< Toggle the UseCrudeExtrapolation flag on the player.
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Constants
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Globales
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ declare Boolean MB_Private_RunSection_Script; ///< While this is true the script can't stop
+ declare Boolean MB_Private_RunSection_Server; ///< Run the server section as long as this is true
+ declare Boolean MB_Private_RunSection_Match; ///< Run the match section as long as this is true
+ declare Boolean MB_Private_RunSection_Map; ///< Run the map section as long as this is true
+ declare Boolean MB_Private_RunSection_Round; ///< Run the round section as long as this is true
+ declare Boolean MB_Private_RunSection_Turn; ///< Run the turn section as long as this is true
+ declare Boolean MB_Private_SkipPodiumSequence; ///< Skip the podium sequence
+ declare Integer MB_Private_SectionCount_Match; ///< Number of matches played since the beginning of the script
+ declare Integer MB_Private_SectionCount_Map; ///< Number of maps played since the beginning of the match
+ declare Integer MB_Private_SectionCount_Round; ///< Number of rounds played since the beginning of the map
+ declare Integer MB_Private_SectionCount_Turn; ///< Number of turns played since the beginning of the map
+ declare Integer MB_Private_SectionCount_PlayLoop; ///< Number of playloops played since the beginning of the turn
+ declare Integer MB_Private_CurrentNow; ///< Save the value of Now after the yield
+
+ ***MB_Private_LoadLibraries***
+ ***
+ Layers::Load();
+ ***
+
+ ***Match_Yield***
+ ***
+ if (MB_Private_CurrentNow > 0 && Now > MB_Private_CurrentNow) {
+	 log("WARNING: A frame was skipped with `yield`, `sleep()` or `wait()` ("^MB_Private_CurrentNow^" > "^Now^"). This is considered bad practice. Always use `MB_Yield()` or `MB_Sleep()` to advance to the next frame.");
+ }
+ yield;
+ MB_Private_CurrentNow = Now;
+ ***
+
+ ***MB_Private_Rules***
+ ***
+ ModeInfo::SetName("PureModeBase");
+ ModeInfo::SetRules("Basic functionalities and flow for game modes");
+ ModeInfo::SetStatusMessage("Basic functionalities and flow for game modes");
+ ***
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Functions
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Stop the server
+ Void MB_StopServer() {
+	 MB_Private_RunSection_Server = False;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Restart the script
+ Void MB_RestartScript() {
+	 MB_Private_RunSection_Script = False;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Stop the current match
+ Void MB_StopMatch() {
+	 MB_Private_RunSection_Match = False;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Stop the current map
+ Void MB_StopMap() {
+	 MB_Private_RunSection_Map = False;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Stop the current round
+ Void MB_StopRound() {
+	 MB_Private_RunSection_Round = False;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Stop the current turn
+ Void MB_StopTurn() {
+	 MB_Private_RunSection_Turn = False;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Check if the server must be running
+	 *
+	 *	@return														True the server must run, False the server must stop
+	 */
+ Boolean MB_ServerIsRunning() {
+	 return (
+		 !ServerShutdownRequested &&
+		 MB_Private_RunSection_Server
+	 );
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Check if the script must be running
+	 *
+	 *	@return														True the script must run, False the script must stop
+	 */
+ Boolean MB_ScriptIsRunning() {
+	 return (
+		 MB_ServerIsRunning() &&
+		 MB_Private_RunSection_Script
+	 );
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Check if the match must be running
+	 *
+	 *	@return														True the match must run, False the match must stop
+	 */
+ Boolean MB_MatchIsRunning() {
+	 return (
+		 MB_ScriptIsRunning() &&
+		 MB_Private_RunSection_Match
+	 );
+ }
+
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Check if the map must be running
+	 *
+	 *	@return														True the map must run, False the map must stop
+	 */
+ Boolean MB_MapIsRunning() {
+	 return (
+		 MB_MatchIsRunning() &&
+		 !MatchEndRequested &&
+		 MB_Private_RunSection_Map
+	 );
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Check if the round must be running
+	 *
+	 *	@return														True the round must run, False the round must stop
+	 */
+ Boolean MB_RoundIsRunning() {
+	 return (
+		 MB_MapIsRunning() &&
+		 MB_Private_RunSection_Round
+	 );
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Check if the turn must be running
+	 *
+	 *	@return														True the turn must run, False the turn must stop
+	 */
+ Boolean MB_TurnIsRunning() {
+ return (
+	 MB_RoundIsRunning() &&
+	 MB_Private_RunSection_Turn
+ );
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Get the number of matches played since the beginning of the script
+	 *
+	 *	@return														The number of match
+	 */
+ Integer MB_GetMatchCount() {
+	 return MB_Private_SectionCount_Match;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Get the number of maps played since the beginning of the match
+	 *
+	 *	@return														The number of maps
+	 */
+ Integer MB_GetMapCount() {
+	 return MB_Private_SectionCount_Map;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Get the number of rounds played since the beginning of the map
+	 *
+	 *	@return														The number of rounds
+	 */
+ Integer MB_GetRoundCount() {
+	 return MB_Private_SectionCount_Round;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Get the number of turns played since the beginning of the map
+	 *
+	 *	@return														The number of turns
+	 */
+ Integer MB_GetTurnCount() {
+	 return MB_Private_SectionCount_Turn;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Skip the podium sequence one time
+ Void MB_SkipPodiumSequence() {
+	 MB_Private_SkipPodiumSequence = True;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Sleep for the given duration
+	 *
+	 *	@param	_Time											The duration of the sleep
+	 */
+ Void MB_Sleep(Integer _Duration) {
+	 declare End = Now + _Duration;
+	 while (Now < End && MB_ServerIsRunning()) +++Match_Yield+++
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Load the next map
+ Void MB_Private_LoadMap() {
+	 if (!MapLoaded) RequestLoadMap();
+	 while (!MapLoaded) +++Match_Yield+++
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Unload the current map
+ Void MB_Private_UnloadMap() {
+	 if (MapLoaded) RequestUnloadMap();
+	 while (MapLoaded) +++Match_Yield+++
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Do a synchronization
+ Void MB_Private_Synchro() {
+	 declare Barrier = Synchro_AddBarrier();
+	 while (!Synchro_BarrierReached(Barrier) && !ServerShutdownRequested) +++Match_Yield+++
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Balance the teams
+ Void MB_Private_AutoTeamBalance() {
+	 AutoTeamBalance();
+	 MB_Private_Synchro();
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Play the intro sequence
+ Void MB_Private_IntroSequence() {
+	 declare PrevUISequence = UIManager.UIAll.UISequence;
+	 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Intro;
+	 while (MB_MapIsRunning() && !UIManager.UIAll.UISequenceIsCompleted) {
+		 +++Match_Yield+++
+		 +++MB_Private_IntroSequenceYield+++
+	 }
+	 UIManager.UIAll.UISequence = PrevUISequence;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Play the players presentation sequence
+	 *
+	 *	@param	_Duration									Duration of the sequence
+	 */
+ Void MB_Private_PlayersPresentationSequence(Integer _Duration) {
+	 declare PrevUISequence = UIManager.UIAll.UISequence;
+	 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
+	 MB_Sleep(_Duration);
+	 UIManager.UIAll.UISequence = PrevUISequence;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Play the podium sequence :
+	 *	Podium + Scores table
+	 */
+ Void MB_Private_PodiumSequence() {
+	 declare PrevUISequence = UIManager.UIAll.UISequence;
+	 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
+	 MB_Sleep((S_ChatTime*1000)/2);
+	 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
+	 MB_Sleep((S_ChatTime*1000)/2);
+	 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
+	 UIManager.UIAll.UISequence = PrevUISequence;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Clear all queued messages
+ Void MB_Private_ClearAllMessages() {
+	 UIManager.UIAll.ClearMessages();
+	 foreach (Player in AllPlayers) {
+		 declare CUIConfig UI <=> UIManager.GetUI(Player);
+		 if (UI != Null) {
+			 UI.ClearMessages();
+		 }
+	 }
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Clear all queued messages
+ Void MB_ClearAllMessages() {
+	 UIManager.UIAll.ClearMessages();
+	 foreach (Player in AllPlayers) {
+		 declare CUIConfig UI <=> UIManager.GetUI(Player);
+		 if (UI != Null) {
+			 UI.ClearMessages();
+		 }
+	 }
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Script start
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ main() {
+	 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+	 MB_Private_RunSection_Server = True;
+
+	 while (MB_ServerIsRunning()) {
+		 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+		 // Server section start
+		 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+		 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+		 // Initialize section
+		 MB_Private_SectionCount_Match = 0;
+		 MB_Private_SectionCount_Map = 0;
+		 MB_Private_SectionCount_Round = 0;
+		 MB_Private_SectionCount_Turn = 0;
+		 MB_Private_RunSection_Script = True;
+
+		 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+		 // Load libraries
+		 +++Match_LoadLibraries+++
+
+		 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+		 // Load HUD
+		 +++Match_BeforeLoadHud+++
+		 +++Match_LoadHud+++
+		 +++Match_AfterLoadHud+++
+		 +++Match_InitServer+++
+
+		 +++Match_Rules+++
+		 +++Match_LoadItems+++
+		 +++Match_StartServer+++
+
+		 while (MB_ScriptIsRunning()) {
+			 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+			 // Match section start
+			 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+			 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+			 // Initialize section
+			 MB_Private_RunSection_Match = True;
+			 MB_Private_SectionCount_Match += 1;
+			 MB_Private_SectionCount_Map = 0;
+			 MB_Private_SectionCount_Round = 0;
+			 MB_Private_SectionCount_Turn = 0;
+			 MB_Private_SectionCount_PlayLoop = 0;
+
+			 +++Match_InitMatch+++
+
+			 +++Match_StartMatch+++
+
+			 while (MB_MatchIsRunning()) {
+				 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+				 // Map section start
+				 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+				 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+				 // Initialize section
+				 MatchEndRequested = False; //< (True when a vote for next map pass)
+				 MB_Private_RunSection_Map = True;
+				 MB_Private_SectionCount_Map += 1;
+				 MB_Private_SectionCount_Round = 0;
+				 MB_Private_SectionCount_Turn = 0;
+				 MB_Private_SectionCount_PlayLoop = 0;
+				 MB_Private_SkipPodiumSequence = False;
+
+				 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+				 // Load a map
+				 +++Match_BeforeLoadMap+++
+				 MB_Private_LoadMap();
+				 +++Match_AfterLoadMap+++
+
+				 +++Match_InitMap+++
+
+				 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+				 // Play intro sequence
+				 declare MB_Private_EnableIntroSequence = True;
+				 ---Match_EnableIntroSequence---
+				 if (MB_Private_EnableIntroSequence) {
+					 +++Match_BeforeIntroSequence+++
+					 +++Match_IntroSequence+++
+					 +++Match_AfterIntroSequence+++
+				 }
+
+				 +++Match_StartMap+++
+
+				 while (MB_MapIsRunning()) {
+					 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+					 // Round section start
+					 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+					 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+					 // Initialize section
+					 MB_Private_RunSection_Round = True;
+					 MB_Private_SectionCount_Round += 1;
+					 MB_Private_SectionCount_Turn = 0;
+					 MB_Private_SectionCount_PlayLoop = 0;
+
+					 +++Match_InitRound+++
+
+					 +++Match_StartRound+++
+
+					 while (MB_RoundIsRunning()) {
+						 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+						 // Turn section start
+						 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+						 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+						 // Initialize section
+						 MB_Private_RunSection_Turn = True;
+						 MB_Private_SectionCount_Turn += 1;
+						 MB_Private_SectionCount_PlayLoop = 0;
+
+						 +++Match_InitTurn+++
+
+						 +++Match_StartTurn+++
+
+						 MB_Private_SectionCount_PlayLoop += 1;
+
+						 +++Match_InitPlayLoop+++
+						 +++Match_StartPlayLoop+++
+
+						 while (MB_TurnIsRunning()) {
+							 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+							 // Play loop section
+							 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+							 +++Match_Yield+++
+							 +++Match_PlayLoop+++
+							 }
+
+							 +++Match_EndPlayLoop+++
+
+							 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+							 // Turn section end
+							 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+							 +++Match_EndTurn+++
+							 +++Match_AfterEndTurn+++
+						 }
+						 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+						 // Round section end
+						 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+						 +++Match_EndRound+++
+						 +++Match_AfterEndRound+++
+					 }
+					 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+					 // Map section end
+					 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+					 +++Match_EndMap+++
+					 +++Match_AfterEndMap+++
+
+					 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+					 // Podium sequence
+					 declare MB_Private_EnablePodiumSequence = True;
+					 ---Match_EnablePodiumSequence---
+					 if (MB_Private_EnablePodiumSequence) {
+
+					 +++Match_BeforePodiumSequence+++
+					 if (!MB_Private_SkipPodiumSequence) {
+						 +++Match_PodiumSequence+++
+					 }
+					 +++Match_AfterPodiumSequence+++
+				 }
+
+				 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+				 // Unload the current map
+				 +++Match_BeforeUnloadMap+++
+				 // Yield to process and remove every events before unloading the map
+				 // This is necessary to avoid getting errors in the events about variables that does not exist anymore
+				 // because they were deleted by the C++ cleaning at the map unload
+				 +++Match_Yield+++
+				 MB_Private_UnloadMap();
+				 +++Match_AfterUnloadMap+++
+
+				 +++Match_Yield+++ //< Needed to properly save persistent variable
+			 }
+			 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+			 // Match section end
+			 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+			 +++Match_EndMatch+++
+			 +++Match_AfterEndMatch+++
+		 }
+		 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+		 // Main/Server end
+		 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+		 +++Match_EndServer+++
+
+		 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+		 // Unload libraries
+		 +++Match_UnloadLibraries+++
+	 }
+
+ // Last yield for logging
+ yield;
+ }

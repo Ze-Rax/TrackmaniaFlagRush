@@ -174,8 +174,6 @@ Race::UseCppRaceProgression(False);						// To make it possible to trigger check
 UsePvECollisions = True;											// To force player visibility
 UsePvPCollisions = S_UseCollisions;
 UseClans = True;															// 2 Clans -> Player.CurrentClan = 1 or 2, but refers to Teams[0 or 1]
-MB_Settings_UseDefaultHud = False;
-MB_Settings_UseDefaultPodiumSequence = False;
 GameplayPhase::Set(GameplayPhase::C_None);
 
 // Player marker visibility
@@ -467,9 +465,10 @@ if(G_PauseRequested) {
 ***
 
 // There's no public yield, so just use the private one
-***MB_Private_Yield***
+***Match_Yield***
 ***
 ModeCommands::Yield();
+HandleCommands();
 ***
 
 ///////////////
@@ -639,22 +638,22 @@ Void InitPlayers() {
  */
 Void ApplyHandicaps(CSmPlayer Player) {
 	if (S_FlagCarrierControl != 1.) {
-		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
+		while (SetPlayer_DelayedIsFull(Player)) +++Match_Yield+++
 		SetPlayer_Delayed_ControlCoef(Player, S_FlagCarrierControl);
 	}
 
 	if (S_FlagCarrierAcceleration != 1.) {
-		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
+		while (SetPlayer_DelayedIsFull(Player)) +++Match_Yield+++
 		SetPlayer_Delayed_AccelCoef(Player, S_FlagCarrierAcceleration);
 	}
 
 	if (S_FlagCarrierAdherence != 1.) {
-		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
+		while (SetPlayer_DelayedIsFull(Player)) +++Match_Yield+++
 		SetPlayer_Delayed_AdherenceCoef(Player, S_FlagCarrierAdherence);
 	}
 
 	if (S_FlagCarrierFragile) {
-		while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
+		while (SetPlayer_DelayedIsFull(Player)) +++Match_Yield+++
 		SetPlayer_Delayed_Fragile(Player, S_FlagCarrierFragile);
 	}
 }
@@ -664,7 +663,7 @@ Void ApplyHandicaps(CSmPlayer Player) {
  */
 Void ResetHandicaps(CSmPlayer Player) {
 	if(Player == Null) return;
-	while (SetPlayer_DelayedIsFull(Player)) MB_Yield();
+	while (SetPlayer_DelayedIsFull(Player)) +++Match_Yield+++
 	SetPlayer_Delayed_Reset(Player);
 }
 
@@ -1420,7 +1419,7 @@ Void ExecWarmUp() {
 
 	// Main WarmUp loop
 	while(!WarmUpReadyUp::WarmUpShouldStop()) {
-		MB_Yield();
+		+++Match_Yield+++
 		WarmUpReadyUp::Yield();
 		UpdatePlayers();
 		SpawnPlayers();

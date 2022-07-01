@@ -1,33 +1,36 @@
 ![FlagRush Logo](Assets/png/mark.png)
 
-**`FlagRush`** is a Trackmania gamemode, where two teams compete in an arena to capture a flag and bring it to opposing team base. Mode plays best with a team size of 3 players per team.
+**`FlagRush`** is a Trackmania gamemode, where two teams compete in an arena to capture a flag and bring it to opposing team base. Mode plays best with a team size of 4 players per team.
 
 # Maps
 
 We recommend starting with our officially reviewed mapppacks:
-- 3v3 Mappack: https://trackmania.exchange/mappack/view/1155/flagrush-3v3-map-pool
-- 5v5 Mappack: https://trackmania.exchange/mappack/view/1156/flagrush-5v5-map-pool
+- Curated Mappack: https://trackmania.exchange/mappack/view/1155/flagrush-curated-map-pool
+	- Maps which have been deemed to be of good quality by the players and developers
+- Proving Grounds Mappack: https://trackmania.exchange/mappack/view/1151/flagrush-proving-grounds
+	- Maps which are fully functional but not up to the quality expectations of the curated mappack (yet)
 
 You can find other compatible maps on Maniaexchange:
 - All FlagRush maps on TMX: https://trackmania.exchange/mapsearch2?mtype=FlagRushArena
 
 # Server How-to
 
-1. Setup Trackmania2020 dedicated server. ([Tutorial](https://forums.ubisoft.com/showthread.php/2242192-Tutorial-Trackmania-2020-Dedicated-Server))
+1. Setup Trackmania2020 dedicated server. ([Tutorial](https://wiki.trackmania.io/en/dedicated-server/Setup/Windows))
 2. Download gamemode: [main.zip](https://github.com/Ze-Rax/TrackmaniaFlagRush/archive/refs/heads/main.zip), then extract the zip archive.
-   - or clone the repository, if you have `git` installed: \
+	- or clone the repository, if you have `git` installed: \
   	`git clone https://github.com/Ze-Rax/TrackmaniaFlagRush`
 3. Place the contents of `DedicatedServer` folder into your dedicated server's `UserData` folder.
+	- A minimal FlagRush matchsettings file is already included in `Map/MatchSettings/FlagRush.MatchSettings.txt` together with a map.
 4. Start the server:
 
 Linux:
 ```bash
-./TrackmaniaServer /game_settings=MatchSettings/flagrush.txt /dedicated_cfg=dedicated_cfg.txt
+./TrackmaniaServer /game_settings=MatchSettings/FlagRush.MatchSettings.txt /dedicated_cfg=dedicated_cfg.txt
 ```
 
 Windows:
 ```powershell
-TrackmaniaServer.exe /game_settings=MatchSettings/flagrush.txt /dedicated_cfg=dedicated_cfg.txt
+TrackmaniaServer.exe /game_settings=MatchSettings/FlagRush.MatchSettings.txt /dedicated_cfg=dedicated_cfg.txt
 ```
 
 # Mapping Guide
@@ -84,7 +87,7 @@ When you placed all required landmarks, go back to the `Edit Block Properties`-t
 
 ## 4. Validating
 
-When you have placed all the required landmarks and configured them appropriatly, then the map will automatically be validated; There is no need to drive the map and clicking the green validation flag won’t even have any function. If you’re map is still invalid and you don’t know why, then you can click on the red flag in the bottom right; An error message should pop up, telling you what requirements are not fullfilled.
+When you have placed all the required landmarks and configured them appropriatly, then the map will automatically be validated; There is no need to drive the map and clicking the green validation flag won’t even have any function. If your map is still invalid and you don’t know why, then you can click on the red flag in the bottom right; An error message should pop up, telling you what requirements are not fullfilled.
 
 
 ## 5. Optional FlagRush name tag

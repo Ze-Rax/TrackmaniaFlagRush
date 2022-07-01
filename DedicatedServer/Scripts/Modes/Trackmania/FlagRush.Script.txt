@@ -77,6 +77,7 @@
 #Setting S_RespawnWhenStill									True 		as "<hidden>" // Players can respawn only when being still
 #Setting S_RespawnDelay											4.0 		as "Respawn Delay (seconds) (+1.5s Spawn animation)"
 #Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
+#Setting S_DropFlagOnTeleportDetection			True		as "<hidden>"
 
 // Teams
 #Setting S_Team1Name 												"" 			as "Force Team 1 Name"
@@ -145,6 +146,7 @@ declare Boolean G_PauseRequested;
 declare Integer G_LastSettings_RoundTimeLimitSeconds;
 declare Integer G_LastSettings_NbMapsToWinMatch;
 declare Integer G_LastSettings_NbRoundsToWinMap;
+declare Integer G_LastSettings_NbFlagsToWinRound;
 
 declare Boolean G_LastSettings_UseReversedBases;
 
@@ -925,14 +927,22 @@ Void SpawnPlayers() {
  * Updates the state of the flag every playloop if necessary
  */
 Void UpdateFlag() {
-	declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
-	declare Boolean FlagIsDropped = FlagCarrierPlayer == Null && FlagState::Get().Landmark == Null;
+	if (FlagState::Get().Carrier != Null) {
+		declare CSmPlayer FlagCarrierPlayer = FlagState::GetFlagCarrierPlayer();
+		if (FlagCarrierPlayer != Null) {
+			FlagState::UpdatePosition();
 
-	if(FlagCarrierPlayer != Null) FlagState::UpdatePosition();
+			if (S_DropFlagOnTeleportDetection && FlagState::CheckLag()) {
+				declare Text Message = "Flag carrier teleported!";
+				EventFeed::SendMessage(Message, "info");
+				DropFlag(FlagState::Get().PrevPosition);
+			}
+		} else { // Disconnected
+			DropFlag();
+		}
+	}
 
-	if(FlagState::Get().Carrier != Null && FlagCarrierPlayer == Null) { // Player left
-		DropFlag();
-	} else if (FlagIsDropped) {
+	if (FlagState::IsDropped()) {
 		if (FlagState::Get().PickupableDate < Now) {
 			ResetFlag();
 		}
@@ -957,6 +967,7 @@ Void UpdateCriticalSettings() {
 	G_LastSettings_RoundTimeLimitSeconds = S_RoundTimeLimitSeconds;
 	G_LastSettings_NbMapsToWinMatch = S_NbMapsToWinMatch;
 	G_LastSettings_NbRoundsToWinMap = S_NbRoundsToWinMap;
+	G_LastSettings_NbFlagsToWinRound = S_NbFlagsToWinRound;
 
 	G_LastSettings_UseReversedBases = S_UseReversedBases;
 	G_LastSettings_UseCollisions = S_UseCollisions;
@@ -977,8 +988,10 @@ Void HandleModeSettingsUpdate() {
 		SetEndTime(StartTime + S_RoundTimeLimitSeconds * 1000);
 	}
 
-	if(G_LastSettings_NbMapsToWinMatch != S_NbMapsToWinMatch || G_LastSettings_NbRoundsToWinMap != S_NbRoundsToWinMap) {
-		FlagRush_UI::UpdateModeSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap);
+	if(G_LastSettings_NbMapsToWinMatch != S_NbMapsToWinMatch
+		|| G_LastSettings_NbRoundsToWinMap != S_NbRoundsToWinMap
+		|| G_LastSettings_NbFlagsToWinRound != S_NbFlagsToWinRound) {
+		FlagRush_UI::UpdateModeSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
 	}
 
 	if (G_LastSettings_UseCollisions != S_UseCollisions) {
@@ -1242,14 +1255,14 @@ Void HandleCommand(CommandUtils::K_Command Command) {
 			CommandText = "The flag was reset.";
 		}
 		case CommandUtils::C_CommandPrefix ^ C_Command_SetTeam1RoundScore: {
-			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbFlagsToWinRound);
+			declare Integer Value = ML::Max(Command.ValueInteger, 0);
 			Scores::SetClanRoundPoints(1, Value);
 			FlagRush_UI::UpdateTeamScores();
 			CommandText = """Set {{{ Teams[0].Name }}} round score to {{{ Value }}}.""";
 			if(MB_RoundIsRunning() && CheckRoundEndConditions()) MB_StopRound();
 		}
 		case CommandUtils::C_CommandPrefix ^ C_Command_SetTeam2RoundScore: {
-			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbFlagsToWinRound);
+			declare Integer Value = ML::Max(Command.ValueInteger, 0);
 			Scores::SetClanRoundPoints(2, Value);
 			FlagRush_UI::UpdateTeamScores();
 			CommandText = """Set {{{ Teams[1].Name }}} round score to {{{ Value }}}.""";

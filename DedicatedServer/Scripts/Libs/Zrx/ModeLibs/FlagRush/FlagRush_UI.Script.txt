@@ -192,6 +192,7 @@ Void Init(Text FlagRush_Version) {
 	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoresTable::GetManialink());
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
+	Layers::SetAnimationType(C_LayerName_ScoresTable, CUILayer::EUILayerAnimation::ScaleFast);
 
 	// Event Feed
 	EventFeed::ClearMessages();
@@ -354,12 +355,15 @@ Void UpdateScores() {
 /**
  * Sends relevant mode settings values to the clients via netwrite.
  */
-Void UpdateModeSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap) {
+Void UpdateModeSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap, Integer NbFlagsToWinRound) {
 	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
 	Net_FlagRush_NbMapsToWinMatch = NbMapsToWinMatch;
 
 	declare netwrite Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
 	Net_FlagRush_NbRoundsToWinMap = NbRoundsToWinMap;
+
+	declare netwrite Integer Net_FlagRush_NbFlagsToWinRound for Teams[0];
+	Net_FlagRush_NbFlagsToWinRound = NbFlagsToWinRound;
 }
 
 /**

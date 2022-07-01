@@ -129,7 +129,7 @@ main() {
 	FrameMain = (Page.GetFirstChild("commands-ui") as CMlFrame);
 	QuadToggleMenu = (Page.GetFirstChild("toggle-menu") as CMlQuad);
 
-	FrameCustomCommand = (Page.GetFirstChild("cuomst-command") as CMlFrame);
+	FrameCustomCommand = (Page.GetFirstChild("custom-command") as CMlFrame);
 	TextEditCustomCommand = (Page.GetFirstChild("textedit-command") as CMlEntry);
 	ButtonCustomCommandSend = (Page.GetFirstChild("button-sendcommand") as CMlLabel);
 

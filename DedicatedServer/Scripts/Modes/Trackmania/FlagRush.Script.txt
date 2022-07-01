@@ -128,6 +128,9 @@
 #Command	Command_SetTeam2MatchScore			(Integer) as		"Set Team 2 Match Score"
 #Const		C_Command_SetTeam2MatchScore										"SetTeam2MatchScore"
 
+// #Command	Command_Announce								(Text)		as		"Show big anouncement message"
+#Const		C_Command_Announce															"Announce"
+
 // #Command	Command_BalanceTeams						(Boolean) as		"Balance Teams"
 #Const		C_Command_BalanceTeams													"BalanceTeams"
 
@@ -188,7 +191,6 @@ UIManager.UIAll.OverlayHideSpectatorInfos = True;
 UIManager.UIAll.OverlayHideSpectatorControllers = True;
 
 // Register mode commands
-ModeCommands::Load();
 declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
 foreach(Login in ModeCommandsAdminLogins) {
 	ModeCommands::AddAdmin(Login);
@@ -466,8 +468,7 @@ if(G_PauseRequested) {
 }
 ***
 
-// There's no public yield, so just use the private one
-***MB_Private_Yield***
+***Match_Yield***
 ***
 ModeCommands::Yield();
 ***
@@ -1304,6 +1305,10 @@ Void HandleCommand(CommandUtils::K_Command Command) {
 			declare Integer Amount = ML::Max(Command.ValueInteger, 0);
 			Users_SetNbFakeUsers(Amount, Amount);
 			CommandText = """Set {{{ Amount }}} bots.""";
+		}
+		case CommandUtils::C_CommandPrefix ^ C_Command_Announce: {
+			UIManager.UIAll.QueueMessage(C_BigMessage_Duration, 1, CUIConfig::EMessageDisplay::Big, Command.ValueText, CUIConfig::EUISound::Default, 0);
+			CommandText = """Message: {{{ Command.ValueText }}}""";
 		}
 		default: {
 			CommandText = "Unknown command.";

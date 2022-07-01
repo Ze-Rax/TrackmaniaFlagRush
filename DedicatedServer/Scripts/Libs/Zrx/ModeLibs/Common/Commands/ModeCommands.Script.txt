@@ -41,20 +41,20 @@ Void Private_OnPermissionsUpdate() {
 Text GetManialink() {
 	declare Text FrameInstancesXml;
 	for(I, 0, G_QuickCommands.count - 1) {
-		FrameInstancesXml ^= """<frameinstance modelid="model-quick-command" pos="{{{12.5 * I}}}" id="quick-command-{{{I}}}"/>""";
+		FrameInstancesXml ^= """<frameinstance modelid="model-quick-command" pos="{{{ 12.5 * I }}}" id="quick-command-{{{ I }}}"/>""";
 	}
 
 	declare Text QuickCommandReferences;
 	for(I, 0, G_QuickCommands.count - 1) {
 		QuickCommandReferences ^= """{
-					declare CMlFrame FrameQuickCommand = (Page.GetFirstChild("quick-command-{{{I}}}") as CMlFrame);
-					declare CMlQuad Icon = (FrameQuickCommand.GetFirstChild("icon") as CMlQuad);
-					declare CMlLabel Label = (FrameQuickCommand.GetFirstChild("label") as CMlLabel);
-				Icon.Style = "{{{G_QuickCommands[I].IconStyle}}}";
-				Icon.Substyle = "{{{G_QuickCommands[I].IconSubstyle}}}";
-				Label.Value = "{{{G_QuickCommands[I].Command}}}";
-					QuickCommands[Icon] = Label;
-			}""";
+		declare CMlFrame FrameQuickCommand = (Page.GetFirstChild("quick-command-{{{ I }}}") as CMlFrame);
+		declare CMlQuad Icon = (FrameQuickCommand.GetFirstChild("icon") as CMlQuad);
+		declare CMlLabel Label = (FrameQuickCommand.GetFirstChild("label") as CMlLabel);
+		Icon.Style = "{{{ G_QuickCommands[I].IconStyle }}}";
+		Icon.Substyle = "{{{ G_QuickCommands[I].IconSubstyle }}}";
+		Label.Value = "{{{ G_QuickCommands[I].Command }}}";
+		QuickCommands[Icon] = Label;
+	}""";
 	}
 
 	return """
@@ -66,13 +66,13 @@ Text GetManialink() {
 	<label pos="5 -6" z-index="0" size="50 5" text="myLabelasdasdasd" textemboss="1" id="label" halign="right" valign="top" hidden="1"/>
 </framemodel>
 
-<frame id="commands-ui" pos="170 {{{C_UIPosition_Y}}}" z-index="50">
+<frame id="commands-ui" pos="170 {{{ C_UIPosition_Y }}}" z-index="50">
 	<quad  z-index="0" size="10 10" bgcolor="FFF" style="Icons128x128_1" substyle="BackFocusable" scriptevents="1" halign="center" valign="center" id="toggle-menu"/>
 
 	<label  z-index="0" size="65 7.5" text="Mode Commands" halign="left" valign="center" pos="7.5 9" textfont="GameFontBlack" textsize="4" textemboss="1"/>
 
 	<frame id="quick-commands" pos="80">
-		{{{FrameInstancesXml}}}
+		{{{ FrameInstancesXml }}}
 	</frame>
 
 	<frame id="custom-command" pos="40">
@@ -89,16 +89,19 @@ Text GetManialink() {
 
 declare CMlFrame FrameMain;
 declare CMlQuad QuadToggleMenu;
+declare CMlFrame FrameCustomCommand;
+declare CMlEntry TextEditCustomCommand;
+declare CMlLabel ButtonCustomCommandSend;
 declare Boolean MenuState;
 
 Void ToggleMenu(Boolean State) {
 	declare Text PanelAnimTargetPos;
 	declare Text ArrowAnimTargetRot;
 	if (!State) {
-		PanelAnimTargetPos = "155 {{{C_UIPosition_Y}}}";
+		PanelAnimTargetPos = "155 {{{ C_UIPosition_Y }}}";
 		ArrowAnimTargetRot = "0";
 	} else {
-		PanelAnimTargetPos = "{{{85 - G_QuickCommands.count * 12.5}}} {{{C_UIPosition_Y}}}";
+		PanelAnimTargetPos = "{{{ 85 - G_QuickCommands.count * 12.5 }}} {{{ C_UIPosition_Y }}}";
 		ArrowAnimTargetRot = "180";
 	}
 	AnimMgr.Add(FrameMain, "<frame pos='"^PanelAnimTargetPos^"' />", C_MenuAnimDuration, CAnimManager::EAnimManagerEasing::QuintOut);
@@ -110,21 +113,32 @@ Void ToggleMenu() {
 	ToggleMenu(MenuState);
 }
 
+Void OnSendCommand() {
+	declare Text[] CommandSplit = TL::Split(" ", TextEditCustomCommand.Value);
+	if(CommandSplit.count >= 1) {
+		declare Text CommandName = "{{{ CommandUtils::C_CommandPrefix }}}" ^ CommandSplit[0];
+		declare Text[] CommandParams = CommandSplit.slice(1, CommandSplit.count - 1);
+		if (CommandParams.count > 10) CommandParams = [TL::Join(" ", CommandParams)]; // Cannot send more than 10 params
+		SendCustomEvent(CommandName, CommandParams);
+	}
+	TextEditCustomCommand.Value = "";
+}
+
 main() {
 	/* Control References */
 	FrameMain = (Page.GetFirstChild("commands-ui") as CMlFrame);
 	QuadToggleMenu = (Page.GetFirstChild("toggle-menu") as CMlQuad);
 
-	declare CMlFrame FrameCustomCommand = (Page.GetFirstChild("cuomst-command") as CMlFrame);
-	declare CMlEntry TextEditCustomCommand = (Page.GetFirstChild("textedit-command") as CMlEntry);
-	declare CMlLabel ButtonCustomCommandSend = (Page.GetFirstChild("button-sendcommand") as CMlLabel);
+	FrameCustomCommand = (Page.GetFirstChild("custom-command") as CMlFrame);
+	TextEditCustomCommand = (Page.GetFirstChild("textedit-command") as CMlEntry);
+	ButtonCustomCommandSend = (Page.GetFirstChild("button-sendcommand") as CMlLabel);
 
 	declare netread Text[] Net_ModeCommands_PermittedUserLogins for Teams[0];
 
 	declare CMlLabel[CMlQuad] QuickCommands;
-	{{{QuickCommandReferences}}}
+	{{{ QuickCommandReferences }}}
 
-	FrameMain.RelativePosition_V3 = <155., {{{C_UIPosition_Y}}}>;
+	FrameMain.RelativePosition_V3 = <155., {{{ C_UIPosition_Y }}}>;
 	MenuState = False;
 	ToggleMenu(MenuState);
 
@@ -143,14 +157,11 @@ main() {
 						if (Event.Control == QuadToggleMenu) {
 							ToggleMenu();
 						} else if (Event.Control == ButtonCustomCommandSend) {
-							declare Text[] CommandSplit = TL::Split(" ", TextEditCustomCommand.Value);
-							if(CommandSplit.count >= 1) {
-								SendCustomEvent("{{{CommandUtils::C_CommandPrefix}}}" ^ CommandSplit[0], CommandSplit.slice(1, CommandSplit.count - 1));
-							}
-							TextEditCustomCommand.Value = "";
+							OnSendCommand();
 						} else {
 							if(QuickCommands.existskey(Event.Control as CMlQuad)) {
-								SendCustomEvent("{{{CommandUtils::C_CommandPrefix}}}" ^ QuickCommands[Event.Control as CMlQuad].Value, []);
+								declare Text CommandName = "{{{ CommandUtils::C_CommandPrefix }}}" ^ QuickCommands[Event.Control as CMlQuad].Value;
+								SendCustomEvent(CommandName, []);
 							}
 						}
 					}
@@ -165,11 +176,7 @@ main() {
 						}
 					}
 					case CMlScriptEvent::Type::EntrySubmit: {
-						declare Text[] CommandSplit = TL::Split(" ", TextEditCustomCommand.Value);
-						if(CommandSplit.count >= 1) {
-							SendCustomEvent("{{{CommandUtils::C_CommandPrefix}}}" ^ CommandSplit[0], CommandSplit.slice(1, CommandSplit.count - 1));
-						}
-						TextEditCustomCommand.Value = "";
+						OnSendCommand();
 					}
 				}
 			}
@@ -182,6 +189,7 @@ main() {
 
 /**
  * Adds a new quick command button with given icon style and substyle.
+ * Command Name should be without the "Command_" prefix.
  */
 Void AddQuickCommand(Text Name, Text IconStyle, Text IconSubstyle) {
 	declare K_QuickCommand Command;
@@ -315,18 +323,6 @@ Void Private_HandleInternalCommand(CommandUtils::K_Command Command) {
 			RemovePermittedUser(Command.ValueText);
 		}
 	}
-}
-
-/**
- * Loads persistent settings from the server.
- */
-Void Load() {
-	declare persistent Text[] Persistent_ModeCommands_AdminLogins for This;
-	G_AdminLogins = Persistent_ModeCommands_AdminLogins;
-	declare persistent Text[] Persistent_ModeCommands_PermittedUserLogins for This;
-	G_PermittedUserLogins = Persistent_ModeCommands_PermittedUserLogins;
-
-	Private_OnPermissionsUpdate();
 }
 
 /**

@@ -5,6 +5,7 @@
 
 #Struct K_Command {
 	Text		Name;
+	Text[]	Params;
 	Boolean	ValueBoolean;
 	Integer	ValueInteger;
 	Real		ValueReal;
@@ -20,11 +21,12 @@
 *		Transfroms a Text and Params into a Command
 */
 K_Command FromNameAndParams(Text Name, Text[] Params, Text Source) {
-	declare K_Command Command;
-
-	Command.Name = Name;
-	Command.Source = Source;
-	Command.ValueText			= TL::Join(" ", Params);
+	declare K_Command Command = K_Command {
+		Name = Name,
+		Params = Params,
+		Source = Source,
+		ValueText = TL::Join(" ", Params)
+	};
 
 	switch(Params.count) {
 		case 1: {

@@ -336,11 +336,11 @@ Void UpdateScore(CSmScore Score) {
 		= Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen);
 
 	Net_FlagRush_FlagsAssists_Match
-		= Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists);
+		= Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagScoreAssists);
 	Net_FlagRush_FlagsAssists_Map
-		= Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists);
+		= Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagScoreAssists);
 	Net_FlagRush_FlagsAssists_Round
-		= Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists);
+		= Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagScoreAssists);
 }
 
 /**

@@ -1189,6 +1189,11 @@ Void HandleEvents() {
 				if(FlagState::Get().Carrier == Event.User) DropFlag();
 				FlagRush_Teams::Init();
 				FlagRush_UI::UpdateRadar();
+
+				if (Players.count == 0 && Spectators.count == 0) {
+					// Everyone left, cancel the match
+					MatchEndRequested = True;
+				}
 			}
 		}
 	}
@@ -1363,6 +1368,11 @@ Void HandleCommands() {
 			}
 			case CSmModeEvent::EType::OnPlayerRemoved: {
 				FlagRush_UI::UpdateRadar();
+
+				if (Players.count == 0 && Spectators.count == 0) {
+					// Everyone left but we are in warmup, just reset scores
+					TeamPointsProgression::EndMatch();
+				}
 			}
 			case CSmModeEvent::EType::OnPlayerRequestRespawn: {
 				declare CSmPlayer EventPlayer = Event.Player;

@@ -6,7 +6,7 @@
 
 #Const	C_Telemetry_Key_FlagsScored				"FlagsScored"
 #Const	C_Telemetry_Key_FlagsStolen				"FlagsStolen"
-#Const	C_Telemerty_Key_FlagScoreAssists	"FlagScoreAssists"
+#Const	C_Telemetry_Key_FlagScoreAssists	"FlagScoreAssists"
 
 #Const	C_SpawnAnimDuration 1500
 

@@ -295,9 +295,9 @@ K_Rpc_PlayerScore ScoreToRpcPlayerScore(CSmScore Score) {
 		FlagsStolenRound = Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen),
 		FlagsStolenMap = Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen),
 		FlagsStolenMatch = Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen),
-		AssistsRound = Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists),
-		AssistsMap = Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists),
-		AssistsMatch = Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemerty_Key_FlagScoreAssists)
+		AssistsRound = Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagScoreAssists),
+		AssistsMap = Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagScoreAssists),
+		AssistsMatch = Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagScoreAssists)
 	};
 }
 

@@ -1,602 +1,549 @@
 // #RequireContext CSmMlScriptIngame
 #Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
+#Include "/Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt"	as Colors
 
-#Const		C_PlayerCardBackgrounColorMultiplier		0.5
+#Const C_MenuPage_MainMenu "mainmenu"
+#Const C_MenuPage_TeamsMenu "teamsmenu"
+#Const C_MenuPage_CallvotesMenu "callvotesmenu"
+
+#Const C_Action_Resume "resume"
+#Const C_Action_JoinTeam "jointeam"
+#Const C_Action_ToggleSpecate "togglespectate"
+#Const C_Action_RestartMatch "restartmatch"
+#Const C_Action_SkipMap "skipmap"
+#Const C_Action_BalanceTeams "balanceteams"
+#Const C_Action_Modesettings "modesettings"
+#Const C_Action_Quit "quit"
+
+#Const C_TeamsMenu_Pagination_Pagesize 5
+#Const C_MenuElementAnimationDurationMs 750
+#Const C_MenuElementAnimationStartDelayStepMs 50
+#Const C_FocusElementAnimationDuration 100
+#Const C_FocusScale 1.1
 
 Text GetManialink() {
-	declare Integer PlayersPerPage = 6;
-
-	// Create Text with XML Frame instances to insert in manialink text
-	declare Text PlayerCardFrameInstancesTeam1Xml;
-	declare Text PlayerCardFrameInstancesTeam2Xml;
-	for(I, 1, PlayersPerPage) {
-		PlayerCardFrameInstancesTeam1Xml ^= """
-		<frameinstance modelid="player-card-left" pos="0 {{{-(5+(I-1)*6.5)}}}" id="player-card-team1-{{{I}}}" hidden="1" />
-		""";
-		PlayerCardFrameInstancesTeam2Xml ^= """
-		<frameinstance modelid="player-card-right" pos="0 {{{-(5+(I-1)*6.5)}}}" id="player-card-team2-{{{I}}}" hidden="1" />
-		""";
-	}
-
-	// Create Text with Maniascript arrays to insert in manialink script text
-	declare Text PlayerCardFramesTeam1ScriptList = "[";
-	declare Text PlayerCardFramesTeam2ScriptList = "[";
-	for(I, 1, PlayersPerPage) {
-		PlayerCardFramesTeam1ScriptList ^= """
-		Page.GetFirstChild("player-card-team1-{{{I}}}") as CMlFrame""";
-
-		PlayerCardFramesTeam2ScriptList ^= """
-		Page.GetFirstChild("player-card-team2-{{{I}}}") as CMlFrame""";
-
-		if(I < PlayersPerPage) {
-			PlayerCardFramesTeam1ScriptList ^= ",";
-			PlayerCardFramesTeam2ScriptList ^= ",";
-		}
-		else {
-			PlayerCardFramesTeam1ScriptList ^= "]";
-			PlayerCardFramesTeam2ScriptList ^= "]";
-		}
-	}
-
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_Menu">
-	<stylesheet>
-	<style class="text" textsize="2" textfont="GameFontRegular" valign="center2" />
-	<style class="header" textsize="2" textfont="GameFontSemiBold" valign="center2" />
-	<style class="uiButtonElement" focusareacolor2="fff8" />
-	<style class="uiConfirmButtonElement" focusareacolor2="fff8" />
-	</stylesheet>
-	<framemodel id="player-card-left">
-	<quad pos="0 0" z-index="-1" size="50 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000" halign="left"/>
-	<quad pos="2 0" z-index="1" size="5 5" bgcolor="FFF" valign="center" id="avatar" halign="left" keepratio="Fit"/>
-	<label pos="8 0" z-index="1" size="15 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
+	<framemodel id="menu-button">
+		<quad size="50 8" id="background" style="Bgs1InRace" substyle="BgColorContour" halign="center" valign="center2" />
+		<label size="49 7" id="label" text="Button Text" textsize="1.2" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="fff8" textemboss="1" scriptevents="1"/>
 	</framemodel>
-	<framemodel id="player-card-right">
-	<quad pos="0 0" z-index="-1" size="50 6" opacity="0.5" id="background" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="000" halign="left"/>
-	<quad pos="2 0" z-index="1" size="5 5" bgcolor="FFF" valign="center" id="avatar" halign="left" keepratio="Fit"/>
-	<label pos="8 0" z-index="1" size="15 5" text="Player Name" halign="left" textsize="1" id="name" textfont="GameFontRegular" valign="center2" />
+
+	<framemodel id="teams-playercard">
+		<quad id="background" pos="0 0" z-index="-1" size="50 6" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" style="UICommon64_1" substyle="BgFrame1" colorize="000" halign="center" valign="center"/>
+		<quad id="avatar" pos="-20 0" size="5 5" bgcolor="FFF" keepratio="Fit" halign="center" valign="center" />
+		<label id="name" pos="-15 0" size="15 5" text="Player Name" textsize="1" textfont="GameFontRegular" halign="left" valign="center2" />
 	</framemodel>
-	<frame z-index="5000" id="main-menu" hidden="1">
-	<quad id="background" z-index="-2" pos="0 0" size="70 80" opacity="0.7" halign="center" valign="center" bgcolor="000"/>
-	<label pos="0 32" z-index="0" size="93.6 7.89" text="FlagRush" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
-	<quad pos="0 24" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
-	<frame pos="0 15" class="uiContainer uiButton">
-	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Resume" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Resume" />
+
+	<framemodel id="teamlist">
+		<frameinstance modelid="menu-button" id="action-jointeam" data-action="jointeam" data-text="Join Team" data-width="35" pos="0 25"/>
+
+		<frameinstance modelid="teams-playercard" id="playercard-0" pos="0 15"/>
+		<frameinstance modelid="teams-playercard" id="playercard-1" pos="0 9"/>
+		<frameinstance modelid="teams-playercard" id="playercard-2" pos="0 3"/>
+		<frameinstance modelid="teams-playercard" id="playercard-3" pos="0 -3"/>
+		<frameinstance modelid="teams-playercard" id="playercard-4" pos="0 -9"/>
+	</framemodel>
+
+	<frame id="main-menu" hidden="1">
+		<quad id="background" pos="0 0" z-index="-1" size="70 80" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" bgcolor="000"/>
+		<label id="title" pos="0 32" z-index="0" size="93.6 7.89" text="FlagRush" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
+		<quad id="divider" pos="0 24" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
+
+		<frameinstance modelid="menu-button" id="action-resume" data-action="{{{ C_Action_Resume }}}" data-text="Resume" pos="0 15"/>
+		<frameinstance modelid="menu-button" id="action-spectate" data-action="{{{ C_Action_ToggleSpecate}}}" data-text="Spectate" pos="0 5"/>
+		<frameinstance modelid="menu-button" id="action-teams" data-action="{{{ C_MenuPage_TeamsMenu }}}" data-text="Teams..." pos="0 -5"/>
+		<frameinstance modelid="menu-button" id="action-callvotes" data-action="{{{ C_MenuPage_CallvotesMenu }}}" data-text="Callvotes..." pos="0 -15"/>
+		<frameinstance modelid="menu-button" id="action-quit" data-action="{{{ C_Action_Quit }}}" data-text="Quit" pos="0 -25"/>
 	</frame>
-	<frame pos="0 5" class="uiContainer uiButton">
-	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Spectate" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Spectate" />
+
+	<frame id="teams-menu" hidden="1">
+		<quad id="background" z-index="-2" pos="0 0" size="120 90" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" bgcolor="000"/>
+		<label id="title" pos="0 40" z-index="0" size="93.6 7.89" text="Teams" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
+		<quad id="divider" pos="0 35" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
+
+		<frameinstance modelid="teamlist" id="teamlist-1" pos="-30 0"/>
+		<frameinstance modelid="teamlist" id="teamlist-2" pos="30 0"/>
+
+		<frame id="pagecontrols" pos="0 -16">
+			<quad id="page-previous" pos="0 0" size="6 6" halign="right" valign="center" style="UICommon64_2" substyle="ArrowUpSlim_light" scriptevents="1" />
+			<quad id="page-next" pos="0 0"  size="6 6" halign="left" valign="center" style="UICommon64_2" substyle="ArrowDownSlim_light" scriptevents="1" />
+		</frame>
+
+		<frameinstance modelid="menu-button" id="action-balanceteams" data-action="{{{ C_Action_BalanceTeams }}}" data-text="Balance teams..." pos="0 -25"/>
+		<frameinstance modelid="menu-button" id="action-back" data-action="{{{ C_MenuPage_MainMenu }}}" data-text="Back..." pos="0 -35"/>
 	</frame>
-	<frame pos="0 -5" class="uiContainer uiButton">
-	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Teams..." class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Teams"/>
+
+	<frame id="callvotes-menu" hidden="1">
+		<quad id="background" pos="0 0" z-index="-1" size="70 80" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" bgcolor="000"/>
+		<label id="title" pos="0 32" z-index="0" size="93.6 7.89" text="Callvotes" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
+		<quad id="divider" pos="0 24" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
+
+		<frameinstance modelid="menu-button" id="action-restartmatch" data-action="{{{ C_Action_RestartMatch }}}" data-text="Restart match" pos="0 15"/>
+		<frameinstance modelid="menu-button" id="action-skipmap" data-action="{{{ C_Action_SkipMap }}}" data-text="Skip map" pos="0 5"/>
+		<frameinstance modelid="menu-button" id="action-balanceteams" data-action="{{{ C_Action_BalanceTeams }}}" data-text="Balance teams" pos="0 -5"/>
+		<frameinstance modelid="menu-button" id="action-modesettings" data-action="{{{ C_Action_Modesettings }}}" data-text="Modesettings..." pos="0 -15"/>
+		<frameinstance modelid="menu-button" id="action-mainmenu" data-action="{{{ C_MenuPage_MainMenu }}}" data-text="Back..." pos="0 -25"/>
 	</frame>
-	<frame pos="0 -15" class="uiContainer uiButton">
-	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Mode settings..." class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Setup" />
-	</frame>
-	<frame pos="0 -25" class="uiContainer uiButton">
-	<quad size="50 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="49 7" text="Quit" class="uiConfirmButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="Quit" />
-	</frame>
-	</frame>
-	<frame z-index="5000" id="teams-menu" hidden="1">
-	<quad id="background" z-index="-2" pos="0 0" size="120 90" opacity="0.7" halign="center" valign="center" bgcolor="000"/>
-	<label pos="0 40" z-index="0" size="93.6 7.89" text="Teams" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
-	<quad pos="0 35" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
-	<frame pos="-55 20">
-	{{{PlayerCardFrameInstancesTeam1Xml}}}
-	<frame pos="25 9" class="uiContainer uiButton">
-	<quad size="40 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center" />
-	<label id="team1-name" size="39 7" text="Team1" class="uiButtonElement" halign="center" valign="center" focusareacolor1="1717e590" focusareacolor2="1717e5e0" scriptevents="1" translate="0" textsize="1.2" data-action="JoinTeam1"  textprefix="Join "/>
-	</frame>
-	</frame>
-	<frame pos="5 20">
-	{{{PlayerCardFrameInstancesTeam2Xml}}}
-	<frame pos="25 9" class="uiContainer uiButton">
-	<quad size="40 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label id="team2-name" size="39 7" text="Team2" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="c027" focusareacolor2="c02a" scriptevents="1" translate="0" textsize="1.2" data-action="JoinTeam2"  textprefix="Join "/>
-	</frame>
-	</frame>
-	<frame id="page-controls" pos="0 -22" z-index="2">
-	<quad pos="0 0" z-index="1" size="6 6" halign="right" valign="center" style="UICommon64_2" substyle="ArrowUpSlim_light" scriptevents="1" id="page-previous"/>
-	<quad pos="0 0" z-index="1" size="6 6" halign="left" style="UICommon64_2" substyle="ArrowDownSlim_light" scriptevents="1" id="page-next" valign="center"/>
-	</frame>
-	<frame pos="0 -30">
-	<frame class="uiContainer uiButton">
-	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="29 7" text="Balance Teams" class="uiConfirmButtonElement" halign="center" valign="center2" focusareacolor1="0000" scriptevents="1" translate="0" textsize="1.2" data-action="Balance" />
-	</frame>
-	</frame>
-	<frame pos="0 -39">
-	<frame class="uiContainer uiButton">
-	<quad size="30 8" style="Bgs1InRace" class="" substyle="BgColorContour" halign="center" valign="center2" />
-	<label size="29 7" text="Back" class="uiButtonElement" halign="center" valign="center2" focusareacolor1="0000"  scriptevents="1" translate="0" textsize="1.2" data-action="ShowMenu" />
-	</frame>
-	</frame>
-	</frame>
+
 	<script><!--
 	#Include "TextLib" as TL
 	#Include "MathLib" as ML
 	#Include "ColorLib" as CL
 
-	declare CMlFrame MenuFrame;
-	declare CMlFrame FocusedButton;
-	declare Boolean MenuStatusOld;
+	#Const C_InputType_Mouse "Mouse"
+	#Const C_InputType_Keyboard "Keyboard"
+	#Const C_InputType_Pad "Pad"
+	#Const C_InputType_Touch "Touch"
+
+	#Struct K_MenuButton {
+		CMlFrame Frame;
+		CMlQuad Background;
+		CMlLabel Label;
+		Text Action;
+	}
+
+	#Struct K_TeamsPlayerCard {
+		CMlFrame Frame;
+		CMlQuad Background;
+		CMlQuad Avatar;
+		CMlLabel Name;
+	}
+
+	#Struct K_TeamList {
+		K_MenuButton ButtonJoin;
+		K_TeamsPlayerCard[] PlayerCards;
+	}
+
+	#Struct K_PageControls {
+		CMlQuad ButtonPrevious;
+		CMlQuad ButtonNext;
+		Integer CurrentPageIndex;
+	}
+
+	#Struct K_MainMenu {
+		CMlFrame Frame;
+		K_MenuButton[] Buttons;
+	}
+
+	#Struct K_TeamsMenu {
+		CMlFrame Frame;
+		K_TeamList[] TeamLists;
+		K_PageControls PageControls;
+		K_MenuButton ButtonBalanceTeams;
+		K_MenuButton ButtonBack;
+	}
+
+	#Struct K_CallvotesMenu {
+		CMlFrame Frame;
+		K_MenuButton[] Buttons;
+	}
+
+	#Struct K_PauseMenu {
+		K_MainMenu MainMenu;
+		K_TeamsMenu TeamsMenu;
+		K_CallvotesMenu CallvotesMenu;
+	}
+
+	declare Boolean PageWasVisible;
+	declare K_PauseMenu G_PauseMenu;
+	declare Boolean G_QuitConfirm;
+	declare Text G_CurrentPage;
+	declare Integer G_FocusedButtonIndex;
+	declare K_MenuButton G_CurrentFocusedButton;
 
 	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 
-	Void FocusElement(CMlFrame Frame) {
-		FocusedButton = Frame;
-		Page.GetClassChildren("uiButton", MenuFrame, True);
-		foreach (i => Elem in Page.GetClassChildren_Result) {
-			if (Elem != FocusedButton) {
-				AnimMgr.Flush(Frame);
-				AnimMgr.Add(Frame, "<elem scale=\"1.0\" />", 100, CAnimManager::EAnimManagerEasing::QuadOut);
-			}
+	Text LastInputType() {
+		switch (Input.TimeSinceLatestActivity) {
+			case Input.TimeSinceLatestMouseActivity: return C_InputType_Mouse;
+			case Input.TimeSinceLatestKeyboardActivity: return C_InputType_Keyboard;
+			case Input.TimeSinceLatestPadActivity: return C_InputType_Pad;
+			case Input.TimeSinceLatestTouchActivity: return C_InputType_Touch;
 		}
-		Frame.Controls[1].Focus();
-		AnimMgr.Flush(Frame);
-		AnimMgr.Add(Frame, "<elem scale=\"1.1\" />", 100, CAnimManager::EAnimManagerEasing::QuadOut);
+		return "";
 	}
 
-	Void Focus(Integer direction) {
-		declare Integer CurrentButton = -1;
-		Page.GetClassChildren("uiButton", MenuFrame, True);
-		foreach (i => Elem in Page.GetClassChildren_Result) {
-			if (Elem == FocusedButton) {
-				CurrentButton = i;
-			}
+	K_MenuButton InitMenuButton(CMlFrame MenuButtonFrame) {
+		declare CMlLabel Label = (MenuButtonFrame.GetFirstChild("label") as CMlLabel);
+		declare CMlQuad Background = (MenuButtonFrame.GetFirstChild("background") as CMlQuad);
+		declare Text Action = MenuButtonFrame.DataAttributeGet("action");
+		Label.DataAttributeSet("action", Action);
+
+		if (MenuButtonFrame.DataAttributeExists("text")) {
+			Label.Value = MenuButtonFrame.DataAttributeGet("text");
 		}
-		declare index =  (CurrentButton+direction) % Page.GetClassChildren_Result.count;
-		if (index < 0) index = Page.GetClassChildren_Result.count-1;
-		FocusElement(Page.GetClassChildren_Result[index] as CMlFrame);
+		if (MenuButtonFrame.DataAttributeExists("width")) {
+			declare Real Width = TL::ToReal(MenuButtonFrame.DataAttributeGet("width"));
+			Background.Size = <Width, Background.Size.Y>;
+			Label.Size = <Width - 1, Label.Size.Y>;
+		}
+
+		declare K_MenuButton _MenuButton = K_MenuButton{Frame = MenuButtonFrame, Background = Background, Label = Label, Action = Action};
+		declare K_MenuButton MenuButton for Label = _MenuButton;
+		return _MenuButton;
 	}
 
-	Void ShowMenu(Text MenuName) {
-		foreach (Elem in Page.MainFrame.Controls) {
-			Elem.Hide();
-			if (Elem.ControlId == MenuName) {
-				declare CMlFrame Frame = (Elem as CMlFrame);
-				MenuFrame = Frame;
-				FocusedButton = Null;
-				Frame.Show();
+	Void InitMlControlReferences() {
+		// Main Menu
+		declare CMlFrame MainMenuFrame = (Page.GetFirstChild("main-menu") as CMlFrame);
+		declare K_MenuButton[] MainMenuButtons;
 
-				foreach (i => Elem2 in Frame.Controls) {
-					Elem2.RelativeScale = 0.;
-					AnimMgr.Flush(Elem2);
-					AnimMgr.Add(Elem2, "<elem scale=\"1\" />", Now - 200 + 75*i, 500, CAnimManager::EAnimManagerEasing::ElasticOut);
+		foreach (Control in MainMenuFrame.Controls) {
+			if (!TL::StartsWith("action", Control.ControlId)) continue;
+			declare K_MenuButton MenuButton = InitMenuButton(Control as CMlFrame);
+			MainMenuButtons.add(MenuButton);
+		}
+
+		declare K_MainMenu MainMenu = K_MainMenu{Frame = MainMenuFrame, Buttons = MainMenuButtons};
+
+		// Teams Menu
+		declare CMlFrame TeamsMenuFrame = (Page.GetFirstChild("teams-menu") as CMlFrame);
+
+		declare K_TeamList[] TeamLists;
+		for (Team, 1, 2) {
+			declare CMlFrame TeamListFrame = (TeamsMenuFrame.GetFirstChild("teamlist-" ^ Team) as CMlFrame);
+			declare CMlFrame JoinButtonFrame = (TeamListFrame.GetFirstChild("action-jointeam") as CMlFrame);
+			JoinButtonFrame.DataAttributeSet("action", "{{{ C_Action_JoinTeam }}}-" ^ Team);
+			declare K_MenuButton JoinButton = InitMenuButton(JoinButtonFrame);
+
+			declare K_TeamsPlayerCard[] PlayerCards;
+			for (PlayerCardIndex, 0, {{{ C_TeamsMenu_Pagination_Pagesize - 1 }}}) {
+				declare CMlFrame PlayerCardFrame = (TeamListFrame.GetFirstChild("playercard-" ^ PlayerCardIndex) as CMlFrame);
+				declare CMlQuad Background = (PlayerCardFrame.GetFirstChild("background") as CMlQuad);
+				declare CMlQuad Avatar = (PlayerCardFrame.GetFirstChild("avatar") as CMlQuad);
+				declare CMlLabel Name = (PlayerCardFrame.GetFirstChild("name") as CMlLabel);
+				declare K_TeamsPlayerCard PlayerCard = K_TeamsPlayerCard{Frame = PlayerCardFrame, Background = Background, Avatar = Avatar, Name = Name};
+				PlayerCards.add(PlayerCard);
+			}
+
+			declare K_TeamList TeamList = K_TeamList{ButtonJoin = JoinButton, PlayerCards = PlayerCards};
+			TeamLists.add(TeamList);
+		}
+
+		declare CMlFrame PageControlsFrame = (TeamsMenuFrame.GetFirstChild("pagecontrols") as CMlFrame);
+		declare CMlQuad ButtonPreviousPage = (PageControlsFrame.GetFirstChild("page-previous") as CMlQuad);
+		declare CMlQuad ButtonNextPage = (PageControlsFrame.GetFirstChild("page-next") as CMlQuad);
+		declare K_PageControls PageControls = K_PageControls{ButtonPrevious = ButtonPreviousPage, ButtonNext = ButtonNextPage};
+
+		declare CMlFrame ButtonBalanceTeamsFrame = (TeamsMenuFrame.GetFirstChild("action-balanceteams") as CMlFrame);
+		declare K_MenuButton ButtonBalanceTeams = InitMenuButton(ButtonBalanceTeamsFrame);
+
+		declare CMlFrame ButtonBackFrame = (TeamsMenuFrame.GetFirstChild("action-back") as CMlFrame);
+		declare K_MenuButton ButtonBack = InitMenuButton(ButtonBackFrame);
+
+		declare K_TeamsMenu TeamsMenu = K_TeamsMenu{Frame = TeamsMenuFrame, TeamLists = TeamLists, PageControls = PageControls, ButtonBalanceTeams = ButtonBalanceTeams, ButtonBack = ButtonBack};
+
+		// CallvotesMenu
+		declare CMlFrame CallvotesMenuFrame = (Page.GetFirstChild("callvotes-menu") as CMlFrame);
+		declare K_MenuButton[] CallvoteButtons;
+
+		foreach (Control in CallvotesMenuFrame.Controls) {
+			if (!TL::StartsWith("action", Control.ControlId)) continue;
+			declare K_MenuButton MenuButton = InitMenuButton(Control as CMlFrame);
+			CallvoteButtons.add(MenuButton);
+		}
+
+		declare K_CallvotesMenu CallvotesMenu = K_CallvotesMenu{Frame = CallvotesMenuFrame, Buttons = CallvoteButtons};
+
+		G_PauseMenu = K_PauseMenu{MainMenu = MainMenu, TeamsMenu = TeamsMenu, CallvotesMenu = CallvotesMenu};
+	}
+
+	Void UpdateMainPage() {
+		foreach (Button in G_PauseMenu.MainMenu.Buttons) {
+			if (Button.Action == "{{{ C_Action_Quit }}}") {
+				if (G_QuitConfirm) {
+					Button.Background.Colorize = {{{ Colors::C_Warning }}};
+					Button.Label.TextColor = {{{ Colors::C_Warning }}};
+					Button.Label.Value = "Confirm quit?";
+				} else {
+					Button.Background.Colorize = {{{ Colors::C_NeutralLight }}};
+					Button.Label.TextColor = {{{ Colors::C_NeutralLight }}};
+					Button.Label.Value = Button.Frame.DataAttributeGet("text");
 				}
 			}
 		}
 	}
 
-	***OnInit***
-	***
-	MenuStatusOld = Playground.IsInGameMenuDisplayed;
-	Init();
-	MenuFrame = (Page.GetFirstChild("main-menu") as CMlFrame);
-	if (Playground.IsInGameMenuDisplayed)	ShowMenu("main-menu");
-	***
+	Void UpdateTeamsPage() {
+		declare PageIndex = G_PauseMenu.TeamsMenu.PageControls.CurrentPageIndex;
 
-	***IdleLoop***
-	***
-	if (Playground.IsInGameMenuDisplayed != MenuStatusOld) {
-		if (Playground.IsInGameMenuDisplayed) {
-			ShowMenu("main-menu");
+		declare CSmPlayer[][] TeamPlayers = [[], []];
+		foreach (Player in Players) {
+			if(Player.RequestsSpectate || Player.CurrentClan < 1) continue;
+			TeamPlayers[Player.CurrentClan - 1].add(Player);
+		}
+		declare Integer PageCount = ((ML::Max(TeamPlayers[0].count, TeamPlayers[1].count) - 1) / {{{ C_TeamsMenu_Pagination_Pagesize }}}) + 1;
+		PageIndex = ML::Clamp(PageIndex, 0, PageCount - 1);
+		G_PauseMenu.TeamsMenu.PageControls.CurrentPageIndex = PageIndex;
+		G_PauseMenu.TeamsMenu.PageControls.ButtonNext.Visible = PageIndex < PageCount -1;
+		G_PauseMenu.TeamsMenu.PageControls.ButtonPrevious.Visible = PageIndex > 0;
+
+		for (TeamIndex, 0, 1) {
+			declare Vec3 TeamColor = GetTeamPrimaryColor(TeamIndex + 1);
+			G_PauseMenu.TeamsMenu.TeamLists[TeamIndex].ButtonJoin.Background.Colorize = TeamColor;
+			G_PauseMenu.TeamsMenu.TeamLists[TeamIndex].ButtonJoin.Label.Value = "Join " ^ Teams[TeamIndex].Name;
+
+			for (PlayerCardIndex, 0, {{{ C_TeamsMenu_Pagination_Pagesize - 1 }}}) {
+				declare Integer PlayerIndex = PageIndex * {{{ C_TeamsMenu_Pagination_Pagesize }}} + PlayerCardIndex;
+				declare K_TeamsPlayerCard PlayerCard = G_PauseMenu.TeamsMenu.TeamLists[TeamIndex].PlayerCards[PlayerCardIndex];
+				if (PlayerIndex >= TeamPlayers[TeamIndex].count) {
+					PlayerCard.Frame.Hide();
+					continue;
+				}
+				declare CSmPlayer Player <=> TeamPlayers[TeamIndex][PlayerIndex];
+				PlayerCard.Frame.Show();
+				PlayerCard.Name.Value = Player.User.Name;
+				PlayerCard.Avatar.ImageUrl = Player.User.CountryFlagUrl;
+				PlayerCard.Avatar.BgColor = TeamColor;
+				PlayerCard.Background.Colorize = TeamColor * 0.5;
+			}
 		}
 	}
-	MenuStatusOld = Playground.IsInGameMenuDisplayed;
-	***
 
-	***Loop***
-	***
-	MenuStatusOld = Playground.IsInGameMenuDisplayed;
-	***
+	Void UpdateCurrentPage() {
+		switch (G_CurrentPage) {
+			case "{{{ C_MenuPage_MainMenu }}}": UpdateMainPage();
+			case "{{{ C_MenuPage_TeamsMenu }}}": UpdateTeamsPage();
+		}
+	}
 
-	***OnKeyPress***
-	***
-	if (Page.MainFrame.Visible == True && Event.KeyName == "Escape") {
+	K_MenuButton[] GetFocusableElements(Text PageName) {
+		switch (G_CurrentPage) {
+			case "{{{ C_MenuPage_MainMenu }}}": {
+				return G_PauseMenu.MainMenu.Buttons;
+			}
+			case "{{{ C_MenuPage_TeamsMenu }}}": {
+				declare K_MenuButton[] FocusableElements;
+				FocusableElements.add(G_PauseMenu.TeamsMenu.TeamLists[0].ButtonJoin);
+				FocusableElements.add(G_PauseMenu.TeamsMenu.TeamLists[1].ButtonJoin);
+				FocusableElements.add(G_PauseMenu.TeamsMenu.ButtonBalanceTeams);
+				FocusableElements.add(G_PauseMenu.TeamsMenu.ButtonBack);
+				return FocusableElements;
+			}
+			case "{{{ C_MenuPage_CallvotesMenu }}}": {
+				return G_PauseMenu.CallvotesMenu.Buttons;
+			}
+		}
+		return [];
+	}
+
+	Void OnEnterFocus(K_MenuButton Button) {
+		Button.Label.Focus();
+		declare Real OriginalScale for Button.Frame = Button.Frame.RelativeScale;
+		AnimMgr.Add(
+			Button.Frame,
+			"<elem scale=\"" ^ OriginalScale * {{{ C_FocusScale }}} ^ "\"/>",
+			{{{ C_FocusElementAnimationDuration }}},
+			CAnimManager::EAnimManagerEasing::Linear
+		);
+	}
+
+	Void OnExitFocus(K_MenuButton Button) {
+		if(Button.Frame == Null) return;
+
+		declare Real OriginalScale for Button.Frame = Button.Frame.RelativeScale;
+		AnimMgr.Flush(Button.Frame);
+		AnimMgr.Add(
+			Button.Frame,
+			"<elem scale=\"" ^ OriginalScale ^ "\"/>",
+			{{{ C_FocusElementAnimationDuration }}},
+			CAnimManager::EAnimManagerEasing::Linear
+		);
+	}
+
+	Void Focus(Integer ElementIndex) {
+		OnExitFocus(G_CurrentFocusedButton);
+		declare K_MenuButton[] FocusableElements = GetFocusableElements(G_CurrentPage);
+		if(FocusableElements.count == 0) return;
+		G_FocusedButtonIndex = ElementIndex;
+		if (G_FocusedButtonIndex >= 0) G_FocusedButtonIndex %= FocusableElements.count;
+		else while(G_FocusedButtonIndex < 0) G_FocusedButtonIndex += FocusableElements.count;
+		G_CurrentFocusedButton = FocusableElements[G_FocusedButtonIndex];
+		OnEnterFocus(G_CurrentFocusedButton);
+	}
+
+	Void Focus(K_MenuButton MenuButton) {
+		if(MenuButton.Frame == Null) return;
+		declare K_MenuButton[] FocusableElements = GetFocusableElements(G_CurrentPage);
+		foreach (Index => Element in FocusableElements) {
+			if (Element.Frame == MenuButton.Frame) {
+				Focus(Index);
+				return;
+			}
+		}
+	}
+
+	Void Navigate(Integer Direction) {
+		if (Direction == 0) return;
+		Focus(G_FocusedButtonIndex + Direction);
+	}
+
+	Void CloseMenu() {
 		CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
 	}
-	***
 
-	***OnMouseClick***
-	***
-	switch(Event.ControlId) {
-		case "page-previous": {
-			CurrentPageIndex -= 1;
-			UpdateCurrentPage();
-			continue;
-		}
-		case "page-next": {
-			CurrentPageIndex += 1;
-			UpdateCurrentPage();
-			continue;
-		}
-	}
-	***
-
-
-
-
-	// ------------------------------ //
-	// Global Variables
-	// ------------------------------ //
-
-	// Body
-	declare CMlFrame[] PlayerCardFramesTeam1;
-	declare CMlFrame[] PlayerCardFramesTeam2;
-
-	// Page controls
-	declare CMlFrame FramePageControls;
-	declare CMlQuad QuadPagePrevious;
-	declare CMlQuad QuadPageNext;
-
-	/* Scores table control Variables */
-	declare Integer CurrentPageIndex;
-
-	/**
-	* Gets the player object for a given login.
-	* Returns Null if the player was not found.
-	*/
-	CSmPlayer GetPlayer(Text Login) {
-		foreach (Player in Players) {
-			if (Player.User.Login == Login) {
-				return Player;
+	Void OpenMenuPage(Text MenuPage) {
+		declare CMlFrame MenuFrame;
+		// Show / Hide the right frames
+		switch (MenuPage) {
+			case "{{{ C_MenuPage_MainMenu }}}": {
+				G_QuitConfirm = False;
+				G_PauseMenu.MainMenu.Frame.Show();
+				G_PauseMenu.TeamsMenu.Frame.Hide();
+				G_PauseMenu.CallvotesMenu.Frame.Hide();
+				MenuFrame = G_PauseMenu.MainMenu.Frame;
 			}
-		}
-		return Null;
-	}
-
-	/**
-	* Checks if a player with given login is connected.
-	*/
-	Boolean IsConnected(Text Login) {
-		foreach (Player in Players) {
-			if (Player.User.Login == Login) return True;
-		}
-		return False;
-	}
-
-	/**
-	* Determines the amount of pages, clamps the current page index and shows and hides the page controls accordingly.
-	*/
-	Void UpdatePageState(CSmScore[][Integer] ScoresToDisplay) {
-		// Determine the amount of pages and clamp the current page
-		declare Integer NbPages	= (ML::Max(ScoresToDisplay[1].count, ScoresToDisplay[2].count) / ({{{PlayersPerPage}}} + 1)) + 1;
-		CurrentPageIndex = ML::Clamp(CurrentPageIndex, 0, NbPages - 1);
-
-		// Show page controls if there is more than one page
-		FramePageControls.Visible = NbPages >= 2;
-		QuadPagePrevious.Visible = CurrentPageIndex >= 1;
-		QuadPageNext.Visible = CurrentPageIndex < NbPages - 1;
-
-		declare CMlLabel LabelTeam1Name = (Page.GetFirstChild("team1-name") as CMlLabel);
-		declare CMlLabel LabelTeam2Name = (Page.GetFirstChild("team2-name") as CMlLabel);
-
-		LabelTeam1Name.Value = Teams[0].Name;
-		LabelTeam2Name.Value = Teams[1].Name;
-
-	}
-
-	/**
-	* Updates the content of a given playercard with a given Score.
-	* Does nothing if the given card is Null.
-	* Hides the card if the given score is Null.
-	*/
-	Void UpdatePlayerCardContet(CMlFrame PlayerCard, CSmScore Score) {
-		if(PlayerCard == Null) return;
-		/* Visibility */
-		if(Score == Null) {
-			PlayerCard.Visible = False;
-			return;
-		}
-		PlayerCard.Visible = True;
-
-		/* References for MlControls in PlayerCard Frame */
-		declare CMlLabel LabelPlayerName = (PlayerCard.GetFirstChild("name") as CMlLabel);
-		declare CMlQuad QuadPlayerAvatar = (PlayerCard.GetFirstChild("avatar") as CMlQuad);
-		declare CMlQuad QuadPlayerBackground = (PlayerCard.GetFirstChild("background") as CMlQuad);
-
-		/* General */
-		declare CTeam Team = Null;
-		if (Score.TeamNum > 0) Team <=> Teams[Score.TeamNum - 1];
-		declare Vec3 TeamColor = GetTeamPrimaryColor(Team);
-
-		/* Status / Info icon */
-		declare Boolean IsConnected = IsConnected(Score.User.Login);
-		declare CSmPlayer Player <=> GetPlayer(Score.User.Login);
-
-		/* Background */
-		declare Vec3 BackgroundColor = TeamColor;
-		BackgroundColor.X *= {{{C_PlayerCardBackgrounColorMultiplier}}};
-		BackgroundColor.Y *= {{{C_PlayerCardBackgrounColorMultiplier}}};
-		BackgroundColor.Z *= {{{C_PlayerCardBackgrounColorMultiplier}}};
-		QuadPlayerBackground.Colorize = BackgroundColor;
-
-		/* Avatar / Flag */
-		QuadPlayerAvatar.BgColor = TeamColor;
-		QuadPlayerAvatar.ImageUrl = Score.User.CountryFlagUrl;
-		LabelPlayerName.Value = Score.User.Name;
-	}
-
-	/**
-	* Gets the player card for a given clan and index.
-	* Returns null if the clan or index is out of bounds.
-	*/
-	CMlFrame GetPlayerCardByClanAndIndex(Integer Clan, Integer Index) {
-		if(Index >= {{{PlayersPerPage}}} || Index < 0) return Null;
-
-		if(Clan == 1) return PlayerCardFramesTeam1[Index];
-		else if(Clan == 2) return PlayerCardFramesTeam2[Index];
-		return Null;
-	}
-
-	/**
-	* Filters out scores that should not be displayed:
-	*     - Do not display disconnected players or spectators with less than one point.
-	*     - Do not display disconnected players or spectators in warmup, regardless of points.
-	* Scores are returned in an array with the clan number as key.
-	*/
-	CSmScore[][Integer] FilterScoresToDisplay() {
-		declare CSmScore[][Integer] ScoresToDisplay = [0 => [], 1 => [], 2 => []];
-		foreach (Score in Scores) {
-			declare Boolean PlayerIsConnected = IsConnected(Score.User.Login);
-			declare Boolean PlayerIsSpectating = PlayerIsConnected && GetPlayer(Score.User.Login).RequestsSpectate;
-
-			// In warmup, do not show disonnected or spectating players
-			// Outside of warmup, do not show disconnected or spectating players with no points
-			if(!PlayerIsConnected || PlayerIsSpectating) continue;
-			ScoresToDisplay[Score.TeamNum].add(Score);
-		}
-		return ScoresToDisplay;
-	}
-
-	/**
-	* Updates the player cards for the current page with the given scores (sorted by team).
-	*/
-	Void UpdatePagePlayerCards(CSmScore[][Integer] ScoresToDisplay) {
-		for(Clan, 1, 2) {
-			for(PlayerCardIndex, 0, {{{PlayersPerPage - 1}}}) {
-				declare CMlFrame PlayerCard <=> GetPlayerCardByClanAndIndex(Clan, PlayerCardIndex);
-				declare Integer PlayerIndex = CurrentPageIndex * {{{PlayersPerPage}}} + PlayerCardIndex;	// Offset by page
-				declare CSmScore Score;
-				if(PlayerIndex < ScoresToDisplay[Clan].count) Score <=> ScoresToDisplay[Clan][PlayerIndex];
-				UpdatePlayerCardContet(PlayerCard, Score);
+			case "{{{ C_MenuPage_TeamsMenu }}}": {
+				G_PauseMenu.TeamsMenu.PageControls.CurrentPageIndex = 0;
+				UpdateTeamsPage();
+				G_PauseMenu.MainMenu.Frame.Hide();
+				G_PauseMenu.TeamsMenu.Frame.Show();
+				G_PauseMenu.CallvotesMenu.Frame.Hide();
+				MenuFrame = G_PauseMenu.TeamsMenu.Frame;
 			}
+			case "{{{ C_MenuPage_CallvotesMenu }}}": {
+				G_PauseMenu.MainMenu.Frame.Hide();
+				G_PauseMenu.TeamsMenu.Frame.Hide();
+				G_PauseMenu.CallvotesMenu.Frame.Show();
+				MenuFrame = G_PauseMenu.CallvotesMenu.Frame;
+			}
+			default: return;
+		}
+		G_CurrentPage = MenuPage;
+
+		G_FocusedButtonIndex = 0;
+		if (LastInputType() != C_InputType_Mouse) Focus(G_FocusedButtonIndex);
+
+		// Menu content element animations
+		declare Integer AnimStartDelay = 0;
+		foreach (MenuControl in MenuFrame.Controls) {
+			declare Real OriginalScale for MenuControl = MenuControl.RelativeScale;
+			AnimMgr.Flush(MenuControl);
+			MenuControl.RelativeScale = 0.;
+			AnimMgr.Add(
+				MenuControl,
+				"<elem scale=\"" ^ OriginalScale ^ "\"/>",
+				Now + AnimStartDelay - {{{ C_MenuElementAnimationDurationMs / 4 }}},
+				{{{ C_MenuElementAnimationDurationMs }}},
+				CAnimManager::EAnimManagerEasing::ElasticOut
+			);
+			AnimStartDelay += {{{ C_MenuElementAnimationStartDelayStepMs }}};
 		}
 	}
 
-	/**
-	* Updates the content of the current scorestable page
-	*/
-	Void UpdateCurrentPage() {
-		declare CSmScore[][Integer] ScoresToDisplay = FilterScoresToDisplay();
-		UpdatePageState(ScoresToDisplay);
-		UpdatePagePlayerCards(ScoresToDisplay);
-	}
-
-	Void Init() {
-		// Body
-		PlayerCardFramesTeam1 = {{{PlayerCardFramesTeam1ScriptList}}};
-		PlayerCardFramesTeam2 = {{{PlayerCardFramesTeam2ScriptList}}};
-		// Page controls
-		FramePageControls = (Page.GetFirstChild("page-controls") as CMlFrame);
-		QuadPagePrevious = (Page.GetFirstChild("page-previous") as CMlQuad);
-		QuadPageNext = (Page.GetFirstChild("page-next") as CMlQuad);
-		CurrentPageIndex = 0;
-	}
-
-	***Loop***
-	***
-	foreach (Event in Input.PendingEvents) {
-		if (Event.Type == CInputEvent::EType::PadButtonPress)	 {
-			switch (Event.Button) {
-				case CInputEvent::EButton::LeftStick_Up: Focus(-1);
-				case CInputEvent::EButton::LeftStick_Down: Focus(1);
-				case CInputEvent::EButton::Up: Focus(-1);
-				case CInputEvent::EButton::Down: Focus(1);
-				case CInputEvent::EButton::Menu: {
-					if (Playground.IsInGameMenuDisplayed && MenuStatusOld) {
-						MenuStatusOld = False;
-						CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
-					}
-				}
+	Void HandleAction(Text Action) {
+		switch (Action) {
+			case "{{{ C_MenuPage_MainMenu }}}": {
+				OpenMenuPage("{{{ C_MenuPage_MainMenu }}}");
 			}
-		}
-	}
-	***
-
-	Void HandleButtonActions(Text action) {
-		switch (action) {
-			case "ShowMenu": {
-				ShowMenu("main-menu");
+			case "{{{ C_MenuPage_TeamsMenu }}}": {
+				OpenMenuPage("{{{ C_MenuPage_TeamsMenu }}}");
 			}
-			case "Teams": {
-				CurrentPageIndex = 0;
-				UpdateCurrentPage();
-				ShowMenu("teams-menu");
+			case "{{{ C_MenuPage_CallvotesMenu }}}": {
+				OpenMenuPage("{{{ C_MenuPage_CallvotesMenu }}}");
 			}
-			case "Setup": {
-				TriggerPageAction("maniaplanet:editsettings");
+			case "{{{ C_Action_Resume }}}": {
+				CloseMenu();
 			}
-			case "Resume": {
-				CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
-			}
-			case "Balance":  {
-				Playground.RequestAutoTeamBalance();
-				CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
-			}
-			case "Spectate": {
+			case "{{{ C_Action_ToggleSpecate }}}": {
 				Playground.RequestSpectatorClient( !InputPlayer.RequestsSpectate );
 			}
-			case "JoinTeam1": {
+			case "{{{ C_Action_Quit }}}": {
+				if (G_QuitConfirm) {
+					Playground.QuitServer(False);
+					CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Quit);
+				}
+				else G_QuitConfirm = True;
+			}
+			case "{{{ C_Action_RestartMatch }}}": {
+				Playground.RequestRestartMap();
+				CloseMenu();
+			}
+			case "{{{ C_Action_SkipMap }}}": {
+				Playground.RequestNextMap();
+				CloseMenu();
+			}
+			case "{{{ C_Action_BalanceTeams }}}": {
+				Playground.RequestAutoTeamBalance();
+				CloseMenu();
+			}
+			case "{{{ C_Action_Modesettings }}}": {
+				TriggerPageAction("maniaplanet:editsettings");
+			}
+			case "{{{ C_Action_JoinTeam }}}-1": {
 				Playground.JoinTeam1();
-				CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
+				CloseMenu();
 			}
-			case "JoinTeam2": {
+			case "{{{ C_Action_JoinTeam }}}-2": {
 				Playground.JoinTeam2();
-				CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Resume);
-			}
-			case "Quit": {
-				Playground.QuitServer(False);
-				CloseInGameMenu(CMlScriptIngame::EInGameMenuResult::Quit);
+				CloseMenu();
 			}
 		}
 	}
 
-
-	/* ------------------- Button ------------------------- */
-	Void TriggerButtonClick(CMlControl Control) {
-		declare Parent = Control.Parent;
-		if (Parent.HasClass("uiButton")) {
-			Parent.RelativeScale = 0.75;
-			AnimMgr.Flush(Parent);
-			AnimMgr.Add(Parent, "<elem scale=\"1.\" />", 200, CAnimManager::EAnimManagerEasing::QuadIn);
-			HandleButtonActions(Control.DataAttributeGet("action"));
-		}
-	}
-
-	Void TriggerButtonClick(Text ControlId) {
-		declare Control <=> Page.GetFirstChild(ControlId);
-		TriggerButtonClick(Control);
-	}
-
-	***OnMouseClick***
-	***
-	if (Event.Control.HasClass("uiButtonElement") ) {
-		TriggerButtonClick(Event.Control);
-	}
-	***
-
-	***OnMouseOver***
-	***
-	if (Event.Control.Parent.HasClass("uiButton")) {
-		FocusElement(Event.Control.Parent as CMlFrame);
-	}
-	***
-
-	***OnMouseOut***
-	***
-	if (Event.Control.Parent.HasClass("uiButton")) {
-		AnimMgr.Flush(Event.Control.Parent);
-		AnimMgr.Add(Event.Control.Parent, "<elem scale=\"1.\" />", 100, CAnimManager::EAnimManagerEasing::QuadOut);
-	}
-	***
-
-	/* ------------------- end Button ------------------------- */
-
-
-
-	/*  ------------------- ConfirmButton ------------------------- */
-
-	***OnInit***
-	***
-	declare Integer[Ident] pendingConfirms for Page;
-	declare Text[Ident] pendingConfirmIds for Page;
-	declare CMlLabel[Ident] pendingConfirmControls for Page;
-
-	pendingConfirms.clear();
-	pendingConfirmIds.clear();
-	pendingConfirmControls.clear();
-	***
-
-	***Loop***
-	***
-	foreach (Id => Time in pendingConfirms) {
-		if (Now > Time + (3 * 1000) ) {
-			if (pendingConfirmIds.existskey(Id))  {
-				pendingConfirmControls[Id].Value = pendingConfirmIds[Id];
-				pendingConfirmIds.removekey(Id);
-				pendingConfirms.removekey(Id);
-				pendingConfirmControls.removekey(Id);
-			}
-		}
-	}
-	***
-
-	***OnMouseClick***
-	***
-	if (Event.Control.HasClass("uiConfirmButtonElement") ) {
-		TriggerConfirmButtonClick((Event.Control as CMlLabel));
-	}
-	***
-
-
-	Void TriggerConfirmButtonClick(CMlLabel Control) {
-		declare Integer[Ident] pendingConfirms for Page;
-		declare Text[Ident] pendingConfirmIds for Page;
-		declare CMlLabel[Ident] pendingConfirmControls for Page;
-
-		if (Control.Parent.HasClass("uiButton")) {
-			if (pendingConfirmIds.existskey(Control.Id) == False) {
-				pendingConfirmIds[Control.Id] = Control.Value;
-				pendingConfirmControls[Control.Id] = Control;
-				pendingConfirms[Control.Id] = Now;
-				Control.Value = "Confirm ?";
-				Control.Parent.RelativeScale = 0.75;
-				AnimMgr.Flush(Control.Parent);
-				AnimMgr.Add(Control.Parent, "<elem scale=\"1.\" />", 200, CAnimManager::EAnimManagerEasing::QuadIn);
-			} else {
-				Control.Value = pendingConfirmIds[Control.Id];
-				pendingConfirmIds.removekey(Control.Id);
-				pendingConfirms.removekey(Control.Id);
-				pendingConfirmControls.removekey(Control.Id);
-				Control.Parent.RelativeScale = 0.75;
-				AnimMgr.Flush(Control.Parent);
-				AnimMgr.Add(Control.Parent, "<elem scale=\"1.\" />", 200, CAnimManager::EAnimManagerEasing::QuadIn);
-				HandleButtonActions(Control.DataAttributeGet("action"));
-			}
-		}
-	}
-
-	Void TriggerConfirmButtonClick(Text ControlId) {
-		declare CMlLabel Control = (Page.GetFirstChild(ControlId) as CMlLabel);
-		TriggerConfirmButtonClick(Control);
-	}
-
-	/*  ------------------- end ConfirmButton ------------------------- */
-	main() {
-		+++OnInit+++
-
-		while(True) {
-			yield;
-
-			+++IdleLoop+++
-
-			if (!PageIsVisible) {
-				continue;
-			}
-
-			foreach (Event in PendingEvents) {
-				switch (Event.Type) {
-					case CMlScriptEvent::Type::EntrySubmit: {
-						+++EntrySubmit+++
+	Void HandleEvents() {
+		foreach (Event in PendingEvents) {
+			switch (Event.Type) {
+				case CMlScriptEvent::Type::MouseClick: {
+					if (Event.Control.DataAttributeExists("action")) {
+						declare Text Action = Event.Control.DataAttributeGet("action");
+						HandleAction(Action);
+					} else if (Event.Control == G_PauseMenu.TeamsMenu.PageControls.ButtonNext) {
+						G_PauseMenu.TeamsMenu.PageControls.CurrentPageIndex += 1;
+					} else if (Event.Control == G_PauseMenu.TeamsMenu.PageControls.ButtonPrevious) {
+						G_PauseMenu.TeamsMenu.PageControls.CurrentPageIndex -= 1;
 					}
-					case CMlScriptEvent::Type::KeyPress: {
-						+++OnKeyPress+++
+				}
+				case CMlScriptEvent::Type::MouseOver: {
+					if(Event.Control != Null) {
+						declare K_MenuButton MenuButton for Event.Control;
+						Focus(MenuButton);
 					}
-					case CMlScriptEvent::Type::MouseClick: {
-						if (Event.Control != Null) +++OnMouseClick+++
-					}
-					case CMlScriptEvent::Type::MouseOut: {
-						if (Event.Control != Null) +++OnMouseOut+++
-					}
-					case CMlScriptEvent::Type::MouseOver: {
-						if (Event.Control != Null) +++OnMouseOver+++
+				}
+				case CMlScriptEvent::Type::MouseOut: {
+					OnExitFocus(G_CurrentFocusedButton);
+				}
+				case CMlScriptEvent::Type::KeyPress: {
+					if (PageWasVisible && Event.KeyName == "Escape") {
+						CloseMenu();
 					}
 				}
 			}
+		}
 
-			+++Loop+++
-
+		foreach (Event in Input.PendingEvents) {
+			if (Event.Type == CInputEvent::EType::PadButtonPress)	 {
+				switch (Event.Button) {
+					case CInputEvent::EButton::LeftStick_Up, CInputEvent::EButton::Up: Navigate(-1);
+					case CInputEvent::EButton::LeftStick_Down, CInputEvent::EButton::Down: Navigate(1);
+					case CInputEvent::EButton::Menu: CloseMenu();
+				}
+			}
 		}
 	}
 
+	main() {
+		InitMlControlReferences();
+
+		while (True) {
+			yield;
+
+			// Menu toggling
+			if (!PageIsVisible) {
+				PageWasVisible = False;
+				continue;
+			} else if (!PageWasVisible) {
+				OpenMenuPage("{{{ C_MenuPage_MainMenu }}}");
+			}
+
+			UpdateCurrentPage();
+			HandleEvents();
+			PageWasVisible = True;
+		}
+	}
 	--></script>
-	</manialink>
+</manialink>
 	""";
 }

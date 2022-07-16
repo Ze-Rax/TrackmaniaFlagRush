@@ -1,10 +1,11 @@
 ## 1.3.0
-+ XML-RPC callbacks for mode related callsbacks, see `XmlRpcScriptedCallbacks.md`
-+ Display round number on start of a round.
-+ Display time spent in overtime in the scores header.
-+ Teleport detection: The flag will be dropped, if a player teleports too far (1 block).
-* Adjust respawn timer UI to take spawn animation duration into account.
-* Adjust default repsawn delay to 4.0 seconds (from 3.0 seconds)
++ Added XML-RPC callbacks for mode related callsbacks, see `XmlRpcScriptedCallbacks.md`
++ Added round number to the message at the start of a round.
++ Added text for time spent in overtime in the scores header.
++ Added teleport detection: The flag will be dropped, if a player teleports too far (1 block).
++ Added callvotes page to pause menu.
+* Adjusted respawn timer UI to take spawn animation duration into account.
+* Adjusted default repsawn delay to 4.0 seconds (from 3.0 seconds)
 
 ## 1.2.1
 + New mode commands (Callvotes, ModeCommandsUI) for setting match/map/round points and auto team balance.

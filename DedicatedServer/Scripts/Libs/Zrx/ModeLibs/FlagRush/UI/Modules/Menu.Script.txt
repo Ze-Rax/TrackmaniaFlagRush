@@ -71,7 +71,7 @@ Text GetManialink() {
 			<quad id="page-next" pos="0 0"  size="6 6" halign="left" valign="center" style="UICommon64_2" substyle="ArrowDownSlim_light" scriptevents="1" />
 		</frame>
 
-		<frameinstance modelid="menu-button" id="action-balanceteams" data-action="{{{ C_Action_BalanceTeams }}}" data-text="Balance teams..." pos="0 -25"/>
+		<frameinstance modelid="menu-button" id="action-balanceteams" data-action="{{{ C_Action_BalanceTeams }}}" data-text="Balance teams" pos="0 -25"/>
 		<frameinstance modelid="menu-button" id="action-back" data-action="{{{ C_MenuPage_MainMenu }}}" data-text="Back..." pos="0 -35"/>
 	</frame>
 

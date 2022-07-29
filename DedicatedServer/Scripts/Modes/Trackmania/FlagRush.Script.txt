@@ -181,15 +181,6 @@ MB_Settings_UseDefaultHud = False;
 MB_Settings_UseDefaultPodiumSequence = False;
 GameplayPhase::Set(GameplayPhase::C_None);
 
-// Player marker visibility
-UIManager.UIAll.TeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
-UIManager.UIAll.TeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenInFrustum;
-UIManager.UIAll.OpposingTeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
-UIManager.UIAll.OpposingTeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenVisible;
-UIManager.UIAll.LabelsVisibility = CUIConfig::EHudVisibility::Everything;
-UIManager.UIAll.OverlayHideSpectatorInfos = True;
-UIManager.UIAll.OverlayHideSpectatorControllers = True;
-
 // Register mode commands
 declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
 foreach(Login in ModeCommandsAdminLogins) {

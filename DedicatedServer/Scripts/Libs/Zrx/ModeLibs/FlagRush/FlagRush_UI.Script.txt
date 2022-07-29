@@ -183,6 +183,15 @@ Void UpdateRadar() {
 Void Init(Text FlagRush_Version) {
 	Destroy();
 
+	UIManager.UIAll.TeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
+	UIManager.UIAll.TeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenInFrustum;
+	UIManager.UIAll.OpposingTeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
+	UIManager.UIAll.OpposingTeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenVisible;
+	UIManager.UIAll.LabelsVisibility = CUIConfig::EHudVisibility::Everything;
+	UIManager.UIAll.OverlayHideSpectatorInfos = True;
+	UIManager.UIAll.OverlayHideSpectatorControllers = True;
+	UIManager.UIAll.DisableZoomTransitions = False;
+
 	// Scores header
 	Layers::Create(C_LayerName_ScoresHeader, FlagRush_UIHeader::GetManialink());
 	Layers::SetType(C_LayerName_ScoresHeader, CUILayer::EUILayerType::Normal);

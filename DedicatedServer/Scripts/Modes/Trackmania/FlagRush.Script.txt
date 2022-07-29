@@ -925,6 +925,17 @@ Void SpawnPlayers() {
 }
 
 /**
+ * Checks if a given Player can pick up the flag when it's dropped
+ */
+Boolean CanPickUpDroppedFlag(CSmPlayer Player) {
+	if (Player == Null || Player.SpawnStatus != CSmPlayer::ESpawnStatus::Spawned || Player.Armor <= 0) return False;
+	declare Integer FlagRush_LastFlagDropDate for Player = -1;
+	declare Boolean DidNotDropFlag = FlagRush_LastFlagDropDate != FlagState::Get().LastDropDate;
+	declare Boolean DropPickupPenaltyExpired = Now - FlagRush_LastFlagDropDate > ML::NearestInteger(S_DropFlagPickupPenalty * 1000);
+	return (DidNotDropFlag || DropPickupPenaltyExpired) && Hitbox::AreColliding(Player, FlagState::Get().Position);
+}
+
+/**
  * Updates the state of the flag every playloop if necessary
  */
 Void UpdateFlag() {
@@ -949,12 +960,9 @@ Void UpdateFlag() {
 		}
 		else {
 			foreach (Player in Players) {
-				if (Hitbox::AreColliding(Player,FlagState::Get().Position)) {
-					declare Integer FlagRush_LastFlagDropDate for Player = -1;
-					if(FlagRush_LastFlagDropDate != FlagState::Get().LastDropDate || Now - FlagRush_LastFlagDropDate > ML::NearestInteger(S_DropFlagPickupPenalty * 1000)) {
-						SetFlagPosition(Player, Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
-						break;
-					}
+				if (CanPickUpDroppedFlag(Player)) {
+					SetFlagPosition(Player, Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000));
+					break;
 				}
 			}
 		}

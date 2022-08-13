@@ -1,6 +1,6 @@
 #Include "TextLib" as TL
 
-#Include "Libs/Nadeo/ModeLibs/Legacy/Layers2.Script.txt"							as Layers
+#Include "Libs/Nadeo/Layers2.Script.txt"															as Layers
 #Include "Libs/Nadeo/TMxSM/Race/Scores.Script.txt"										as Scores
 
 #Include "Libs/Zrx/ModeLibs/Common/GameplayPhase.Script.txt"					as GameplayPhase

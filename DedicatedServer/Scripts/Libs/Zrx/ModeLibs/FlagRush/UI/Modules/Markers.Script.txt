@@ -108,9 +108,9 @@ Text GetManialink() {
 				/* Colors */
 				QuadMarkerFlag.Colorize = GetTeamPrimaryColor(Net_FlagRush_FlagCarrierClan);
 
-				declare Integer UIClan;
+				declare Integer UIClan = 0;
 				if (GUIPlayer != Null) UIClan = GUIPlayer.CurrentClan;
-				else UIClan = InputPlayer.CurrentClan;
+				else if (InputPlayer != Null) UIClan = InputPlayer.CurrentClan;
 
 				foreach (Clan => BaseFrames in TeamBaseMarkerFrames) {
 					declare Boolean ShowDefenseIcon = UIClan == Clan || UIClan == 0;

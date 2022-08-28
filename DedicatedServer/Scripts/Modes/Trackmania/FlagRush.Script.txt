@@ -1367,6 +1367,7 @@ Void HandleCommands() {
 				if (Players.count == 0 && Spectators.count == 0) {
 					// Everyone left but we are in warmup, just reset scores
 					TeamPointsProgression::EndMatch();
+					Scores::Clear(Scores::C_Level_Match);
 				}
 			}
 			case CSmModeEvent::EType::OnPlayerRequestRespawn: {

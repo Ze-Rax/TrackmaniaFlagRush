@@ -1,3 +1,9 @@
+/**
+ * Modifed version of Nadeo's lowest level base mode handling the main server loop.
+ * Everything related to Matchmaking is removed. Therefore plugs now are prefixed with MB_ instead of Match_.
+ * Mind the differences.
+ */
+
 #RequireContext CSmMode
 
 /**

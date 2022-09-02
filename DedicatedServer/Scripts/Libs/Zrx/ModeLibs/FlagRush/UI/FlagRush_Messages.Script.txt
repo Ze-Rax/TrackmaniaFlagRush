@@ -1,0 +1,79 @@
+#Include "ColorLib" as CL
+
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
+
+Text Private_GetTeamColorCode(Integer Clan) {
+	declare FlagRush_Teams::K_TeamConfig TeamConfig = FlagRush_Teams::GetConfig(Clan);
+	return """${{{ CL::RgbToHex3(TeamConfig.Color) }}}""";
+}
+
+Text Private_GetColoredTeamName(Integer Clan) {
+	declare FlagRush_Teams::K_TeamConfig TeamConfig = FlagRush_Teams::GetConfig(Clan);
+	return """$<${{{ CL::RgbToHex3(TeamConfig.Color) }}}{{{ TeamConfig.Name }}}$>""";
+
+}
+
+Text Private_GetColoredPlayerName(CSmPlayer Player) {
+	return """$<{{{ Private_GetTeamColorCode(Player.CurrentClan) }}}{{{ Player.User.Name }}}$>""";
+}
+
+Text MatchWin(Integer WinnerClan) {
+	return """{{{ Private_GetColoredTeamName(WinnerClan) }}} won the match""";
+}
+
+Text MapWin(Integer WinnerClan) {
+	return """{{{ Private_GetColoredTeamName(WinnerClan) }}} won the map""";
+}
+
+Text MapDraw() {
+	return "Map draw";
+}
+
+Text MapSkip() {
+	return "Map skipped";
+}
+
+Text RoundStart(Integer NbRound) {
+	return """Round {{{ NbRound }}} start""";
+}
+
+Text RoundWin(Integer WinnerClan)  {
+	return """{{{ Private_GetColoredTeamName(WinnerClan) }}} won the round""";
+}
+
+Text RoundDraw() {
+	return "Round draw";
+}
+
+Text RoundSkip() {
+	return "Round skipped";
+}
+
+Text OvertimeStart() {
+	return """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}Overtime$>""";
+}
+
+Text WarmUpStart() {
+	return """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}WarmUp$>""";
+}
+
+Text WarmUpEnd() {
+	return """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}WarmUp end$>""";
+}
+
+Text PauseStart() {
+	return "The round was paused";
+}
+
+Text PauseEnd() {
+	return "The round continues";
+}
+
+Text FlagScored(CSmPlayer Scorer) {
+	return """{{{ Private_GetColoredPlayerName(Scorer) }}} scored the $<{{{ Private_GetTeamColorCode(Scorer.CurrentClan) }}}flag$>""";
+}
+
+Text FlagReset() {
+	return "The flag was reset";
+}

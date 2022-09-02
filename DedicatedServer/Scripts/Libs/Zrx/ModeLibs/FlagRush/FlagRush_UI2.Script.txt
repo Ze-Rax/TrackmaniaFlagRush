@@ -1,0 +1,46 @@
+#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt" as ModeCommands
+
+Void Private_LoadUIAll() {
+	UIManager.UIAll.DisableZoomTransitions = False; // Spawn animation (camera-overview-to-car zoom effect)
+
+	UIManager.UIAll.OverlayHideNotices = True;
+	UIManager.UIAll.OverlayHideMapInfo = True;
+	UIManager.UIAll.OverlayHideOpponentsInfo = True; // ?
+	UIManager.UIAll.OverlayHideChat = False;
+	UIManager.UIAll.OverlayHideCheckPointList = True;
+	UIManager.UIAll.OverlayHideRoundScores = True;
+	UIManager.UIAll.OverlayHideCountdown = False;  // TODO: Set to True
+	UIManager.UIAll.OverlayHideCrosshair = True;
+	UIManager.UIAll.OverlayHideGauges = True;
+	UIManager.UIAll.OverlayHideConsumables = True;
+	UIManager.UIAll.OverlayHide321Go = True;
+	UIManager.UIAll.OverlayMute321Go = False;
+	UIManager.UIAll.OverlayHideBackground = True; // ?
+	UIManager.UIAll.OverlayHideChrono = True;
+	UIManager.UIAll.OverlayHideSpeedAndDist = True;
+	UIManager.UIAll.OverlayHidePersonnalBestAndRank = True;
+	UIManager.UIAll.OverlayHidePosition = True;
+	UIManager.UIAll.OverlayHideCheckPointTime = True;
+	UIManager.UIAll.OverlayHideEndMapLadderRecap = True;
+	UIManager.UIAll.OverlayHideMultilapInfos = True;
+	UIManager.UIAll.OverlayHideSpectatorControllers = True;
+	UIManager.UIAll.OverlayHideSpectatorInfos = True;
+	UIManager.UIAll.OverlayChatHideAvatar = True;
+
+	UIManager.UIAll.ScoreTableOnlyManialink = True; // Hide default simple score board
+
+	UIManager.UIAll.TeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
+	UIManager.UIAll.TeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenInFrustum;
+	UIManager.UIAll.OpposingTeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
+	UIManager.UIAll.OpposingTeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenVisible;
+	UIManager.UIAll.LabelsVisibility = CUIConfig::EHudVisibility::Everything;
+}
+
+Void Private_LoadModules() {
+	ModeCommands::Attach();
+}
+
+Void Load() {
+	Private_LoadUIAll();
+	Private_LoadModules();
+}

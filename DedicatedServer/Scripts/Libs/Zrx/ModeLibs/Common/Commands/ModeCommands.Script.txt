@@ -1,5 +1,8 @@
 #Include "TextLib" as TL
+#Include "Libs/Nadeo/Layers2.Script.txt" as Layers
 #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt" as CommandUtils
+
+#Const C_LayerName "ModeCommands"
 
 #Const C_UIPosition_Y							50.
 #Const C_InternalCommandPrefix		"MC:"
@@ -27,12 +30,6 @@ Void Private_OnPermissionsUpdate() {
 	// Send the permitted users to the UIs
 	declare netwrite Text[] Net_ModeCommands_PermittedUserLogins for Teams[0];
 	Net_ModeCommands_PermittedUserLogins = G_PermittedUserLogins;
-
-	// Save the admins and permitted users persistently on the server
-	declare persistent Text[] Persistent_ModeCommands_AdminLogins for This;
-	Persistent_ModeCommands_AdminLogins = G_AdminLogins;
-	declare persistent Text[] Persistent_ModeCommands_PermittedUserLogins for This;
-	Persistent_ModeCommands_PermittedUserLogins = G_PermittedUserLogins;
 }
 
 /**
@@ -341,4 +338,14 @@ Void Yield() {
 			}
 		}
 	}
+}
+
+Void Attach() {
+	Layers::Create(C_LayerName, GetManialink());
+	Layers::SetType(C_LayerName, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName);
+}
+
+Void Detach() {
+	Layers::Detach(C_LayerName);
 }

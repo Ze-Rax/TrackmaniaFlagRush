@@ -1,0 +1,142 @@
+#Include "Libs/Nadeo/TMxSM/Race/Scores.Script.txt" as Scores
+#Include "Libs/Zrx/ModeLibs/Common/PlayerTelemetry.Script.txt" as Telemetry
+#Include "Libs/Zrx/ModeLibs/Common/TeamPointsProgression.Script.txt" as TeamPointsProgression
+
+#Const	C_PointsValue_ScoreFlag				3
+#Const	C_PointsValue_StealFlag				1
+#Const	C_PointsValue_ScoreFlagAssist	1
+
+#Const	C_Telemetry_Key_FlagsScored				"FlagsScored"
+#Const	C_Telemetry_Key_FlagsStolen				"FlagsStolen"
+#Const	C_Telemetry_Key_FlagScoreAssists	"FlagScoreAssists"
+
+/* Teams */
+
+Void OnClanRoundWin(Integer Clan) {
+	TeamPointsProgression::AddClanRoundsWon(Clan, 1);
+}
+
+Void OnClanMapWin(Integer Clan) {
+	TeamPointsProgression::AddClanMapsWon(Clan, 1);
+}
+
+Integer GetClanRoundPoints(Integer Clan) {
+	return Scores::GetClanRoundPoints(Clan);
+}
+
+Integer GetClanMapPoints(Integer Clan) {
+	return TeamPointsProgression::GetClanRoundsWon(Clan);
+}
+
+Integer GetClanMatchPoints(Integer Clan) {
+	return TeamPointsProgression::GetClanMapsWon(Clan);
+}
+
+Void SetClanRoundPoints(Integer Clan, Integer Value) {
+	Scores::SetClanRoundPoints(Clan, Value);
+}
+
+Void SetClanMapPoints(Integer Clan, Integer Value) {
+	TeamPointsProgression::SetClanRoundsWon(Clan, Value);
+}
+
+Void SetClanMatchPoints(Integer Clan, Integer Value) {
+	TeamPointsProgression::SetClanMapsWon(Clan, Value);
+}
+
+/* Players */
+
+Void OnPlayerScoreFlag(CSmScore Score) {
+	Telemetry::AddPlayerRoundInteger(Score, C_Telemetry_Key_FlagsScored, 1);
+	Scores::AddPlayerRoundPoints(Score, C_PointsValue_ScoreFlag);
+	Scores::AddClanRoundPoints(Score.TeamNum, 1); // TeamNum == Clan == Teams[]_Index + 1
+}
+
+Void OnPlayerScoreFlagAssist(CSmScore Score) {
+	Telemetry::AddPlayerRoundInteger(Score, C_Telemetry_Key_FlagScoreAssists, 1);
+	Scores::AddPlayerRoundPoints(Score, C_PointsValue_ScoreFlagAssist);
+}
+
+Void OnPlayerScoreFlag(CSmScore ScorerScore, CSmScore AssistScore) {
+	OnPlayerScoreFlag(ScorerScore);
+	OnPlayerScoreFlagAssist(AssistScore);
+}
+
+Void OnPlayerStealFlag(CSmScore Score) {
+	Telemetry::AddPlayerRoundInteger(Score, C_Telemetry_Key_FlagsStolen, 1);
+	Scores::AddPlayerRoundPoints(Score, C_PointsValue_StealFlag);
+}
+
+Integer GetPlayerRoundFlagScores(CSmScore Score) {
+	return Telemetry::GetPlayerRoundInteger(Score, C_Telemetry_Key_FlagsScored);
+}
+
+Integer GetPlayerMapFlagScores(CSmScore Score) {
+	return Telemetry::GetPlayerMapInteger(Score, C_Telemetry_Key_FlagsScored);
+}
+
+Integer GetPlayerMatchFlagScores(CSmScore Score) {
+	return Telemetry::GetPlayerMatchInteger(Score, C_Telemetry_Key_FlagsScored);
+}
+
+Integer GetPlayerRoundFlagScoreAssists(CSmScore Score) {
+	return Telemetry::GetPlayerRoundInteger(Score, C_Telemetry_Key_FlagScoreAssists);
+}
+
+Integer GetPlayerMapFlagScoreAssistss(CSmScore Score) {
+	return Telemetry::GetPlayerMapInteger(Score, C_Telemetry_Key_FlagScoreAssists);
+}
+
+Integer GetPlayerMatchFlagScoreAssists(CSmScore Score) {
+	return Telemetry::GetPlayerMatchInteger(Score, C_Telemetry_Key_FlagScoreAssists);
+}
+
+Integer GetPlayerRoundFlagSteals(CSmScore Score) {
+	return Telemetry::GetPlayerRoundInteger(Score, C_Telemetry_Key_FlagsStolen);
+}
+
+Integer GetPlayerMapFlagSteals(CSmScore Score) {
+	return Telemetry::GetPlayerMapInteger(Score, C_Telemetry_Key_FlagsStolen);
+}
+
+Integer GetPlayerMatchFlagSteals(CSmScore Score) {
+	return Telemetry::GetPlayerMatchInteger(Score, C_Telemetry_Key_FlagsStolen);
+}
+
+/* Progression */
+
+Void StartMatch() {
+	Scores::StartMatch();
+	Telemetry::StartMatch();
+	TeamPointsProgression::StartMatch();
+}
+
+Void EndMatch() {
+	Scores::EndMatch();
+	Telemetry::EndMatch();
+	TeamPointsProgression::EndMatch();
+}
+
+Void StartMap() {
+	Scores::StartMap();
+	Telemetry::StartMap();
+	TeamPointsProgression::StartMap();
+}
+
+Void EndMap() {
+	Scores::EndMap();
+	Telemetry::EndMap();
+	TeamPointsProgression::EndMap();
+}
+
+Void StartRound() {
+	Scores::StartRound();
+	Telemetry::StartRound();
+	TeamPointsProgression::StartRound();
+}
+
+Void EndRound() {
+	Scores::EndRound();
+	Telemetry::EndRound();
+	TeamPointsProgression::EndRound();
+}

@@ -6,9 +6,9 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt"	as FlagRush_Colors
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt"					as FlagRush_Sound
 
-#Const C_MessagePriority_Default			0
-#Const C_MessagePriority_Ingame				1
-#Const C_MessagePriority_Progression	2
+#Const C_MessagePriority_Default			1
+#Const C_MessagePriority_Event				2
+#Const C_MessagePriority_Progression	3
 
 Text Private_GetTeamColorCode(Integer Clan) {
 	declare FlagRush_Teams::K_TeamConfig TeamConfig = FlagRush_Teams::GetConfig(Clan);
@@ -24,92 +24,98 @@ Text Private_GetColoredPlayerName(CSmPlayer Player) {
 	return """$<{{{ Private_GetTeamColorCode(Player.CurrentClan) }}}{{{ Player.User.Name }}}$>""";
 }
 
+Void Private_QueueBigMessage(Text Message, Integer Duration, Integer Priority, CUIConfig::EUISound Sound) {
+	UIManager.UIAll.ClearMessages();
+	UIManager.UIAll.QueueMessage(Duration, Priority, CUIConfig::EMessageDisplay::Big, Message, Sound, 0);
+}
+
 Void MatchWin(Integer WinnerClan, Integer Duration) {
 	declare Text Message= """{{{ Private_GetColoredTeamName(WinnerClan) }}} won the match""";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndMatch, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void MapWin(Integer WinnerClan, Integer Duration) {
 	declare Text Message= """{{{ Private_GetColoredTeamName(WinnerClan) }}} won the map""";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void MapDraw(Integer Duration) {
 	declare Text Message= "Map draw";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void MapSkip(Integer Duration) {
 	declare Text Message= "Map skipped";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void RoundStart(Integer NbRound, Integer Duration) {
 	declare Text Message= """Round {{{ NbRound }}} start""";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void RoundWin(Integer WinnerClan, Integer Duration)  {
 	declare Text Message= """{{{ Private_GetColoredTeamName(WinnerClan) }}} won the round""";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void RoundDraw(Integer Duration) {
 	declare Text Message= "Round draw";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void RoundSkip(Integer Duration) {
 	declare Text Message= "Round skipped";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::EndRound, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void OvertimeStart(Integer Duration) {
 	declare Text Message= """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}Overtime$>""";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void WarmUpStart(Integer Duration) {
 	declare Text Message= """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}WarmUp$>""";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void WarmUpEnd(Integer Duration) {
 	declare Text Message= """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}WarmUp end$>""";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void PauseStart(Integer Duration) {
 	declare Text Message= "The round was paused";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void PauseEnd(Integer Duration) {
 	declare Text Message= "The round continues";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Default, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void FlagPickUp(CSmPlayer Player, Integer Duration) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(Player) }}} picked the $<{{{ Private_GetTeamColorCode(Player.CurrentClan) }}}flag$> up""";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Checkpoint, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void FlagScored(CSmPlayer Scorer, Integer Duration) {
 	declare Text Message= """{{{ Private_GetColoredPlayerName(Scorer) }}} scored the $<{{{ Private_GetTeamColorCode(Scorer.CurrentClan) }}}flag$>""";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Finish, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::Finish);
 	FlagRush_Sound::Play(["file://Media/Sounds/Nadeo/CommonLibs/Game/KnockOutPlayer_01.wav", "file://Media/Sounds/Nadeo/CommonLibs/Game/ShowWinners.wav"]);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag);
 }
@@ -118,12 +124,19 @@ Void FlagDropped(CUser OldCarrierUser, Integer Duration) {
 	declare CSmScore OldCarrierScore <=> ModeUtils::GetScore(OldCarrierUser.Login);
 	declare Text PlayerName = """$<{{{ Private_GetTeamColorCode(OldCarrierScore.TeamNum) }}}{{{ OldCarrierScore.User.Name }}}$>""";
 	declare Text Message= """{{{ PlayerName }}} dropped the $<{{{ Private_GetTeamColorCode(OldCarrierScore.TeamNum) }}}flag$>""";
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag);
 }
 
 Void FlagReset(Integer Duration) {
 	declare Text Message= "The flag was reset";
-	UIManager.UIAll.QueueMessage(Duration, C_MessagePriority_Progression, CUIConfig::EMessageDisplay::Big, Message, CUIConfig::EUISound::Warning, 0);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::Warning);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag);
+}
+
+Void FlagCarrierTeleport() {
+	declare Text Message = "Flag carrier teleported!";
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void PlayerOutOfBounds(CSmPlayer Player) {

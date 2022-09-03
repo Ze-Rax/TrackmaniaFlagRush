@@ -147,24 +147,25 @@ Void OnClanMapWin(Integer Clan) {
 	Net_SendTeamScores();
 }
 
-Void OnPlayerScoreFlag(CSmPlayer Player) {
-	Telemetry::AddPlayerRoundInteger(Player.Score, C_Telemetry_Key_FlagsScored, 1);
-	Scores::AddPlayerRoundPoints(Player.Score, C_PointsValue_ScoreFlag);
-	Scores::AddClanRoundPoints(Player.Score.TeamNum, 1); // TeamNum == Clan == Teams[]_Index + 1
-	Net_SendPlayerScore(Player.Score);
+Void OnPlayerScoreFlag(CSmScore Score) {
+	Telemetry::AddPlayerRoundInteger(Score, C_Telemetry_Key_FlagsScored, 1);
+	Scores::AddPlayerRoundPoints(Score, C_PointsValue_ScoreFlag);
+	Scores::AddClanRoundPoints(Score.TeamNum, 1); // TeamNum == Clan == Teams[]_Index + 1
+	Net_SendPlayerScore(Score);
+	Net_SendTeamScores();
 }
 
-Void OnPlayerScoreFlagAssist(CSmPlayer Player) {
-	Telemetry::AddPlayerRoundInteger(Player.Score, C_Telemetry_Key_FlagScoreAssists, 1);
-	Scores::AddPlayerRoundPoints(Player.Score, C_PointsValue_ScoreFlagAssist);
-	Net_SendPlayerScore(Player.Score);
+Void OnPlayerScoreFlagAssist(CSmScore Score) {
+	Telemetry::AddPlayerRoundInteger(Score, C_Telemetry_Key_FlagScoreAssists, 1);
+	Scores::AddPlayerRoundPoints(Score, C_PointsValue_ScoreFlagAssist);
+	Net_SendPlayerScore(Score);
 }
 
-Void OnPlayerScoreFlag(CSmPlayer Scorer, CSmPlayer Assist) {
-	OnPlayerScoreFlag(Scorer);
-	OnPlayerScoreFlagAssist(Assist);
-	Net_SendPlayerScore(Scorer.Score);
-	Net_SendPlayerScore(Assist.Score);
+Void OnPlayerScoreFlag(CSmScore ScorerScore, CSmScore AssistScore) {
+	OnPlayerScoreFlag(ScorerScore);
+	OnPlayerScoreFlagAssist(AssistScore);
+	Net_SendPlayerScore(ScorerScore);
+	Net_SendPlayerScore(AssistScore);
 }
 
 Void OnPlayerStealFlag(CSmPlayer Player) {

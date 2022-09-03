@@ -67,11 +67,12 @@ K_Command FromText(Text CommandText, Text Source) {
 }
 
 /**
- * Transforms a CSmModeEvent into a Command struct
+ * Transforms a CSmModeEvent into a Command struct. Command_ prefix is removed if present.
  */
 K_Command FromEvent(CSmModeEvent Event) {
+	declare Text UnprefixedName = TL::RegexReplace("""^{{{ C_CommandPrefix }}}""", Event.CommandName, "", "");
 	return K_Command {
-		Name					= Event.CommandName,
+		Name					= UnprefixedName,
 		ValueBoolean	= Event.CommandValueBoolean,
 		ValueInteger	= Event.CommandValueInteger,
 		ValueReal			= Event.CommandValueReal,
@@ -85,14 +86,15 @@ K_Command FromEvent(CSmModeEvent Event) {
 }
 
 /**
- * Transforms a CUIConfigEvent into a Command struct
+ * Transforms a CUIConfigEvent into a Command struct. Command_ prefix is removed if present.
  */
 K_Command FromEvent(CUIConfigEvent Event) {
 	declare Text Source;
 	if(Event.UI != Null && GetPlayer(Event.UI) != Null) {
 		Source = GetPlayer(Event.UI).User.Login;
 	}
-	return FromNameAndParams(Event.CustomEventType, Event.CustomEventData, Source);
+	declare Text UnprefixedName = TL::RegexReplace("""^{{{ C_CommandPrefix }}}""", Event.CustomEventType, "", "");
+	return FromNameAndParams(UnprefixedName, Event.CustomEventData, Source);
 }
 
 /**

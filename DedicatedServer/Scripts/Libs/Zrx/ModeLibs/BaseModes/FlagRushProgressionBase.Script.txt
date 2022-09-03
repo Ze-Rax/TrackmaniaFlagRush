@@ -5,7 +5,7 @@
 
 // #RequireContext CSmMode
 
-// TODO: XmlRpc, UISequences, Modesettings updates
+// TODO: XmlRpc, UISequences, Modesettings updates, Time warning
 
 #Extends "Libs/Zrx/ModeLibs/BaseModes/ModeBase.Script.txt"
 
@@ -59,9 +59,19 @@
 #Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"
 #Setting S_NbFlagsToWinRound								3				as "Number of flags scored to win a round"
 #Setting S_RoundTimeLimitSeconds						360 		as "Round Timelimit (seconds)"
+// TODO: Implement turn based
 #Setting S_UseTurns													False 	as "<hidden>" // "Use turns (Reset after a player scores a flag)"
 #Setting S_UseOvertime											True 		as "Use overtime when round is tied"
 #Setting S_UseWarmUp												True		as "Use warm up"
+
+// TODO: Use team settings
+// Teams
+#Setting S_Team1Name 												"" 			as "Force Team 1 Name"
+// #Setting S_Team1Color 											"" 			as "Force Team 1 Color"
+#Setting S_Team2Name 												"" 			as "Force Team 2 Name"
+// #Setting S_Team2Color 											"" 			as "Force Team 2 Color"
+#Setting S_UseClubTags											True		as "Use club tags for team names"
+#Setting S_UseTeamSkins											True		as "Use colored skins for teams"
 
 #Setting S_ModeCommands_AdminLoginsCsv 			"" 			as "<hidden>" // Admin logins for the mode commands ui
 
@@ -137,7 +147,7 @@ CheckpointBehaviour = CSmMode::ECheckpointBehaviour::Custom;
 UseMultiClans = False;
 UseClans = True;
 UseForcedClans = False;
-// UsePvPCollisions = False; // Should be set by FlagRush.Script.txt depending on S_UseCollisions
+UsePvPCollisions = False; // Should be set by FlagRush.Script.txt depending on S_UseCollisions
 UsePvECollisions = True; // Force player visibility and dynamic item sync
 UseGuns = False;
 UsePvPWeapons = False;
@@ -291,6 +301,13 @@ if (MapPointLimitReached()) MB_StopMap();
 FlagRush_Scores::EndRound();
 ***
 
+// ~~~~~~~~~~ Turn ~~~~~~~~~~ //
+
+***EndTurn***
+***
+MB_ClearAllMessages();
+***
+
 // ~~~~~~~~~~ PlayLoop ~~~~~~~~~~ //
 
 ***PlayLoop***
@@ -397,7 +414,7 @@ ModeUtils::SetEndTime(Now + TimeRemaining + FlagRush_Common::C_SpawnAnimDuration
 ***Yield***
 ***
 ModeCommands::Yield();
-+++Private_HandleProgressionsCommands+++
+{ +++Private_HandleProgressionsCommands+++ }
 FlagRush_UI::Yield();
 FlagRush_Teams::Yield();
 
@@ -417,7 +434,6 @@ foreach (Event in PendingEvents) {
 }
 ***
 
-// TODO: Extract to lib if possible?
 ***Private_HandleProgressionsCommands***
 ***
 declare CommandUtils::K_Command[] PendingCommands;
@@ -433,12 +449,11 @@ foreach (Command in ModeCommands::GetPendingCommands()) {
 
 foreach (Command in PendingCommands) {
 	// Display a message in chat
-	declare Text CommandName = TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "");
 	declare Text CommandSource = CommandUtils::ResolveSource(Command);
 	declare Text CommandText;
 
 	// Handle the command
-	switch(CommandName) {
+	switch(Command.Name) {
 		case C_Command_EndWarmup: {
 			WarmUpReadyUp::Stop();
 			CommandText = "The warmup was ended.";
@@ -507,12 +522,10 @@ foreach (Command in PendingCommands) {
 			CommandText = """Set {{{ Amount }}} bots.""";
 		}
 		case C_Command_Announce: {
-			UIManager.UIAll.QueueMessage(3000, FlagRush_Messages::C_MessagePriority_Default, CUIConfig::EMessageDisplay::Big, Command.ValueText, CUIConfig::EUISound::Default, 0);
-			CommandText = """Message: {{{ Command.ValueText }}}""";
+			UIManager.UIAll.QueueMessage(3000, FlagRush_Messages::C_MessagePriority_Default, CUIConfig::EMessageDisplay::Big, Command.ValueText, CUIConfig::EUISound::Default, 1);
+			CommandText = """Message: $<{{{ Command.ValueText }}}$>""";
 		}
-		default: {
-			return;
-		}
+		default: return;
 	}
 
 	declare Text Message = """{{{ FlagRush_Common::C_LogPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ CommandSource }}}.""";

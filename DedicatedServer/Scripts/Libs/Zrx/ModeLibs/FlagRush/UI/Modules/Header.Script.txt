@@ -1,7 +1,10 @@
-#Include 	"ColorLib" as CL
-#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
-#Include	"Libs/Zrx/ModeLibs/Common/GameplayPhase.Script.txt" as GameplayPhase
-#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
+#Include "ColorLib" as CL
+#Include "Libs/Nadeo/Layers2.Script.txt" as Layers
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
+#Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt" as FlagRush_GameplayPhase
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as FlagRush_UIShared
+
+#Const C_LayerName "FlagRush_ScoresHeader"
 
 Text GetManialink() {
 	return """
@@ -18,36 +21,36 @@ Text GetManialink() {
 			<frame id="background" size="60 7.5" pos="-30" halign="center" valign="center">
 				<frameinstance modelid="gradient" id="gradient" pos="-10" scale="100"/>
 			</frame>
-			<label pos="-32.5 -0.5" z-index="1" size="35 8" text="Team Blue" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
+			<label pos="-32.5 -0.5" z-index="1" size="35 8" text="Team Blue" textcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralLight) }}}" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
 
-			<quad pos="-60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(Colors::C_BlueBase) }}}" halign="center"/>
-			<label pos="-60 -0.5" z-index="2" size="11.8 9" text="0" halign="center" valign="center2" textsize="5" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="score" textfont="GameFontBlack" />
+			<quad pos="-60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(FlagRush_Colors::C_BlueBase) }}}" halign="center"/>
+			<label pos="-60 -0.5" z-index="2" size="11.8 9" text="0" halign="center" valign="center2" textsize="5" textcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralLight) }}}" id="score" textfont="GameFontBlack" />
 		</frame>
 
 		<frame id="team1" z-index="1">
 			<frame id="background" size="60 7.5" pos="30" halign="center" valign="center">
 				<frameinstance modelid="gradient" id="gradient" pos="-10" scale="100"/>
 			</frame>
-			<label pos="32.5 -0.5" z-index="1" size="35 8" text="Team Red" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
+			<label pos="32.5 -0.5" z-index="1" size="35 8" text="Team Red" textcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralLight) }}}" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
 
-			<quad pos="60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(Colors::C_RedBase) }}}" halign="center"/>
-			<label pos="60 -0.5" z-index="2" size="11.8 9" text="0" halign="center" valign="center2" textsize="5" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="score" textfont="GameFontBlack" />
+			<quad pos="60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(FlagRush_Colors::C_RedBase) }}}" halign="center"/>
+			<label pos="60 -0.5" z-index="2" size="11.8 9" text="0" halign="center" valign="center2" textsize="5" textcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralLight) }}}" id="score" textfont="GameFontBlack" />
 		</frame>
 
 		<frame id="timer" z-index="2">
-			<quad pos="0 0" size="20 8" id="background" valign="center" z-index="-1" style="UICommon64_1" substyle="BgFrame1" halign="center" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}"/>
-			<label pos="0 0" z-index="1" size="20 8" text="00:00" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="timelimit" halign="center" valign="center" textsize="2" textfont="GameFontSemiBold"/>
+			<quad pos="0 0" size="20 8" id="background" valign="center" z-index="-1" style="UICommon64_1" substyle="BgFrame1" halign="center" colorize="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralDark) }}}"/>
+			<label pos="0 0" z-index="1" size="20 8" text="00:00" textcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralLight) }}}" id="timelimit" halign="center" valign="center" textsize="2" textfont="GameFontSemiBold"/>
 			<quad pos="0 0" z-index="1" size="8 8" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light" id="icon"/>
 		</frame>
 
 		<frame id="carrier" pos="0 -6.5">
 			<frame id="background">
-				<quad pos="-24 0" z-index="-1" size="6 6" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" halign="center" rot="90"/>
-				<quad pos="0 0" z-index="-1" size="50 6" opacity="1" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame2"/>
-				<quad pos="24 0" z-index="-1" size="6 6" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" halign="center"/>
+				<quad pos="-24 0" z-index="-1" size="6 6" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralDark) }}}" halign="center" rot="90"/>
+				<quad pos="0 0" z-index="-1" size="50 6" opacity="1" colorize="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralDark) }}}" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame2"/>
+				<quad pos="24 0" z-index="-1" size="6 6" valign="center" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralDark) }}}" halign="center"/>
 			</frame>
 
-			<label pos="0 0.5" z-index="1" size="70 8" text="Playername" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}" id="name" halign="center" valign="center" textsize="3" textfont="GameFontRegular" />
+			<label pos="0 0.5" z-index="1" size="70 8" text="Playername" textcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralLight) }}}" id="name" halign="center" valign="center" textsize="3" textfont="GameFontRegular" />
 		</frame>
 	</frame>
 
@@ -126,15 +129,15 @@ Text GetManialink() {
 	 * Set the default values for all controls.
 	 */
 	Void InitMlControls() {
-		TeamAreas[0].BackgroundGradient.Base.BgColor = {{{ Colors::C_BlueBase }}};
-		TeamAreas[0].BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_BlueDark }}};
-		TeamAreas[0].BackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_BlueLight }}};
-		TeamAreas[0].ScoreBackground.ModulateColor = {{{ Colors::C_BlueBase }}};
+		TeamAreas[0].BackgroundGradient.Base.BgColor = {{{ FlagRush_Colors::C_BlueBase }}};
+		TeamAreas[0].BackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_BlueDark }}};
+		TeamAreas[0].BackgroundGradient.RightGradient.ModulateColor = {{{ FlagRush_Colors::C_BlueLight }}};
+		TeamAreas[0].ScoreBackground.ModulateColor = {{{ FlagRush_Colors::C_BlueBase }}};
 
-		TeamAreas[1].BackgroundGradient.Base.BgColor = {{{ Colors::C_RedBase }}};
-		TeamAreas[1].BackgroundGradient.LeftGradient.ModulateColor = {{{ Colors::C_RedLight }}};
-		TeamAreas[1].BackgroundGradient.RightGradient.ModulateColor = {{{ Colors::C_RedDark }}};
-		TeamAreas[1].ScoreBackground.ModulateColor = {{{ Colors::C_RedBase }}};
+		TeamAreas[1].BackgroundGradient.Base.BgColor = {{{ FlagRush_Colors::C_RedBase }}};
+		TeamAreas[1].BackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_RedLight }}};
+		TeamAreas[1].BackgroundGradient.RightGradient.ModulateColor = {{{ FlagRush_Colors::C_RedDark }}};
+		TeamAreas[1].ScoreBackground.ModulateColor = {{{ FlagRush_Colors::C_RedBase }}};
 	}
 
 	/**
@@ -154,7 +157,7 @@ Text GetManialink() {
 	 */
 	***UpdateTimer***
 	***
-	declare Integer RoundTimeLeft = Net_FlagRush_EndTime - GameTime;
+	declare Integer RoundTimeLeft = Net_EndTime - GameTime;
 	declare Boolean IsTimeLeft = RoundTimeLeft > 0;
 	Timer.TimerLabel.TextSizeReal = 2.;
 	Timer.TimerLabel.AutoNewLine = False;
@@ -163,28 +166,28 @@ Text GetManialink() {
 		Timer.TimerLabel.Show();
 		Timer.TimerLabel.Value = TL::TimeToText(
 			ML::Max(RoundTimeLeft, 0),
-			RoundTimeLeft < 10000 && Net_GameplayPhase != {{{ GameplayPhase::C_Warmup }}}
+			RoundTimeLeft < 10000 && Net_FlagRush_GameplayPhase != {{{ FlagRush_GameplayPhase::C_Warmup }}}
 		);
 
-		if (Net_GameplayPhase == {{{ GameplayPhase::C_Warmup }}}) {
-			Timer.TimerLabel.TextColor = {{{ Colors::C_Warning }}};
+		if (Net_FlagRush_GameplayPhase == {{{ FlagRush_GameplayPhase::C_Warmup }}}) {
+			Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
 		} else if (IsTimeLeft && RoundTimeLeft / 1000 < 30) {
-			Timer.TimerLabel.TextColor = {{{ Colors::C_Error }}};
+			Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_Error }}};
 		} else {
-			Timer.TimerLabel.TextColor = {{{ Colors::C_NeutralLight }}};
+			Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_NeutralLight }}};
 		}
-	} else if (Net_GameplayPhase == {{{ GameplayPhase::C_Overtime }}}) {
+	} else if (Net_FlagRush_GameplayPhase == {{{ FlagRush_GameplayPhase::C_Overtime }}}) {
 		Timer.Icon.Hide();
 		Timer.TimerLabel.Show();
 		Timer.TimerLabel.TextSizeReal = 1.5;
 		Timer.TimerLabel.AutoNewLine = True; // Else multi line string won't be centered
 		Timer.TimerLabel.Value = "Overtime" ^ "\n" ^ "+" ^ TL::TimeToText(-RoundTimeLeft);
-		Timer.TimerLabel.TextColor = {{{ Colors::C_Warning }}};
+		Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
 	} else {
 		Timer.Icon.Show();
 		Timer.TimerLabel.Hide();
 		if (FlagCarrierPlayer != Null && Teams.existskey(FlagCarrierPlayer.CurrentClan - 1)) Timer.Icon.Colorize = GetTeamPrimaryColor(Teams[FlagCarrierPlayer.CurrentClan - 1]);
-		else Timer.Icon.Colorize = {{{ Colors::C_NeutralLight }}};
+		else Timer.Icon.Colorize = {{{ FlagRush_Colors::C_NeutralLight }}};
 	}
 	***
 
@@ -193,35 +196,35 @@ Text GetManialink() {
 	 */
 	***UpdateCarrier***
 	***
-	if (Net_GameplayPhase == {{{ GameplayPhase::C_Warmup }}}) {
+	if (Net_FlagRush_GameplayPhase == {{{ FlagRush_GameplayPhase::C_Warmup }}}) {
 		Carrier.CarrierLabel.Value = "WarmUp";
-		Carrier.CarrierLabel.TextColor = {{{ Colors::C_Warning }}};
+		Carrier.CarrierLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
 	}
 	else if (FlagCarrierPlayer != Null) {
 		Carrier.CarrierLabel.Value = FlagCarrierPlayer.User.Name;
 		if (Teams.existskey(FlagCarrierPlayer.CurrentClan - 1)) {
 			Carrier.CarrierLabel.TextColor = GetTeamPrimaryColor(Teams[FlagCarrierPlayer.CurrentClan - 1]);
 		} else {
-			Carrier.CarrierLabel.TextColor = {{{ Colors::C_NeutralLight }}};
+			Carrier.CarrierLabel.TextColor = {{{ FlagRush_Colors::C_NeutralLight }}};
 		}
 	} else {
 		Carrier.CarrierLabel.Value = Net_FlagRush_FlagCarrierName;
-		Carrier.CarrierLabel.TextColor = {{{ Colors::C_NeutralLight }}};
+		Carrier.CarrierLabel.TextColor = {{{ FlagRush_Colors::C_NeutralLight }}};
 	}
 	***
 
-	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
-	{{{ UIShared::GetLoginMappingFunctions() }}}
+	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ FlagRush_UIShared::GetLoginMappingFunctions() }}}
 
 	main() {
 
 		AssignMlControlReferences();
 		InitMlControls();
 
+		declare netread Integer Net_EndTime for Teams[0];
 		declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
 		declare netread Text Net_FlagRush_FlagCarrierName for Teams[0];
-		declare netread Integer Net_FlagRush_EndTime for Teams[0];
-		declare netread Integer Net_GameplayPhase for Teams[0];
+		declare netread Integer Net_FlagRush_GameplayPhase for Teams[0];
 
 		declare CSmPlayer FlagCarrierPlayer;
 
@@ -238,4 +241,14 @@ Text GetManialink() {
 	--></script>
 	</manialink>
 	""";
+}
+
+Void Attach() {
+	Layers::Create(C_LayerName, GetManialink());
+	Layers::SetType(C_LayerName, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName);
+}
+
+Void Detach() {
+	Layers::Detach(C_LayerName);
 }

@@ -10,7 +10,7 @@ Text Private_GetTeamColorCode(Integer Clan) {
 
 Text Private_GetColoredTeamName(Integer Clan) {
 	declare FlagRush_Teams::K_TeamConfig TeamConfig = FlagRush_Teams::GetConfig(Clan);
-	return """$<${{{ CL::RgbToHex3(TeamConfig.Color) }}}{{{ TeamConfig.Name }}}$>""";
+	return """$<${{{ CL::RgbToHex3(TeamConfig.Color) }}}{{{ Teams[Clan-1].Name }}}$>""";
 
 }
 

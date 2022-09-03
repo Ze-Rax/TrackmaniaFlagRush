@@ -19,13 +19,13 @@
 #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt" as CommandUtils
 #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt" as ModeUtils
 #Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt" as WarmUpReadyUp
-#Include "Libs/Zrx/ModeLibs/Common/GameplayPhase.Script.txt" as GameplayPhase
 
 // FlagRush Libs
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt" as FlagRush_Messages
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt" as FlagRush_Scores
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt" as FlagRush_MatchEvaluation
+#Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt" as FlagRush_GameplayPhase
 
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI2.Script.txt" as FlagRush_UI
 
@@ -145,15 +145,19 @@ ReadonlyLaunchedCheckpoints = False;
 UseProtectClanmates = False;
 UseAllies = False;
 CrudeExtrapolation_AllowDelay = False;
+
+ModeUtils::SetEndTime(-1);
 ***
 
 ***MB_LoadLibraries***
 ***
+FlagRush_GameplayPhase::Set(0);
+
 ModeCommands::AddAdmin("W2ZNWNzVQV6z3hXuNgRMRg");	// Ze-Rax
 ModeCommands::AddAdmin("EdbzfLXMS_aI_PjZCVaygQ");	// Reaby
 ModeCommands::AddAdmin("BiC3-GdBTzaUQxlcSw-qbQ"); // Geekid
 ModeCommands::AddAdmin("pTuyJG9STcCN_11BiU3t0Q"); // Rxelux
-ModeCommands::AddQuickCommand(C_Command_EndWarmup, "Icons64x64_1", "ArrowGreen");
+ModeCommands::AddQuickCommand(C_Command_EndWarmup, "UICommon64_1", "Play_light");
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipRound, "UICommon64_1", "FastForward_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
@@ -248,7 +252,7 @@ UIManager.UIAll.QueueMessage(
 	0
 );
 MB_Sleep(C_Duration_RoundStart);
-GameplayPhase::Set(GameplayPhase::C_Round);
+FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Round);
 StartTime = Now;
 if (S_RoundTimeLimitSeconds > 0) {
 	ModeUtils::SetEndTime(Now + S_RoundTimeLimitSeconds * 1000 + FlagRush_Common::C_SpawnAnimDuration);
@@ -259,7 +263,7 @@ if (S_RoundTimeLimitSeconds > 0) {
 
 ***MB_EndRound***
 ***
-GameplayPhase::Set(GameplayPhase::C_None);
+FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_None);
 
 declare Text Message;
 if (RoundInvalid()) {
@@ -329,8 +333,8 @@ declare Boolean RoundEndRequested for This;
 if (RoundEndRequested) MB_StopRound();
 
 // Round end & overtime conditions
-switch (GameplayPhase::Get()) {
-	case GameplayPhase::C_Round: {
+switch (FlagRush_GameplayPhase::Get()) {
+	case FlagRush_GameplayPhase::C_Round: {
 		if (FlagLimitReached()) {
 			MB_StopRound();
 		} else if (TimeLimitReached()) {
@@ -341,7 +345,7 @@ switch (GameplayPhase::Get()) {
 			}
 		}
 	}
-	case GameplayPhase::C_Overtime: {
+	case FlagRush_GameplayPhase::C_Overtime: {
 		if (!RoundIsTied()) {
 			MB_StopRound();
 		}
@@ -359,7 +363,7 @@ if (PauseRequested) {
 
 ***StartOvertime***
 ***
-GameplayPhase::Set(GameplayPhase::C_Overtime);
+FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Overtime);
 UIManager.UIAll.QueueMessage(
 	C_Duration_Overtime,
 	1,
@@ -387,6 +391,7 @@ UIManager.UIAll.QueueMessage(
 ***
 ModeCommands::Yield();
 +++Private_HandleProgressionsCommands+++
+FlagRush_UI::Yield();
 ***
 
 ***Private_HandleProgressionsCommands***
@@ -431,31 +436,37 @@ foreach (Command in PendingCommands) {
 		case C_Command_SetTeam1RoundScore: {
 			declare Integer Value = ML::Max(Command.ValueInteger, 0);
 			FlagRush_Scores::SetClanRoundPoints(1, Value);
+			FlagRush_Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[0].Name }}} round score to {{{ Value }}}.""";
 		}
 		case C_Command_SetTeam2RoundScore: {
 			declare Integer Value = ML::Max(Command.ValueInteger, 0);
 			FlagRush_Scores::SetClanRoundPoints(2, Value);
+			FlagRush_Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[1].Name }}} round score to {{{ Value }}}.""";
 		}
 		case C_Command_SetTeam1MapScore: {
 			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbRoundsToWinMap);
 			FlagRush_Scores::SetClanMapPoints(1, Value);
+			FlagRush_Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[0].Name }}} map score to {{{ Value }}}.""";
 		}
 		case C_Command_SetTeam2MapScore: {
 			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbRoundsToWinMap);
 			FlagRush_Scores::SetClanMapPoints(2, Value);
+			FlagRush_Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[1].Name }}} map score to {{{ Value }}}.""";
 		}
 		case C_Command_SetTeam1MatchScore: {
 			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbMapsToWinMatch);
 			FlagRush_Scores::SetClanMatchPoints(1, Value);
+			FlagRush_Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[0].Name }}} match score to {{{ Value }}}.""";
 		}
 		case C_Command_SetTeam2MatchScore: {
 			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbMapsToWinMatch);
 			FlagRush_Scores::SetClanMatchPoints(2, Value);
+			FlagRush_Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[1].Name }}} match score to {{{ Value }}}.""";
 		}
 		case C_Command_BalanceTeams: {
@@ -491,8 +502,9 @@ foreach (Command in PendingCommands) {
  * Can be extended with ***StartWarmUp***, ***WarmUpLoop*** and ***EndWarmUp***.
  */
 Void Private_ExecuteWarmUp() {
+	declare PreviousGameplayPhase = FlagRush_GameplayPhase::Get();
+	FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Warmup);
 	+++StartWarmUp+++
-	declare PreviousGameplayPhase = GameplayPhase::Get();
 	WarmUpReadyUp::Start();
 	while(!WarmUpReadyUp::WarmUpShouldStop()) {
 		MB_Yield();
@@ -500,7 +512,7 @@ Void Private_ExecuteWarmUp() {
 		+++WarmUpLoop+++
 	}
 	+++EndWarmUp+++
-	GameplayPhase::Set(PreviousGameplayPhase);
+	FlagRush_GameplayPhase::Set(PreviousGameplayPhase);
 }
 
 /**

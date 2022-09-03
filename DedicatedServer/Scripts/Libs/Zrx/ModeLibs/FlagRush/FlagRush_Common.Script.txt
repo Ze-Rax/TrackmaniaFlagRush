@@ -1,13 +1,5 @@
 #Const	C_LogPrefix	"[FlagRush]"
 
-#Const	C_PointsValue_ScoreFlag				3
-#Const	C_PointsValue_StealFlag				1
-#Const	C_PointsValue_ScoreFlagAssist	1
-
-#Const	C_Telemetry_Key_FlagsScored				"FlagsScored"
-#Const	C_Telemetry_Key_FlagsStolen				"FlagsStolen"
-#Const	C_Telemetry_Key_FlagScoreAssists	"FlagScoreAssists"
-
 #Const	C_SpawnAnimDuration 1500
 
 /**

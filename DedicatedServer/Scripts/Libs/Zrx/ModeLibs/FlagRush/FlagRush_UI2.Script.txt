@@ -1,4 +1,5 @@
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt" as ModeCommands
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt" as FlagRush_ScoresHeader
 
 Void Private_LoadUIAll() {
 	UIManager.UIAll.DisableZoomTransitions = False; // Spawn animation (camera-overview-to-car zoom effect)
@@ -9,7 +10,7 @@ Void Private_LoadUIAll() {
 	UIManager.UIAll.OverlayHideChat = False;
 	UIManager.UIAll.OverlayHideCheckPointList = True;
 	UIManager.UIAll.OverlayHideRoundScores = True;
-	UIManager.UIAll.OverlayHideCountdown = False;  // TODO: Set to True
+	UIManager.UIAll.OverlayHideCountdown = True;
 	UIManager.UIAll.OverlayHideCrosshair = True;
 	UIManager.UIAll.OverlayHideGauges = True;
 	UIManager.UIAll.OverlayHideConsumables = True;
@@ -38,6 +39,11 @@ Void Private_LoadUIAll() {
 
 Void Private_LoadModules() {
 	ModeCommands::Attach();
+	FlagRush_ScoresHeader::Attach();
+}
+
+Void Yield() {
+
 }
 
 Void Load() {

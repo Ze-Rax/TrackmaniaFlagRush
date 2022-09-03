@@ -10,8 +10,8 @@ declare Integer G_GameplayPhase;
  */
  Void Set(Integer Phase) {
 	G_GameplayPhase = Phase;
-	declare netwrite Integer Net_GameplayPhase for Teams[0];
-	Net_GameplayPhase = Phase;
+	declare netwrite Integer Net_FlagRush_GameplayPhase for Teams[0];
+	Net_FlagRush_GameplayPhase = Phase;
 }
 
 /**

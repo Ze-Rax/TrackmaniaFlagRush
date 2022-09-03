@@ -1,11 +1,12 @@
 #Include "Libs/Nadeo/Layers2.Script.txt" as Layers
 
 // Modules
-#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt" as ModeCommands
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt" as FlagRush_UIScoresHeader
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt" as FlagRush_UIScoresTable
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Menu.Script.txt" as FlagRush_UIMenu
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt" as FlagRush_UISound
+#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"											as EventFeed
+#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"					as ModeCommands
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt"						as FlagRush_UIScoresHeader
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Menu.Script.txt"							as FlagRush_UIMenu
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt"							as FlagRush_UISound
 
 #Const C_LayerName_Dialog							"Layer_FlagRush_Dialog"
 #Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
@@ -82,6 +83,12 @@ Void Private_AttachModules() {
 	Layers::Create(C_LayerName_Menu, FlagRush_UIMenu::GetManialink());
 	Layers::SetType(C_LayerName_Menu, CUILayer::EUILayerType::InGameMenu);
 	Layers::Attach(C_LayerName_Menu);
+
+	// Event Feed
+	EventFeed::ClearMessages();
+	Layers::Create(C_LayerName_Feed, EventFeed::GetManialink(10));
+	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Feed);
 }
 
 Void Private_DetachModules() {

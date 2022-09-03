@@ -15,6 +15,7 @@
 #Include "TextLib" as TL
 #Include "MathLib" as ML
 
+#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"										as EventFeed
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"				as ModeCommands
 #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"				as CommandUtils
 #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"										as ModeUtils
@@ -226,9 +227,10 @@ UIManager.UIAll.QueueMessage(
 	1,
 	CUIConfig::EMessageDisplay::Big,
 	Message,
-	CUIConfig::EUISound::Default,
+	CUIConfig::EUISound::EndRound,
 	0
 );
+EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 MB_Sleep(C_Duration_MapEnd);
 
 if (MatchPointLimitReached()) {
@@ -254,14 +256,16 @@ RoundEndRequested = False;
 
 ***MB_StartRound***
 ***
+declare Text Message = FlagRush_Messages::RoundStart(MB_GetRoundCount());
 UIManager.UIAll.QueueMessage(
 	C_Duration_RoundStart,
 	1,
 	CUIConfig::EMessageDisplay::Big,
-	FlagRush_Messages::RoundStart(MB_GetRoundCount()),
+	Message,
 	CUIConfig::EUISound::Default,
 	0
 );
+EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 MB_Sleep(C_Duration_RoundStart);
 FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Round);
 StartTime = Now;
@@ -294,9 +298,10 @@ UIManager.UIAll.QueueMessage(
 	1,
 	CUIConfig::EMessageDisplay::Big,
 	Message,
-	CUIConfig::EUISound::Default,
+	CUIConfig::EUISound::EndRound,
 	0
 );
+EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 MB_Sleep(C_Duration_RoundEnd);
 
 if (MapPointLimitReached()) MB_StopMap();
@@ -311,27 +316,31 @@ FlagRush_Scores::EndRound();
 
 ***StartWarmUp***
 ***
+declare Text Message = FlagRush_Messages::WarmUpStart();
 UIManager.UIAll.QueueMessage(
 	C_Duration_RoundStart,
 	1,
 	CUIConfig::EMessageDisplay::Big,
-	FlagRush_Messages::WarmUpStart(),
+	Message,
 	CUIConfig::EUISound::Default,
 	0
 );
+EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 MB_Sleep(C_Duration_WarmUpStart);
 ***
 
 ***EndWarmUp***
 ***
+declare Text Message = FlagRush_Messages::WarmUpEnd();
 UIManager.UIAll.QueueMessage(
 	C_Duration_RoundStart,
 	1,
 	CUIConfig::EMessageDisplay::Big,
-	FlagRush_Messages::WarmUpEnd(),
+	Message,
 	CUIConfig::EUISound::Default,
 	0
 );
+EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 MB_Sleep(C_Duration_WarmUpEnd);
 ***
 
@@ -374,15 +383,17 @@ if (PauseRequested) {
 
 ***StartOvertime***
 ***
+declare Text Message = FlagRush_Messages::OvertimeStart();
 FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Overtime);
 UIManager.UIAll.QueueMessage(
 	C_Duration_Overtime,
 	1,
 	CUIConfig::EMessageDisplay::Big,
-	FlagRush_Messages::OvertimeStart(),
+	Message,
 	CUIConfig::EUISound::Default,
 	0
 );
+EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 ***
 
 // ~~~~~~~~~~ Podium (Match end MVP) ~~~~~~~~~~ //
@@ -510,7 +521,7 @@ foreach (Command in PendingCommands) {
 		}
 	}
 
-	declare Message = """{{{ FlagRush_Common::C_LogPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ CommandSource }}}.""";
+	declare Text Message = """{{{ FlagRush_Common::C_LogPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ CommandSource }}}.""";
 	if (CommandText != "") Message ^= " " ^ CommandText;
 	UIManager.UIAll.SendChat(Message);
 }
@@ -556,26 +567,30 @@ Void Private_ExecuteWarmUp() {
 Void Private_ExecutePause() {
 	declare Integer TimeRemaining = EndTime - Now;
 	ModeUtils::SetEndTime(-1);
+	declare Text Message = FlagRush_Messages::PauseStart();
 	UIManager.UIAll.QueueMessage(
 		C_Duration_PauseStart,
 		1,
 		CUIConfig::EMessageDisplay::Big,
-		FlagRush_Messages::PauseStart(),
+		Message,
 		CUIConfig::EUISound::Default,
 		0
 	);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 	MB_Sleep(C_Duration_PauseStart);
 
 	Private_ExecuteWarmUp();
 
+	Message = FlagRush_Messages::PauseEnd();
 	UIManager.UIAll.QueueMessage(
 		C_Duration_PauseEnd,
 		1,
 		CUIConfig::EMessageDisplay::Big,
-		FlagRush_Messages::PauseEnd(),
+		Message,
 		CUIConfig::EUISound::Default,
 		0
 	);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 	MB_Sleep(C_Duration_PauseEnd);
 	ModeUtils::SetEndTime(Now + TimeRemaining + FlagRush_Common::C_SpawnAnimDuration);
 }

@@ -8,6 +8,11 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Menu.Script.txt"							as FlagRush_UIMenu
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt"							as FlagRush_UISound
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_UIMarkers
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Respawn.Script.txt"						as FlagRush_UIRespawn
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Spectator.Script.txt"					as FlagRush_UISpectator
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"								as FlagRush_UIMVP
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
 
 #Const C_LayerName_Dialog							"Layer_FlagRush_Dialog"
 #Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
@@ -22,6 +27,8 @@
 #Const C_LayerName_Respawn						"Layer_FlagRush_Respawn"
 #Const C_LayerName_ModeCommands				"Layer_ModeCommands"
 #Const C_LayerName_Radar							"Layer_FlagRush_Radar"
+
+declare Integer G_PreviousPlayersCount;
 
 Void Private_LoadUIAll() {
 	UIManager.UIAll.DisableZoomTransitions = False; // Spawn animation (camera-overview-to-car zoom effect)
@@ -59,6 +66,20 @@ Void Private_LoadUIAll() {
 	UIManager.UIAll.LabelsVisibility = CUIConfig::EHudVisibility::Everything;
 }
 
+Void Private_LoadModules() {
+	declare FlagRush_UIRadar::K_Config Config = FlagRush_UIRadar::K_Config {
+		Scale = 0.35,
+		MarkerScale = 1.5,
+		Position = <135., -65.>,
+		Zoom = 0.35,
+		BackgroundOpacity = 0.7,
+		DetailOpacity = 0.1
+	};
+	FlagRush_UIRadar::SetConfig(Config);
+
+	EventFeed::ClearMessages();
+}
+
 Void Private_AttachModules() {
 	// Scores header
 	Layers::Create(C_LayerName_ScoresHeader, FlagRush_UIScoresHeader::GetManialink());
@@ -86,7 +107,6 @@ Void Private_AttachModules() {
 	Layers::Attach(C_LayerName_Menu);
 
 	// Event Feed
-	EventFeed::ClearMessages();
 	Layers::Create(C_LayerName_Feed, EventFeed::GetManialink(10));
 	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Feed);
@@ -95,6 +115,36 @@ Void Private_AttachModules() {
 	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
 	Layers::SetType(C_LayerName_Markers, CUILayer::EUILayerType::Markers);
 	Layers::Attach(C_LayerName_Markers);
+
+	// Respawn Bar
+	Layers::Create(C_LayerName_Respawn, FlagRush_UIRespawn::GetManialink());
+	Layers::SetType(C_LayerName_Respawn, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Respawn);
+
+	// Spectator controls
+	Layers::Create(C_LayerName_Spectator, FlagRush_UISpectator::GetManialink());
+	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Spectator);
+
+	// Radar
+	Layers::Create(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());
+	Layers::SetType(C_LayerName_Radar, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Radar);
+
+	// Flash
+	Layers::Create(C_LayerName_Flash, FlagRush_UIFlash::GetManialink());
+	Layers::SetType(C_LayerName_Flash, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Flash);
+
+	// MVP
+	Layers::Create(C_LayerName_MVP, FlagRush_UIMVP::GetManialink());
+	Layers::SetType(C_LayerName_MVP, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_MVP);
+
+	// Spectator controls
+	Layers::Create(C_LayerName_Spectator, FlagRush_UISpectator::GetManialink());
+	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Spectator);
 }
 
 Void Private_DetachModules() {
@@ -109,6 +159,11 @@ Void Private_DetachModules() {
 
 Void Yield() {
 	FlagRush_UIMarkers::Yield();
+
+	if (G_PreviousPlayersCount != Players.count) {
+		G_PreviousPlayersCount = Players.count;
+		Layers::Update(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());
+	}
 }
 
 Void Unload() {
@@ -118,7 +173,10 @@ Void Unload() {
 Void Load() {
 	Unload();
 
+	G_PreviousPlayersCount = Players.count;
+
 	Private_LoadUIAll();
+	Private_LoadModules();
 	Private_AttachModules();
 }
 

@@ -194,6 +194,15 @@ Boolean Private_MatchCanStart() {
 }
 
 /**
+ * Send the ready states of the players to the clients.
+ * This should already be called automatically when a player changes his state.
+ */
+ Void Net_SendPlayerReadyStates() {
+	declare netwrite Boolean[Text] Net_WarmUpReadyUp_ReadyStates for Teams[0];
+	Net_WarmUpReadyUp_ReadyStates = G_PlayersReady;
+}
+
+/**
  * Starts the warmup.
  */
 Void Start() {
@@ -201,11 +210,12 @@ Void Start() {
 	PendingEvents = [];
 	G_PlayersReady = [];
 	G_TimeoutState = K_TimeoutState{};
+	Net_SendPlayerReadyStates();
 
 	Layers::Create(WarmUpReadyUp_UI::C_ManialinkName, WarmUpReadyUp_UI::GetManialink());
 	Layers::SetType(WarmUpReadyUp_UI::C_ManialinkName, CUILayer::EUILayerType::Normal);
 	Layers::Attach(WarmUpReadyUp_UI::C_ManialinkName);
-	UIManager.UIAll.SendChat("""$f90Warmup!$fff Ready up by clicking the "Ready"-Button or pressing F7 / """);
+	UIManager.UIAll.SendChat("""$<$f90Warmup!$> Ready up by clicking the "Ready"-Button or pressing F7 / """);
 }
 
 /**
@@ -251,6 +261,7 @@ Void Private_HandleUIEvents() {
 			if(Player == Null) continue;
 			G_PlayersReady[Player.User.Login] = PlayerIsReady;
 			Private_AddEvent(C_Event_Type_PlayerReadyChanged, [Player.User.Login, TL::ToText(PlayerIsReady)]);
+			Net_SendPlayerReadyStates();
 		}
 	}
 }

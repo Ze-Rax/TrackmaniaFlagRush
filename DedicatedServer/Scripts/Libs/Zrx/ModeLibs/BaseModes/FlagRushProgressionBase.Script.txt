@@ -97,6 +97,9 @@
 #Command	Command_SetTeam2MatchScore			(Integer) as		"Set Team 2 Match Score"
 #Const		C_Command_SetTeam2MatchScore										"SetTeam2MatchScore"
 
+#Command	Command_ClearScores							(Boolean) as		"Clear all scores"
+#Const		C_Command_ClearScores														"ClearScores"
+
 // #Command	Command_Announce								(Text)		as		"Show big anouncement message"
 #Const		C_Command_Announce															"Announce"
 
@@ -147,6 +150,7 @@ UseAllies = False;
 CrudeExtrapolation_AllowDelay = False;
 
 ModeUtils::SetEndTime(-1);
+Net_SendModeSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
 ***
 
 ***MB_LoadLibraries***
@@ -469,6 +473,10 @@ foreach (Command in PendingCommands) {
 			FlagRush_Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[1].Name }}} match score to {{{ Value }}}.""";
 		}
+		case C_Command_ClearScores: {
+			FlagRush_Scores::Clear();
+			CommandText = "Cleared all scores.";
+		}
 		case C_Command_BalanceTeams: {
 			ServerAdmin.AutoTeamBalance();
 			CommandText = "The teams were balanced.";
@@ -502,16 +510,26 @@ foreach (Command in PendingCommands) {
  * Can be extended with ***StartWarmUp***, ***WarmUpLoop*** and ***EndWarmUp***.
  */
 Void Private_ExecuteWarmUp() {
+	{ +++StartWarmUp+++ }
+	WarmUpReadyUp::Start();
 	declare PreviousGameplayPhase = FlagRush_GameplayPhase::Get();
 	FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Warmup);
-	+++StartWarmUp+++
-	WarmUpReadyUp::Start();
 	while(!WarmUpReadyUp::WarmUpShouldStop()) {
 		MB_Yield();
 		WarmUpReadyUp::Yield();
+		foreach (WuruEvent in WarmUpReadyUp::GetPendingEvents()) {
+			switch (WuruEvent.Type) {
+				case WarmUpReadyUp::C_Event_Type_TimeoutStart,
+						WarmUpReadyUp::C_Event_Type_TimeoutUpdate,
+						WarmUpReadyUp::C_Event_Type_TimeoutAbort: {
+					// Refrech EndTime net variable when it's updated by WURU
+					ModeUtils::SetEndTime(EndTime);
+				}
+			}
+		}
 		+++WarmUpLoop+++
 	}
-	+++EndWarmUp+++
+	{ +++EndWarmUp+++ }
 	FlagRush_GameplayPhase::Set(PreviousGameplayPhase);
 }
 
@@ -601,4 +619,18 @@ Boolean MapInvalid() {
 Boolean RoundInvalid() {
 	declare Boolean RoundEndRequested for This;
 	return RoundEndRequested || MatchEndRequested;
+}
+
+/**
+ * Sends relevant mode settings values to the clients via netwrite.
+ */
+ Void Net_SendModeSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap, Integer NbFlagsToWinRound) {
+	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
+	Net_FlagRush_NbMapsToWinMatch = NbMapsToWinMatch;
+
+	declare netwrite Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
+	Net_FlagRush_NbRoundsToWinMap = NbRoundsToWinMap;
+
+	declare netwrite Integer Net_FlagRush_NbFlagsToWinRound for Teams[0];
+	Net_FlagRush_NbFlagsToWinRound = NbFlagsToWinRound;
 }

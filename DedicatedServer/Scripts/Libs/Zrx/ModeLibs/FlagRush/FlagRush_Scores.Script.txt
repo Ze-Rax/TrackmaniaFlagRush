@@ -10,6 +10,10 @@
 #Const	C_Telemetry_Key_FlagsStolen				"FlagsStolen"
 #Const	C_Telemetry_Key_FlagScoreAssists	"FlagScoreAssists"
 
+#Const	C_Level_Match		0
+#Const	C_Level_Map			1
+#Const	C_Level_Round		2
+
 /* Teams */
 
 Integer GetClanRoundPoints(Integer Clan) {
@@ -171,10 +175,23 @@ Void OnPlayerStealFlag(CSmPlayer Player) {
 
 /* Progression */
 
+Void Clear(Integer Level) {
+	Scores::Clear(Level);
+	Telemetry::Clear(Level);
+	TeamPointsProgression::Clear(Level);
+	Net_SendScores();
+}
+
+Void Clear() {
+	Clear(C_Level_Match);
+	Net_SendScores();
+}
+
 Void StartMatch() {
 	Scores::StartMatch();
 	Telemetry::StartMatch();
 	TeamPointsProgression::StartMatch();
+	Net_SendScores();
 }
 
 Void EndMatch() {
@@ -188,6 +205,7 @@ Void StartMap() {
 	Scores::StartMap();
 	Telemetry::StartMap();
 	TeamPointsProgression::StartMap();
+	Net_SendScores();
 }
 
 Void EndMap() {
@@ -201,6 +219,7 @@ Void StartRound() {
 	Scores::StartRound();
 	Telemetry::StartRound();
 	TeamPointsProgression::StartRound();
+	Net_SendScores();
 }
 
 Void EndRound() {

@@ -77,3 +77,7 @@ Text FlagScored(CSmPlayer Scorer) {
 Text FlagReset() {
 	return "The flag was reset";
 }
+
+Text PlayerOutOfBounds(CSmPlayer Player) {
+	return """{{{ Private_GetColoredPlayerName(Player) }}} went out of bounds""";
+}

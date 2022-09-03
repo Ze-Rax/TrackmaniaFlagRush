@@ -4,6 +4,70 @@
 #Const	Version												"1.3.0-dev"
 #Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
 
+///////////////
+// Libraries //
+///////////////
+
+//Commented out libs are already included in base mode, but added in here for Intellisense.
+
+// General Libs
+// #Include "TextLib" as TL
+// #Include "MathLib" as ML
+
+// #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"										as EventFeed
+// #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"				as ModeCommands
+// #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"				as CommandUtils
+// #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"										as ModeUtils
+// #Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
+
+// FlagRush Libs
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"						as FlagRush_Common
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"								as FlagRush_Map
+// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"						as FlagRush_Scores
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
+// #Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt"							as FlagRush_GameplayPhase
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
+
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI2.Script.txt"								as FlagRush_UI
+
+///////////////
+// Constants //
+///////////////
+
+//////////////
+// Settings //
+//////////////
+
+#Setting S_UseCrudeExtrapolation						False		as "<hidden>"
+#Setting S_TrustClientSimu									True		as "<hidden>"
+
+// Gameplay
+#Setting S_UseReversedBases									False 	as "<hidden>" // Switch team bases
+#Setting S_RandomizeFlagSpawn								True 		as "<hidden>" // Randomize flag spawn location
+#Setting S_FlagInitialSpawnDelaySeconds			0. 			as "<hidden>" // Initial flag spawn delay (seconds)
+#Setting S_FlagRespawnDelaySeconds					0. 			as "<hidden>" // Flag respawn delay (seconds)
+#Setting S_FlagDropStateDurationSeconds			8. 			as "<hidden>" // Flag drop state duration (seconds)
+#Setting S_FlagStealResistDurationSeconds		1. 			as "<hidden>" // Flag steal resistance (seconds)
+#Setting S_FlagSameTeamSteal								True		as "<hidden>" // Team flag steal
+#Setting S_FlagCarrierFragile								True		as "Flag carrier becomes fragile"
+#Setting S_FlagCarrierAcceleration					0.7 		as "Flag carrier acceleration (0.0 - 1.0)"
+#Setting S_FlagCarrierControl								1.0 		as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
+#Setting S_FlagCarrierAdherence							1.0 		as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
+#Setting S_RespawnWhenStill									True 		as "<hidden>" // Players can respawn only when being still
+#Setting S_RespawnDelay											4.0 		as "Respawn Delay (seconds) (+1.5s Spawn animation)"
+#Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
+#Setting S_DropFlagOnTeleportDetection			True		as "<hidden>"
+#Setting S_UseCollisions										False		as "Use collisions (experimental)"
+
+// Teams
+#Setting S_Team1Name 												"" 			as "Force Team 1 Name"
+// #Setting S_Team1Color 											"" 			as "Force Team 1 Color"
+#Setting S_Team2Name 												"" 			as "Force Team 2 Name"
+// #Setting S_Team2Color 											"" 			as "Force Team 2 Color"
+#Setting S_UseClubTags											True		as "Use club tags for team names"
+#Setting S_UseTeamSkins											True		as "Use colored skins for teams"
+
 //////////////
 // Commands //
 //////////////
@@ -19,3 +83,91 @@
 ***
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light");
 ***
+
+***PlayLoop***
+***
+{}
+***
+
+***WarmUpLoop***
+***
+foreach (Player in Players) {
+	if (RequestsClanChange(Player) || IsDead(Player)) {
+		UnspawnPlayer(Player);
+	}
+
+	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
+		InitializePlayer(Player);
+		declare CMapSpawn Spawn = FlagRush_Map::GetSpawn(Player).PlayerSpawn;
+		SpawnPlayer(Player, Player.CurrentClan, 100, Spawn, Now + FlagRush_Common::C_SpawnAnimDuration);
+	}
+
+	Net_SendPlayerPosition(Player);
+}
+
+foreach (Event in PendingEvents) {
+	switch (Event.Type) {
+		case CSmModeEvent::EType::OnPlayerRequestRespawn: {
+			UnspawnPlayer(Event.Player);
+		}
+		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
+			if (FlagRush_Map::IsDeathTrigger(Event.Landmark)) {
+				EventFeed::SendMessage(FlagRush_Messages::PlayerOutOfBounds(Event.Player), EventFeed::C_IconName_Info);
+				UnspawnPlayer(Event.Player);
+			}
+		}
+	}
+}
+***
+
+***EndWarmUp***
+***
+foreach (Player in Players) {
+	UnspawnPlayer(Player);
+}
+***
+
+///////////////
+// Functions //
+///////////////
+
+Void OnPlayerRequestRespawn(CSmPlayer Player) {
+
+}
+
+Void OnPlayerDeath(CSmPlayer Player) {
+}
+
+Void OnPlayerOutOfBounds(CSmPlayer Player) {
+}
+
+Boolean RequestsClanChange(CSmPlayer Player) {
+	return Player.CurrentClan != Player.RequestedClan;
+}
+
+Boolean IsDead(CSmPlayer Player) {
+	return Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned && Player.Armor <= 0;
+}
+
+Void Net_SendPlayerPosition(CSmPlayer Player) {
+	declare netwrite Vec3 Net_Position for Player;
+	Net_Position = Player.Position;
+	declare netwrite Real Net_Yaw for Player;
+	Net_Yaw = Player.AimYaw;
+}
+
+Void InitializePlayer(CSmPlayer Player) {
+	Player.TrustClientSimu = !UsePvPCollisions && S_TrustClientSimu;
+	Player.UseCrudeExtrapolation = !UsePvPCollisions && S_UseCrudeExtrapolation;
+	Player.Dossard_Number = "  ";
+	Player.Dossard_Color = <1., 1., 1.>;
+	if (S_UseTeamSkins) Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan - 1);
+	SetPlayerClan(Player, Player.RequestedClan);
+}
+
+Boolean CanSpawnPlayer(CSmPlayer Player) {
+	if (Player.SpawnStatus != CSmPlayer::ESpawnStatus::NotSpawned) return False;
+	declare netwrite Integer Net_SpawnDate for Player;
+	return Net_SpawnDate < Now || FlagRush_GameplayPhase::Get() == FlagRush_GameplayPhase::C_Warmup;
+}
+

@@ -222,10 +222,10 @@ Void Init() {
 
 Void Yield() {
 	foreach (Player in Players) {
-		declare Integer PreviousClan for Player;
-		if (PreviousClan != Player.CurrentClan) {
+		declare Integer FlagRush_Teams_PreviousClan for Player;
+		if (FlagRush_Teams_PreviousClan != Player.CurrentClan) {
 			Init();
-			PreviousClan = Player.CurrentClan;
+			FlagRush_Teams_PreviousClan = Player.CurrentClan;
 		}
 	}
 

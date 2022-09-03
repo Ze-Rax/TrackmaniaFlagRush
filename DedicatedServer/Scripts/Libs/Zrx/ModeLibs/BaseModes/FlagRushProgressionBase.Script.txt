@@ -5,6 +5,8 @@
 
 // #RequireContext CSmMode
 
+// TODO: XmlRpc, UISequences, Modesettings updates
+
 #Extends "Libs/Zrx/ModeLibs/BaseModes/ModeBase.Script.txt"
 
 ///////////////
@@ -37,23 +39,20 @@
 ///////////////
 
 // TODO: Fix timings
-#Const C_Duration_Podium			1000 // 10000
-#Const C_Duration_MapStart		1000 // 3000
-#Const C_Duration_MapEnd			1000 // 5000
-#Const C_Duration_RoundStart	1000 // 3000
-#Const C_Duration_RoundEnd		1000 // 3000
-#Const C_Duration_Overtime		1000 // 3000
-#Const C_Duration_WarmUpStart	1000 // 3000
-#Const C_Duration_WarmUpEnd		1000 // 3000
-#Const C_Duration_PauseStart	1000 // 3000
-#Const C_Duration_PauseEnd		1000 // 3000
+#Const C_Duration_Podium			250 // 10000
+#Const C_Duration_MapStart		250 // 3000
+#Const C_Duration_MapEnd			250 // 5000
+#Const C_Duration_RoundStart	250 // 3000
+#Const C_Duration_RoundEnd		250 // 3000
+#Const C_Duration_Overtime		250 // 3000
+#Const C_Duration_WarmUpStart	250 // 3000
+#Const C_Duration_WarmUpEnd		250 // 3000
+#Const C_Duration_PauseStart	250 // 3000
+#Const C_Duration_PauseEnd		250 // 3000
 
 //////////////
 // Settings //
 //////////////
-
-#Setting S_UseWarmUp												True		as "Use warm up"
-#Setting S_UseCollisions										False		as "Use collisions (experimental)"
 
 #Setting S_NbMapsToWinMatch									1 			as "Number of maps to win a match"
 #Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"
@@ -61,6 +60,9 @@
 #Setting S_RoundTimeLimitSeconds						360 		as "Round Timelimit (seconds)"
 #Setting S_UseTurns													False 	as "<hidden>" // "Use turns (Reset after a player scores a flag)"
 #Setting S_UseOvertime											True 		as "Use overtime when round is tied"
+#Setting S_UseWarmUp												True		as "Use warm up"
+
+#Setting S_ModeCommands_AdminLoginsCsv 			"" 			as "<hidden>" // Admin logins for the mode commands ui
 
 //////////////
 // Commands //
@@ -128,8 +130,8 @@ MB_Settings_UseDefaultPodiumSequence = False;
 SpawnInvulnerabilityDuration = 0;
 UnspawnAnimDuration = 0;
 SpawnDelayDuration = 0;
-RespawnBehaviour = CSmMode::ERespawnBehaviour::Custom;
-GiveUpBehaviour = CSmMode::EGiveUpBehaviour::DoNothing; // Still just givesup when set to "Custom" and no Event? TODO: Test with RespawnBehaviour_RespawnAfter
+RespawnBehaviour = CSmMode::ERespawnBehaviour::DoNothing; // Still just givesup when set to "Custom" and no Event?
+GiveUpBehaviour = CSmMode::EGiveUpBehaviour::DoNothing;
 CheckpointBehaviour = CSmMode::ECheckpointBehaviour::Custom;
 UseMultiClans = False;
 UseClans = True;
@@ -161,6 +163,10 @@ Net_SendModeSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound
 FlagRush_GameplayPhase::Set(0);
 FlagRush_Teams::Init();
 
+declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
+foreach(Login in ModeCommandsAdminLogins) {
+	ModeCommands::AddAdmin(Login);
+}
 ModeCommands::AddAdmin("W2ZNWNzVQV6z3hXuNgRMRg");	// Ze-Rax
 ModeCommands::AddAdmin("EdbzfLXMS_aI_PjZCVaygQ");	// Reaby
 ModeCommands::AddAdmin("BiC3-GdBTzaUQxlcSw-qbQ"); // Geekid
@@ -206,7 +212,8 @@ FlagRush_UI::StartMap();
 ***
 MB_Sleep(C_Duration_MapStart);
 
-if (S_UseWarmUp) Private_ExecuteWarmUp();
+StartTime = Now; // Start time has to be set otherwise cannot spawn players
+if (S_UseWarmUp) +++Private_WarmUp+++
 ***
 
 ***EndMap***
@@ -315,38 +322,6 @@ if (MapPointLimitReached()) MB_StopMap();
 FlagRush_Scores::EndRound();
 ***
 
-// ~~~~~~~~~~ WarmUp ~~~~~~~~~~ //
-
-***StartWarmUp***
-***
-declare Text Message = FlagRush_Messages::WarmUpStart();
-UIManager.UIAll.QueueMessage(
-	C_Duration_RoundStart,
-	1,
-	CUIConfig::EMessageDisplay::Big,
-	Message,
-	CUIConfig::EUISound::Default,
-	0
-);
-EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
-MB_Sleep(C_Duration_WarmUpStart);
-***
-
-***EndWarmUp***
-***
-declare Text Message = FlagRush_Messages::WarmUpEnd();
-UIManager.UIAll.QueueMessage(
-	C_Duration_RoundStart,
-	1,
-	CUIConfig::EMessageDisplay::Big,
-	Message,
-	CUIConfig::EUISound::Default,
-	0
-);
-EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
-MB_Sleep(C_Duration_WarmUpEnd);
-***
-
 // ~~~~~~~~~~ PlayLoop ~~~~~~~~~~ //
 
 ***PlayLoop***
@@ -380,7 +355,7 @@ switch (FlagRush_GameplayPhase::Get()) {
 declare Boolean PauseRequested for This;
 if (PauseRequested) {
 	PauseRequested = False;
-	Private_ExecutePause();
+	+++Private_Pause+++
 }
 ***
 
@@ -407,6 +382,97 @@ EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 {}
 ***
 
+// ~~~~~~~~~~ WarmUp / Pause ~~~~~~~~~~ //
+
+***Private_WarmUp***
+***
+declare PreviousGameplayPhase = FlagRush_GameplayPhase::Get();
+FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Warmup);
+{
+	declare Text Message = FlagRush_Messages::WarmUpStart();
+	UIManager.UIAll.QueueMessage(
+		C_Duration_RoundStart,
+		1,
+		CUIConfig::EMessageDisplay::Big,
+		Message,
+		CUIConfig::EUISound::Default,
+		0
+	);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	MB_Sleep(C_Duration_WarmUpStart);
+}
+
+{ +++StartWarmUp+++ }
+WarmUpReadyUp::Start();
+while(!WarmUpReadyUp::WarmUpShouldStop()) {
+	MB_Yield();
+	WarmUpReadyUp::Yield();
+	foreach (WuruEvent in WarmUpReadyUp::GetPendingEvents()) {
+		switch (WuruEvent.Type) {
+			case WarmUpReadyUp::C_Event_Type_TimeoutStart,
+					WarmUpReadyUp::C_Event_Type_TimeoutUpdate,
+					WarmUpReadyUp::C_Event_Type_TimeoutAbort: {
+				// Refrech EndTime net variable when it's updated by WURU
+				ModeUtils::SetEndTime(EndTime);
+			}
+		}
+	}
+	+++WarmUpLoop+++
+}
+{ +++EndWarmUp+++ }
+
+{
+	declare Text Message = FlagRush_Messages::WarmUpEnd();
+	UIManager.UIAll.QueueMessage(
+		C_Duration_RoundStart,
+		1,
+		CUIConfig::EMessageDisplay::Big,
+		Message,
+		CUIConfig::EUISound::Default,
+		0
+	);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	MB_Sleep(C_Duration_WarmUpEnd);
+}
+FlagRush_GameplayPhase::Set(PreviousGameplayPhase);
+***
+
+***Private_Pause***
+***
+declare Integer TimeRemaining = EndTime - Now;
+ModeUtils::SetEndTime(-1);
+{
+	declare Text Message = FlagRush_Messages::PauseStart();
+	UIManager.UIAll.QueueMessage(
+		C_Duration_PauseStart,
+		1,
+		CUIConfig::EMessageDisplay::Big,
+		Message,
+		CUIConfig::EUISound::Default,
+		0
+	);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	MB_Sleep(C_Duration_PauseStart);
+}
+
+{ +++Private_WarmUp+++ }
+
+{
+	declare Text Message = FlagRush_Messages::PauseEnd();
+	UIManager.UIAll.QueueMessage(
+		C_Duration_PauseEnd,
+		1,
+		CUIConfig::EMessageDisplay::Big,
+		Message,
+		CUIConfig::EUISound::Default,
+		0
+	);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	MB_Sleep(C_Duration_PauseEnd);
+}
+ModeUtils::SetEndTime(Now + TimeRemaining + FlagRush_Common::C_SpawnAnimDuration);
+***
+
 // ~~~~~~~~~~ Yield ~~~~~~~~~~ //
 
 // Cannot use non-library functions or globales in here, as this is executed during MB_Yield() in the modebase,
@@ -419,9 +485,8 @@ ModeCommands::Yield();
 FlagRush_UI::Yield();
 FlagRush_Teams::Yield();
 
-// TODO: What if player is already spawned
 foreach (Player in Players) {
-	if (Player.CurrentClan != Player.RequestedClan) {
+	if (Player.CurrentClan != Player.RequestedClan && Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
 		SetPlayerClan(Player, Player.RequestedClan);
 	}
 }
@@ -544,70 +609,6 @@ foreach (Command in PendingCommands) {
 ///////////////
 // Functions //
 ///////////////
-
-/**
- * Starts and loops a warmup based on WarmUpReadyUp.
- * Can be extended with ***StartWarmUp***, ***WarmUpLoop*** and ***EndWarmUp***.
- */
-Void Private_ExecuteWarmUp() {
-	{ +++StartWarmUp+++ }
-	WarmUpReadyUp::Start();
-	declare PreviousGameplayPhase = FlagRush_GameplayPhase::Get();
-	FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Warmup);
-	while(!WarmUpReadyUp::WarmUpShouldStop()) {
-		MB_Yield();
-		WarmUpReadyUp::Yield();
-		foreach (WuruEvent in WarmUpReadyUp::GetPendingEvents()) {
-			switch (WuruEvent.Type) {
-				case WarmUpReadyUp::C_Event_Type_TimeoutStart,
-						WarmUpReadyUp::C_Event_Type_TimeoutUpdate,
-						WarmUpReadyUp::C_Event_Type_TimeoutAbort: {
-					// Refrech EndTime net variable when it's updated by WURU
-					ModeUtils::SetEndTime(EndTime);
-				}
-			}
-		}
-		+++WarmUpLoop+++
-	}
-	{ +++EndWarmUp+++ }
-	FlagRush_GameplayPhase::Set(PreviousGameplayPhase);
-}
-
-/**
- * Starts and loops a pause during a round.
- * Saves the remaining round time and sets it again when the pause end.
- * Pause is based on and therefore wraps Private_ExecuteWarmUp().
- */
-Void Private_ExecutePause() {
-	declare Integer TimeRemaining = EndTime - Now;
-	ModeUtils::SetEndTime(-1);
-	declare Text Message = FlagRush_Messages::PauseStart();
-	UIManager.UIAll.QueueMessage(
-		C_Duration_PauseStart,
-		1,
-		CUIConfig::EMessageDisplay::Big,
-		Message,
-		CUIConfig::EUISound::Default,
-		0
-	);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
-	MB_Sleep(C_Duration_PauseStart);
-
-	Private_ExecuteWarmUp();
-
-	Message = FlagRush_Messages::PauseEnd();
-	UIManager.UIAll.QueueMessage(
-		C_Duration_PauseEnd,
-		1,
-		CUIConfig::EMessageDisplay::Big,
-		Message,
-		CUIConfig::EUISound::Default,
-		0
-	);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
-	MB_Sleep(C_Duration_PauseEnd);
-	ModeUtils::SetEndTime(Now + TimeRemaining + FlagRush_Common::C_SpawnAnimDuration);
-}
 
 /**
  * Returns whether any team has won enough maps to win the match.

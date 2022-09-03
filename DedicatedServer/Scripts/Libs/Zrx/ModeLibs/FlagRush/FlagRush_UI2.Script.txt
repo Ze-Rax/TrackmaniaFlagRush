@@ -7,6 +7,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Menu.Script.txt"							as FlagRush_UIMenu
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt"							as FlagRush_UISound
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_UIMarkers
 
 #Const C_LayerName_Dialog							"Layer_FlagRush_Dialog"
 #Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
@@ -89,6 +90,11 @@ Void Private_AttachModules() {
 	Layers::Create(C_LayerName_Feed, EventFeed::GetManialink(10));
 	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Feed);
+
+	// Markers
+	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
+	Layers::SetType(C_LayerName_Markers, CUILayer::EUILayerType::Markers);
+	Layers::Attach(C_LayerName_Markers);
 }
 
 Void Private_DetachModules() {
@@ -97,10 +103,12 @@ Void Private_DetachModules() {
 	Layers::Detach(C_LayerName_ModeCommands);
 	Layers::Detach(C_LayerName_Sound);
 	Layers::Detach(C_LayerName_Menu);
+	Layers::Detach(C_LayerName_Feed);
+	Layers::Detach(C_LayerName_Markers);
 }
 
 Void Yield() {
-
+	FlagRush_UIMarkers::Yield();
 }
 
 Void Unload() {
@@ -112,4 +120,9 @@ Void Load() {
 
 	Private_LoadUIAll();
 	Private_AttachModules();
+}
+
+Void StartMap() {
+	FlagRush_UIMarkers::StartMap();
+	Layers::Update(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
 }

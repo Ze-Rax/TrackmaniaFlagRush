@@ -23,6 +23,7 @@
 
 // FlagRush Libs
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"						as FlagRush_Common
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"								as FlagRush_Map
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"						as FlagRush_Scores
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
@@ -197,6 +198,8 @@ FlagRush_Scores::EndMatch();
 ***MB_InitMap***
 ***
 FlagRush_Scores::StartMap();
+FlagRush_Map::InitLandmarks();
+FlagRush_UI::StartMap();
 ***
 
 ***MB_StartMap***

@@ -1,10 +1,21 @@
 //#RequireContext CSmMlScriptIngame
 
-#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt"	as UIShared
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"	as FlagRush_Map
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt"		as UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"		as FlagRush_Map
+#Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt"	as FlagRush_GameplayPhase
 
 #Const C_FlagMarkerFrameId						"marker-flag"
 #Const C_FlagSpawnMarkerFrameIdPrefix	"marker-flag-spawn-"
+
+#Const C_FlagMarker_Box_Player		<0., 1., 0.>
+#Const C_FlagMarker_Box_Landmark	<0., 3., 0.>
+#Const C_FlagMarker_Box_Position	<0., 0., 0.>
+
+#Const C_TeamBaseMarker_Box	<0., 8., 0.>
+#Const C_FlagSpawnMarker_Box <0., 3.3, 0.>
+
+declare CUIConfigMarker G_FlagMarker;
+declare CUIConfigMarker[] G_FlagSpawnMarkers;
 
 Text GetManialink() {
 
@@ -156,4 +167,84 @@ Text GetManialink() {
 	--></script>
 </manialink>
 	""";
+}
+
+Void Private_ClearOldFlagMarker() {
+	// Remove old Flag marker
+	// IMPORTANT: Cannot remove G_FlagMarker from UIAll, because UIAll.Markers more or less references a list of UI.Markers for all UIs!
+	// Trying to use UIAll.RemoveMarker(G_FlagMarker) after a new map loaded will lead to an access error for a specific UI ("Element not found in Array").
+	// Fortunately, removing corresponding markers from every specific UI individually apparently also removes it from UIAll.
+	foreach (UI in UIManager.UI) {
+		foreach (Marker in UI.Markers) {
+			if(Marker.ManialinkFrameId == C_FlagMarkerFrameId) {
+				UI.RemoveMarker(Marker);
+				break;
+			}
+		}
+	}
+}
+
+Void FlagMarker_SetOnLandmark(CMapLandmark Landmark) {
+	Private_ClearOldFlagMarker();
+	G_FlagMarker = UIManager.UIAll.AddMarker(Landmark);
+	G_FlagMarker.Box = C_FlagMarker_Box_Landmark;
+	G_FlagMarker.ManialinkFrameId = C_FlagMarkerFrameId;
+}
+
+Void FlagMarker_SetOnPlayer(CSmPlayer Player) {
+	Private_ClearOldFlagMarker();
+	G_FlagMarker = UIManager.UIAll.AddMarker(Player);
+	G_FlagMarker.Box = C_FlagMarker_Box_Player;
+	G_FlagMarker.ManialinkFrameId = C_FlagMarkerFrameId;
+}
+
+Void FlagMarker_SetOnPosition(Vec3 Position) {
+	Private_ClearOldFlagMarker();
+	G_FlagMarker = UIManager.UIAll.AddMarker(Position);
+	G_FlagMarker.Box = C_FlagMarker_Box_Position;
+	G_FlagMarker.ManialinkFrameId = C_FlagMarkerFrameId;
+}
+
+Void StartMap() {
+	UIManager.UIAll.ClearMarkers();
+
+	// Create Markers for the Bases
+	for(Clan, 1, 2) {
+		for(BaseIndex, 0, FlagRush_Map::GetBases(Clan).count -1) {
+			declare CUIConfigMarker MarkerBase = UIManager.UIAll.AddMarker(FlagRush_Map::GetBases(Clan)[BaseIndex]);
+			MarkerBase.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
+			MarkerBase.ManialinkFrameId = """marker-base-team{{{Clan}}}-{{{BaseIndex}}}""";
+			MarkerBase.Box = C_TeamBaseMarker_Box;
+		}
+	}
+
+	// Create a marker for each flag spawn
+	G_FlagSpawnMarkers = [];
+	foreach(I => FlagSpawn in FlagRush_Map::GetFlagSpawns()) {
+		declare CUIConfigMarker Marker = UIManager.UIAll.AddMarker(FlagSpawn);
+		Marker.ManialinkFrameId = C_FlagSpawnMarkerFrameIdPrefix ^ I;
+		Marker.Box = C_FlagSpawnMarker_Box;
+		G_FlagSpawnMarkers.add(Marker);
+	}
+}
+
+Void Yield() {
+	switch (FlagRush_GameplayPhase::Get()) {
+		case FlagRush_GameplayPhase::C_Warmup: {
+			if (G_FlagMarker != Null) {
+				G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
+			}
+			foreach (Marker in G_FlagSpawnMarkers) {
+				Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
+			}
+		}
+		default: {
+			if (G_FlagMarker != Null) {
+				G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+			}
+			foreach (Marker in G_FlagSpawnMarkers) {
+				Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
+			}
+		}
+	}
 }

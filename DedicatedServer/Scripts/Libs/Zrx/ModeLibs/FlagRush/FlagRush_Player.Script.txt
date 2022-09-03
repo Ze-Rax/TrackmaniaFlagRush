@@ -1,0 +1,46 @@
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"		as FlagRush_Common
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"			as FlagRush_Teams
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"				as FlagRush_Map
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"	as FlagRush_Flag
+
+Void Net_SendPosition(CSmPlayer Player) {
+	declare netwrite Vec3 Net_Position for Player;
+	Net_Position = Player.Position;
+	declare netwrite Real Net_Yaw for Player;
+	Net_Yaw = Player.AimYaw;
+}
+
+Boolean RequestsClanChange(CSmPlayer Player) {
+	return Player.CurrentClan != Player.RequestedClan;
+}
+
+Boolean IsDead(CSmPlayer Player) {
+	return Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned && Player.Armor <= 0;
+}
+
+Void Initialize(CSmPlayer Player, Boolean UseTeamSkin, Boolean TrustClientSimu, Boolean UseCrudeExtrapolation) {
+	Player.TrustClientSimu = !UsePvPCollisions && TrustClientSimu;
+	Player.UseCrudeExtrapolation = !UsePvPCollisions && UseCrudeExtrapolation;
+	Player.Dossard_Number = "  ";
+	Player.Dossard_Color = <1., 1., 1.>;
+	if (UseTeamSkin) Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan - 1);
+	SetPlayerClan(Player, Player.RequestedClan);
+}
+
+Boolean CanSpawn(CSmPlayer Player) {
+	if (Player.SpawnStatus != CSmPlayer::ESpawnStatus::NotSpawned) return False;
+	declare netwrite Integer Net_SpawnDate for Player;
+	return Net_SpawnDate < Now;
+}
+
+Void Spawn(CSmPlayer Player) {
+	declare CMapLandmark SpawnLandmark = FlagRush_Map::GetSpawn(Player);
+	if (SpawnLandmark != Null) {
+		SpawnPlayer(Player, Player.CurrentClan, 1, SpawnLandmark.PlayerSpawn, Now + FlagRush_Common::C_SpawnAnimDuration);
+	}
+}
+
+Void Unspawn(CSmPlayer Player) {
+
+	UnspawnPlayer(Player);
+}

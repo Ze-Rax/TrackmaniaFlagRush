@@ -38,6 +38,7 @@
 // Constants //
 ///////////////
 
+// Duration / Timings for sequences and/or messages
 // TODO: Fix timings
 #Const C_Duration_Podium			250 // 10000
 #Const C_Duration_MapStart		250 // 3000
@@ -218,29 +219,17 @@ if (S_UseWarmUp) +++Private_WarmUp+++
 
 ***EndMap***
 ***
-
-declare Text Message;
 if (MapInvalid()) {
-	Message = FlagRush_Messages::MapSkip();
+	FlagRush_Messages::MapSkip(C_Duration_MapEnd);
 } else {
 	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMap();
 	if (WinnerClan == 0) {
-		Message = FlagRush_Messages::MapDraw();
+		FlagRush_Messages::MapDraw(C_Duration_MapEnd);
 	} else {
-		Message = FlagRush_Messages::MapWin(WinnerClan);
+		FlagRush_Messages::MapWin(WinnerClan, C_Duration_MapEnd);
 		FlagRush_Scores::OnClanMapWin(WinnerClan);
 	}
 }
-
-UIManager.UIAll.QueueMessage(
-	C_Duration_MapEnd,
-	1,
-	CUIConfig::EMessageDisplay::Big,
-	Message,
-	CUIConfig::EUISound::EndRound,
-	0
-);
-EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 MB_Sleep(C_Duration_MapEnd);
 
 if (MatchPointLimitReached()) {
@@ -266,16 +255,7 @@ RoundEndRequested = False;
 
 ***StartRound***
 ***
-declare Text Message = FlagRush_Messages::RoundStart(MB_GetRoundCount());
-UIManager.UIAll.QueueMessage(
-	C_Duration_RoundStart,
-	1,
-	CUIConfig::EMessageDisplay::Big,
-	Message,
-	CUIConfig::EUISound::Default,
-	0
-);
-EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+FlagRush_Messages::RoundStart(MB_GetRoundCount(), C_Duration_RoundStart);
 MB_Sleep(C_Duration_RoundStart);
 FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Round);
 StartTime = Now;
@@ -290,28 +270,17 @@ if (S_RoundTimeLimitSeconds > 0) {
 ***
 FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_None);
 
-declare Text Message;
 if (RoundInvalid()) {
-	Message = FlagRush_Messages::RoundSkip();
+	FlagRush_Messages::RoundSkip(C_Duration_RoundEnd);
 } else {
 	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateRound();
 	if (WinnerClan == 0) {
-		Message = FlagRush_Messages::RoundDraw();
+		FlagRush_Messages::RoundDraw(C_Duration_RoundEnd);
 	} else {
-		Message = FlagRush_Messages::RoundWin(WinnerClan);
+		FlagRush_Messages::RoundWin(WinnerClan, C_Duration_RoundEnd);
 		FlagRush_Scores::OnClanRoundWin(WinnerClan);
 	}
 }
-
-UIManager.UIAll.QueueMessage(
-	C_Duration_RoundEnd,
-	1,
-	CUIConfig::EMessageDisplay::Big,
-	Message,
-	CUIConfig::EUISound::EndRound,
-	0
-);
-EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 MB_Sleep(C_Duration_RoundEnd);
 
 if (MapPointLimitReached()) MB_StopMap();
@@ -361,17 +330,8 @@ if (PauseRequested) {
 
 ***StartOvertime***
 ***
-declare Text Message = FlagRush_Messages::OvertimeStart();
+FlagRush_Messages::OvertimeStart(C_Duration_Overtime);
 FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Overtime);
-UIManager.UIAll.QueueMessage(
-	C_Duration_Overtime,
-	1,
-	CUIConfig::EMessageDisplay::Big,
-	Message,
-	CUIConfig::EUISound::Default,
-	0
-);
-EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 ***
 
 // ~~~~~~~~~~ Podium (Match end MVP) ~~~~~~~~~~ //
@@ -388,19 +348,8 @@ EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 ***
 declare PreviousGameplayPhase = FlagRush_GameplayPhase::Get();
 FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Warmup);
-{
-	declare Text Message = FlagRush_Messages::WarmUpStart();
-	UIManager.UIAll.QueueMessage(
-		C_Duration_RoundStart,
-		1,
-		CUIConfig::EMessageDisplay::Big,
-		Message,
-		CUIConfig::EUISound::Default,
-		0
-	);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
-	MB_Sleep(C_Duration_WarmUpStart);
-}
+FlagRush_Messages::WarmUpStart(C_Duration_WarmUpStart);
+MB_Sleep(C_Duration_WarmUpStart);
 
 { +++StartWarmUp+++ }
 WarmUpReadyUp::Start();
@@ -421,19 +370,8 @@ while(!WarmUpReadyUp::WarmUpShouldStop()) {
 }
 { +++EndWarmUp+++ }
 
-{
-	declare Text Message = FlagRush_Messages::WarmUpEnd();
-	UIManager.UIAll.QueueMessage(
-		C_Duration_RoundStart,
-		1,
-		CUIConfig::EMessageDisplay::Big,
-		Message,
-		CUIConfig::EUISound::Default,
-		0
-	);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
-	MB_Sleep(C_Duration_WarmUpEnd);
-}
+FlagRush_Messages::WarmUpEnd(C_Duration_WarmUpEnd);
+MB_Sleep(C_Duration_WarmUpEnd);
 FlagRush_GameplayPhase::Set(PreviousGameplayPhase);
 ***
 
@@ -441,35 +379,13 @@ FlagRush_GameplayPhase::Set(PreviousGameplayPhase);
 ***
 declare Integer TimeRemaining = EndTime - Now;
 ModeUtils::SetEndTime(-1);
-{
-	declare Text Message = FlagRush_Messages::PauseStart();
-	UIManager.UIAll.QueueMessage(
-		C_Duration_PauseStart,
-		1,
-		CUIConfig::EMessageDisplay::Big,
-		Message,
-		CUIConfig::EUISound::Default,
-		0
-	);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
-	MB_Sleep(C_Duration_PauseStart);
-}
+FlagRush_Messages::PauseStart(C_Duration_PauseStart);
+MB_Sleep(C_Duration_PauseStart);
 
 { +++Private_WarmUp+++ }
 
-{
-	declare Text Message = FlagRush_Messages::PauseEnd();
-	UIManager.UIAll.QueueMessage(
-		C_Duration_PauseEnd,
-		1,
-		CUIConfig::EMessageDisplay::Big,
-		Message,
-		CUIConfig::EUISound::Default,
-		0
-	);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
-	MB_Sleep(C_Duration_PauseEnd);
-}
+FlagRush_Messages::PauseEnd(C_Duration_PauseEnd);
+MB_Sleep(C_Duration_PauseEnd);
 ModeUtils::SetEndTime(Now + TimeRemaining + FlagRush_Common::C_SpawnAnimDuration);
 ***
 
@@ -494,7 +410,6 @@ foreach (Player in Players) {
 foreach (Event in PendingEvents) {
 	switch (Event.Type) {
 		case CSmModeEvent::EType::OnPlayerAdded: {
-			// Send welcome message
 			declare CUIConfig UI = UIManager.GetUI(Event.Player);
 			UI.SendChat("""Welcome to $l[https://discord.gg/J6ApdyRqEZ]$44f「$fffFlagRush$f44」$l $fff[{{{Version}}}]!""");
 		}
@@ -592,7 +507,7 @@ foreach (Command in PendingCommands) {
 			CommandText = """Set {{{ Amount }}} bots.""";
 		}
 		case C_Command_Announce: {
-			UIManager.UIAll.QueueMessage(3000, 1, CUIConfig::EMessageDisplay::Big, Command.ValueText, CUIConfig::EUISound::Default, 0);
+			UIManager.UIAll.QueueMessage(3000, FlagRush_Messages::C_MessagePriority_Default, CUIConfig::EMessageDisplay::Big, Command.ValueText, CUIConfig::EUISound::Default, 0);
 			CommandText = """Message: {{{ Command.ValueText }}}""";
 		}
 		default: {

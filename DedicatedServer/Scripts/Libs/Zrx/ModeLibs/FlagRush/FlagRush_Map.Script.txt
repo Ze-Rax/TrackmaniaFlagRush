@@ -1,13 +1,13 @@
 #Include "MathLib" as ML
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 
-#Const C_LandmarkTag_SpawnTeam1				"SpawnTeam1"
-#Const C_LandmarkTag_SpawnTeam2				"SpawnTeam2"
-#Const C_LandmarkTag_BaseTeam1				"BaseTeam1"
-#Const C_LandmarkTag_BaseTeam2				"BaseTeam2"
-#Const C_LandmarkTag_FlagSpawn				"FlagSpawn"
-#Const C_LandmarkTag_DefaultFlagSpawn	"DefaultFlagSpawn"
-#Const C_LandmarkTag_DeathTrigger			"FlagResetTrigger"
+#Const C_LandmarkTag_SpawnTeam1					"SpawnTeam1"
+#Const C_LandmarkTag_SpawnTeam2					"SpawnTeam2"
+#Const C_LandmarkTag_BaseTeam1					"BaseTeam1"
+#Const C_LandmarkTag_BaseTeam2					"BaseTeam2"
+#Const C_LandmarkTag_FlagSpawn					"FlagSpawn"
+#Const C_LandmarkTag_DefaultFlagSpawn		"DefaultFlagSpawn"
+#Const C_LandmarkTag_OutOfBoundsTrigger	"FlagResetTrigger"
 
 declare CMapLandmark						G_DefaultFlagSpawn;
 declare CMapLandmark[]					G_FlagSpawns;
@@ -60,8 +60,8 @@ CMapLandmark GetRandomFlagSpawn() {
 /**
  * Checks whether a landmark is a flag reset trigger.
  */
-Boolean IsDeathTrigger(CMapLandmark Landmark) {
-	return Landmark.Tag == C_LandmarkTag_DeathTrigger;
+Boolean IsOutOfBoundsTrigger(CMapLandmark Landmark) {
+	return Landmark.Tag == C_LandmarkTag_OutOfBoundsTrigger;
 }
 
 /**

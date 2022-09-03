@@ -8,7 +8,7 @@
 // Libraries //
 ///////////////
 
-//Commented out libs are already included in base mode, but added in here for Intellisense.
+// !! Commented out libs are already included in base mode, but added in here for Intellisense.
 
 // General Libs
 // #Include "TextLib" as TL
@@ -28,12 +28,18 @@
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
 // #Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt"							as FlagRush_GameplayPhase
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Player.Script.txt"							as FlagRush_Player
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"						as FlagRush_Flag
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_Flash
+
 
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI2.Script.txt"								as FlagRush_UI
 
 ///////////////
 // Constants //
 ///////////////
+
+#Const C_Duration_IngameMessage 1500
 
 //////////////
 // Settings //
@@ -54,7 +60,7 @@
 #Setting S_FlagCarrierAcceleration					0.7 		as "Flag carrier acceleration (0.0 - 1.0)"
 #Setting S_FlagCarrierControl								1.0 		as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
 #Setting S_FlagCarrierAdherence							1.0 		as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
-#Setting S_RespawnWhenStill									True 		as "<hidden>" // Players can respawn only when being still
+#Setting S_RespawnSpeedLimitKmh							30.			as "<hidden>" // Speed limit for player to respawn
 #Setting S_RespawnDelay											4.0 		as "Respawn Delay (seconds) (+1.5s Spawn animation)"
 #Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
 #Setting S_DropFlagOnTeleportDetection			True		as "<hidden>"
@@ -79,30 +85,65 @@
 #Command	Command_ResetFlag								(Boolean) as		"Reset flag"
 #Const		C_Command_ResetFlag															"ResetFlag"
 
+// ~~~~~~~~~~ Setup ~~~~~~~~~~ //
+
 ***LoadLibraries***
 ***
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light");
 ***
 
+// ~~~~~~~~~~ Turn ~~~~~~~~~~ //
+
+***StartTurn***
+***
+FlagRush_Flag::SetAtLandmark(FlagRush_Map::GetDefaultFlagSpawn());
+***
+
+***EndTurn***
+***
+foreach (Player in Players) {
+	UnspawnPlayer(Player);
+}
+***
+
+// ~~~~~~~~~~ PlayLoop ~~~~~~~~~~ //
+
 ***PlayLoop***
 ***
-{}
+FlagRush_Flag::Yield();
+
+foreach (Event in PendingEvents) {
+	switch (Event.Type) {
+		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: OnPlayerTriggersWaypoint(Event.Player, Event.Landmark);
+		case CSmModeEvent::EType::OnPlayerRequestRespawn: OnPlayerRequestsRespawn(Event.Player);
+	}
+}
+
+foreach (Player in Players) {
+	if (FlagRush_Player::RequestsClanChange(Player)) OnPlayerRequestsClanChange(Player);
+	if (FlagRush_Player::IsDead(Player)) OnPlayerDeath(Player);
+	if (FlagRush_Player::CanSpawn(Player)) FlagRush_Player::Spawn(Player);
+
+	FlagRush_Player::Net_SendPosition(Player);
+}
 ***
+
+// ~~~~~~~~~~ WarmUp ~~~~~~~~~~ //
 
 ***WarmUpLoop***
 ***
 foreach (Player in Players) {
-	if (RequestsClanChange(Player) || IsDead(Player)) {
+	if (FlagRush_Player::RequestsClanChange(Player) || FlagRush_Player::IsDead(Player)) {
 		UnspawnPlayer(Player);
 	}
 
 	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
-		InitializePlayer(Player);
+		FlagRush_Player::Initialize(Player, S_UseTeamSkins, S_TrustClientSimu, S_UseCrudeExtrapolation);
 		declare CMapSpawn Spawn = FlagRush_Map::GetSpawn(Player).PlayerSpawn;
 		SpawnPlayer(Player, Player.CurrentClan, 100, Spawn, Now + FlagRush_Common::C_SpawnAnimDuration);
 	}
 
-	Net_SendPlayerPosition(Player);
+	FlagRush_Player::Net_SendPosition(Player);
 }
 
 foreach (Event in PendingEvents) {
@@ -111,8 +152,8 @@ foreach (Event in PendingEvents) {
 			UnspawnPlayer(Event.Player);
 		}
 		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
-			if (FlagRush_Map::IsDeathTrigger(Event.Landmark)) {
-				EventFeed::SendMessage(FlagRush_Messages::PlayerOutOfBounds(Event.Player), EventFeed::C_IconName_Info);
+			if (FlagRush_Map::IsOutOfBoundsTrigger(Event.Landmark)) {
+				FlagRush_Messages::PlayerOutOfBounds(Event.Player);
 				UnspawnPlayer(Event.Player);
 			}
 		}
@@ -131,43 +172,94 @@ foreach (Player in Players) {
 // Functions //
 ///////////////
 
-Void OnPlayerRequestRespawn(CSmPlayer Player) {
+Void PickUpFlag(CSmPlayer Player) {
+	FlagRush_Messages::FlagPickUp(Player, C_Duration_IngameMessage);
+	FlagRush_Flag::SetAtCarrier(Player);
+}
+
+Void ScoreFlag(CSmPlayer Player) {
+
+}
+
+Void DropFlag(Boolean SafePosition) {
+	declare CUser OldCarrierUser = FlagRush_Flag::Get().Carrier;
+	FlagRush_Messages::FlagDropped(OldCarrierUser, C_Duration_IngameMessage);
+	FlagRush_Flag::DropFlag(SafePosition);
+}
+
+Void DropFlag() {
+	DropFlag(False);
+}
+
+Void FlagRush_UnspawnPlayer(CSmPlayer Player) {
+	if(Player == FlagRush_Flag::GetFlagCarrierPlayer()) {
+		DropFlag();
+	}
+	FlagRush_Player::Unspawn(Player);
+	declare netwrite Integer Net_SpawnDate for Player;
+	Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+}
+
+///////////////////////
+// "Event Callbacks" //
+///////////////////////
+
+Void OnPlayerRequestsRespawn(CSmPlayer Player) {
+	if (Player == FlagRush_Flag::GetFlagCarrierPlayer()) {
+		DropFlag();
+		return;
+	}
+
+	//log(Player.Speed);
+	//log(S_RespawnSpeedLimitKmh / 3.6);
+	if (S_RespawnSpeedLimitKmh >= 0 && Player.Speed <= S_RespawnSpeedLimitKmh / 3.6) {
+		FlagRush_UnspawnPlayer(Player);
+		return;
+	}
+
+	FlagRush_Flash::FlashRespawn(Player);
 
 }
 
 Void OnPlayerDeath(CSmPlayer Player) {
+	FlagRush_UnspawnPlayer(Player);
 }
 
-Void OnPlayerOutOfBounds(CSmPlayer Player) {
+Void OnPlayerOutOfBound(CSmPlayer Player) {
+	FlagRush_Messages::PlayerOutOfBounds(Player);
+	DropFlag(True);
+	FlagRush_UnspawnPlayer(Player);
 }
 
-Boolean RequestsClanChange(CSmPlayer Player) {
-	return Player.CurrentClan != Player.RequestedClan;
+Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {
+	if (FlagRush_Map::IsOutOfBoundsTrigger(Landmark)) {
+		OnPlayerOutOfBound(Player);
+	} else if (FlagRush_Flag::Get().Landmark == Landmark) {
+		PickUpFlag(Player);
+	} else {
+		declare Integer TargetBaseClan;
+		if (S_UseReversedBases) TargetBaseClan = Player.CurrentClan;
+		else TargetBaseClan = 3 - Player.CurrentClan;
+		if (FlagRush_Map::GetBases(TargetBaseClan).exists(Landmark)) ScoreFlag(Player);
+	}
 }
 
-Boolean IsDead(CSmPlayer Player) {
-	return Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned && Player.Armor <= 0;
+Void OnPlayerRequestsClanChange(CSmPlayer Player) {
+
 }
 
-Void Net_SendPlayerPosition(CSmPlayer Player) {
-	declare netwrite Vec3 Net_Position for Player;
-	Net_Position = Player.Position;
-	declare netwrite Real Net_Yaw for Player;
-	Net_Yaw = Player.AimYaw;
+Void OnPlayerPicksUpFlag(CSmPlayer NewCarrier) {
+
 }
 
-Void InitializePlayer(CSmPlayer Player) {
-	Player.TrustClientSimu = !UsePvPCollisions && S_TrustClientSimu;
-	Player.UseCrudeExtrapolation = !UsePvPCollisions && S_UseCrudeExtrapolation;
-	Player.Dossard_Number = "  ";
-	Player.Dossard_Color = <1., 1., 1.>;
-	if (S_UseTeamSkins) Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan - 1);
-	SetPlayerClan(Player, Player.RequestedClan);
+Void OnPlayerDropsFlag(CSmPlayer Player) {
+
 }
 
-Boolean CanSpawnPlayer(CSmPlayer Player) {
-	if (Player.SpawnStatus != CSmPlayer::ESpawnStatus::NotSpawned) return False;
-	declare netwrite Integer Net_SpawnDate for Player;
-	return Net_SpawnDate < Now || FlagRush_GameplayPhase::Get() == FlagRush_GameplayPhase::C_Warmup;
+Void OnPlayerStealsFlag(CSmPlayer NewCarrier, CSmPlayer OldCarrier) {
+
 }
 
+Void OnPlayerScoresFlag(CSmPlayer Scorer, CSmPlayer AssistNullable) {
+
+}

@@ -1,6 +1,7 @@
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt" as ModeCommands
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt" as FlagRush_ScoresHeader
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt" as FlagRush_ScoresTable
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Menu.Script.txt" as FlagRush_Menu
 
 Void Private_LoadUIAll() {
 	UIManager.UIAll.DisableZoomTransitions = False; // Spawn animation (camera-overview-to-car zoom effect)
@@ -42,6 +43,7 @@ Void Private_LoadModules() {
 	ModeCommands::Attach();
 	FlagRush_ScoresHeader::Attach();
 	FlagRush_ScoresTable::Attach();
+	FlagRush_Menu::Attach();
 }
 
 Void Yield() {

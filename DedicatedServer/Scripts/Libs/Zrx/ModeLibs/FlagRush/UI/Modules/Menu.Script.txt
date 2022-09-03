@@ -1,6 +1,9 @@
 // #RequireContext CSmMlScriptIngame
-#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
-#Include "/Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt"	as Colors
+#Include "Libs/Nadeo/Layers2.Script.txt" as Layers
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
+#Include "/Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
+
+#Const C_LayerName "FlagRush_Menu"
 
 #Const C_MenuPage_MainMenu "mainmenu"
 #Const C_MenuPage_TeamsMenu "teamsmenu"
@@ -31,7 +34,7 @@ Text GetManialink() {
 	</framemodel>
 
 	<framemodel id="teams-playercard">
-		<quad id="background" pos="0 0" z-index="-1" size="50 6" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" style="UICommon64_1" substyle="BgFrame1" colorize="000" halign="center" valign="center"/>
+		<quad id="background" pos="0 0" z-index="-1" size="50 6" opacity="{{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}}" style="UICommon64_1" substyle="BgFrame1" colorize="000" halign="center" valign="center"/>
 		<quad id="avatar" pos="-20 0" size="5 5" bgcolor="FFF" keepratio="Fit" halign="center" valign="center" />
 		<label id="name" pos="-15 0" size="15 5" text="Player Name" textsize="1" textfont="GameFontRegular" halign="left" valign="center2" />
 	</framemodel>
@@ -47,7 +50,7 @@ Text GetManialink() {
 	</framemodel>
 
 	<frame id="main-menu" hidden="1">
-		<quad id="background" pos="0 0" z-index="-1" size="70 80" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" bgcolor="000"/>
+		<quad id="background" pos="0 0" z-index="-1" size="70 80" opacity="{{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" bgcolor="000"/>
 		<label id="title" pos="0 32" z-index="0" size="93.6 7.89" text="FlagRush" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
 		<quad id="divider" pos="0 24" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
 
@@ -59,7 +62,7 @@ Text GetManialink() {
 	</frame>
 
 	<frame id="teams-menu" hidden="1">
-		<quad id="background" z-index="-2" pos="0 0" size="120 90" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" bgcolor="000"/>
+		<quad id="background" z-index="-2" pos="0 0" size="120 90" opacity="{{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" bgcolor="000"/>
 		<label id="title" pos="0 40" z-index="0" size="93.6 7.89" text="Teams" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
 		<quad id="divider" pos="0 35" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
 
@@ -76,7 +79,7 @@ Text GetManialink() {
 	</frame>
 
 	<frame id="callvotes-menu" hidden="1">
-		<quad id="background" pos="0 0" z-index="-1" size="70 80" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" bgcolor="000"/>
+		<quad id="background" pos="0 0" z-index="-1" size="70 80" opacity="{{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" bgcolor="000"/>
 		<label id="title" pos="0 32" z-index="0" size="93.6 7.89" text="Callvotes" textfont="GameFontRegular" textsize="6" halign="center" valign="center"/>
 		<quad id="divider" pos="0 24" z-index="0" size="50 0.33" bgcolor="FFF" halign="center" valign="top"/>
 
@@ -254,12 +257,12 @@ Text GetManialink() {
 		foreach (Button in G_PauseMenu.MainMenu.Buttons) {
 			if (Button.Action == "{{{ C_Action_Quit }}}") {
 				if (G_QuitConfirm) {
-					Button.Background.Colorize = {{{ Colors::C_Warning }}};
-					Button.Label.TextColor = {{{ Colors::C_Warning }}};
+					Button.Background.Colorize = {{{ FlagRush_Colors::C_Warning }}};
+					Button.Label.TextColor = {{{ FlagRush_Colors::C_Warning }}};
 					Button.Label.Value = "Confirm quit?";
 				} else {
-					Button.Background.Colorize = {{{ Colors::C_NeutralLight }}};
-					Button.Label.TextColor = {{{ Colors::C_NeutralLight }}};
+					Button.Background.Colorize = {{{ FlagRush_Colors::C_NeutralLight }}};
+					Button.Label.TextColor = {{{ FlagRush_Colors::C_NeutralLight }}};
 					Button.Label.Value = Button.Frame.DataAttributeGet("text");
 				}
 			}
@@ -546,4 +549,14 @@ Text GetManialink() {
 	--></script>
 </manialink>
 	""";
+}
+
+Void Attach() {
+	Layers::Create(C_LayerName, GetManialink());
+	Layers::SetType(C_LayerName, CUILayer::EUILayerType::InGameMenu);
+	Layers::Attach(C_LayerName);
+}
+
+Void Detach() {
+	Layers::Detach(C_LayerName);
 }

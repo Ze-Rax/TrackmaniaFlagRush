@@ -1,6 +1,6 @@
 /**
  * Modifed version of Nadeo's lowest level base mode handling the main server loop.
- * Everything related to Matchmaking is removed. Therefore plugs now are prefixed with MB_ instead of Match_.
+ * Everything related to Matchmaking is removed. MB_, Match_ and Lobby_ prefixes have been dropped!
  * Mind the differences.
  */
 
@@ -57,7 +57,7 @@ declare Boolean MB_Settings_UseDefaultPodiumSequence; ///< Use the default podiu
 // Extends
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-***MB_Settings***
+***Settings***
 ***
 MB_Settings_UseDefaultIntroSequence = True;
 MB_Settings_UseDefaultPodiumSequence = True;
@@ -230,13 +230,13 @@ Void MB_SkipPodiumSequence() {
  *	where a script yields
  */
  Void MB_Yield() {
-	+++MB_BeforeYield+++
+	+++BeforeYield+++
 	if (MB_Private_CurrentNow > 0 && Now > MB_Private_CurrentNow) {
 		log("WARNING: A frame was skipped with `yield`, `sleep()` or `wait()` ("^MB_Private_CurrentNow^" > "^Now^"). This is considered bad practice. Always use `MB_Yield()` or `MB_Sleep()` to advance to the next frame.");
 	}
 	yield;
 	MB_Private_CurrentNow = Now;
-	+++MB_Yield+++
+	+++Yield+++
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -366,14 +366,14 @@ main() {
 		MB_Private_PersistentServerRestarted = True;
 
 		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-		{ +++MB_Settings+++ }
-		{ +++MB_LoadLibraries+++ }
+		{ +++Settings+++ }
+		{ +++LoadLibraries+++ }
 		ItemList_Begin();
-		{ +++MB_LoadItems+++ }
+		{ +++LoadItems+++ }
 		ItemList_End();
-		{ +++MB_LoadHud+++ }
-		{ +++MB_Rules+++ }
-		{ +++MB_StartServer+++ }
+		{ +++LoadHud+++ }
+		{ +++Rules+++ }
+		{ +++StartServer+++ }
 
 		while (MB_ScriptIsRunning()) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -388,8 +388,8 @@ main() {
 			MB_Private_SectionCount_Turn = 0;
 			MB_Private_SectionCount_PlayLoop = 0;
 
-			{ +++MB_InitMatch+++ }
-			{ +++MB_StartMatch+++ }
+			{ +++InitMatch+++ }
+			{ +++StartMatch+++ }
 
 			while (MB_MatchIsRunning()) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -412,25 +412,25 @@ main() {
 
 				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 				// Load a map
-				{ +++MB_BeforeLoadMap+++ }
+				{ +++BeforeLoadMap+++ }
 				MB_Private_LoadMap();
-				{ +++MB_AfterLoadMap+++ }
-				{ +++MB_InitMap+++ }
+				{ +++AfterLoadMap+++ }
+				{ +++InitMap+++ }
 
 				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 				// Play intro sequence
 				if (!MB_Private_SkipIntroSequence) {
-					{ +++MB_BeforeIntroSequence+++ }
+					{ +++BeforeIntroSequence+++ }
 					if (MB_Settings_UseDefaultIntroSequence) {
 						MB_Private_IntroSequence();
 					} else {
-						{ +++MB_IntroSequence+++ }
+						{ +++IntroSequence+++ }
 					}
-					{ +++MB_AfterIntroSequence+++ }
+					{ +++AfterIntroSequence+++ }
 				}
 
 				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-				{ +++MB_StartMap+++ }
+				{ +++StartMap+++ }
 
 				while (MB_MapIsRunning()) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -443,8 +443,8 @@ main() {
 					MB_Private_SectionCount_Turn = 0;
 					MB_Private_SectionCount_PlayLoop = 0;
 
-					{ +++MB_InitRound+++ }
-					{ +++MB_StartRound+++ }
+					{ +++InitRound+++ }
+					{ +++StartRound+++ }
 
 					while (MB_RoundIsRunning()) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -456,66 +456,66 @@ main() {
 						MB_Private_SectionCount_Turn += 1;
 						MB_Private_SectionCount_PlayLoop = 0;
 
-						{ +++MB_InitTurn+++ }
-						{ +++MB_StartTurn+++ }
+						{ +++InitTurn+++ }
+						{ +++StartTurn+++ }
 
 						MB_Private_SectionCount_PlayLoop += 1;
 
-						{ +++MB_InitPlayLoop+++ }
-						{ +++MB_StartPlayLoop+++ }
+						{ +++InitPlayLoop+++ }
+						{ +++StartPlayLoop+++ }
 
 						while (MB_TurnIsRunning()) {
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 	// Play loop section
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 							MB_Yield();
-							{ +++MB_PlayLoop+++ }
+							{ +++PlayLoop+++ }
 						}
 
-						{ +++MB_EndPlayLoop+++ }
+						{ +++EndPlayLoop+++ }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Turn section end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-						{ +++MB_EndTurn+++ }
-						{ +++MB_AfterEndTurn+++ }
+						{ +++EndTurn+++ }
+						{ +++AfterEndTurn+++ }
 					}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Round section end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-					{ +++MB_EndRound+++ }
-					{ +++MB_AfterEndRound+++ }
+					{ +++EndRound+++ }
+					{ +++AfterEndRound+++ }
 				}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Map section end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-				{ +++MB_EndMap+++ }
-				{ +++MB_AfterEndMap+++ }
+				{ +++EndMap+++ }
+				{ +++AfterEndMap+++ }
 
 				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 				// Podium sequence
 				if(!MB_Private_SkipPodiumSequence) {
-					{ +++MB_BeforePodiumSequence+++ }
+					{ +++BeforePodiumSequence+++ }
 					if (MB_Settings_UseDefaultPodiumSequence) {
 						MB_Private_PodiumSequence();
 					} else {
-						+++MB_PodiumSequence+++
+						+++PodiumSequence+++
 					}
-					{ +++MB_AfterPodiumSequence+++ }
+					{ +++AfterPodiumSequence+++ }
 				}
 
 				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 				// Unload the current map
-				{ +++MB_BeforeUnloadMap+++ }
+				{ +++BeforeUnloadMap+++ }
 				// Yield to process and remove every events before unloading the map
 				// This is necessary to avoid getting errors in the events about variables that does not exist anymore
 				// because they were deleted by the C++ cleaning at the map unload
 				MB_Yield();
 				MB_Private_UnloadMap();
-				{ +++MB_AfterUnloadMap+++ }
+				{ +++AfterUnloadMap+++ }
 
 				MB_Private_PersistentMapRestarted = False;
 				MB_Yield(); //< Needed to properly save persistent variable
@@ -524,18 +524,18 @@ main() {
 // Match section end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-			{ +++MB_EndMatch+++ }
-			{ +++MB_AfterEndMatch+++ }
+			{ +++EndMatch+++ }
+			{ +++AfterEndMatch+++ }
 		}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Main/Server end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-		{ +++MB_EndServer+++ }
+		{ +++EndServer+++ }
 
 		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 		// Unload libraries
-		{ +++MB_UnloadLibraries+++ }
+		{ +++UnloadLibraries+++ }
 
 		MB_Private_PersistentServerRestarted = False;
 	}

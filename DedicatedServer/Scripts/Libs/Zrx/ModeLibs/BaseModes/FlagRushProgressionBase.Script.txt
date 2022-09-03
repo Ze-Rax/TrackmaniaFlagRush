@@ -121,7 +121,7 @@
 
 // ~~~~~~~~~~ Setup ~~~~~~~~~~ //
 
-***MB_Settings***
+***Settings***
 ***
 MB_Settings_UseDefaultPodiumSequence = False;
 
@@ -156,7 +156,7 @@ ModeUtils::SetEndTime(-1);
 Net_SendModeSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
 ***
 
-***MB_LoadLibraries***
+***LoadLibraries***
 ***
 FlagRush_GameplayPhase::Set(0);
 FlagRush_Teams::Init();
@@ -171,45 +171,45 @@ ModeCommands::AddQuickCommand(C_Command_SkipRound, "UICommon64_1", "FastForward_
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
 ***
 
-***MB_LoadHud***
+***LoadHud***
 ***
 FlagRush_UI::Load();
 ***
 
-***MB_LoadItems***
+***LoadItems***
 ***
 FlagRush_Teams::LoadSkins();
 ***
 
 // ~~~~~~~~~~ Match ~~~~~~~~~~ //
 
-***MB_InitMatch***
+***InitMatch***
 ***
 FlagRush_Scores::StartMatch();
 ***
 
-***MB_AfterEndMatch***
+***AfterEndMatch***
 ***
 FlagRush_Scores::EndMatch();
 ***
 
 // ~~~~~~~~~~ Map ~~~~~~~~~~ //
 
-***MB_InitMap***
+***InitMap***
 ***
 FlagRush_Scores::StartMap();
 FlagRush_Map::InitLandmarks();
 FlagRush_UI::StartMap();
 ***
 
-***MB_StartMap***
+***StartMap***
 ***
 MB_Sleep(C_Duration_MapStart);
 
 if (S_UseWarmUp) Private_ExecuteWarmUp();
 ***
 
-***MB_EndMap***
+***EndMap***
 ***
 
 declare Text Message;
@@ -243,21 +243,21 @@ if (MatchPointLimitReached()) {
 }
 ***
 
-***MB_AfterEndMap***
+***AfterEndMap***
 ***
 FlagRush_Scores::EndMap();
 ***
 
 // ~~~~~~~~~~ Round ~~~~~~~~~~ //
 
-***MB_InitRound***
+***InitRound***
 ***
 FlagRush_Scores::StartRound();
 declare Boolean RoundEndRequested for This;
 RoundEndRequested = False;
 ***
 
-***MB_StartRound***
+***StartRound***
 ***
 declare Text Message = FlagRush_Messages::RoundStart(MB_GetRoundCount());
 UIManager.UIAll.QueueMessage(
@@ -279,7 +279,7 @@ if (S_RoundTimeLimitSeconds > 0) {
 }
 ***
 
-***MB_EndRound***
+***EndRound***
 ***
 FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_None);
 
@@ -310,7 +310,7 @@ MB_Sleep(C_Duration_RoundEnd);
 if (MapPointLimitReached()) MB_StopMap();
 ***
 
-***MB_AfterEndRound***
+***AfterEndRound***
 ***
 FlagRush_Scores::EndRound();
 ***
@@ -349,7 +349,7 @@ MB_Sleep(C_Duration_WarmUpEnd);
 
 // ~~~~~~~~~~ PlayLoop ~~~~~~~~~~ //
 
-***MB_PlayLoop***
+***PlayLoop***
 ***
 // Round skip (Map skip handled by base mode)
 declare Boolean RoundEndRequested for This;
@@ -401,7 +401,7 @@ EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 
 // ~~~~~~~~~~ Podium (Match end MVP) ~~~~~~~~~~ //
 
-***MB_PodiumSequence***
+***PodiumSequence***
 ***
 // TODO: implement
 {}
@@ -412,7 +412,7 @@ EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 // Cannot use non-library functions or globales in here, as this is executed during MB_Yield() in the modebase,
 // which is defined before any function or globale that could be defined in any extend.
 // Only code directly or plugs which don't contain non-library functions or non ModeBase globales themselves.
-***MB_Yield***
+***Yield***
 ***
 ModeCommands::Yield();
 +++Private_HandleProgressionsCommands+++

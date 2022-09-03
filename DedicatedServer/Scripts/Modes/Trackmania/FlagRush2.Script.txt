@@ -15,7 +15,7 @@
 #Command	Command_ResetFlag								(Boolean) as		"Reset flag"
 #Const		C_Command_ResetFlag															"ResetFlag"
 
-***MB_LoadLibraries***
+***LoadLibraries***
 ***
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light");
 ***

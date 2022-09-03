@@ -425,8 +425,19 @@ foreach (Player in Players) {
 		SetPlayerClan(Player, Player.RequestedClan);
 	}
 }
+
+foreach (Event in PendingEvents) {
+	switch (Event.Type) {
+		case CSmModeEvent::EType::OnPlayerAdded: {
+			// Send welcome message
+			declare CUIConfig UI = UIManager.GetUI(Event.Player);
+			UI.SendChat("""Welcome to $l[https://discord.gg/J6ApdyRqEZ]$44f「$fffFlagRush$f44」$l $fff[{{{Version}}}]!""");
+		}
+	}
+}
 ***
 
+// TODO: Extract to lib if possible?
 ***Private_HandleProgressionsCommands***
 ***
 declare CommandUtils::K_Command[] PendingCommands;

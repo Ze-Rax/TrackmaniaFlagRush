@@ -1,10 +1,7 @@
 #Include "ColorLib" as CL
-#Include "Libs/Nadeo/Layers2.Script.txt" as Layers
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
 #Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt" as FlagRush_GameplayPhase
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as FlagRush_UIShared
-
-#Const C_LayerName "FlagRush_ScoresHeader"
 
 Text GetManialink() {
 	return """
@@ -241,14 +238,4 @@ Text GetManialink() {
 	--></script>
 	</manialink>
 	""";
-}
-
-Void Attach() {
-	Layers::Create(C_LayerName, GetManialink());
-	Layers::SetType(C_LayerName, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName);
-}
-
-Void Detach() {
-	Layers::Detach(C_LayerName);
 }

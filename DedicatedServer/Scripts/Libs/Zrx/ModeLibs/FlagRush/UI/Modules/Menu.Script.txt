@@ -1,9 +1,6 @@
 // #RequireContext CSmMlScriptIngame
-#Include "Libs/Nadeo/Layers2.Script.txt" as Layers
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
 #Include "/Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
-
-#Const C_LayerName "FlagRush_Menu"
 
 #Const C_MenuPage_MainMenu "mainmenu"
 #Const C_MenuPage_TeamsMenu "teamsmenu"
@@ -549,14 +546,4 @@ Text GetManialink() {
 	--></script>
 </manialink>
 	""";
-}
-
-Void Attach() {
-	Layers::Create(C_LayerName, GetManialink());
-	Layers::SetType(C_LayerName, CUILayer::EUILayerType::InGameMenu);
-	Layers::Attach(C_LayerName);
-}
-
-Void Detach() {
-	Layers::Detach(C_LayerName);
 }

@@ -1,7 +1,25 @@
+#Include "Libs/Nadeo/Layers2.Script.txt" as Layers
+
+// Modules
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt" as ModeCommands
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt" as FlagRush_ScoresHeader
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt" as FlagRush_ScoresTable
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Menu.Script.txt" as FlagRush_Menu
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt" as FlagRush_UIScoresHeader
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt" as FlagRush_UIScoresTable
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Menu.Script.txt" as FlagRush_UIMenu
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt" as FlagRush_UISound
+
+#Const C_LayerName_Dialog							"Layer_FlagRush_Dialog"
+#Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
+#Const C_LayerName_ScoresHeader				"Layer_FlagRush_ScoresHeader"
+#Const C_LayerName_MVP								"Layer_FlagRush_MVP"
+#Const C_LayerName_Markers						"Layer_FlagRush_Markers"
+#Const C_LayerName_Menu								"Layer_FlagRush_Menu"
+#Const C_LayerName_Feed								"Layer_FlagRush_Feed"
+#Const C_LayerName_Flash							"Layer_FlagRush_Flash"
+#Const C_LayerName_Sound							"Layer_FlagRush_Sound"
+#Const C_LayerName_Spectator					"Layer_FlagRush_Spectator"
+#Const C_LayerName_Respawn						"Layer_FlagRush_Respawn"
+#Const C_LayerName_ModeCommands				"Layer_ModeCommands"
+#Const C_LayerName_Radar							"Layer_FlagRush_Radar"
 
 Void Private_LoadUIAll() {
 	UIManager.UIAll.DisableZoomTransitions = False; // Spawn animation (camera-overview-to-car zoom effect)
@@ -39,18 +57,52 @@ Void Private_LoadUIAll() {
 	UIManager.UIAll.LabelsVisibility = CUIConfig::EHudVisibility::Everything;
 }
 
-Void Private_LoadModules() {
-	ModeCommands::Attach();
-	FlagRush_ScoresHeader::Attach();
-	FlagRush_ScoresTable::Attach();
-	FlagRush_Menu::Attach();
+Void Private_AttachModules() {
+	// Scores header
+	Layers::Create(C_LayerName_ScoresHeader, FlagRush_UIScoresHeader::GetManialink());
+	Layers::SetType(C_LayerName_ScoresHeader, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_ScoresHeader);
+
+	// Scores table
+	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoresTable::GetManialink());
+	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
+	Layers::Attach(C_LayerName_ScoresTable);
+
+	// ModeCommands
+	Layers::Create(C_LayerName_ModeCommands, ModeCommands::GetManialink());
+	Layers::SetType(C_LayerName_ModeCommands, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_ModeCommands);
+
+	// Sound
+	Layers::Create(C_LayerName_Sound, FlagRush_UISound::GetManialink());
+	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Sound);
+
+	// Menu
+	Layers::Create(C_LayerName_Menu, FlagRush_UIMenu::GetManialink());
+	Layers::SetType(C_LayerName_Menu, CUILayer::EUILayerType::InGameMenu);
+	Layers::Attach(C_LayerName_Menu);
+}
+
+Void Private_DetachModules() {
+	Layers::Detach(C_LayerName_ScoresHeader);
+	Layers::Detach(C_LayerName_ScoresTable);
+	Layers::Detach(C_LayerName_ModeCommands);
+	Layers::Detach(C_LayerName_Sound);
+	Layers::Detach(C_LayerName_Menu);
 }
 
 Void Yield() {
 
 }
 
+Void Unload() {
+	Private_DetachModules();
+}
+
 Void Load() {
+	Unload();
+
 	Private_LoadUIAll();
-	Private_LoadModules();
+	Private_AttachModules();
 }

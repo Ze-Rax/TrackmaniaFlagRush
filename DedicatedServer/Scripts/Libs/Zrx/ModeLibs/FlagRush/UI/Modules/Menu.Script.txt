@@ -271,7 +271,7 @@ Text GetManialink() {
 
 		declare CSmPlayer[][] TeamPlayers = [[], []];
 		foreach (Player in Players) {
-			if(Player.RequestsSpectate || Player.CurrentClan < 1) continue;
+			if (Player.RequestsSpectate || Player.CurrentClan < 1) continue;
 			TeamPlayers[Player.CurrentClan - 1].add(Player);
 		}
 		declare Integer PageCount = ((ML::Max(TeamPlayers[0].count, TeamPlayers[1].count) - 1) / {{{ C_TeamsMenu_Pagination_Pagesize }}}) + 1;

@@ -219,3 +219,21 @@ Void Init() {
 	Private_Configs_AdjustAvoidHueOverlap();
 	Private_Configs_ApplyToTeams();
 }
+
+Void Yield() {
+	foreach (Player in Players) {
+		declare Integer PreviousClan for Player;
+		if (PreviousClan != Player.CurrentClan) {
+			Init();
+			PreviousClan = Player.CurrentClan;
+		}
+	}
+
+	foreach (Event in PendingEvents) {
+		switch (Event.Type) {
+			case CSmModeEvent::EType::OnPlayerAdded, CSmModeEvent::EType::OnPlayerRemoved: {
+				Init();
+			}
+		}
+	}
+}

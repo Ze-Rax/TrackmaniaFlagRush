@@ -15,19 +15,20 @@
 #Include "TextLib" as TL
 #Include "MathLib" as ML
 
-#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt" as ModeCommands
-#Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt" as CommandUtils
-#Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt" as ModeUtils
-#Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt" as WarmUpReadyUp
+#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"				as ModeCommands
+#Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"				as CommandUtils
+#Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"										as ModeUtils
+#Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
 
 // FlagRush Libs
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt" as FlagRush_Messages
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt" as FlagRush_Scores
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt" as FlagRush_MatchEvaluation
-#Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt" as FlagRush_GameplayPhase
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"						as FlagRush_Common
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"						as FlagRush_Scores
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
+#Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt"							as FlagRush_GameplayPhase
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
 
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI2.Script.txt" as FlagRush_UI
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI2.Script.txt"								as FlagRush_UI
 
 ///////////////
 // Constants //
@@ -156,6 +157,7 @@ Net_SendModeSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound
 ***MB_LoadLibraries***
 ***
 FlagRush_GameplayPhase::Set(0);
+FlagRush_Teams::Init();
 
 ModeCommands::AddAdmin("W2ZNWNzVQV6z3hXuNgRMRg");	// Ze-Rax
 ModeCommands::AddAdmin("EdbzfLXMS_aI_PjZCVaygQ");	// Reaby
@@ -170,6 +172,11 @@ ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_li
 ***MB_LoadHud***
 ***
 FlagRush_UI::Load();
+***
+
+***MB_LoadItems***
+***
+FlagRush_Teams::LoadSkins();
 ***
 
 // ~~~~~~~~~~ Match ~~~~~~~~~~ //
@@ -396,6 +403,14 @@ UIManager.UIAll.QueueMessage(
 ModeCommands::Yield();
 +++Private_HandleProgressionsCommands+++
 FlagRush_UI::Yield();
+FlagRush_Teams::Yield();
+
+// TODO: What if player is already spawned
+foreach (Player in Players) {
+	if (Player.CurrentClan != Player.RequestedClan) {
+		SetPlayerClan(Player, Player.RequestedClan);
+	}
+}
 ***
 
 ***Private_HandleProgressionsCommands***

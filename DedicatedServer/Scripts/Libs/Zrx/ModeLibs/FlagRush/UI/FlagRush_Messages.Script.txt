@@ -96,13 +96,13 @@ Void WarmUpEnd(Integer Duration) {
 }
 
 Void PauseStart(Integer Duration) {
-	declare Text Message= "The round was paused";
+	declare Text Message= """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}The round was paused$>""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void PauseEnd(Integer Duration) {
-	declare Text Message= "The round continues";
+	declare Text Message= """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}The round continues$>""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }

@@ -30,16 +30,18 @@
 // FlagRush Libs
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"						as FlagRush_Common
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"								as FlagRush_Map
-// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"						as FlagRush_Scores
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
 // #Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt"							as FlagRush_GameplayPhase
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"						as FlagRush_Flag
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_Flash
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_Markers
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Handicaps.Script.txt"						as FlagRush_Handicaps
+
 
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI2.Script.txt"								as FlagRush_UI
+// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_Flash
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_Markers
 // #endregion
 
 // ========= //
@@ -119,12 +121,14 @@ Flag_SetAtLandmark(FlagSpawn, FlagSpawnDate);
 foreach (Player in Players) {
 	UnspawnPlayer(Player);
 }
+FlagRush_Handicaps::ClearQueue();
 ***
 
 // ~~~~~~~~~~ PlayLoop ~~~~~~~~~~ //
 
 ***PlayLoop***
 ***
+FlagRush_Handicaps::Yield();
 FlagRush_Flag::Yield();
 // Update Flag
 if (FlagRush_Flag::CarrierDisconnected()) DropFlag();
@@ -298,6 +302,17 @@ Void Player_Unspawn(CSmPlayer Player) {
 	Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
 }
 
+Void Player_ApplyHandicaps(CSmPlayer Player) {
+	if (S_FlagCarrierFragile) FlagRush_Handicaps::Queue_Fragile(Player, True);
+	if (S_FlagCarrierAcceleration != 1.) FlagRush_Handicaps::Queue_AccelCoef(Player, S_FlagCarrierAcceleration);
+	if (S_FlagCarrierControl != 1.) FlagRush_Handicaps::Queue_ControlCoef(Player, S_FlagCarrierControl);
+	if (S_FlagCarrierAdherence != 1.) FlagRush_Handicaps::Queue_AdherenceCoef(Player, S_FlagCarrierAdherence);
+}
+
+Void Player_ResetHandicaps(CSmPlayer Player) {
+	FlagRush_Handicaps::Queue_Reset(Player);
+}
+
 Boolean Player_CanPickUpDroppedFlag(CSmPlayer Player) {
 	if (Player.SpawnStatus != CSmPlayer::ESpawnStatus::Spawned || Player.Armor <= 0) return False;
 	declare Integer FlagRush_LastFlagDropDate for Player = -1;
@@ -316,14 +331,21 @@ Void PickUpFlag(CSmPlayer Player) {
 	FlagRush_Messages::FlagPickUp(Player, C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);
 	Flag_SetAtPlayer(Player, StealResistanceEndDate);
+	Player_ApplyHandicaps(Player);
 }
 
 Void PassFlag(CSmPlayer Player) {
+	// Old Carrier
 	declare CSmPlayer OldCarrier = FlagRush_Flag::GetFlagCarrierPlayer();
-	if (Player.CurrentClan != OldCarrier.CurrentClan) FlagRush_Scores::OnPlayerStealFlag(Player);
+	if (Player.CurrentClan != OldCarrier.CurrentClan) {
+		FlagRush_Scores::OnPlayerStealFlag(Player);
+		Player_ResetHandicaps(Player);
+	}
+	// New Carrier
 	FlagRush_Messages::FlagPickUp(Player, C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);
 	Flag_Pass(Player, StealResistanceEndDate);
+	Player_ApplyHandicaps(Player);
 }
 
 Void DropFlag(Vec3 Position) {
@@ -332,6 +354,7 @@ Void DropFlag(Vec3 Position) {
 	if (OldCarrierPlayer != Null) { // Could be due to disconnect
 		declare Integer FlagRush_LastFlagDropDate for OldCarrierPlayer;
 		FlagRush_LastFlagDropDate = Now;
+		Player_ResetHandicaps(OldCarrierPlayer);
 	}
 
 	declare CUser OldCarrierUser = FlagRush_Flag::Get().Carrier;
@@ -368,6 +391,7 @@ Void ScoreFlag(CSmPlayer Player) {
 		}
 	}
 	Flag_Reset(True);
+	Player_ResetHandicaps(Player);
 }
 // #endregion
 

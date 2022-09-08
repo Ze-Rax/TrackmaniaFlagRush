@@ -5,7 +5,7 @@
 
 // #RequireContext CSmMode
 
-// TODO: XmlRpc, UISequences
+// TODO: XmlRpc, UISequences, Skip match on all players leave
 
 #Extends "Libs/Zrx/ModeLibs/BaseModes/ModeBase.Script.txt"
 

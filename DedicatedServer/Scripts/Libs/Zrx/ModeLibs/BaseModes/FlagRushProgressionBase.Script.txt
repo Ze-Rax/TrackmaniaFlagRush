@@ -64,7 +64,6 @@
 #Setting S_UseOvertime											True 		as "Use overtime when round is tied"
 #Setting S_UseWarmUp												True		as "Use warm up"
 
-// TODO: Use team settings
 // Teams
 #Setting S_Team1Name 												"" 			as "Force Team 1 Name"
 // #Setting S_Team1Color 											"" 			as "Force Team 1 Color"
@@ -166,12 +165,17 @@ UseAllies = False;
 CrudeExtrapolation_AllowDelay = False;
 
 ModeUtils::SetEndTime(-1);
-Net_SendModeSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
+Progression_Net_SendModeSettings();
 ***
 
 ***LoadLibraries***
 ***
 FlagRush_GameplayPhase::Set(0);
+FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
+//FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
+FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
+//FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
+FlagRush_Teams::UseClubTags(S_UseClubTags);
 FlagRush_Teams::Init();
 
 declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
@@ -229,7 +233,7 @@ if (S_UseWarmUp) +++Private_WarmUp+++
 
 ***EndMap***
 ***
-if (MapInvalid()) {
+if (Progression_MapInvalid()) {
 	FlagRush_Messages::MapSkip(C_Duration_MapEnd);
 } else {
 	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMap();
@@ -242,7 +246,7 @@ if (MapInvalid()) {
 }
 MB_Sleep(C_Duration_MapEnd);
 
-if (MatchPointLimitReached()) {
+if (Progression_MatchPointLimitReached()) {
 	MB_StopMatch();
 } else {
 	MB_SkipPodiumSequence(); // Podium == Match end MVP
@@ -259,8 +263,8 @@ FlagRush_Scores::EndMap();
 ***InitRound***
 ***
 FlagRush_Scores::StartRound();
-declare Boolean RoundEndRequested for This;
-RoundEndRequested = False;
+declare Boolean Progression_RoundEndRequested for This;
+Progression_RoundEndRequested = False;
 ***
 
 ***StartRound***
@@ -280,7 +284,7 @@ if (S_RoundTimeLimitSeconds > 0) {
 ***
 FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_None);
 
-if (RoundInvalid()) {
+if (Progression_RoundInvalid()) {
 	FlagRush_Messages::RoundSkip(C_Duration_RoundEnd);
 } else {
 	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateRound();
@@ -293,7 +297,7 @@ if (RoundInvalid()) {
 }
 MB_Sleep(C_Duration_RoundEnd);
 
-if (MapPointLimitReached()) MB_StopMap();
+if (Progression_MapPointLimitReached()) MB_StopMap();
 ***
 
 ***AfterEndRound***
@@ -313,16 +317,16 @@ MB_ClearAllMessages();
 ***PlayLoop***
 ***
 // Round skip (Map skip handled by base mode)
-declare Boolean RoundEndRequested for This;
-if (RoundEndRequested) MB_StopRound();
+declare Boolean Progression_RoundEndRequested for This;
+if (Progression_RoundEndRequested) MB_StopRound();
 
 // Round end & overtime conditions
 switch (FlagRush_GameplayPhase::Get()) {
 	case FlagRush_GameplayPhase::C_Round: {
-		if (FlagLimitReached()) {
+		if (Progression_FlagLimitReached()) {
 			MB_StopRound();
-		} else if (TimeLimitReached()) {
-			if (RoundIsTied() && S_UseOvertime) {
+		} else if (Progression_TimeLimitReached()) {
+			if (Progression_RoundIsTied() && S_UseOvertime) {
 				+++StartOvertime+++
 			} else {
 				MB_StopRound();
@@ -330,17 +334,16 @@ switch (FlagRush_GameplayPhase::Get()) {
 		}
 	}
 	case FlagRush_GameplayPhase::C_Overtime: {
-		if (!RoundIsTied()) {
+		if (!Progression_RoundIsTied()) {
 			MB_StopRound();
 		}
 	}
-	default: {}
 }
 
 // Pause handling
-declare Boolean PauseRequested for This;
-if (PauseRequested) {
-	PauseRequested = False;
+declare Boolean Progression_PauseRequested for This;
+if (Progression_PauseRequested) {
+	Progression_PauseRequested = False;
 	+++Private_Pause+++
 }
 ***
@@ -459,13 +462,13 @@ foreach (Command in PendingCommands) {
 			CommandText = "The warmup was ended.";
 		}
 		case C_Command_Pause: {
-			declare Boolean PauseRequested for This;
-			PauseRequested = True;
+			declare Boolean Progression_PauseRequested for This;
+			Progression_PauseRequested = True;
 			CommandText = "The round was paused.";
 		}
 		case C_Command_SkipRound: {
-			declare Boolean RoundEndRequested for This;
-			RoundEndRequested = True;
+			declare Boolean Progression_RoundEndRequested for This;
+			Progression_RoundEndRequested = True;
 			CommandText = "The round was skipped.";
 		}
 		case C_Command_SkipMap: {
@@ -541,21 +544,21 @@ foreach (Command in PendingCommands) {
 /**
  * Returns whether any team has won enough maps to win the match.
  */
-Boolean MatchPointLimitReached() {
+Boolean Progression_MatchPointLimitReached() {
 	return ML::Max(FlagRush_Scores::GetClanMatchPoints(1), FlagRush_Scores::GetClanMatchPoints(2)) >= S_NbMapsToWinMatch;
 }
 
 /**
  * Returns whether any team has won enough rounds to win the map.
  */
-Boolean MapPointLimitReached() {
+Boolean Progression_MapPointLimitReached() {
 	return ML::Max(FlagRush_Scores::GetClanMapPoints(1), FlagRush_Scores::GetClanMapPoints(2)) >= S_NbRoundsToWinMap;
 }
 
 /**
  * Returns whether any team has scored enough flags to win the round.
  */
-Boolean FlagLimitReached() {
+Boolean Progression_FlagLimitReached() {
 	if (S_NbFlagsToWinRound <= 0) return False;
 	declare Integer RoundPointsTeam1 = FlagRush_Scores::GetClanRoundPoints(1);
 	declare Integer RoundPointsTeam2 = FlagRush_Scores::GetClanRoundPoints(2);
@@ -565,7 +568,7 @@ Boolean FlagLimitReached() {
 /**
  * Returns whether the round time ran out.
  */
-Boolean TimeLimitReached() {
+Boolean Progression_TimeLimitReached() {
 	if (S_RoundTimeLimitSeconds <= 0) return False;
 	return Now > EndTime;
 }
@@ -573,7 +576,7 @@ Boolean TimeLimitReached() {
 /**
  * Returns whether both teams have the same amount of flags scored.
  */
-Boolean RoundIsTied() {
+Boolean Progression_RoundIsTied() {
 	return FlagRush_MatchEvaluation::EvaluateRound() == 0;
 }
 
@@ -581,29 +584,29 @@ Boolean RoundIsTied() {
  * Returns whether the current map is considered invalid.
  * A map is invalid when it was explicitly skipped (MatchEndRequested == True).
  */
-Boolean MapInvalid() {
+Boolean Progression_MapInvalid() {
 	return MatchEndRequested;
 }
 
 /**
  * Return whether the current round is considered invalid.
- * A round is invalid when the map is invalid or the round was explicitly skipped (RoundEndRequested (Trait!) == True).
+ * A round is invalid when the map is invalid or the round was explicitly skipped (Progression_RoundEndRequested (Trait!) == True).
  */
-Boolean RoundInvalid() {
-	declare Boolean RoundEndRequested for This;
-	return RoundEndRequested || MatchEndRequested;
+Boolean Progression_RoundInvalid() {
+	declare Boolean Progression_RoundEndRequested for This;
+	return Progression_RoundEndRequested || MatchEndRequested;
 }
 
 /**
  * Sends relevant mode settings values to the clients via netwrite.
  */
- Void Net_SendModeSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap, Integer NbFlagsToWinRound) {
+ Void Progression_Net_SendModeSettings() {
 	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
-	Net_FlagRush_NbMapsToWinMatch = NbMapsToWinMatch;
+	Net_FlagRush_NbMapsToWinMatch = S_NbMapsToWinMatch;
 
 	declare netwrite Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
-	Net_FlagRush_NbRoundsToWinMap = NbRoundsToWinMap;
+	Net_FlagRush_NbRoundsToWinMap = S_NbRoundsToWinMap;
 
 	declare netwrite Integer Net_FlagRush_NbFlagsToWinRound for Teams[0];
-	Net_FlagRush_NbFlagsToWinRound = NbFlagsToWinRound;
+	Net_FlagRush_NbFlagsToWinRound = S_NbFlagsToWinRound;
 }

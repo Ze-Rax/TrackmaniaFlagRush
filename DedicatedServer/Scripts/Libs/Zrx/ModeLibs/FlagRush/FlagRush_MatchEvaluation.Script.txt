@@ -1,5 +1,12 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt" as FlagRush_Scores
 
+Integer Private_DetermineWinnerClan(Integer Clan1Points, Integer Clan2Points) {
+	declare Integer Diff = Clan1Points - Clan2Points;
+	if(Diff > 0) return 1;
+	else if (Diff < 0) return 2;
+	return 0;
+}
+
 /**
  * Evalutates the current round and determines the winner
  * @return Integer
@@ -9,13 +16,7 @@
 Integer EvaluateRound() {
 	declare Integer RoundPointsTeam1 = FlagRush_Scores::GetClanRoundPoints(1);
 	declare Integer RoundPointsTeam2 = FlagRush_Scores::GetClanRoundPoints(2);
-
-	declare Integer WinnerClan = 0;
-	declare Integer RoundPointsDiff = RoundPointsTeam1 - RoundPointsTeam2;
-	if(RoundPointsDiff > 0) WinnerClan = 1;
-	else if (RoundPointsDiff < 0) WinnerClan = 2;
-
-	return WinnerClan;
+	return Private_DetermineWinnerClan(RoundPointsTeam1, RoundPointsTeam2);
 }
 
 /**
@@ -27,13 +28,7 @@ Integer EvaluateRound() {
 Integer EvaluateMap() {
 	declare Integer MapPointsTeam1 = FlagRush_Scores::GetClanMapPoints(1);
 	declare Integer MapPointsTeam2 = FlagRush_Scores::GetClanMapPoints(2);
-
-	declare Integer WinnerClan = 0;
-	declare Integer MapPointsDiff = MapPointsTeam1 - MapPointsTeam2;
-	if (MapPointsDiff > 0) WinnerClan = 1;
-	else if (MapPointsDiff < 0) WinnerClan = 2;
-
-	return WinnerClan;
+	return Private_DetermineWinnerClan(MapPointsTeam1, MapPointsTeam2);
 }
 
 /**
@@ -45,11 +40,5 @@ Integer EvaluateMap() {
 Integer EvaluateMatch() {
 	declare Integer MatchPointsTeam1 = FlagRush_Scores::GetClanMatchPoints(1);
 	declare Integer MatchPointsTeam2 = FlagRush_Scores::GetClanMatchPoints(2);
-
-	declare Integer WinnerClan = 0;
-	declare Integer MatchPointsDiff = MatchPointsTeam1 - MatchPointsTeam2;
-	if (MatchPointsDiff > 0) WinnerClan = 1;
-	else if (MatchPointsDiff < 0) WinnerClan = 2;
-
-	return WinnerClan;
+	return Private_DetermineWinnerClan(MatchPointsTeam1, MatchPointsTeam2);
 }

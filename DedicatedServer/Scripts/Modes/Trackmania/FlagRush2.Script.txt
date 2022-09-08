@@ -279,6 +279,7 @@ Void Player_Initialize(CSmPlayer Player) {
 	Player.Dossard_Number = "  ";
 	Player.Dossard_Color = <1., 1., 1.>;
 	if (S_UseTeamSkins) Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan - 1);
+	else Player.ForceModelId = NullId;
 	SetPlayerClan(Player, Player.RequestedClan);
 }
 
@@ -363,7 +364,7 @@ Void DropFlag(Vec3 Position) {
 	Flag_Drop(Position, DropStateEndDate);
 }
 
-Void DropFlag_SafePosition() {
+Void DropFlag_LastSafePosition() {
 	DropFlag(FlagRush_Flag::Get().LastSafePosition);
 }
 
@@ -427,7 +428,7 @@ Void OnPlayerDeath(CSmPlayer Player) {
 
 Void OnPlayerOutOfBound(CSmPlayer Player) {
 	FlagRush_Messages::PlayerOutOfBounds(Player);
-	if (Player == FlagRush_Flag::GetFlagCarrierPlayer()) DropFlag_SafePosition();
+	if (Player == FlagRush_Flag::GetFlagCarrierPlayer()) DropFlag_LastSafePosition();
 	Player_Unspawn(Player);
 }
 

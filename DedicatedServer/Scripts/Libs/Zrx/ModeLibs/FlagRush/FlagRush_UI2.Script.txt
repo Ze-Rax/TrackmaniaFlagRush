@@ -157,6 +157,29 @@ Void Private_DetachModules() {
 	Layers::Detach(C_LayerName_Markers);
 }
 
+/**
+ * Sends relevant mode settings values to the clients via netwrite.
+ */
+Void Net_SendModeScriptSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap, Integer NbFlagsToWinRound) {
+	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
+	Net_FlagRush_NbMapsToWinMatch = NbMapsToWinMatch;
+
+	declare netwrite Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
+	Net_FlagRush_NbRoundsToWinMap = NbRoundsToWinMap;
+
+	declare netwrite Integer Net_FlagRush_NbFlagsToWinRound for Teams[0];
+	Net_FlagRush_NbFlagsToWinRound = NbFlagsToWinRound;
+}
+
+Void StartMap() {
+	FlagRush_UIMarkers::StartMap();
+	Layers::Update(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
+}
+
+Void EndMap() {
+	FlagRush_UIMarkers::EndMap();
+}
+
 Void Yield() {
 	FlagRush_UIMarkers::Yield();
 
@@ -178,9 +201,4 @@ Void Load() {
 	Private_LoadUIAll();
 	Private_LoadModules();
 	Private_AttachModules();
-}
-
-Void StartMap() {
-	FlagRush_UIMarkers::StartMap();
-	Layers::Update(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
 }

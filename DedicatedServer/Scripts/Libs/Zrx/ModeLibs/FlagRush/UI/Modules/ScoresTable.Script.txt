@@ -2,7 +2,6 @@
 
 #Include "ColorLib" as CL
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
-#Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt" as FlagRush_GameplayPhase
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Logo.Script.txt" as FlagRush_Logo
 
 #Const C_PlayersPerPage 5
@@ -512,9 +511,7 @@ Text GetManialink() {
 	 * Scores are returned in an array with the clan number as key.
 	 */
 	CSmScore[][Integer] FilterScoresToDisplay() {
-		declare netread Integer Net_FlagRush_GameplayPhase for Teams[0];
-		declare Boolean IsWarmup = Net_FlagRush_GameplayPhase == {{{FlagRush_GameplayPhase::C_Warmup}}};
-
+		declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
 		declare CSmScore[][Integer] ScoresToDisplay = [0 => [], 1 => []];
 		foreach (Score in Scores) {
 			if(Score.TeamNum <= 0 || Score.TeamNum > 2) continue;
@@ -523,7 +520,7 @@ Text GetManialink() {
 
 			// In warmup, do not show disonnected or spectating players.
 			// Outside of warmup, do not show disconnected or spectating players with no points.
-			if(PlayerIsDisconnectedOrSpectator && (IsWarmup || Score.Points + Score.RoundPoints <= 0)) continue;
+			if(PlayerIsDisconnectedOrSpectator && (FlagRush_Net_WarmUpIsRunning || Score.Points + Score.RoundPoints <= 0)) continue;
 			ScoresToDisplay[Score.TeamNum - 1].add(Score);
 		}
 		return ScoresToDisplay;
@@ -533,7 +530,7 @@ Text GetManialink() {
 	 * Updates a playercard with given index in the respective team.
 	 */
 	Void UpdatePlayercard(K_PlayerCard Playercard, CSmScore Score) {
-		declare netread Integer Net_FlagRush_GameplayPhase for Teams[0];
+		declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
 		declare netread Boolean[Text] Net_WarmUpReadyUp_ReadyStates for Teams[0];
 
 		// SpectatorInfo
@@ -550,7 +547,7 @@ Text GetManialink() {
 			Playercard.Name.RelativePosition_V3 = {{{ C_PlayerCard_NameDefaultPosition }}};
 		}
 
-		if (Net_FlagRush_GameplayPhase == {{{ FlagRush_GameplayPhase::C_Warmup }}} && Net_WarmUpReadyUp_ReadyStates.get(Score.User.Login, False)) {
+		if (FlagRush_Net_WarmUpIsRunning && Net_WarmUpReadyUp_ReadyStates.get(Score.User.Login, False)) {
 			Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_Success }}};
 		} else {
 			switch (Score.TeamNum) {

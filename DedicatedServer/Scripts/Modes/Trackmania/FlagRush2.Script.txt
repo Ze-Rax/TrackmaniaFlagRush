@@ -32,7 +32,6 @@
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"								as FlagRush_Map
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"						as FlagRush_Scores
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
-// #Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt"							as FlagRush_GameplayPhase
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"						as FlagRush_Flag
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Handicaps.Script.txt"						as FlagRush_Handicaps
@@ -40,8 +39,8 @@
 
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI2.Script.txt"								as FlagRush_UI
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
+// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"					as FlagRush_Markers
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_Flash
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_Markers
 // #endregion
 
 // ========= //
@@ -118,6 +117,7 @@ Flag_SetAtLandmark(FlagSpawn, FlagSpawnDate);
 
 ***EndTurn***
 ***
+Flag_Reset(True);
 foreach (Player in Players) {
 	UnspawnPlayer(Player);
 }

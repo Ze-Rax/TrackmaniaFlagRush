@@ -1,6 +1,5 @@
 #Include "ColorLib" as CL
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
-#Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt" as FlagRush_GameplayPhase
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as FlagRush_UIShared
 
 Text GetManialink() {
@@ -163,17 +162,17 @@ Text GetManialink() {
 		Timer.TimerLabel.Show();
 		Timer.TimerLabel.Value = TL::TimeToText(
 			ML::Max(RoundTimeLeft, 0),
-			RoundTimeLeft < 10000 && Net_FlagRush_GameplayPhase != {{{ FlagRush_GameplayPhase::C_Warmup }}}
+			RoundTimeLeft < 10000 && !FlagRush_Net_WarmUpIsRunning
 		);
 
-		if (Net_FlagRush_GameplayPhase == {{{ FlagRush_GameplayPhase::C_Warmup }}}) {
+		if (FlagRush_Net_WarmUpIsRunning) {
 			Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
 		} else if (IsTimeLeft && RoundTimeLeft / 1000 < 30) {
 			Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_Error }}};
 		} else {
 			Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_NeutralLight }}};
 		}
-	} else if (Net_FlagRush_GameplayPhase == {{{ FlagRush_GameplayPhase::C_Overtime }}}) {
+	} else if (FlagRush_Net_OvertimeIsRunning) {
 		Timer.Icon.Hide();
 		Timer.TimerLabel.Show();
 		Timer.TimerLabel.TextSizeReal = 1.5;
@@ -193,7 +192,7 @@ Text GetManialink() {
 	 */
 	***UpdateCarrier***
 	***
-	if (Net_FlagRush_GameplayPhase == {{{ FlagRush_GameplayPhase::C_Warmup }}}) {
+	if (FlagRush_Net_WarmUpIsRunning) {
 		Carrier.CarrierLabel.Value = "WarmUp";
 		Carrier.CarrierLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
 	}
@@ -221,7 +220,8 @@ Text GetManialink() {
 		declare netread Integer Net_EndTime for Teams[0];
 		declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
 		declare netread Text Net_FlagRush_FlagCarrierName for Teams[0];
-		declare netread Integer Net_FlagRush_GameplayPhase for Teams[0];
+		declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
+		declare netread Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
 
 		declare CSmPlayer FlagCarrierPlayer;
 

@@ -26,13 +26,13 @@
 // FlagRush Libs
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"						as FlagRush_Common
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"								as FlagRush_Map
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"						as FlagRush_Scores
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
-#Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt"							as FlagRush_GameplayPhase
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
 
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI2.Script.txt"								as FlagRush_UI
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"					as FlagRush_Markers
 
 ///////////////
 // Constants //
@@ -126,6 +126,10 @@
 // Global Variables //
 //////////////////////
 
+declare Boolean Private_Progression_WarmUpIsRunning;
+declare Boolean Private_Progression_PauseIsRunning;
+declare Boolean Private_Progression_OvertimeIsRunning;
+
 ///////////
 // Plugs //
 ///////////
@@ -166,12 +170,11 @@ UseAllies = False;
 CrudeExtrapolation_AllowDelay = False;
 
 ModeUtils::SetEndTime(-1);
-Private_Net_SendModeSettings();
+FlagRush_UI::Net_SendModeScriptSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
 ***
 
 ***LoadLibraries***
 ***
-FlagRush_GameplayPhase::Set(0);
 FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
 //FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
 FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
@@ -257,6 +260,7 @@ if (Progression_MatchPointLimitReached()) {
 ***AfterEndMap***
 ***
 FlagRush_Scores::EndMap();
+FlagRush_UI::EndMap();
 ***
 
 // ~~~~~~~~~~ Round ~~~~~~~~~~ //
@@ -272,7 +276,6 @@ Progression_RoundEndRequested = False;
 ***
 FlagRush_Messages::RoundStart(MB_GetRoundCount(), C_Duration_RoundStart);
 MB_Sleep(C_Duration_RoundStart);
-FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Round);
 StartTime = Now;
 if (S_RoundTimeLimitSeconds > 0) {
 	ModeUtils::SetEndTime(Now + S_RoundTimeLimitSeconds * 1000);
@@ -283,7 +286,9 @@ if (S_RoundTimeLimitSeconds > 0) {
 
 ***EndRound***
 ***
-FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_None);
+Private_Progression_OvertimeIsRunning = False;
+declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
+FlagRush_Net_OvertimeIsRunning = Private_Progression_OvertimeIsRunning;
 
 if (Progression_RoundInvalid()) {
 	FlagRush_Messages::RoundSkip(C_Duration_RoundEnd);
@@ -335,20 +340,17 @@ declare Boolean Progression_RoundEndRequested for This;
 if (Progression_RoundEndRequested) MB_StopRound();
 
 // Round end & overtime conditions
-switch (FlagRush_GameplayPhase::Get()) {
-	case FlagRush_GameplayPhase::C_Round: {
-		if (Progression_FlagLimitReached()) {
-			MB_StopRound();
-		} else if (Progression_TimeLimitReached()) {
-			if (Progression_RoundIsTied() && S_UseOvertime) {
-				+++StartOvertime+++
-			} else {
-				MB_StopRound();
-			}
-		}
+if(Progression_OvertimeIsRunning()) {
+	if (!Progression_RoundIsTied()) {
+		MB_StopRound();
 	}
-	case FlagRush_GameplayPhase::C_Overtime: {
-		if (!Progression_RoundIsTied()) {
+} else {
+	if (Progression_FlagLimitReached()) {
+		MB_StopRound();
+	} else if (Progression_TimeLimitReached()) {
+		if (Progression_RoundIsTied() && S_UseOvertime) {
+			+++StartOvertime+++
+		} else {
 			MB_StopRound();
 		}
 	}
@@ -363,8 +365,10 @@ if (Progression_PauseRequested) {
 
 ***StartOvertime***
 ***
+Private_Progression_OvertimeIsRunning = True;
+declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
+FlagRush_Net_OvertimeIsRunning = Private_Progression_OvertimeIsRunning;
 FlagRush_Messages::OvertimeStart(C_Duration_Overtime);
-FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Overtime);
 ***
 
 // ~~~~~~~~~~ Podium (Match end MVP) ~~~~~~~~~~ //
@@ -379,8 +383,9 @@ FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Overtime);
 
 ***Private_WarmUp***
 ***
-declare PreviousGameplayPhase = FlagRush_GameplayPhase::Get();
-FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Warmup);
+Private_Progression_WarmUpIsRunning = True;
+declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
+FlagRush_Net_WarmUpIsRunning = Private_Progression_WarmUpIsRunning;
 FlagRush_Messages::WarmUpStart(C_Duration_WarmUpStart);
 MB_Sleep(C_Duration_WarmUpStart);
 
@@ -405,11 +410,15 @@ while(!WarmUpReadyUp::WarmUpShouldStop()) {
 
 FlagRush_Messages::WarmUpEnd(C_Duration_WarmUpEnd);
 MB_Sleep(C_Duration_WarmUpEnd);
-FlagRush_GameplayPhase::Set(PreviousGameplayPhase);
+Private_Progression_WarmUpIsRunning = False;
+FlagRush_Net_WarmUpIsRunning = Private_Progression_WarmUpIsRunning;
 ***
 
 ***Private_Pause***
 ***
+Private_Progression_PauseIsRunning = True;
+declare netwrite Boolean FlagRush_Net_PauseIsRunning for Teams[0];
+FlagRush_Net_PauseIsRunning = Private_Progression_PauseIsRunning;
 declare Integer TimeRemaining = EndTime - Now;
 ModeUtils::SetEndTime(-1);
 FlagRush_Messages::PauseStart(C_Duration_PauseStart);
@@ -420,6 +429,8 @@ MB_Sleep(C_Duration_PauseStart);
 FlagRush_Messages::PauseEnd(C_Duration_PauseEnd);
 MB_Sleep(C_Duration_PauseEnd);
 ModeUtils::SetEndTime(Now + TimeRemaining);
+Private_Progression_PauseIsRunning = False;
+FlagRush_Net_PauseIsRunning = Private_Progression_PauseIsRunning;
 ***
 
 // ~~~~~~~~~~ Yield ~~~~~~~~~~ //
@@ -430,7 +441,7 @@ ModeUtils::SetEndTime(Now + TimeRemaining);
 ***Yield***
 ***
 ModeCommands::Yield();
-{ +++Private_HandleProgressionsCommands+++ }
+{ +++Private_Yield_HandleProgressionsCommands+++ }
 FlagRush_UI::Yield();
 FlagRush_Teams::Yield();
 
@@ -450,7 +461,7 @@ foreach (Event in PendingEvents) {
 }
 ***
 
-***Private_HandleProgressionsCommands***
+***Private_Yield_HandleProgressionsCommands***
 ***
 declare CommandUtils::K_Command[] PendingCommands;
 foreach (Event in PendingEvents) {
@@ -554,6 +565,18 @@ foreach (Command in PendingCommands) {
 // Functions //
 ///////////////
 
+Boolean Progression_WarmUpIsRunning() {
+	return Private_Progression_WarmUpIsRunning;
+}
+
+Boolean Progression_PauseIsRunning() {
+	return Private_Progression_PauseIsRunning;
+}
+
+Boolean Progression_OvertimeIsRunning() {
+	return Private_Progression_OvertimeIsRunning;
+}
+
 /**
  * Returns whether any team has won enough maps to win the match.
  */
@@ -608,18 +631,4 @@ Boolean Progression_MapInvalid() {
 Boolean Progression_RoundInvalid() {
 	declare Boolean Progression_RoundEndRequested for This;
 	return Progression_RoundEndRequested || MatchEndRequested;
-}
-
-/**
- * Sends relevant mode settings values to the clients via netwrite.
- */
- Void Private_Net_SendModeSettings() {
-	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
-	Net_FlagRush_NbMapsToWinMatch = S_NbMapsToWinMatch;
-
-	declare netwrite Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
-	Net_FlagRush_NbRoundsToWinMap = S_NbRoundsToWinMap;
-
-	declare netwrite Integer Net_FlagRush_NbFlagsToWinRound for Teams[0];
-	Net_FlagRush_NbFlagsToWinRound = S_NbFlagsToWinRound;
 }

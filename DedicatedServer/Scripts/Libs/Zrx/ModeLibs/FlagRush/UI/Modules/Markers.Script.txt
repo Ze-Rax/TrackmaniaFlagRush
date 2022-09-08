@@ -2,7 +2,6 @@
 
 #Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt"		as UIShared
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"		as FlagRush_Map
-#Include "Libs/Zrx/ModeLibs/FlagRush/GameplayPhase.Script.txt"	as FlagRush_GameplayPhase
 
 #Const C_FlagMarkerFrameId						"marker-flag"
 #Const C_FlagSpawnMarkerFrameIdPrefix	"marker-flag-spawn-"
@@ -228,23 +227,26 @@ Void StartMap() {
 	}
 }
 
+Void EndMap() {
+	Private_ClearOldFlagMarker();
+}
+
 Void Yield() {
-	switch (FlagRush_GameplayPhase::Get()) {
-		case FlagRush_GameplayPhase::C_Warmup: {
-			if (G_FlagMarker != Null) {
-				G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
-			}
-			foreach (Marker in G_FlagSpawnMarkers) {
-				Marker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
-			}
-		}
-		default: {
-			if (G_FlagMarker != Null) {
-				G_FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
-			}
-			foreach (Marker in G_FlagSpawnMarkers) {
-				Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
-			}
-		}
+	declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
+	declare CUIConfigMarker::EHudVisibility FlagMarkerVisibility;
+	declare CUIConfigMarker::EHudVisibility FlagSpawnMarkerVisibility;
+	if (FlagRush_Net_WarmUpIsRunning) {
+		FlagMarkerVisibility = CUIConfigMarker::EHudVisibility::Never;
+		FlagSpawnMarkerVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
+	} else {
+		FlagMarkerVisibility = CUIConfigMarker::EHudVisibility::Always;
+		FlagSpawnMarkerVisibility = CUIConfigMarker::EHudVisibility::Never;
+	}
+
+	if(G_FlagMarker != Null) {
+		G_FlagMarker.HudVisibility = FlagMarkerVisibility;
+	}
+	foreach (Marker in G_FlagSpawnMarkers) {
+		Marker.HudVisibility = FlagSpawnMarkerVisibility;
 	}
 }

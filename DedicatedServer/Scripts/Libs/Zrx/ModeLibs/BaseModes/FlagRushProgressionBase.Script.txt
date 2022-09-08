@@ -59,7 +59,6 @@
 #Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"
 #Setting S_NbFlagsToWinRound								3				as "Number of flags scored to win a round"
 #Setting S_RoundTimeLimitSeconds						360 		as "Round Timelimit (seconds)"
-// TODO: Implement turn based
 #Setting S_UseTurns													False 	as "<hidden>" // "Use turns (Reset after a player scores a flag)"
 #Setting S_UseOvertime											True 		as "Use overtime when round is tied"
 #Setting S_UseWarmUp												True		as "Use warm up"
@@ -88,7 +87,7 @@
 #Command	Command_EndWarmup								(Boolean) as 		"End warmup"
 #Const		C_Command_EndWarmup															"EndWarmup"
 
-// #Command	Command_SkipRound								(Boolean) as				"Skip round"
+#Command	Command_SkipRound								(Boolean) as		"Skip round"
 #Const		C_Command_SkipRound															"SkipRound"
 
 // #Command	Command_SkipMap									(Boolean) as				"Skip map"
@@ -135,8 +134,10 @@
 
 ***Settings***
 ***
+// ModeBase settings
 MB_Settings_UseDefaultPodiumSequence = False;
 
+// CSmMode settings
 SpawnInvulnerabilityDuration = 0;
 UnspawnAnimDuration = 0;
 SpawnDelayDuration = 0;
@@ -165,7 +166,7 @@ UseAllies = False;
 CrudeExtrapolation_AllowDelay = False;
 
 ModeUtils::SetEndTime(-1);
-Progression_Net_SendModeSettings();
+Private_Net_SendModeSettings();
 ***
 
 ***LoadLibraries***
@@ -274,7 +275,7 @@ MB_Sleep(C_Duration_RoundStart);
 FlagRush_GameplayPhase::Set(FlagRush_GameplayPhase::C_Round);
 StartTime = Now;
 if (S_RoundTimeLimitSeconds > 0) {
-	ModeUtils::SetEndTime(Now + S_RoundTimeLimitSeconds * 1000 + FlagRush_Common::C_SpawnAnimDuration);
+	ModeUtils::SetEndTime(Now + S_RoundTimeLimitSeconds * 1000);
 } else {
 	ModeUtils::SetEndTime(-1);
 }
@@ -306,6 +307,19 @@ FlagRush_Scores::EndRound();
 ***
 
 // ~~~~~~~~~~ Turn ~~~~~~~~~~ //
+
+***StartTurn***
+***
+// Pause handling (Execution)
+declare Boolean Progression_PauseRequested for This;
+if (Progression_PauseRequested) {
+	Progression_PauseRequested = False;
+	+++Private_Pause+++
+}
+
+// Add spawn anim duration
+if (S_RoundTimeLimitSeconds > 0) ModeUtils::SetEndTime(EndTime + FlagRush_Common::C_SpawnAnimDuration);
+***
 
 ***EndTurn***
 ***
@@ -340,11 +354,10 @@ switch (FlagRush_GameplayPhase::Get()) {
 	}
 }
 
-// Pause handling
+// Pause handling (Request reaction)
 declare Boolean Progression_PauseRequested for This;
 if (Progression_PauseRequested) {
-	Progression_PauseRequested = False;
-	+++Private_Pause+++
+	MB_StopTurn();
 }
 ***
 
@@ -406,7 +419,7 @@ MB_Sleep(C_Duration_PauseStart);
 
 FlagRush_Messages::PauseEnd(C_Duration_PauseEnd);
 MB_Sleep(C_Duration_PauseEnd);
-ModeUtils::SetEndTime(Now + TimeRemaining + FlagRush_Common::C_SpawnAnimDuration);
+ModeUtils::SetEndTime(Now + TimeRemaining);
 ***
 
 // ~~~~~~~~~~ Yield ~~~~~~~~~~ //
@@ -600,7 +613,7 @@ Boolean Progression_RoundInvalid() {
 /**
  * Sends relevant mode settings values to the clients via netwrite.
  */
- Void Progression_Net_SendModeSettings() {
+ Void Private_Net_SendModeSettings() {
 	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
 	Net_FlagRush_NbMapsToWinMatch = S_NbMapsToWinMatch;
 

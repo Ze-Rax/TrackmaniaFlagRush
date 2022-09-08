@@ -393,6 +393,7 @@ Void ScoreFlag(CSmPlayer Player) {
 	}
 	Flag_Reset(True);
 	Player_ResetHandicaps(Player);
+	if (S_UseTurns) MB_StopTurn();
 }
 // #endregion
 

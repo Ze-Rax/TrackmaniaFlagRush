@@ -230,13 +230,13 @@ Void MB_SkipPodiumSequence() {
  *	where a script yields
  */
  Void MB_Yield() {
-	+++BeforeYield+++
+	{ +++BeforeYield+++ }
 	if (MB_Private_CurrentNow > 0 && Now > MB_Private_CurrentNow) {
 		log("WARNING: A frame was skipped with `yield`, `sleep()` or `wait()` ("^MB_Private_CurrentNow^" > "^Now^"). This is considered bad practice. Always use `MB_Yield()` or `MB_Sleep()` to advance to the next frame.");
 	}
 	yield;
 	MB_Private_CurrentNow = Now;
-	+++Yield+++
+	{ +++Yield+++ }
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //

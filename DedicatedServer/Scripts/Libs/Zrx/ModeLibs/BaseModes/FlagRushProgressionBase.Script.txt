@@ -5,7 +5,7 @@
 
 // #RequireContext CSmMode
 
-// TODO: XmlRpc, UISequences, Modesettings updates, Time warning
+// TODO: XmlRpc, UISequences, Time warning
 
 #Extends "Libs/Zrx/ModeLibs/BaseModes/ModeBase.Script.txt"
 
@@ -121,14 +121,17 @@
 #Const		C_Command_BalanceTeams													"BalanceTeams"
 
 #Const		C_Command_SetBots																"SetBots"
+#Const		C_Command_SetTimeLeft														"SetTimeLeft"
 
 //////////////////////
 // Global Variables //
 //////////////////////
 
-declare Boolean Private_Progression_WarmUpIsRunning;
-declare Boolean Private_Progression_PauseIsRunning;
-declare Boolean Private_Progression_OvertimeIsRunning;
+declare Integer Private_Progression_RoundTimeRemaining;
+
+declare Boolean Private_WarmUpIsRunning;
+declare Boolean Private_PauseIsRunning;
+declare Boolean Private_OvertimeIsRunning;
 
 ///////////
 // Plugs //
@@ -277,18 +280,14 @@ Progression_RoundEndRequested = False;
 FlagRush_Messages::RoundStart(MB_GetRoundCount(), C_Duration_RoundStart);
 MB_Sleep(C_Duration_RoundStart);
 StartTime = Now;
-if (S_RoundTimeLimitSeconds > 0) {
-	ModeUtils::SetEndTime(Now + S_RoundTimeLimitSeconds * 1000);
-} else {
-	ModeUtils::SetEndTime(-1);
-}
+Private_Progression_RoundTimeRemaining = S_RoundTimeLimitSeconds * 1000;
 ***
 
 ***EndRound***
 ***
-Private_Progression_OvertimeIsRunning = False;
+Private_OvertimeIsRunning = False;
 declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
-FlagRush_Net_OvertimeIsRunning = Private_Progression_OvertimeIsRunning;
+FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
 
 if (Progression_RoundInvalid()) {
 	FlagRush_Messages::RoundSkip(C_Duration_RoundEnd);
@@ -323,11 +322,14 @@ if (Progression_PauseRequested) {
 }
 
 // Add spawn anim duration
-if (S_RoundTimeLimitSeconds > 0) ModeUtils::SetEndTime(EndTime + FlagRush_Common::C_SpawnAnimDuration);
+if (S_RoundTimeLimitSeconds > 0) {
+	ModeUtils::SetEndTime(Now + Private_Progression_RoundTimeRemaining + FlagRush_Common::C_SpawnAnimDuration);
+}
 ***
 
 ***EndTurn***
 ***
+Private_Progression_RoundTimeRemaining = EndTime - Now;
 MB_ClearAllMessages();
 ***
 
@@ -356,7 +358,7 @@ if(Progression_OvertimeIsRunning()) {
 	}
 }
 
-// Pause handling (Request reaction)
+// Pause handling (Request reaction, execution on StartTurn)
 declare Boolean Progression_PauseRequested for This;
 if (Progression_PauseRequested) {
 	MB_StopTurn();
@@ -365,9 +367,9 @@ if (Progression_PauseRequested) {
 
 ***StartOvertime***
 ***
-Private_Progression_OvertimeIsRunning = True;
+Private_OvertimeIsRunning = True;
 declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
-FlagRush_Net_OvertimeIsRunning = Private_Progression_OvertimeIsRunning;
+FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
 FlagRush_Messages::OvertimeStart(C_Duration_Overtime);
 ***
 
@@ -383,9 +385,9 @@ FlagRush_Messages::OvertimeStart(C_Duration_Overtime);
 
 ***Private_WarmUp***
 ***
-Private_Progression_WarmUpIsRunning = True;
+Private_WarmUpIsRunning = True;
 declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
-FlagRush_Net_WarmUpIsRunning = Private_Progression_WarmUpIsRunning;
+FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
 FlagRush_Messages::WarmUpStart(C_Duration_WarmUpStart);
 MB_Sleep(C_Duration_WarmUpStart);
 
@@ -410,16 +412,15 @@ while(!WarmUpReadyUp::WarmUpShouldStop()) {
 
 FlagRush_Messages::WarmUpEnd(C_Duration_WarmUpEnd);
 MB_Sleep(C_Duration_WarmUpEnd);
-Private_Progression_WarmUpIsRunning = False;
-FlagRush_Net_WarmUpIsRunning = Private_Progression_WarmUpIsRunning;
+Private_WarmUpIsRunning = False;
+FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
 ***
 
 ***Private_Pause***
 ***
-Private_Progression_PauseIsRunning = True;
+Private_PauseIsRunning = True;
 declare netwrite Boolean FlagRush_Net_PauseIsRunning for Teams[0];
-FlagRush_Net_PauseIsRunning = Private_Progression_PauseIsRunning;
-declare Integer TimeRemaining = EndTime - Now;
+FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 ModeUtils::SetEndTime(-1);
 FlagRush_Messages::PauseStart(C_Duration_PauseStart);
 MB_Sleep(C_Duration_PauseStart);
@@ -428,9 +429,8 @@ MB_Sleep(C_Duration_PauseStart);
 
 FlagRush_Messages::PauseEnd(C_Duration_PauseEnd);
 MB_Sleep(C_Duration_PauseEnd);
-ModeUtils::SetEndTime(Now + TimeRemaining);
-Private_Progression_PauseIsRunning = False;
-FlagRush_Net_PauseIsRunning = Private_Progression_PauseIsRunning;
+Private_PauseIsRunning = False;
+FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 ***
 
 // ~~~~~~~~~~ Yield ~~~~~~~~~~ //
@@ -442,6 +442,7 @@ FlagRush_Net_PauseIsRunning = Private_Progression_PauseIsRunning;
 ***
 ModeCommands::Yield();
 { +++Private_Yield_HandleProgressionsCommands+++ }
+{ +++Private_Yield_HandleCriticalModeScriptSettingsUpdates+++ }
 FlagRush_UI::Yield();
 FlagRush_Teams::Yield();
 
@@ -458,6 +459,50 @@ foreach (Event in PendingEvents) {
 			UI.SendChat("""Welcome to $l[https://discord.gg/J6ApdyRqEZ]$44f「$fffFlagRush$f44」$l $fff[{{{Version}}}]!""");
 		}
 	}
+}
+***
+
+***Private_Yield_HandleCriticalModeScriptSettingsUpdates***
+***
+// Point limit settings
+declare Integer FlagRush_PreviousSettings_NbMapsToWinMatch for This;
+declare Integer FlagRush_PreviousSettings_NbRoundsToWinMap for This;
+declare Integer FlagRush_PreviousSettings_NbFlagsToWinRound for This;
+if (
+	FlagRush_PreviousSettings_NbMapsToWinMatch  != S_NbMapsToWinMatch
+	|| FlagRush_PreviousSettings_NbRoundsToWinMap  != S_NbRoundsToWinMap
+	|| FlagRush_PreviousSettings_NbFlagsToWinRound != S_NbFlagsToWinRound
+) {
+	FlagRush_PreviousSettings_NbMapsToWinMatch = S_NbMapsToWinMatch;
+	FlagRush_PreviousSettings_NbRoundsToWinMap = S_NbRoundsToWinMap;
+	FlagRush_PreviousSettings_NbFlagsToWinRound = S_NbFlagsToWinRound;
+	FlagRush_UI::Net_SendModeScriptSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
+}
+
+// Team configs
+declare Boolean FlagRush_PreviousSettings_UseClubTags for This;
+declare Text FlagRush_PreviousSetting_Team1Name for This;
+declare Text FlagRush_PreviousSetting_Team2Name for This;
+// declare Text FlagRush_PreviousSetting_Team1Color for This;
+// declare Text FlagRush_PreviousSetting_Team2Color for This;
+if (
+	FlagRush_PreviousSettings_UseClubTags != S_UseClubTags
+	|| FlagRush_PreviousSetting_Team1Name != S_Team1Name
+	|| FlagRush_PreviousSetting_Team2Name != S_Team2Name
+	// || FlagRush_PreviousSetting_Team1Color != S_Team1Color
+	// || FlagRush_PreviousSetting_Team2Color != S_Team2Color
+) {
+	FlagRush_PreviousSettings_UseClubTags = S_UseClubTags;
+	FlagRush_Teams::UseClubTags(S_UseClubTags);
+	FlagRush_PreviousSetting_Team1Name = S_Team1Name;
+	FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
+	FlagRush_PreviousSetting_Team2Name = S_Team2Name;
+	FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
+	// FlagRush_PreviousSetting_Team1Color = S_Team1Color;
+	// FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
+	// FlagRush_PreviousSetting_Team2Color = S_Team2Color;
+	// FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
+	FlagRush_Teams::Init();
 }
 ***
 
@@ -548,6 +593,11 @@ foreach (Command in PendingCommands) {
 			Users_SetNbFakeUsers(Amount, Amount);
 			CommandText = """Set {{{ Amount }}} bots.""";
 		}
+		case C_Command_SetTimeLeft: {
+			if (!MB_TurnIsRunning()) return;
+			ModeUtils::SetEndTime(Now + Command.ValueInteger * 1000);
+			CommandText = """Set time limit to {{{ Command.ValueInteger }}} seconds remaining.""";
+		}
 		case C_Command_Announce: {
 			UIManager.UIAll.QueueMessage(3000, FlagRush_Messages::C_MessagePriority_Default, CUIConfig::EMessageDisplay::Big, Command.ValueText, CUIConfig::EUISound::Default, 1);
 			CommandText = """Message: $<{{{ Command.ValueText }}}$>""";
@@ -566,15 +616,15 @@ foreach (Command in PendingCommands) {
 ///////////////
 
 Boolean Progression_WarmUpIsRunning() {
-	return Private_Progression_WarmUpIsRunning;
+	return Private_WarmUpIsRunning;
 }
 
 Boolean Progression_PauseIsRunning() {
-	return Private_Progression_PauseIsRunning;
+	return Private_PauseIsRunning;
 }
 
 Boolean Progression_OvertimeIsRunning() {
-	return Private_Progression_OvertimeIsRunning;
+	return Private_OvertimeIsRunning;
 }
 
 /**

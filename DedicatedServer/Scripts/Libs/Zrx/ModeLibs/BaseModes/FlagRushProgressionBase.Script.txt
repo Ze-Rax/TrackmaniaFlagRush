@@ -33,24 +33,24 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI2.Script.txt"								as FlagRush_UI
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"					as FlagRush_Markers
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"							as FlagRush_MVP
 
 ///////////////
 // Constants //
 ///////////////
 
 // Duration / Timings for sequences and/or messages
-// TODO: Fix timings
-#Const C_Duration_Podium				250 // 10000
-#Const C_Duration_MapStart			250 // 3000
-#Const C_Duration_MapEnd				250 // 5000
-#Const C_Duration_RoundStart		250 // 3000
-#Const C_Duration_RoundEnd			250 // 3000
-#Const C_Duration_Overtime			250 // 3000
-#Const C_Duration_WarmUpStart		250 // 3000
-#Const C_Duration_WarmUpEnd			250 // 3000
-#Const C_Duration_PauseStart		250 // 3000
-#Const C_Duration_PauseEnd			250 // 3000
-#Const C_Duration_EventMessage	250 // 1500
+#Const C_Duration_Podium				15000 // 15000
+#Const C_Duration_MapStart			3000 // 3000
+#Const C_Duration_MapEnd				3000 // 5000
+#Const C_Duration_RoundStart		3000 // 3000
+#Const C_Duration_RoundEnd			3000 // 3000
+#Const C_Duration_Overtime			3000 // 3000
+#Const C_Duration_WarmUpStart		3000 // 3000
+#Const C_Duration_WarmUpEnd			3000 // 3000
+#Const C_Duration_PauseStart		3000 // 3000
+#Const C_Duration_PauseEnd			3000 // 3000
+#Const C_Duration_EventMessage	1500 // 1500
 
 //////////////
 // Settings //
@@ -336,6 +336,7 @@ if (S_RoundTimeLimitSeconds > 0) {
 ***EndTurn***
 ***
 Private_Progression_RoundTimeRemaining = EndTime - Now;
+ModeUtils::SetEndTime(-1);
 MB_ClearAllMessages();
 ***
 
@@ -393,8 +394,12 @@ FlagRush_Messages::OvertimeStart(C_Duration_Overtime);
 
 ***PodiumSequence***
 ***
-// TODO: implement
-{}
+declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMatch();
+FlagRush_Messages::MatchWin(WinnerClan, C_Duration_Podium / 3);
+MB_Sleep(C_Duration_Podium / 3);
+FlagRush_MVP::Toggle(True);
+MB_Sleep(C_Duration_Podium / 3 * 2);
+FlagRush_MVP::Toggle(False);
 ***
 
 // ~~~~~~~~~~ WarmUp / Pause ~~~~~~~~~~ //

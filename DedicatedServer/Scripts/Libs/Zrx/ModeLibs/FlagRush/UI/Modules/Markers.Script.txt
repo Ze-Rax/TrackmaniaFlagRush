@@ -181,6 +181,7 @@ Void Private_ClearOldFlagMarker() {
 			}
 		}
 	}
+	G_FlagMarker = Null;
 }
 
 Void FlagMarker_SetOnLandmark(CMapLandmark Landmark) {

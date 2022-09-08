@@ -146,3 +146,15 @@ Void PlayerOutOfBounds(CSmPlayer Player) {
 	declare CUIConfig UI = UIManager.GetUI(Player);
 	if(UI != Null) UI.QueueMessage(2000, 1, CUIConfig::EMessageDisplay::Small, "", CUIConfig::EUISound::Capture, 1);
 }
+
+Void TimeLimit60SecondsRemaining(Integer Duration) {
+	declare Text Message ="""$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}60 seconds remaining$>""";
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::TiePoint);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Chrono);
+}
+
+Void TimeLimit30SecondsRemaining(Integer Duration) {
+	declare Text Message ="""$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}30 seconds remaining$>""";
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::TiePoint);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Chrono);
+}

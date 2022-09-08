@@ -5,7 +5,7 @@
 
 // #RequireContext CSmMode
 
-// TODO: XmlRpc, UISequences, Time warning
+// TODO: XmlRpc, UISequences
 
 #Extends "Libs/Zrx/ModeLibs/BaseModes/ModeBase.Script.txt"
 
@@ -40,16 +40,17 @@
 
 // Duration / Timings for sequences and/or messages
 // TODO: Fix timings
-#Const C_Duration_Podium			250 // 10000
-#Const C_Duration_MapStart		250 // 3000
-#Const C_Duration_MapEnd			250 // 5000
-#Const C_Duration_RoundStart	250 // 3000
-#Const C_Duration_RoundEnd		250 // 3000
-#Const C_Duration_Overtime		250 // 3000
-#Const C_Duration_WarmUpStart	250 // 3000
-#Const C_Duration_WarmUpEnd		250 // 3000
-#Const C_Duration_PauseStart	250 // 3000
-#Const C_Duration_PauseEnd		250 // 3000
+#Const C_Duration_Podium				250 // 10000
+#Const C_Duration_MapStart			250 // 3000
+#Const C_Duration_MapEnd				250 // 5000
+#Const C_Duration_RoundStart		250 // 3000
+#Const C_Duration_RoundEnd			250 // 3000
+#Const C_Duration_Overtime			250 // 3000
+#Const C_Duration_WarmUpStart		250 // 3000
+#Const C_Duration_WarmUpEnd			250 // 3000
+#Const C_Duration_PauseStart		250 // 3000
+#Const C_Duration_PauseEnd			250 // 3000
+#Const C_Duration_EventMessage	250 // 1500
 
 //////////////
 // Settings //
@@ -128,6 +129,9 @@
 //////////////////////
 
 declare Integer Private_Progression_RoundTimeRemaining;
+
+declare Boolean Private_60SecondsWarningEnabled;
+declare Boolean Private_30SecondsWarningEnabled;
 
 declare Boolean Private_WarmUpIsRunning;
 declare Boolean Private_PauseIsRunning;
@@ -240,7 +244,7 @@ if (S_UseWarmUp) +++Private_WarmUp+++
 
 ***EndMap***
 ***
-if (Progression_MapInvalid()) {
+if (Progression_MapIsInvalid()) {
 	FlagRush_Messages::MapSkip(C_Duration_MapEnd);
 } else {
 	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMap();
@@ -281,6 +285,8 @@ FlagRush_Messages::RoundStart(MB_GetRoundCount(), C_Duration_RoundStart);
 MB_Sleep(C_Duration_RoundStart);
 StartTime = Now;
 Private_Progression_RoundTimeRemaining = S_RoundTimeLimitSeconds * 1000;
+Private_30SecondsWarningEnabled = Private_Progression_RoundTimeRemaining > 30000;
+Private_60SecondsWarningEnabled = Private_Progression_RoundTimeRemaining > 60000;
 ***
 
 ***EndRound***
@@ -289,7 +295,7 @@ Private_OvertimeIsRunning = False;
 declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
 FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
 
-if (Progression_RoundInvalid()) {
+if (Progression_RoundIsInvalid()) {
 	FlagRush_Messages::RoundSkip(C_Duration_RoundEnd);
 } else {
 	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateRound();
@@ -356,6 +362,16 @@ if(Progression_OvertimeIsRunning()) {
 			MB_StopRound();
 		}
 	}
+}
+
+// Time warning
+if(EndTime - Now < 60000 && Private_60SecondsWarningEnabled)  {
+	Private_60SecondsWarningEnabled = False;
+	FlagRush_Messages::TimeLimit60SecondsRemaining(C_Duration_EventMessage);
+}
+if (EndTime - Now < 30000 && Private_30SecondsWarningEnabled) {
+	Private_30SecondsWarningEnabled = False;
+	FlagRush_Messages::TimeLimit30SecondsRemaining(C_Duration_EventMessage);
 }
 
 // Pause handling (Request reaction, execution on StartTurn)
@@ -627,23 +643,14 @@ Boolean Progression_OvertimeIsRunning() {
 	return Private_OvertimeIsRunning;
 }
 
-/**
- * Returns whether any team has won enough maps to win the match.
- */
 Boolean Progression_MatchPointLimitReached() {
 	return ML::Max(FlagRush_Scores::GetClanMatchPoints(1), FlagRush_Scores::GetClanMatchPoints(2)) >= S_NbMapsToWinMatch;
 }
 
-/**
- * Returns whether any team has won enough rounds to win the map.
- */
 Boolean Progression_MapPointLimitReached() {
 	return ML::Max(FlagRush_Scores::GetClanMapPoints(1), FlagRush_Scores::GetClanMapPoints(2)) >= S_NbRoundsToWinMap;
 }
 
-/**
- * Returns whether any team has scored enough flags to win the round.
- */
 Boolean Progression_FlagLimitReached() {
 	if (S_NbFlagsToWinRound <= 0) return False;
 	declare Integer RoundPointsTeam1 = FlagRush_Scores::GetClanRoundPoints(1);
@@ -651,34 +658,20 @@ Boolean Progression_FlagLimitReached() {
 	return ML::Max(RoundPointsTeam1, RoundPointsTeam2) >= S_NbFlagsToWinRound;
 }
 
-/**
- * Returns whether the round time ran out.
- */
 Boolean Progression_TimeLimitReached() {
 	if (S_RoundTimeLimitSeconds <= 0) return False;
 	return Now > EndTime;
 }
 
-/**
- * Returns whether both teams have the same amount of flags scored.
- */
 Boolean Progression_RoundIsTied() {
 	return FlagRush_MatchEvaluation::EvaluateRound() == 0;
 }
 
-/**
- * Returns whether the current map is considered invalid.
- * A map is invalid when it was explicitly skipped (MatchEndRequested == True).
- */
-Boolean Progression_MapInvalid() {
+Boolean Progression_MapIsInvalid() {
 	return MatchEndRequested;
 }
 
-/**
- * Return whether the current round is considered invalid.
- * A round is invalid when the map is invalid or the round was explicitly skipped (Progression_RoundEndRequested (Trait!) == True).
- */
-Boolean Progression_RoundInvalid() {
+Boolean Progression_RoundIsInvalid() {
 	declare Boolean Progression_RoundEndRequested for This;
 	return Progression_RoundEndRequested || MatchEndRequested;
 }

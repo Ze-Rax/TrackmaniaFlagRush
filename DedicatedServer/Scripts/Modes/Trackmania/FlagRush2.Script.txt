@@ -48,7 +48,6 @@
 // ========= //
 
 // #region Constants
-#Const C_Duration_EventMessage 1500
 #Const C_AssistTimeThreshold 5000
 // #endregion
 

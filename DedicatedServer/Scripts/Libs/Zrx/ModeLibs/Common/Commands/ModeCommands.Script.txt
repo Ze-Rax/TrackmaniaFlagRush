@@ -155,19 +155,19 @@ main() {
 						} else if (Event.Control == ButtonCustomCommandSend) {
 							OnSendCommand();
 						} else {
-							if(QuickCommands.existskey(Event.Control as CMlQuad)) {
+							if(Event.Control is CMlQuad && QuickCommands.existskey(Event.Control as CMlQuad)) {
 								declare Text CommandName = "{{{ CommandUtils::C_CommandPrefix }}}" ^ QuickCommands[Event.Control as CMlQuad].Value;
 								SendCustomEvent(CommandName, []);
 							}
 						}
 					}
 					case CMlScriptEvent::Type::MouseOver: {
-						if(QuickCommands.existskey(Event.Control as CMlQuad)) {
+						if(Event.Control is CMlQuad && QuickCommands.existskey(Event.Control as CMlQuad)) {
 							QuickCommands[Event.Control as CMlQuad].Visible = True;
 						}
 					}
 					case CMlScriptEvent::Type::MouseOut: {
-						if(QuickCommands.existskey(Event.Control as CMlQuad)) {
+						if(Event.Control is CMlQuad && QuickCommands.existskey(Event.Control as CMlQuad)) {
 							QuickCommands[Event.Control as CMlQuad].Visible = False;
 						}
 					}

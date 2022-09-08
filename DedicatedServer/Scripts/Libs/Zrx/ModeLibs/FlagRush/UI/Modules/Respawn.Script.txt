@@ -8,8 +8,8 @@ Text GetManialink() {
 	<manialink version="3" name="FlagRush_RespawnCounter">
 		<frame pos="-40 -50" id="rs-frame" hidden="1">
 			<label pos="40 -5" z-index="2" size="80 6" text="" halign="center" style="TextCardSmall" textsize="3" valign="center2" id="rs-label" textcolor="fff"/>
-			<frame id="rs-gauge-frame" size="80 10">
-				<quad pos="0 0" z-index="1" size="80 10" id="rs-gauge" style="UICommon64_1" substyle="BgFrame1" colorize="004" opacity="0.7"/>
+			<frame id="rs-gauge-frame" z-index="1" size="80 10">
+				<quad pos="0 0" size="80 10" id="rs-gauge" style="UICommon64_1" substyle="BgFrame1" colorize="004" opacity="0.7"/>
 			</frame>
 		<quad pos="0 0" z-index="0" size="80 10" id="rs-gauge2" style="UICommon64_1" substyle="BgFrame1" colorize="000" opacity="0.7"/>
 		</frame>

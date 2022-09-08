@@ -40,17 +40,17 @@
 ///////////////
 
 // Duration / Timings for sequences and/or messages
-#Const C_Duration_Podium				15000 // 15000
-#Const C_Duration_MapStart			3000 // 3000
-#Const C_Duration_MapEnd				3000 // 5000
-#Const C_Duration_RoundStart		3000 // 3000
-#Const C_Duration_RoundEnd			3000 // 3000
-#Const C_Duration_Overtime			3000 // 3000
-#Const C_Duration_WarmUpStart		3000 // 3000
-#Const C_Duration_WarmUpEnd			3000 // 3000
-#Const C_Duration_PauseStart		3000 // 3000
-#Const C_Duration_PauseEnd			3000 // 3000
-#Const C_Duration_EventMessage	1500 // 1500
+#Const C_Duration_Podium				15000
+#Const C_Duration_MapStart			3000
+#Const C_Duration_MapEnd				5000
+#Const C_Duration_RoundStart		3000
+#Const C_Duration_RoundEnd			3000
+#Const C_Duration_Overtime			2000
+#Const C_Duration_WarmUpStart		2000
+#Const C_Duration_WarmUpEnd			2000
+#Const C_Duration_PauseStart		2000
+#Const C_Duration_PauseEnd			2000
+#Const C_Duration_EventMessage	2000
 
 //////////////
 // Settings //
@@ -327,7 +327,7 @@ if (Progression_PauseRequested) {
 	+++Private_Pause+++
 }
 
-// Add spawn anim duration
+// Set end time
 if (S_RoundTimeLimitSeconds > 0) {
 	ModeUtils::SetEndTime(Now + Private_Progression_RoundTimeRemaining + FlagRush_Common::C_SpawnAnimDuration);
 }

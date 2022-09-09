@@ -30,7 +30,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
 
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI2.Script.txt"								as FlagRush_UI
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI.Script.txt"								as FlagRush_UI
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"					as FlagRush_Markers
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"							as FlagRush_MVP

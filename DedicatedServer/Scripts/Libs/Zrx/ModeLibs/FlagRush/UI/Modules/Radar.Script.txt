@@ -39,15 +39,15 @@ Text GetManialink() {
 	<manialink version="3" name="FlagRush_Radar">
 		<!-- Framemodels -->
 		<framemodel id="marker-player">
-			<label pos="0 -0.5" size="10 10" z-index="1" text="" textsize="5" rot="-45" halign="center" valign="center2" id="icon"/>
-			<quad size="15 15" halign="center" valign="center" style="Bgs1InRace" substyle="Glow" opacity="{{{ C_PlayerMarkerGlowOpacity }}}" id="glow"/>
+			<label id="icon" pos="0 -0.5" z-index="1" size="10 10"  text="" textsize="5" rot="-45" halign="center" valign="center2" />
+			<quad id="glow" size="15 15" z-index="0" halign="center" valign="center" style="Bgs1InRace" substyle="Glow" opacity="{{{ C_PlayerMarkerGlowOpacity }}}" />
 		</framemodel>
 
 		<framemodel id="marker-flag">
-			<quad size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light" id="icon"/>
-			<quad size="17.5 17.5" halign="center" valign="center" style="Bgs1InRace" substyle="Glow" id="glow" opacity="0.5" hidden="1"/>
-			<quad id="up" pos="0 5.5" size="6 6" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" hidden="1" />
-			<quad id="down" pos="0 -5.5" size="6 6" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center" hidden="1"/>
+			<quad id="icon" z-index="1" size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light" />
+			<quad id="glow" z-index="0" size="17.5 17.5" halign="center" valign="center" style="Bgs1InRace" substyle="Glow"  opacity="0.5" hidden="1"/>
+			<quad id="up" pos="0 5.5" z-index="2" size="6 6" halign="center" valign="center" style="UICommon64_2" substyle="ArrowUpSlim_light" hidden="1" />
+			<quad id="down" pos="0 -5.5" z-index="2" size="6 6" halign="center" valign="center" style="UICommon64_2" substyle="ArrowDownSlim_light" hidden="1"/>
 		</framemodel>
 
 		<!-- Radar area -->
@@ -416,6 +416,14 @@ Text GetManialink() {
 			 * Updates the flag marker frame.
 			 */
 			Void UpdateFlagMarker() {
+				// Hide in warmup
+				declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
+				if (FlagRush_Net_WarmUpIsRunning) {
+					FlagMarker.Frame.Hide();
+					return;
+				}
+				FlagMarker.Frame.Show();
+
 				// Determine releative position on radar
 				declare netread Vec3 Net_FlagRush_FlagPosition for Teams[0];
 				declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];

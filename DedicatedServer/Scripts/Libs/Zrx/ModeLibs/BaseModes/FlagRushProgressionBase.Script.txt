@@ -5,7 +5,7 @@
 
 // #RequireContext CSmMode
 
-// TODO: XmlRpc, UISequences, Skip match on all players leave
+// TODO: XmlRpc, UISequences
 
 #Extends "Libs/Zrx/ModeLibs/BaseModes/ModeBase.Script.txt"
 
@@ -469,6 +469,7 @@ FlagRush_UI::Yield();
 ModeEvents::Yield();
 
 declare Boolean ReinitTeams;
+declare Boolean SkipMatch;
 foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 	switch (Event.Type) {
 		case ModeEvents::C_PlayerLifecycleEventType_PlayerAdded: {
@@ -482,16 +483,29 @@ foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 	}
 
 	// Check if player event requires team reinitialization
-	if (!ReinitTeams) {
-		declare Boolean PlayerAdded = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerAdded && !Event.IsSpectator;
-		declare Boolean PlayerRemoved = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerRemoved && !Event.IsSpectator;
-		declare Boolean PlayerSpectatorChange = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerToSpectator
-				|| Event.Type == ModeEvents::C_PlayerLifecycleEventType_SpectatorToPlayer;
-		declare Boolean PlayerClanChange = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerClanChange;
-		ReinitTeams = PlayerAdded || PlayerRemoved || PlayerSpectatorChange || PlayerClanChange;
+	declare Boolean PlayerAdded = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerAdded && !Event.IsSpectator;
+	declare Boolean PlayerRemoved = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerRemoved && !Event.IsSpectator;
+	declare Boolean PlayerClanChange = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerClanChange;
+	declare Boolean PlayerSpectatorChange = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerToSpectator
+			|| Event.Type == ModeEvents::C_PlayerLifecycleEventType_SpectatorToPlayer;
+	ReinitTeams = ReinitTeams || PlayerAdded || PlayerRemoved || PlayerClanChange || PlayerSpectatorChange;
+
+	// Skip match if no player is left after player left or moved to spectator
+	SkipMatch = SkipMatch || Players.count == 0 && (PlayerRemoved || Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerToSpectator);
+}
+
+if (ReinitTeams) {
+	FlagRush_Teams::Init();
+}
+
+if (SkipMatch) {
+	MatchEndRequested = True; // Invalidate Map, Round, ...
+	MB_StopMatch();
+	declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0]; // Can't use global variable in yield
+	if (FlagRush_Net_WarmUpIsRunning) {
+		WarmUpReadyUp::Stop();
 	}
 }
-if (ReinitTeams) FlagRush_Teams::Init();
 ***
 
 ***Private_Yield_HandleCriticalModeScriptSettingsUpdates***

@@ -52,7 +52,6 @@ Void Private_UpdatePlayerEvents() {
 				});
 			}
 			case CSmModeEvent::EType::OnPlayerRemoved: {
-				log(Event.User.Name);
 				declare Boolean ModeEvents_Private_WasSpectator for Event.User;
 				declare Integer ModeEvents_Private_PrevClan for Event.User;
 				G_PendingPlayerLifecycleEvents.add(K_PlayerLifecycleEvent{

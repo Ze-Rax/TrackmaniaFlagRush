@@ -2,6 +2,8 @@
 
 #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"									as ModeUtils
 #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"									as EventFeed
+
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"					as FlagRush_Common
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"						as FlagRush_Teams
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt"	as FlagRush_Colors
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt"					as FlagRush_Sound
@@ -162,4 +164,8 @@ Void TimeLimit30SecondsRemaining(Integer Duration) {
 Void Welcome(CSmPlayer Player, Text Version) {
 	declare CUIConfig UI = UIManager.GetUI(Player);
 	UI.SendChat("""Welcome to $l[https://discord.gg/J6ApdyRqEZ]$44f「$fffFlagRush$f44」$l $g[{{{Version}}}]!""");
+}
+
+Void CriticalSettingUpdate_RestartTurn() {
+	UIManager.UIAll.SendChat("""{{{ FlagRush_Common::C_LogPrefix }}} $<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}A critical setting was updated! Restarting the the current turn...$>""");
 }

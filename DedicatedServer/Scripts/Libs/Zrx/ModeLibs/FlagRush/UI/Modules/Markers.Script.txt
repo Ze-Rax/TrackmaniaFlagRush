@@ -1,6 +1,6 @@
 //#RequireContext CSmMlScriptIngame
 
-#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt"		as UIShared
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt"		as UIShared
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"		as FlagRush_Map
 
 #Const C_FlagMarkerFrameId						"marker-flag"

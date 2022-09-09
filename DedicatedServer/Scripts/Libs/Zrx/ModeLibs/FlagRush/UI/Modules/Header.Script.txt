@@ -1,6 +1,6 @@
 #Include "ColorLib" as CL
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as FlagRush_UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
 
 Text GetManialink() {
 	return """

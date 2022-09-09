@@ -1,5 +1,5 @@
 // #RequireContext CMlScriptIngame
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" 								as UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" 								as UIShared
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
 
 #Struct FlagRush_Teams::K_TeamSkin as K_TeamSkin

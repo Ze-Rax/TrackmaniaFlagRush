@@ -178,7 +178,6 @@ UseProtectClanmates = False;
 UseAllies = False;
 CrudeExtrapolation_AllowDelay = False;
 
-ModeUtils::SetEndTime(-1);
 FlagRush_UI::Net_SendModeScriptSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
 ***
 
@@ -213,6 +212,22 @@ FlagRush_UI::Load();
 ***LoadItems***
 ***
 FlagRush_Teams::LoadSkins();
+***
+
+// ~~~~~~~~~~ Server ~~~~~~~~~~ //
+***StartServer***
+***
+Private_WarmUpIsRunning = False;
+declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
+FlagRush_Net_WarmUpIsRunning = False;
+Private_PauseIsRunning = False;
+declare netwrite Boolean FlagRush_Net_PauseIsRunning for Teams[0];
+FlagRush_Net_PauseIsRunning = False;
+Private_OvertimeIsRunning = False;
+declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
+FlagRush_Net_OvertimeIsRunning = False;
+
+ModeUtils::SetEndTime(-1);
 ***
 
 // ~~~~~~~~~~ Match ~~~~~~~~~~ //

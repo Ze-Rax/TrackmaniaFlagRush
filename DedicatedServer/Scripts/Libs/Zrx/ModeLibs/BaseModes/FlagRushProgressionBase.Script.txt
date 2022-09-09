@@ -5,7 +5,7 @@
 
 // #RequireContext CSmMode
 
-// TODO: XmlRpc, UISequences
+// TODO: XmlRpc
 
 #Extends "Libs/Zrx/ModeLibs/BaseModes/ModeBase.Script.txt"
 
@@ -46,6 +46,7 @@
 #Const C_Duration_MapEnd				5000
 #Const C_Duration_RoundStart		3000
 #Const C_Duration_RoundEnd			3000
+#Const C_Duration_TurnEnd				3000
 #Const C_Duration_Overtime			2000
 #Const C_Duration_WarmUpStart		2000
 #Const C_Duration_WarmUpEnd			2000
@@ -233,6 +234,8 @@ FlagRush_Scores::EndMatch();
 FlagRush_Scores::StartMap();
 FlagRush_Map::InitLandmarks();
 FlagRush_UI::StartMap();
+MB_Synchro();
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 ***
 
 ***StartMap***
@@ -278,6 +281,7 @@ FlagRush_UI::EndMap();
 FlagRush_Scores::StartRound();
 declare Boolean Progression_RoundEndRequested for This;
 Progression_RoundEndRequested = False;
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 ***
 
 ***StartRound***
@@ -332,6 +336,8 @@ if (Progression_PauseRequested) {
 if (S_RoundTimeLimitSeconds > 0) {
 	ModeUtils::SetEndTime(Now + Private_Progression_RoundTimeRemaining + FlagRush_Common::C_SpawnAnimDuration);
 }
+
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 ***
 
 ***EndTurn***
@@ -339,6 +345,11 @@ if (S_RoundTimeLimitSeconds > 0) {
 Private_Progression_RoundTimeRemaining = EndTime - Now;
 ModeUtils::SetEndTime(-1);
 MB_ClearAllMessages();
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
+MB_Sleep(C_Duration_TurnEnd);
+foreach (Player in Players) {
+	UnspawnPlayer(Player);
+}
 ***
 
 // ~~~~~~~~~~ PlayLoop ~~~~~~~~~~ //
@@ -395,9 +406,11 @@ FlagRush_Messages::OvertimeStart(C_Duration_Overtime);
 
 ***PodiumSequence***
 ***
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMatch();
 FlagRush_Messages::MatchWin(WinnerClan, C_Duration_Podium / 3);
 MB_Sleep(C_Duration_Podium / 3);
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::None;
 FlagRush_MVP::Toggle(True);
 MB_Sleep(C_Duration_Podium / 3 * 2);
 FlagRush_MVP::Toggle(False);
@@ -412,6 +425,8 @@ declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
 FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
 FlagRush_Messages::WarmUpStart(C_Duration_WarmUpStart);
 MB_Sleep(C_Duration_WarmUpStart);
+declare CUIConfig::EUISequence PreviousSequence = UIManager.UIAll.UISequence;
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 { +++StartWarmUp+++ }
 WarmUpReadyUp::Start();
@@ -433,6 +448,7 @@ while(!WarmUpReadyUp::WarmUpShouldStop()) {
 { +++EndWarmUp+++ }
 
 FlagRush_Messages::WarmUpEnd(C_Duration_WarmUpEnd);
+UIManager.UIAll.UISequence = PreviousSequence;
 MB_Sleep(C_Duration_WarmUpEnd);
 Private_WarmUpIsRunning = False;
 FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
@@ -460,6 +476,7 @@ FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 // Cannot use non-library functions or globales in here, as this is executed during MB_Yield() in the modebase,
 // which is defined before any function or globale that could be defined in any extend.
 // Only code directly or plugs which don't contain non-library functions or non ModeBase globales themselves.
+// TODO: Find a way to work around this. It hurts.
 ***Yield***
 ***
 ModeCommands::Yield();
@@ -471,18 +488,12 @@ ModeEvents::Yield();
 declare Boolean ReinitTeams;
 declare Boolean SkipMatch;
 foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
-	switch (Event.Type) {
-		case ModeEvents::C_PlayerLifecycleEventType_PlayerAdded: {
-			declare Boolean WelcomeMessageWasSent for Event.Player.User; // Players are removed and added during map load
-			if (!WelcomeMessageWasSent){
-				FlagRush_Messages::Welcome(Event.Player, Version);
-				WelcomeMessageWasSent = True;
-			}
-		}
-		case ModeEvents::C_PlayerLifecycleEventType_PlayerClanChangeRequest: {
-			if (Event.Clan > 0 && Event.Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
-				SetPlayerClan(Event.Player, Event.Clan);
-			}
+	if (Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerAdded) {
+		SetPlayerClan(Event.Player, Event.Player.RequestedClan);
+		declare Boolean WelcomeMessageWasSent for Event.Player.User; // Players are removed and added during map load
+		if (!WelcomeMessageWasSent){
+			FlagRush_Messages::Welcome(Event.Player, Version);
+			WelcomeMessageWasSent = True;
 		}
 	}
 

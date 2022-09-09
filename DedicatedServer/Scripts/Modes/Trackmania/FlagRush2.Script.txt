@@ -5,15 +5,14 @@
 
 #Extends "Libs/Zrx/ModeLibs/BaseModes/FlagRushProgressionBase.Script.txt"
 
-#Const	CompatibleMapTypes						"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version												"1.3.0-dev"
-#Const	ScriptName										"Modes/TrackMania/FlagRush.Script.txt"
+#Const	CompatibleMapTypes	"Trackmania\\FlagRushArena,FlagRushArena"
+#Const	Version							"1.3.0-dev"
+#Const	ScriptName					"Modes/TrackMania/FlagRush.Script.txt"
 
 // ========= //
 // Libraries //
 // ========= //
 
-// #region Libraries
 // !! Commented out libs are already included in base mode, but added in here for Intellisense.
 
 // General Libs
@@ -43,21 +42,17 @@
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_Markers
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"								as FlagRush_MVP
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_Flash
-// #endregion
 
 // ========= //
 // Constants //
 // ========= //
 
-// #region Constants
 #Const C_AssistTimeThreshold 5000
-// #endregion
 
 // ======== //
 // Settings //
 // ======== //
 
-// #region Settings
 #Setting S_UseCrudeExtrapolation						False		as "<hidden>"
 #Setting S_TrustClientSimu									True		as "<hidden>"
 
@@ -78,20 +73,17 @@
 #Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
 #Setting S_DropFlagOnTeleportDetection			True		as "<hidden>"
 #Setting S_UseCollisions										False		as "Use collisions (experimental)"
-// #endregion
 
 // ======== //
 // Commands //
 // ======== //
 
-// #region Commands
 // Constants are used for Commands from other sources, like UI Events.
 // Constants value has to be the same as the name of the respective command without the Command_ prefix.
 // The Parameter for the Command has to be sent with the Event in the Params array.
 // In case of Vec2/Vec3/Int2/Int3 commands, X, Y & Z each take a seperate entry in the params array.
 #Command	Command_ResetFlag								(Boolean) as		"Reset flag"
 #Const		C_Command_ResetFlag															"ResetFlag"
-// #endregion
 
 // ============== //
 // Plugs / Labels //
@@ -114,14 +106,16 @@ ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light")
 declare CMapLandmark FlagSpawn = FlagRush_Map::GetDefaultFlagSpawn();
 declare Integer FlagSpawnDate = Now + ML::NearestInteger(S_FlagInitialSpawnDelaySeconds * 1000);
 Flag_SetAtLandmark(FlagSpawn, FlagSpawnDate);
+
+foreach (Player in Players) {
+	declare netwrite Integer Net_SpawnDate for Player;
+	Net_SpawnDate = -1;
+}
 ***
 
 ***EndTurn***
 ***
 Flag_Reset(True);
-foreach (Player in Players) {
-	UnspawnPlayer(Player);
-}
 FlagRush_Handicaps::ClearQueue();
 ***
 
@@ -131,6 +125,7 @@ FlagRush_Handicaps::ClearQueue();
 ***
 FlagRush_Handicaps::Yield();
 FlagRush_Flag::Yield();
+
 // Update Flag
 if (FlagRush_Flag::CarrierDisconnected()) DropFlag();
 if (S_DropFlagOnTeleportDetection && FlagRush_Flag::CarrierTeleported()) DropFlag_PreviousPosition();
@@ -244,7 +239,6 @@ if (
 // Functions //
 // ========= //
 
-// #region Flag
 Void Flag_SetAtLandmark(CMapLandmark Landmark, Integer PickupableDate) {
 	FlagRush_Flag::SetAtLandmark(Landmark, PickupableDate);
 	FlagRush_Markers::FlagMarker_SetOnLandmark(Landmark);
@@ -277,9 +271,7 @@ Void Flag_Reset(Boolean Silent) {
 Void Flag_Reset() {
 	Flag_Reset(False);
 }
-// #endregion
 
-// #region Player
 Void Player_Net_SendPosition(CSmPlayer Player) {
 	declare netwrite Vec3 Net_Position for Player;
 	Net_Position = Player.Position;
@@ -343,13 +335,11 @@ Boolean Player_CanPickUpDroppedFlag(CSmPlayer Player) {
 	declare Boolean DropPickupPenaltyExpired = Now - FlagRush_LastFlagDropDate > ML::NearestInteger(S_DropFlagPickupPenalty * 1000);
 	return (DidNotDropFlag || DropPickupPenaltyExpired) && Hitbox::AreColliding(Player, FlagRush_Flag::Get().Position);
 }
-// #endregion
 
 // ================================================================= //
 // Actions: FlagRush game logic related actions performed by players //
 // ================================================================= //
 
-// #region Actions
 Void PickUpFlag(CSmPlayer Player) {
 	FlagRush_Messages::FlagPickUp(Player, C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);
@@ -417,17 +407,15 @@ Void ScoreFlag(CSmPlayer Player) {
 	Player_ResetHandicaps(Player);
 	if (S_UseTurns) MB_StopTurn();
 }
-// #endregion
 
 // =========================================================== //
 // "Event Callbacks": Resolve mode events to the right actions //
 // =========================================================== //
 
-// #region Event Callbacks
 Void OnPlayerRequestsClanChange(CSmPlayer Player) {
 	if (Player == FlagRush_Flag::GetFlagCarrierPlayer()) DropFlag();
 	Player_Unspawn(Player);
-	// Clan change handled by progression base
+	SetPlayerClan(Player, Player.RequestedClan);
 }
 
 Void OnPlayerRequestsRespawn(CSmPlayer Player) {
@@ -487,4 +475,3 @@ Void OnGameplayCommand(CommandUtils::K_Command Command) {
 	if (CommandText != "") Message ^= " " ^ CommandText;
 	UIManager.UIAll.SendChat(Message);
 }
-// #endregion

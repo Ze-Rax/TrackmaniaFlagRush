@@ -149,6 +149,8 @@ Text GetManialink() {
 				CMlQuad Glow;
 			}
 
+			{{{ UIShared::GetFlagStateStructs() }}}
+
 			/* References */
 			declare CMlFrame CustomizationSettingsDialogFrame;
 
@@ -402,8 +404,8 @@ Text GetManialink() {
 			 * Updates the GUIPlayer marker
 			 */
 			Void UpdateSelfMarker() {
-				declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
-				if (Net_FlagRush_FlagCarrierLogin == GUIPlayer.User.Login) {
+				declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
+				if (FlagRush_Net_FlagState.Holder.Login == GUIPlayer.User.Login) {
 					SelfMarker.Frame.Hide();
 				} else {
 					SelfMarker.Frame.Show();
@@ -425,13 +427,12 @@ Text GetManialink() {
 				FlagMarker.Frame.Show();
 
 				// Determine releative position on radar
-				declare netread Vec3 Net_FlagRush_FlagPosition for Teams[0];
-				declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+				declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
 
 				declare Vec3 RelativePosition;
-				declare CSmPlayer FlagCarrierPlayer <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
-				if(Net_FlagRush_FlagCarrierLogin == "" || FlagCarrierPlayer == Null) {
-					RelativePosition = Net_FlagRush_FlagPosition - GetPlayerPosition(GUIPlayer);
+				declare CSmPlayer FlagCarrierPlayer <=> GetPlayer(FlagRush_Net_FlagState.Holder.Login);
+				if(FlagRush_Net_FlagState.Holder.Login == "" || FlagCarrierPlayer == Null) {
+					RelativePosition = FlagRush_Net_FlagState.Position - GetPlayerPosition(GUIPlayer);
 					FlagMarker.Icon.Colorize = {{{ Colors::C_NeutralLight }}};
 				} else {
 					RelativePosition = GetPlayerPosition(FlagCarrierPlayer) - GetPlayerPosition(GUIPlayer);
@@ -456,9 +457,9 @@ Text GetManialink() {
 			 * Updates a given marker frame with the information of a given player.
 			 */
 			Void UpdatePlayerMarker(CSmPlayer Player, K_PlayerMarker PlayerMarker) {
-				declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+				declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
 
-				if (Player.User.Login == Net_FlagRush_FlagCarrierLogin) {
+				if (Player.User.Login == FlagRush_Net_FlagState.Holder.Login) {
 					PlayerMarker.Frame.Hide();
 					return;
 				}
@@ -477,7 +478,7 @@ Text GetManialink() {
 
 				// Determine relative rotation to the player
 				declare Real RelativeYaw;
-				if (Net_FlagRush_FlagCarrierLogin == Player.User.Login) RelativeYaw = 0.;
+				if (FlagRush_Net_FlagState.Holder.Login == Player.User.Login) RelativeYaw = 0.;
 				else RelativeYaw = GetPlayerYaw(Player) - GetPlayerYaw(GUIPlayer);
 
 				// Fade when close too the edge

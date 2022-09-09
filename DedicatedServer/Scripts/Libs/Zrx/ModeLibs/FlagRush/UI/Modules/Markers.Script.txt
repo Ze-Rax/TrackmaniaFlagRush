@@ -64,6 +64,8 @@ Text GetManialink() {
 	<script><!--
 		#Include "MathLib" as ML
 
+		{{{ UIShared::GetFlagStateStructs() }}}
+
 		{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 		{{{ UIShared::GetLoginMappingFunctions() }}}
 		{{{ UIShared::GetPlayerPositionFunctions() }}}
@@ -106,17 +108,13 @@ Text GetManialink() {
 
 			QuadMarkerFlag.Colorize = GetTeamPrimaryColor(Null);
 
-			declare netread Integer Net_FlagRush_FlagCarrierClan for Teams[0];
-			declare netread Integer Net_FlagRush_FlagGaugeStartDate for Teams[0];
-			declare netread Integer Net_FlagRush_FlagGaugeDuration for Teams[0];
-			declare netread Text	  Net_FlagRush_FlagCarrierLogin for Teams[0];
-			declare netread Vec3 		Net_FlagRush_FlagPosition for Teams[0];
+			declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
 
 			while(True) {
 				yield;
 
 				/* Colors */
-				QuadMarkerFlag.Colorize = GetTeamPrimaryColor(Net_FlagRush_FlagCarrierClan);
+				QuadMarkerFlag.Colorize = GetTeamPrimaryColor(FlagRush_Net_FlagState.Holder.Clan);
 
 				declare Integer UIClan = 0;
 				if (GUIPlayer != Null) UIClan = GUIPlayer.CurrentClan;
@@ -135,11 +133,11 @@ Text GetManialink() {
 					}
 				}
 
-				declare CSmPlayer Player <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
+				declare CSmPlayer Player <=> GetPlayer(FlagRush_Net_FlagState.Holder.Login);
 				if (GUIPlayer != Null) {
 					declare Real Distance;
 					if (Player != Null) Distance = GetPlayerPosition(Player).Y - GetPlayerPosition(GUIPlayer).Y;
-					else Distance = Net_FlagRush_FlagPosition.Y - GetPlayerPosition(GUIPlayer).Y;
+					else Distance = FlagRush_Net_FlagState.Position.Y - GetPlayerPosition(GUIPlayer).Y;
 
 					QuadFlagDown.Visible = Distance <= {{{ -UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
 					QuadFlagUp.Visible = Distance >= {{{ UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
@@ -150,9 +148,10 @@ Text GetManialink() {
 
 				/* Gauge animation */
 				// Flag gauge end in future
-				declare Boolean IsEndInFuture = Net_FlagRush_FlagGaugeStartDate + Net_FlagRush_FlagGaugeDuration > GameTime;
-				if (IsEndInFuture && Net_FlagRush_FlagGaugeDuration > 0) {
-					declare Ratio = (0. + Net_FlagRush_FlagGaugeDuration - (GameTime - Net_FlagRush_FlagGaugeStartDate)) / Net_FlagRush_FlagGaugeDuration;
+				if (FlagRush_Net_FlagState.CurrentStateEndDate > GameTime) {
+					declare Integer FlagStateDuration = FlagRush_Net_FlagState.CurrentStateEndDate - FlagRush_Net_FlagState.CurrentStateStartDate;
+					declare Integer FlagStateDurationRemaining = FlagRush_Net_FlagState.CurrentStateEndDate - GameTime;
+					declare Real Ratio = 1. * FlagStateDurationRemaining / FlagStateDuration;
 					declare Real Value = ML::Clamp(Ratio, 0.0, 1.0);
 					FrameGauge.Show();
 					RenderProgress(FrameMarkerFlag, Value);

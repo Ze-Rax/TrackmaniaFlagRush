@@ -16,7 +16,7 @@ Text GetManialink() {
 
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-	<manialink version="3">
+	<manialink version="3" name="FlagRush_MVP">
 		<framemodel id="player">
 			<label id="name" pos="0 0" z-index="0" size="80 8" text="PlayerName" textfont="GameFontBlack" textsize="6" halign="center" valign="center2"/>
 			<label id="score" pos="0 -6" z-index="0" size="80 8" text="# Points" textfont="GameFontRegular" textsize="4" halign="center" valign="center"/>

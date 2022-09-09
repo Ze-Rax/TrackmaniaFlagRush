@@ -6,6 +6,19 @@
 	Integer Date;
 }
 
+#Struct K_Net_FlagHolder {
+	Integer Clan;
+	Text Name;
+	Text Login;
+}
+
+#Struct K_Net_FlagState {
+	K_Net_FlagHolder Holder;
+	Vec3 Position;
+	Integer CurrentStateStartDate;
+	Integer CurrentStateEndDate;
+}
+
 #Struct K_FlagState {
 	CMapLandmark Landmark;
 	CUser Carrier;
@@ -44,36 +57,28 @@ K_FlagState Get() {
 /**
  * Send data about the flag carrier, i.e. name and clan to the UIs via netwrite
  */
- Void Net_SendFlagState() {
+ Void Private_Net_SendFlagState() {
+	declare netwrite K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
+	FlagRush_Net_FlagState.Holder = K_Net_FlagHolder{};
+
 	declare CSmPlayer FlagCarrierPlayer = GetFlagCarrierPlayer();
-
-	// Carrier Clan Index (for color)
-	declare netwrite Integer Net_FlagRush_FlagCarrierClan for Teams[0];
-	if (FlagCarrierPlayer == Null) Net_FlagRush_FlagCarrierClan = 0;
-	else Net_FlagRush_FlagCarrierClan = FlagCarrierPlayer.CurrentClan;
-
-	// Carrier name and login
-	declare netwrite Text Net_FlagRush_FlagCarrierName for Teams[0];
-	declare netwrite Text Net_FlagRush_FlagCarrierLogin for Teams[0];
-	Net_FlagRush_FlagCarrierLogin = "";
 	if (FlagCarrierPlayer != Null) {
-		Net_FlagRush_FlagCarrierName = FlagCarrierPlayer.User.Name;
-		Net_FlagRush_FlagCarrierLogin = FlagCarrierPlayer.User.Login;
+		FlagRush_Net_FlagState.Holder.Clan = FlagCarrierPlayer.CurrentClan;
+		FlagRush_Net_FlagState.Holder.Name = FlagCarrierPlayer.User.Name;
+		FlagRush_Net_FlagState.Holder.Login = FlagCarrierPlayer.User.Login;
+	} else {
+		FlagRush_Net_FlagState.Holder.Clan = 0; // Not carried => Neutral
+
+		if (G_FlagState.Landmark  != Null) {
+			FlagRush_Net_FlagState.Holder.Name = C_FlagCarrierName_Spawn;
+		} else {
+			FlagRush_Net_FlagState.Holder.Name = C_FlagCarrierName_Dropped;
+		}
 	}
-	else if (G_FlagState.Landmark != Null) Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Spawn;
-	else Net_FlagRush_FlagCarrierName = C_FlagCarrierName_Dropped;
 
-	// Flag Position
-	declare netwrite Vec3 Net_FlagRush_FlagPosition for Teams[0];
-	Net_FlagRush_FlagPosition = G_FlagState.Position;
-
-	// Gauge timing
-	declare FlooredGaugeDuration = G_FlagState.CurrentStateEndDate - Now;
-	if (FlooredGaugeDuration < 0) FlooredGaugeDuration = 0;
-	declare netwrite Integer Net_FlagRush_FlagGaugeStartDate for Teams[0];
-	Net_FlagRush_FlagGaugeStartDate = Now;
-	declare netwrite Integer Net_FlagRush_FlagGaugeDuration for Teams[0];
-	Net_FlagRush_FlagGaugeDuration = FlooredGaugeDuration;
+	FlagRush_Net_FlagState.Position = G_FlagState.Position;
+	FlagRush_Net_FlagState.CurrentStateStartDate = Now; // Only send when state changes?
+	FlagRush_Net_FlagState.CurrentStateEndDate = G_FlagState.CurrentStateEndDate;
 }
 
 /**
@@ -85,7 +90,7 @@ Void SetAtLandmark(CMapLandmark Landmark, Integer CurrentStateEndDate) {
 	G_FlagState.Position = Landmark.Position;
 	G_FlagState.Carrier = Null;
 	G_FlagState.CurrentStateEndDate = CurrentStateEndDate;
-	Net_SendFlagState();
+	Private_Net_SendFlagState();
 }
 
 
@@ -102,7 +107,7 @@ Void SetAtCarrier(CSmPlayer Carrier, Integer CurrentStateEndDate) {
 	G_FlagState.Landmark = Null;
 	G_FlagState.Position = Carrier.Position;
 	G_FlagState.CurrentStateEndDate = CurrentStateEndDate;
-	Net_SendFlagState();
+	Private_Net_SendFlagState();
 }
 
 Void SetAtCarrier(CSmPlayer Carrier) {
@@ -118,7 +123,7 @@ Void SetAtPosition(Vec3 Position, Integer CurrentStateEndDate) {
 	 G_FlagState.Carrier = Null;
 	 G_FlagState.Landmark = Null;
 	 G_FlagState.CurrentStateEndDate = CurrentStateEndDate;
-	 Net_SendFlagState();
+	 Private_Net_SendFlagState();
 	}
 
 
@@ -162,4 +167,13 @@ Void Yield() {
 		G_FlagState.Position = CarrierPlayer.Position;
 		if (CarrierPlayer.WheelsContactCount >= 3) G_FlagState.LastSafePosition = CarrierPlayer.Position;
 	}
+}
+
+Void Unload() {
+	G_FlagState = K_FlagState{};
+	Private_Net_SendFlagState();
+}
+
+Void Load() {
+	Unload();
 }

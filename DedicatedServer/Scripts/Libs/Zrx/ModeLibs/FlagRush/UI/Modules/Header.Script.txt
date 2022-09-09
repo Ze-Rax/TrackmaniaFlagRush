@@ -79,6 +79,8 @@ Text GetManialink() {
 		CMlLabel CarrierLabel;
 	}
 
+	{{{ FlagRush_UIShared::GetFlagStateStructs() }}}
+
 	declare K_TeamArea[] TeamAreas;
 	declare K_Timer Timer;
 	declare K_Carrier Carrier;
@@ -182,8 +184,7 @@ Text GetManialink() {
 	} else {
 		Timer.Icon.Show();
 		Timer.TimerLabel.Hide();
-		if (FlagCarrierPlayer != Null && Teams.existskey(FlagCarrierPlayer.CurrentClan - 1)) Timer.Icon.Colorize = GetTeamPrimaryColor(Teams[FlagCarrierPlayer.CurrentClan - 1]);
-		else Timer.Icon.Colorize = {{{ FlagRush_Colors::C_NeutralLight }}};
+		Timer.Icon.Colorize = GetTeamPrimaryColor(FlagRush_Net_FlagState.Holder.Clan);
 	}
 	***
 
@@ -195,22 +196,13 @@ Text GetManialink() {
 	if (FlagRush_Net_WarmUpIsRunning) {
 		Carrier.CarrierLabel.Value = "WarmUp";
 		Carrier.CarrierLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
-	}
-	else if (FlagCarrierPlayer != Null) {
-		Carrier.CarrierLabel.Value = FlagCarrierPlayer.User.Name;
-		if (Teams.existskey(FlagCarrierPlayer.CurrentClan - 1)) {
-			Carrier.CarrierLabel.TextColor = GetTeamPrimaryColor(Teams[FlagCarrierPlayer.CurrentClan - 1]);
-		} else {
-			Carrier.CarrierLabel.TextColor = {{{ FlagRush_Colors::C_NeutralLight }}};
-		}
 	} else {
-		Carrier.CarrierLabel.Value = Net_FlagRush_FlagCarrierName;
-		Carrier.CarrierLabel.TextColor = {{{ FlagRush_Colors::C_NeutralLight }}};
+		Carrier.CarrierLabel.Value = FlagRush_Net_FlagState.Holder.Name;
+		Carrier.CarrierLabel.TextColor = GetTeamPrimaryColor(FlagRush_Net_FlagState.Holder.Clan);
 	}
 	***
 
 	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
-	{{{ FlagRush_UIShared::GetLoginMappingFunctions() }}}
 
 	main() {
 
@@ -218,17 +210,12 @@ Text GetManialink() {
 		InitMlControls();
 
 		declare netread Integer Net_EndTime for Teams[0];
-		declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
-		declare netread Text Net_FlagRush_FlagCarrierName for Teams[0];
+		declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
 		declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
 		declare netread Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
 
-		declare CSmPlayer FlagCarrierPlayer;
-
 		while (True) {
 			yield;
-
-			FlagCarrierPlayer <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
 
 			+++UpdateTeams+++
 			+++UpdateTimer+++

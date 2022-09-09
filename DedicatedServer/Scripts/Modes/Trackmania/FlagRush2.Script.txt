@@ -97,6 +97,7 @@ UsePvPCollisions = S_UseCollisions;
 ***LoadLibraries***
 ***
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light");
+FlagRush_FlagState::Load();
 ***
 
 // ~~~~~~~~~~ Turn ~~~~~~~~~~ //

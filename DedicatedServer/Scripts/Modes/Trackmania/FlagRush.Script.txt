@@ -29,7 +29,7 @@
 
 /* UI */
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt"		as Colors
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_UI.Script.txt"								as FlagRush_UI
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"						as FlagRush_UIFlash
 #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"										as EventFeed
 

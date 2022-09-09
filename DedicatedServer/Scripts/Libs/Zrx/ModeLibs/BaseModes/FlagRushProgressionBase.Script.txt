@@ -473,7 +473,11 @@ declare Boolean SkipMatch;
 foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 	switch (Event.Type) {
 		case ModeEvents::C_PlayerLifecycleEventType_PlayerAdded: {
-			FlagRush_Messages::Welcome(Event.Player, Version);
+			declare Boolean WelcomeMessageWasSent for Event.Player.User; // Players are removed and added during map load
+			if (!WelcomeMessageWasSent){
+				FlagRush_Messages::Welcome(Event.Player, Version);
+				WelcomeMessageWasSent = True;
+			}
 		}
 		case ModeEvents::C_PlayerLifecycleEventType_PlayerClanChangeRequest: {
 			if (Event.Clan > 0 && Event.Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {

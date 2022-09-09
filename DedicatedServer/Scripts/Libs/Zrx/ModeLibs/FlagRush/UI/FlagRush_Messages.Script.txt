@@ -158,3 +158,8 @@ Void TimeLimit30SecondsRemaining(Integer Duration) {
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::TiePoint);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Chrono);
 }
+
+Void Welcome(CSmPlayer Player, Text Version) {
+	declare CUIConfig UI = UIManager.GetUI(Player);
+	UI.SendChat("""Welcome to $l[https://discord.gg/J6ApdyRqEZ]$44f「$fffFlagRush$f44」$l $g[{{{Version}}}]!""");
+}

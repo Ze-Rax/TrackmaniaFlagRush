@@ -219,21 +219,3 @@ Void Init() {
 	Private_Configs_AdjustAvoidHueOverlap();
 	Private_Configs_ApplyToTeams();
 }
-
-Void Yield() {
-	foreach (Player in Players) {
-		declare Integer FlagRush_Teams_PreviousClan for Player;
-		if (FlagRush_Teams_PreviousClan != Player.CurrentClan) {
-			Init();
-			FlagRush_Teams_PreviousClan = Player.CurrentClan;
-		}
-	}
-
-	foreach (Event in PendingEvents) {
-		switch (Event.Type) {
-			case CSmModeEvent::EType::OnPlayerAdded, CSmModeEvent::EType::OnPlayerRemoved: {
-				Init();
-			}
-		}
-	}
-}

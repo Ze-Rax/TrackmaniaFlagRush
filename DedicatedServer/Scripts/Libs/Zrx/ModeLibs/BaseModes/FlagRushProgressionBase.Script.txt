@@ -21,6 +21,7 @@
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"				as ModeCommands
 #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"				as CommandUtils
 #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"										as ModeUtils
+#Include "Libs/Zrx/ModeLibs/Common/ModeEvents.Script.txt"										as ModeEvents
 #Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
 
 // FlagRush Libs
@@ -465,22 +466,32 @@ ModeCommands::Yield();
 { +++Private_Yield_HandleProgressionsCommands+++ }
 { +++Private_Yield_HandleCriticalModeScriptSettingsUpdates+++ }
 FlagRush_UI::Yield();
-FlagRush_Teams::Yield();
+ModeEvents::Yield();
 
-foreach (Player in Players) {
-	if (Player.CurrentClan != Player.RequestedClan && Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
-		SetPlayerClan(Player, Player.RequestedClan);
-	}
-}
-
-foreach (Event in PendingEvents) {
+declare Boolean ReinitTeams;
+foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 	switch (Event.Type) {
-		case CSmModeEvent::EType::OnPlayerAdded: {
-			declare CUIConfig UI = UIManager.GetUI(Event.Player);
-			UI.SendChat("""Welcome to $l[https://discord.gg/J6ApdyRqEZ]$44f「$fffFlagRush$f44」$l $fff[{{{Version}}}]!""");
+		case ModeEvents::C_PlayerLifecycleEventType_PlayerAdded: {
+			FlagRush_Messages::Welcome(Event.Player, Version);
+		}
+		case ModeEvents::C_PlayerLifecycleEventType_PlayerClanChangeRequest: {
+			if (Event.Clan > 0 && Event.Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
+				SetPlayerClan(Event.Player, Event.Clan);
+			}
 		}
 	}
+
+	// Check if player event requires team reinitialization
+	if (!ReinitTeams) {
+		declare Boolean PlayerAdded = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerAdded && !Event.IsSpectator;
+		declare Boolean PlayerRemoved = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerRemoved && !Event.IsSpectator;
+		declare Boolean PlayerSpectatorChange = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerToSpectator
+				|| Event.Type == ModeEvents::C_PlayerLifecycleEventType_SpectatorToPlayer;
+		declare Boolean PlayerClanChange = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerClanChange;
+		ReinitTeams = PlayerAdded || PlayerRemoved || PlayerSpectatorChange || PlayerClanChange;
+	}
 }
+if (ReinitTeams) FlagRush_Teams::Init();
 ***
 
 ***Private_Yield_HandleCriticalModeScriptSettingsUpdates***

@@ -50,3 +50,16 @@ Text GetPlayerPositionFunctions() {
 		}
 	""";
 }
+
+/**
+ * Returns the manialink framemodel with a transparent for the logo of FlagRush
+ */
+Text GetLogoTransparentFramemodel() {
+	return """
+	<framemodel id="flagrush-logo">
+		<label size="20 5" text="$i$sFlag" valign="center" halign="right" textfont="GameFontExtraBold" pos="-4 2"/>
+		<label size="10 10" text="$i$s" valign="center" halign="center" textfont="GameFontExtraBold" textsize="6"/>
+		<label size="20 5" text="$i$sRush" valign="center" halign="left" textfont="GameFontExtraBold" pos="4 -2"/>
+	</framemodel>
+	""";
+}

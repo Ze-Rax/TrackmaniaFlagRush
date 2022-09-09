@@ -2,7 +2,7 @@
 
 #Include "ColorLib" as CL
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Logo.Script.txt" as FlagRush_Logo
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
 
 #Const C_PlayersPerPage 5
 #Const C_PlayerCard_NameDefaultPosition <-37.5, 0.>
@@ -14,7 +14,7 @@ Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_ScoresTable">
-	{{{ FlagRush_Logo::GetLogoTransparentFramemodel() }}}
+	{{{ FlagRush_UIShared::GetLogoTransparentFramemodel() }}}
 
 	<framemodel id="gradient">
 		<quad pos="0 0" z-index="-1" size="1 1" bgcolor="c44" id="base" halign="center" valign="center"/>

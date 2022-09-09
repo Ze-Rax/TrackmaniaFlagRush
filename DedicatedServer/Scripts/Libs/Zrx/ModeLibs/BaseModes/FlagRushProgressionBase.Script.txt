@@ -462,6 +462,7 @@ while(!WarmUpReadyUp::WarmUpShouldStop()) {
 }
 { +++EndWarmUp+++ }
 
+ModeUtils::SetEndTime(-1);
 FlagRush_Messages::WarmUpEnd(C_Duration_WarmUpEnd);
 UIManager.UIAll.UISequence = PreviousSequence;
 MB_Sleep(C_Duration_WarmUpEnd);

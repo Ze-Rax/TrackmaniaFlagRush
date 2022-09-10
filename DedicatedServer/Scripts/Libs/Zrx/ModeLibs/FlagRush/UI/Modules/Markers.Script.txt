@@ -55,9 +55,16 @@ Text GetManialink() {
 		</frame>
 	</framemodel>
 
-	<frameinstance modelid="model-marker-flag" id="{{{ C_FlagMarkerFrameId }}}"/>
-	{{{ BasesFrameInstancesXml }}}
-	{{{ FlagSpawnMarkerFrameInstancesXml }}}
+  <!-- Wrap in frames because C++ side z-index computation is broken -->
+	<frame z-index="2">
+		<frameinstance modelid="model-marker-flag" id="{{{ C_FlagMarkerFrameId }}}"/>
+	</frame>
+	<frame z-index="1">
+		{{{ FlagSpawnMarkerFrameInstancesXml }}}
+	</frame>
+	<frame z-index="0">
+		{{{ BasesFrameInstancesXml }}}
+	</frame>
 
 	<script><!--
 		#Include "MathLib" as ML

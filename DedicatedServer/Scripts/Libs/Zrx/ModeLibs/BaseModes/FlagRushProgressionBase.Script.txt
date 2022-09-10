@@ -45,7 +45,7 @@
 #Const C_Duration_MapStart			3000
 #Const C_Duration_MapEnd				5000
 #Const C_Duration_RoundStart		3000
-#Const C_Duration_RoundEnd			3000
+#Const C_Duration_RoundEnd			5000
 #Const C_Duration_TurnEnd				3000
 #Const C_Duration_Overtime			2000
 #Const C_Duration_WarmUpStart		2000
@@ -265,6 +265,7 @@ if (S_UseWarmUp) +++Private_WarmUp+++
 ***
 if (Progression_MapIsInvalid()) {
 	FlagRush_Messages::MapSkip(C_Duration_MapEnd);
+	FlagRush_Scores::Clear(FlagRush_Scores::C_Level_Map);
 } else {
 	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMap();
 	if (WinnerClan == 0) {
@@ -274,7 +275,13 @@ if (Progression_MapIsInvalid()) {
 		FlagRush_Scores::OnClanMapWin(WinnerClan);
 	}
 }
-MB_Sleep(C_Duration_MapEnd);
+
+// Sleep during message and show scoreboard update half way through
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
+MB_Sleep(C_Duration_MapEnd / 2);
+FlagRush_Scores::EndMap();
+MB_Sleep(C_Duration_MapEnd / 2);
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
 if (Progression_MatchPointLimitReached()) {
 	MB_StopMatch();
@@ -317,6 +324,7 @@ FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
 
 if (Progression_RoundIsInvalid()) {
 	FlagRush_Messages::RoundSkip(C_Duration_RoundEnd);
+	FlagRush_Scores::Clear(FlagRush_Scores::C_Level_Round);
 } else {
 	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateRound();
 	if (WinnerClan == 0) {
@@ -326,7 +334,13 @@ if (Progression_RoundIsInvalid()) {
 		FlagRush_Scores::OnClanRoundWin(WinnerClan);
 	}
 }
-MB_Sleep(C_Duration_RoundEnd);
+
+// Sleep during message and show scoreboard update half way through
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
+MB_Sleep(C_Duration_RoundEnd / 2);
+FlagRush_Scores::EndRound();
+MB_Sleep(C_Duration_RoundEnd / 2);
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
 if (Progression_MapPointLimitReached()) MB_StopMap();
 ***
@@ -421,13 +435,24 @@ FlagRush_Messages::OvertimeStart(C_Duration_Overtime);
 
 ***PodiumSequence***
 ***
+declare Integer DurationScoreTable = C_Duration_Podium / 3;
+declare Integer DurationMVP = C_Duration_Podium - DurationScoreTable;
+
+// Score table phase
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMatch();
 FlagRush_Messages::MatchWin(WinnerClan, C_Duration_Podium / 3);
-MB_Sleep(C_Duration_Podium / 3);
+// Sleep during message and show scoreboard update half way through
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
+MB_Sleep(DurationScoreTable / 2);
+FlagRush_Scores::EndMatch();
+MB_Sleep(DurationScoreTable / 2);
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
+
+// MVP phase
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::None;
 FlagRush_MVP::Toggle(True);
-MB_Sleep(C_Duration_Podium / 3 * 2);
+MB_Sleep(DurationMVP);
 FlagRush_MVP::Toggle(False);
 ***
 

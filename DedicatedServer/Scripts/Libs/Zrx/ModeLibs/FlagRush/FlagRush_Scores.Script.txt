@@ -10,6 +10,7 @@
 #Const	C_Telemetry_Key_FlagsStolen				"FlagsStolen"
 #Const	C_Telemetry_Key_FlagScoreAssists	"FlagScoreAssists"
 
+// Must be same as Scores, Telemetry and TeamPointsProgression Levels
 #Const	C_Level_Match		0
 #Const	C_Level_Map			1
 #Const	C_Level_Round		2
@@ -121,13 +122,13 @@ Void Net_SendPlayerScore(CSmScore Score) {
 	Net_FlagRush_FlagsScored_Map = GetPlayerMapFlagScores(Score);
 	Net_FlagRush_FlagsScored_Round = GetPlayerRoundFlagScores(Score);
 
-	Net_FlagRush_FlagsStolen_Match = GetPlayerRoundFlagSteals(Score);
+	Net_FlagRush_FlagsStolen_Match = GetPlayerMatchFlagSteals(Score);
 	Net_FlagRush_FlagsStolen_Map = GetPlayerMapFlagSteals(Score);
-	Net_FlagRush_FlagsStolen_Round = GetPlayerMatchFlagSteals(Score);
+	Net_FlagRush_FlagsStolen_Round = GetPlayerRoundFlagSteals(Score);
 
-	Net_FlagRush_FlagsAssists_Match = GetPlayerRoundFlagScoreAssists(Score);
+	Net_FlagRush_FlagsAssists_Match = GetPlayerMatchFlagScoreAssists(Score);
 	Net_FlagRush_FlagsAssists_Map = GetPlayerMapFlagScoreAssists(Score);
-	Net_FlagRush_FlagsAssists_Round = GetPlayerMatchFlagScoreAssists(Score);
+	Net_FlagRush_FlagsAssists_Round = GetPlayerRoundFlagScoreAssists(Score);
 }
 
 Void Net_SendScores() {
@@ -139,12 +140,12 @@ Void Net_SendScores() {
 
 Void OnClanRoundWin(Integer Clan) {
 	TeamPointsProgression::AddClanRoundsWon(Clan, 1);
-	Net_SendTeamScores();
+	// Don't send updates scores directly; Instead send when showing scoreboard to show change
 }
 
 Void OnClanMapWin(Integer Clan) {
 	TeamPointsProgression::AddClanMapsWon(Clan, 1);
-	Net_SendTeamScores();
+	// Don't send updates scores directly; Instead send when showing scoreboard to show change
 }
 
 Void OnPlayerScoreFlag(CSmScore Score) {

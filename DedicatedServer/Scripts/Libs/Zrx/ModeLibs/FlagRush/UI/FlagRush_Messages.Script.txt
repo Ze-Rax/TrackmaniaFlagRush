@@ -110,7 +110,7 @@ Void PauseEnd(Integer Duration) {
 }
 
 Void FlagPickUp(CSmPlayer Player, Integer Duration) {
-	declare Text Message = """{{{ Private_GetColoredPlayerName(Player) }}} picked up the $<{{{ Private_GetTeamColorCode(Player.CurrentClan) }}}flag$>""";
+	declare Text Message = """{{{ Private_GetColoredPlayerName(Player) }}} has the $<{{{ Private_GetTeamColorCode(Player.CurrentClan) }}}flag$>""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }

@@ -402,7 +402,7 @@ Void ScoreFlag(CSmPlayer Player) {
 	// Check for assist
 	declare FlagRush_FlagState::K_FlagPass LastPass = FlagRush_FlagState::Get().LastFlagPass;
 	if (Now - LastPass.Date <= C_AssistTimeThreshold && LastPass.OldCarrier != Null) {
-		declare CSmScore AssistScore = ModeUtils::GetScore(LastPass.OldCarrier.Login);
+		declare CSmScore AssistScore <=> ModeUtils::GetScore(LastPass.OldCarrier.Login);
 		if (AssistScore.TeamNum == Player.Score.TeamNum) {
 			FlagRush_Scores::OnPlayerScoreFlagAssist(AssistScore);
 		}

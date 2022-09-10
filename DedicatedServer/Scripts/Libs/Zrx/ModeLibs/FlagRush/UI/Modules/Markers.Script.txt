@@ -55,11 +55,9 @@ Text GetManialink() {
 		</frame>
 	</framemodel>
 
-	{{{BasesFrameInstancesXml}}}
-
 	<frameinstance modelid="model-marker-flag" id="{{{ C_FlagMarkerFrameId }}}"/>
-
-	{{{FlagSpawnMarkerFrameInstancesXml}}}
+	{{{ BasesFrameInstancesXml }}}
+	{{{ FlagSpawnMarkerFrameInstancesXml }}}
 
 	<script><!--
 		#Include "MathLib" as ML

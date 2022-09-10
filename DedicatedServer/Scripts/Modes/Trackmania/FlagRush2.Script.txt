@@ -19,29 +19,29 @@
 // #Include "TextLib" as TL
 // #Include "MathLib" as ML
 
-// #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"											as EventFeed
-// #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"					as ModeCommands
-// #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"					as CommandUtils
-// #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"											as ModeUtils
-// #Include "Libs/Zrx/ModeLibs/Common/ModeEvents.Script.txt"											as ModeEvents
-// #Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt"		as WarmUpReadyUp
-#Include "Libs/Rx/ModeLibs/Common/Hitbox.Script.txt"													as Hitbox
+// #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"										as EventFeed
+// #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"				as ModeCommands
+// #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"				as CommandUtils
+// #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"										as ModeUtils
+// #Include "Libs/Zrx/ModeLibs/Common/ModeEvents.Script.txt"										as ModeEvents
+// #Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
+#Include "Libs/Rx/ModeLibs/Common/Hitbox.Script.txt"												as Hitbox
 
 // FlagRush Libs
-// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"							as FlagRush_Common
-// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"									as FlagRush_Map
-// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"							as FlagRush_Scores
-// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"			as FlagRush_MatchEvaluation
-// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"								as FlagRush_Teams
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"						as FlagRush_FlagState
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Handicaps.Script.txt"						as FlagRush_Handicaps
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"						as FlagRush_Common
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"								as FlagRush_Map
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"						as FlagRush_Scores
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_RpcEvents.Script.txt"					as FlagRush_XmlRpc
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"					as FlagRush_FlagState
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Handicaps.Script.txt"					as FlagRush_Handicaps
 
-
-// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"								as FlagRush_UI
-// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"					as FlagRush_Messages
-// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_Markers
-// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"								as FlagRush_MVP
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_Flash
+// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI
+// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
+// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"					as FlagRush_Markers
+// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"							as FlagRush_MVP
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"						as FlagRush_Flash
 
 // ========= //
 // Constants //
@@ -271,6 +271,7 @@ Void Flag_Reset(Boolean Silent) {
 	if (!S_RandomizeFlagSpawn) FlagSpawn = FlagRush_Map::GetDefaultFlagSpawn();
 	else FlagSpawn = FlagRush_Map::GetRandomFlagSpawn();
 	Flag_SetAtLandmark(FlagSpawn, Now + ML::NearestInteger(S_FlagRespawnDelaySeconds * 1000));
+	FlagRush_XmlRpc::Send_FlagReset();
 }
 
 Void Flag_Reset() {
@@ -349,6 +350,7 @@ Void PickUpFlag(CSmPlayer Player) {
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);
 	Flag_SetAtPlayer(Player, StealResistanceEndDate);
 	Player_ApplyHandicaps(Player);
+	FlagRush_XmlRpc::Send_FlagPickup();
 }
 
 Void PassFlag(CSmPlayer Player) {
@@ -363,6 +365,7 @@ Void PassFlag(CSmPlayer Player) {
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);
 	Flag_Pass(Player, StealResistanceEndDate);
 	Player_ApplyHandicaps(Player);
+	FlagRush_XmlRpc::Send_FlagPass(OldCarrier);
 }
 
 Void DropFlag(Vec3 Position) {
@@ -378,6 +381,7 @@ Void DropFlag(Vec3 Position) {
 	FlagRush_Messages::FlagDropped(OldCarrierUser, C_Duration_EventMessage);
 	declare DropStateEndDate = Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000);
 	Flag_Drop(Position, DropStateEndDate);
+	FlagRush_XmlRpc::Send_FlagDrop(OldCarrierUser);
 }
 
 Void DropFlag_LastSafePosition() {
@@ -401,14 +405,17 @@ Void ScoreFlag(CSmPlayer Player) {
 	FlagRush_Scores::OnPlayerScoreFlag(Player.Score);
 	// Check for assist
 	declare FlagRush_FlagState::K_FlagPass LastPass = FlagRush_FlagState::Get().LastFlagPass;
+	declare CUser Assist;
 	if (Now - LastPass.Date <= C_AssistTimeThreshold && LastPass.OldCarrier != Null) {
 		declare CSmScore AssistScore <=> ModeUtils::GetScore(LastPass.OldCarrier.Login);
 		if (AssistScore.TeamNum == Player.Score.TeamNum) {
+			Assist = LastPass.OldCarrier;
 			FlagRush_Scores::OnPlayerScoreFlagAssist(AssistScore);
 		}
 	}
 	Flag_Reset(True);
 	Player_ResetHandicaps(Player);
+	FlagRush_XmlRpc::Send_FlagScored(Player, Assist);
 	if (S_UseTurns) MB_StopTurn();
 }
 
@@ -439,12 +446,14 @@ Void OnPlayerRequestsRespawn(CSmPlayer Player) {
 Void OnPlayerDeath(CSmPlayer Player) {
 	if (Player == FlagRush_FlagState::GetFlagCarrierPlayer()) DropFlag();
 	Player_Unspawn(Player);
+	FlagRush_XmlRpc::Send_PlayerDeath(Player);
 }
 
 Void OnPlayerOutOfBound(CSmPlayer Player) {
 	FlagRush_Messages::PlayerOutOfBounds(Player);
 	if (Player == FlagRush_FlagState::GetFlagCarrierPlayer()) DropFlag_LastSafePosition();
 	Player_Unspawn(Player);
+	FlagRush_XmlRpc::Send_PlayerDeath(Player);
 }
 
 Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {

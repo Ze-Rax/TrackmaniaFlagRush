@@ -175,6 +175,8 @@ Void Net_SendModeScriptSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinM
 	Net_FlagRush_NbFlagsToWinRound = NbFlagsToWinRound;
 }
 
+/* Lifecycle */
+
 Void StartMap() {
 	FlagRush_UIMarkers::CreateMapMarkers();
 	Layers::Update(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());

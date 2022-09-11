@@ -169,3 +169,7 @@ Void Welcome(CSmPlayer Player, Text Version) {
 Void CriticalSettingUpdate_RestartTurn() {
 	UIManager.UIAll.SendChat("""{{{ FlagRush_Common::C_LogPrefix }}} $<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}A critical setting was updated! Restarting the the current turn...$>""");
 }
+
+Void InvalidMap() {
+	UIManager.UIAll.SendChat("""{{{ FlagRush_Common::C_LogPrefix }}} $<${{{ CL::RgbToHex3(FlagRush_Colors::C_Error) }}}The map does not conform to the FlagRush map specification. Skipping...$>""");
+}

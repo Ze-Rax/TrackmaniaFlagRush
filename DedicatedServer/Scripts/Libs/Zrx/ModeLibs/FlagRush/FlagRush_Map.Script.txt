@@ -67,7 +67,7 @@ Boolean IsOutOfBoundsTrigger(CMapLandmark Landmark) {
 /**
  * Looks through all the landmarks on the map and assigns them to the corresponding variables.
  */
-Void InitLandmarks() {
+Boolean InitLandmarks() {
 	FlagRush_Common::Log("Initialising Landmarks...");
 	G_DefaultFlagSpawn = Null;
 	G_FlagSpawns.clear();
@@ -98,16 +98,20 @@ Void InitLandmarks() {
 
 	declare Valid = FoundSpawnTeam1 && FoundSpawnTeam2 && FoundBaseTeam1 && FoundBaseTeam2 && FoundFlagSpawn && FoundDefaultFlagSpawn && SameAmountBases;
 
-	assert(Valid,
-		"""Couldn't init all landmarks!
-		{{{"\t"}}}{{{C_LandmarkTag_SpawnTeam1}}}: {{{FoundSpawnTeam1}}}
-		{{{"\t"}}}{{{C_LandmarkTag_SpawnTeam2}}}: {{{FoundSpawnTeam2}}}
-		{{{"\t"}}}{{{C_LandmarkTag_BaseTeam1}}} : {{{FoundBaseTeam1}}}
-		{{{"\t"}}}{{{C_LandmarkTag_BaseTeam2}}} : {{{FoundBaseTeam2}}}
-		{{{"\t"}}}{{{C_LandmarkTag_FlagSpawn}}} : {{{FoundFlagSpawn}}}
-		{{{"\t"}}}{{{C_LandmarkTag_DefaultFlagSpawn}}} : {{{FoundDefaultFlagSpawn}}}
-		{{{"\t"}}}Same amount of bases per team: {{{SameAmountBases}}}"""
-	);
+	declare Boolean FlagRush_Debug for This;
+	if (FlagRush_Debug) {
+		assert(Valid,
+"""Couldn't init all landmarks!
+	{{{"\t"}}}{{{C_LandmarkTag_SpawnTeam1}}}: {{{FoundSpawnTeam1}}}
+	{{{"\t"}}}{{{C_LandmarkTag_SpawnTeam2}}}: {{{FoundSpawnTeam2}}}
+	{{{"\t"}}}{{{C_LandmarkTag_BaseTeam1}}} : {{{FoundBaseTeam1}}}
+	{{{"\t"}}}{{{C_LandmarkTag_BaseTeam2}}} : {{{FoundBaseTeam2}}}
+	{{{"\t"}}}{{{C_LandmarkTag_FlagSpawn}}} : {{{FoundFlagSpawn}}}
+	{{{"\t"}}}{{{C_LandmarkTag_DefaultFlagSpawn}}} : {{{FoundDefaultFlagSpawn}}}
+	{{{"\t"}}}Same amount of bases per team: {{{SameAmountBases}}}"""
+		);
+	}
 
 	FlagRush_Common::Log("All Landmarks found!");
+	return Valid;
 }

@@ -1,3 +1,10 @@
+/**
+ * Holds current state of the flag.
+ * Provides functions to update the state on demand.
+ * Call lifecycle functions in main mode.
+ *
+ */
+
 #Include "MathLib" as ML
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt" as FlagRush_Markers
 
@@ -179,7 +186,10 @@ Void SetUnspawned() {
  * Sets the position of the flag and updates the last drop date.
  */
 Void Drop(Vec3 Position, Integer CurrentStateEndDate) {
-	assert(G_FlagState.Carrier != Null, "Cannot drop a flag that is not being carried by anyone");
+	declare Boolean FlagRush_Debug for This;
+	if (FlagRush_Debug) {
+		assert(G_FlagState.Carrier != Null, "Cannot drop a flag that is not being carried by anyone");
+	}
 	G_FlagState.LastDropDate = Now;
 	SetAtPosition(Position + <0., C_DropVerticalOffset, 0.>, CurrentStateEndDate);
 }
@@ -188,11 +198,16 @@ Void Drop(Vec3 Position, Integer CurrentStateEndDate) {
  * Sets the new flag carrier and also tracks the last pass.
  */
 Void Pass(CSmPlayer NewCarrier, Integer CurrentStateEndDate) {
-	assert(G_FlagState.Carrier != Null, "Cannot pass a flag that is not being carried by anyone");
-	assert(NewCarrier != GetFlagCarrierPlayer(), "Cannot pass the flag to the same player");
+	declare Boolean FlagRush_Debug for This;
+	if (FlagRush_Debug) {
+		assert(G_FlagState.Carrier != Null, "Cannot pass a flag that is not being carried by anyone");
+		assert(NewCarrier != GetFlagCarrierPlayer(), "Cannot pass the flag to the same player");
+	}
 	G_FlagState.LastFlagPass = K_FlagPass{OldCarrier = G_FlagState.Carrier, NewCarrier = NewCarrier.User, Date = Now};
 	SetAtCarrier(NewCarrier, CurrentStateEndDate);
 }
+
+/* Lifecycle */
 
 Void Yield() {
 	declare CSmPlayer CarrierPlayer = GetFlagCarrierPlayer();

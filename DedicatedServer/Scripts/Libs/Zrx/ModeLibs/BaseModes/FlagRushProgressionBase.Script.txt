@@ -258,7 +258,11 @@ FlagRush_Scores::EndMatch();
 ***InitMap***
 ***
 FlagRush_Scores::StartMap();
-FlagRush_Map::InitLandmarks();
+declare Boolean MapValid = FlagRush_Map::InitLandmarks();
+if (!MapValid) {
+	MatchEndRequested = True;
+	FlagRush_Messages::InvalidMap();
+}
 FlagRush_XmlRpc::Send_MapStart();
 FlagRush_UI::StartMap();
 MB_Synchro();
@@ -270,7 +274,7 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 MB_Sleep(C_Duration_MapStart);
 
 StartTime = Now; // Start time has to be set otherwise cannot spawn players
-if (S_UseWarmUp) +++Private_WarmUp+++
+if (S_UseWarmUp && !MatchEndRequested) +++Private_WarmUp+++
 ***
 
 ***AfterEndMap***

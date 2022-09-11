@@ -39,7 +39,6 @@
 
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
-// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"					as FlagRush_Markers
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"							as FlagRush_MVP
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"						as FlagRush_Flash
 
@@ -106,7 +105,7 @@ FlagRush_FlagState::Load();
 ***
 declare CMapLandmark FlagSpawn = FlagRush_Map::GetDefaultFlagSpawn();
 declare Integer FlagSpawnDate = Now + ML::NearestInteger(S_FlagInitialSpawnDelaySeconds * 1000);
-Flag_SetAtLandmark(FlagSpawn, FlagSpawnDate);
+FlagRush_FlagState::SetAtLandmark(FlagSpawn, Now + ML::NearestInteger(S_FlagRespawnDelaySeconds * 1000));
 
 foreach (Player in Players) {
 	declare netwrite Integer Net_SpawnDate for Player;
@@ -116,7 +115,7 @@ foreach (Player in Players) {
 
 ***EndTurn***
 ***
-Flag_Reset(True);
+FlagRush_FlagState::SetUnspawned();
 FlagRush_Handicaps::ClearQueue();
 ***
 
@@ -126,12 +125,15 @@ FlagRush_Handicaps::ClearQueue();
 ***
 FlagRush_Handicaps::Yield();
 FlagRush_FlagState::Yield();
+declare FlagRush_FlagState::K_FlagState FlagState = FlagRush_FlagState::Get();
 
 // Update Flag
 if (FlagRush_FlagState::CarrierDisconnected()) DropFlag();
-if (S_DropFlagOnTeleportDetection && FlagRush_FlagState::CarrierTeleported()) DropFlag_PreviousPosition();
+if (S_DropFlagOnTeleportDetection && FlagRush_FlagState::CarrierTeleported()) {
+	DropFlag(FlagState.PrevPosition);
+}
 if (FlagRush_FlagState::IsDropped()) {
-	if (Now > FlagRush_FlagState::Get().CurrentStateEndDate) {
+	if (Now > FlagState.CurrentStateEndDate) {
 		Flag_Reset();
 	} else {
 		foreach (Player in Players) {
@@ -144,7 +146,7 @@ if (FlagRush_FlagState::IsDropped()) {
 
 // Try pass flag
 declare CSmPlayer FlagCarrier = FlagRush_FlagState::GetFlagCarrierPlayer();
-if (FlagCarrier != Null && Now > FlagRush_FlagState::Get().CurrentStateEndDate) {
+if (FlagCarrier != Null && Now > FlagState.CurrentStateEndDate) {
 	declare CSmPlayer FlagReceiver;
 	foreach (Player in Players) {
 		if (Player == FlagCarrier || !Hitbox::AreColliding(FlagCarrier, Player)) continue;
@@ -244,33 +246,13 @@ if (
 // Functions //
 // ========= //
 
-Void Flag_SetAtLandmark(CMapLandmark Landmark, Integer PickupableDate) {
-	FlagRush_FlagState::SetAtLandmark(Landmark, PickupableDate);
-	FlagRush_Markers::FlagMarker_SetOnLandmark(Landmark);
-}
-
-Void Flag_SetAtPlayer(CSmPlayer Player, Integer StealResistanceEndDate) {
-	FlagRush_FlagState::SetAtCarrier(Player, StealResistanceEndDate);
-	FlagRush_Markers::FlagMarker_SetOnPlayer(Player);
-}
-
-Void Flag_Pass(CSmPlayer Player, Integer StealResistanceEndDate) {
-	FlagRush_FlagState::PassFlag(Player, StealResistanceEndDate);
-	FlagRush_Markers::FlagMarker_SetOnPlayer(Player);
-}
-
-Void Flag_Drop(Vec3 Position, Integer DropStateEndDate) {
-	FlagRush_FlagState::DropFlag(Position, DropStateEndDate);
-	FlagRush_Markers::FlagMarker_SetOnPosition(Position);
-}
-
 Void Flag_Reset(Boolean Silent) {
 	if (!Silent) FlagRush_Messages::FlagReset(C_Duration_EventMessage);
 
 	declare CMapLandmark FlagSpawn;
 	if (!S_RandomizeFlagSpawn) FlagSpawn = FlagRush_Map::GetDefaultFlagSpawn();
 	else FlagSpawn = FlagRush_Map::GetRandomFlagSpawn();
-	Flag_SetAtLandmark(FlagSpawn, Now + ML::NearestInteger(S_FlagRespawnDelaySeconds * 1000));
+	FlagRush_FlagState::SetAtLandmark(FlagSpawn, Now + ML::NearestInteger(S_FlagRespawnDelaySeconds * 1000));
 	FlagRush_XmlRpc::Send_FlagReset();
 }
 
@@ -348,7 +330,7 @@ Boolean Player_CanPickUpDroppedFlag(CSmPlayer Player) {
 Void PickUpFlag(CSmPlayer Player) {
 	FlagRush_Messages::FlagPickUp(Player, C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);
-	Flag_SetAtPlayer(Player, StealResistanceEndDate);
+	FlagRush_FlagState::SetAtCarrier(Player, StealResistanceEndDate);
 	Player_ApplyHandicaps(Player);
 	FlagRush_XmlRpc::Send_FlagPickup();
 }
@@ -358,12 +340,12 @@ Void PassFlag(CSmPlayer Player) {
 	declare CSmPlayer OldCarrier = FlagRush_FlagState::GetFlagCarrierPlayer();
 	if (Player.CurrentClan != OldCarrier.CurrentClan) {
 		FlagRush_Scores::OnPlayerStealFlag(Player);
-		Player_ResetHandicaps(Player);
 	}
+	Player_ResetHandicaps(Player);
 	// New Carrier
 	FlagRush_Messages::FlagPickUp(Player, C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);
-	Flag_Pass(Player, StealResistanceEndDate);
+	FlagRush_FlagState::Pass(Player, StealResistanceEndDate);
 	Player_ApplyHandicaps(Player);
 	FlagRush_XmlRpc::Send_FlagPass(OldCarrier);
 }
@@ -380,16 +362,8 @@ Void DropFlag(Vec3 Position) {
 	declare CUser OldCarrierUser = FlagRush_FlagState::Get().Carrier;
 	FlagRush_Messages::FlagDropped(OldCarrierUser, C_Duration_EventMessage);
 	declare DropStateEndDate = Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000);
-	Flag_Drop(Position, DropStateEndDate);
+	FlagRush_FlagState::Drop(Position, DropStateEndDate);
 	FlagRush_XmlRpc::Send_FlagDrop(OldCarrierUser);
-}
-
-Void DropFlag_LastSafePosition() {
-	DropFlag(FlagRush_FlagState::Get().LastSafePosition);
-}
-
-Void DropFlag_PreviousPosition() {
-	DropFlag(FlagRush_FlagState::Get().PrevPosition);
 }
 
 Void DropFlag() {
@@ -451,7 +425,9 @@ Void OnPlayerDeath(CSmPlayer Player) {
 
 Void OnPlayerOutOfBound(CSmPlayer Player) {
 	FlagRush_Messages::PlayerOutOfBounds(Player);
-	if (Player == FlagRush_FlagState::GetFlagCarrierPlayer()) DropFlag_LastSafePosition();
+	if (Player == FlagRush_FlagState::GetFlagCarrierPlayer()) {
+		DropFlag(FlagRush_FlagState::Get().LastSafePosition);
+	}
 	Player_Unspawn(Player);
 	FlagRush_XmlRpc::Send_PlayerDeath(Player);
 }
@@ -479,7 +455,7 @@ Void OnGameplayCommand(CommandUtils::K_Command Command) {
 	declare Text CommandText;
 	switch (Command.Name) {
 		case C_Command_ResetFlag: {
-			Flag_Reset();
+			Flag_Reset(Command.ValueBoolean);
 			CommandText = "The flag was reset.";
 		}
 		default: return;

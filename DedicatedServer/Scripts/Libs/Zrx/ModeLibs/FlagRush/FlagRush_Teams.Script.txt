@@ -179,14 +179,14 @@ Void Private_Configs_AdjustAvoidHueOverlap() {
 
 		if (AdjustFirst) {
 			G_TeamConfigs[Teams[0]].Color = ColorUtils::AdjustHueOverlap(
-				G_TeamConfigs[Teams[1]].Color,
-				G_TeamConfigs[Teams[0]].Color,
-				C_HueOverlapThreshold);
+					G_TeamConfigs[Teams[1]].Color,
+					G_TeamConfigs[Teams[0]].Color,
+					C_HueOverlapThreshold);
 		} else {
 			G_TeamConfigs[Teams[1]].Color = ColorUtils::AdjustHueOverlap(
-				G_TeamConfigs[Teams[0]].Color,
-				G_TeamConfigs[Teams[1]].Color,
-				C_HueOverlapThreshold);
+					G_TeamConfigs[Teams[0]].Color,
+					G_TeamConfigs[Teams[1]].Color,
+					C_HueOverlapThreshold);
 			}
 	}
 }

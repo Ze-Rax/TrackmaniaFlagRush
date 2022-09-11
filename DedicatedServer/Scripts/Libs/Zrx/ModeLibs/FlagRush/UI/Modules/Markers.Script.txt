@@ -1,7 +1,7 @@
 //#RequireContext CSmMlScriptIngame
 
-#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt"		as UIShared
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"		as FlagRush_Map
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt" as FlagRush_Map
 
 #Const C_FlagMarkerFrameId						"marker-flag"
 #Const C_FlagSpawnMarkerFrameIdPrefix	"marker-flag-spawn-"
@@ -10,8 +10,8 @@
 #Const C_FlagMarker_Box_Landmark	<0., 3., 0.>
 #Const C_FlagMarker_Box_Position	<0., 0., 0.>
 
-#Const C_TeamBaseMarker_Box	<0., 8., 0.>
-#Const C_FlagSpawnMarker_Box <0., 3.3, 0.>
+#Const C_TeamBaseMarker_Box		<0., 8., 0.>
+#Const C_FlagSpawnMarker_Box	<0., 3.3, 0.>
 
 declare CUIConfigMarker G_FlagMarker;
 declare CUIConfigMarker[] G_FlagSpawnMarkers;
@@ -69,11 +69,11 @@ Text GetManialink() {
 	<script><!--
 		#Include "MathLib" as ML
 
-		{{{ UIShared::GetFlagStateStructs() }}}
+		{{{ FlagRush_UIShared::GetFlagStateStructs() }}}
 
-		{{{ UIShared::GetTeamColorNetreadFunctions() }}}
-		{{{ UIShared::GetLoginMappingFunctions() }}}
-		{{{ UIShared::GetPlayerPositionFunctions() }}}
+		{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
+		{{{ FlagRush_UIShared::GetLoginMappingFunctions() }}}
+		{{{ FlagRush_UIShared::GetPlayerPositionFunctions() }}}
 
 		/** render progress between 0.0 - 1.0 */
 		Void RenderProgress(CMlFrame Frame, Real Value) {
@@ -144,8 +144,8 @@ Text GetManialink() {
 					if (Player != Null) Distance = GetPlayerPosition(Player).Y - GetPlayerPosition(GUIPlayer).Y;
 					else Distance = FlagRush_Net_FlagState.Position.Y - GetPlayerPosition(GUIPlayer).Y;
 
-					QuadFlagDown.Visible = Distance <= {{{ -UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
-					QuadFlagUp.Visible = Distance >= {{{ UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+					QuadFlagDown.Visible = Distance <= {{{ -FlagRush_UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+					QuadFlagUp.Visible = Distance >= {{{ FlagRush_UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
 				} else {
 					QuadFlagDown.Hide();
 					QuadFlagUp.Hide();
@@ -172,7 +172,7 @@ Text GetManialink() {
 	""";
 }
 
-Void Private_ClearOldFlagMarker() {
+Void FlagMarker_Remove() {
 	// Remove old Flag marker
 	// IMPORTANT: Cannot remove G_FlagMarker from UIAll, because UIAll.Markers more or less references a list of UI.Markers for all UIs!
 	// Trying to use UIAll.RemoveMarker(G_FlagMarker) after a new map loaded will lead to an access error for a specific UI ("Element not found in Array").
@@ -189,21 +189,21 @@ Void Private_ClearOldFlagMarker() {
 }
 
 Void FlagMarker_SetOnLandmark(CMapLandmark Landmark) {
-	Private_ClearOldFlagMarker();
+	FlagMarker_Remove();
 	G_FlagMarker = UIManager.UIAll.AddMarker(Landmark);
 	G_FlagMarker.Box = C_FlagMarker_Box_Landmark;
 	G_FlagMarker.ManialinkFrameId = C_FlagMarkerFrameId;
 }
 
 Void FlagMarker_SetOnPlayer(CSmPlayer Player) {
-	Private_ClearOldFlagMarker();
+	FlagMarker_Remove();
 	G_FlagMarker = UIManager.UIAll.AddMarker(Player);
 	G_FlagMarker.Box = C_FlagMarker_Box_Player;
 	G_FlagMarker.ManialinkFrameId = C_FlagMarkerFrameId;
 }
 
 Void FlagMarker_SetOnPosition(Vec3 Position) {
-	Private_ClearOldFlagMarker();
+	FlagMarker_Remove();
 	G_FlagMarker = UIManager.UIAll.AddMarker(Position);
 	G_FlagMarker.Box = C_FlagMarker_Box_Position;
 	G_FlagMarker.ManialinkFrameId = C_FlagMarkerFrameId;
@@ -233,11 +233,11 @@ Void StartMap() {
 }
 
 Void EndMap() {
-	Private_ClearOldFlagMarker();
+	FlagMarker_Remove();
 }
 
 Void Yield() {
-	declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
+	declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
 	declare CUIConfigMarker::EHudVisibility FlagMarkerVisibility;
 	declare CUIConfigMarker::EHudVisibility FlagSpawnMarkerVisibility;
 	if (FlagRush_Net_WarmUpIsRunning) {

@@ -4,8 +4,13 @@
 + Added text for time spent in overtime in the scores header.
 + Added teleport detection: The flag will be dropped, if a player teleports too far (1 block).
 + Added callvotes page to pause menu.
++ Match is reset when all players leave the server or go to spec.
+* Adjusted markers for bases
+	* The base you have to attack shows a crosshair icon in the color of the opposite team.
+	* The base you have to defend shows a shield icon in the color of your team.
 * Adjusted respawn timer UI to take spawn animation duration into account.
 * Adjusted default repsawn delay to 4.0 seconds (from 3.0 seconds)
+* Fix Z-Index of the UI that broke after the september Trackmania update.
 
 ## 1.2.1
 + New mode commands (Callvotes, ModeCommandsUI) for setting match/map/round points and auto team balance.

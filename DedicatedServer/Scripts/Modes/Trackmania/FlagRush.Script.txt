@@ -46,8 +46,7 @@
 // Constants //
 // ========= //
 
-// TODO: Disable
-#Const C_Debug True
+#Const C_Debug False
 
 #Const C_AssistTimeThreshold 5000
 

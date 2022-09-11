@@ -92,7 +92,7 @@ Text GetManialink(Integer feedSize) {
 	<manialink version="3" name="EventFeed">
 	<framemodel id="message">
 		<quad size="3 3" pos="0 -1.5" halign="center" valign="center"/>
-		<label size="60 3" pos="1.5 -1.5" text="" textsize="1" textfont="GameFontSemiBold" halign="left" valign="center" opacity="0" textemboss="1" />
+		<label size="60 3" pos="1.5 -1.5" text="" textsize="1" textfont="GameFontSemiBold" halign="left" valign="center2" opacity="0" textemboss="1" />
 	</framemodel>
 	<frame id="Events" pos="-158 10" >
 		{{{ entries }}}

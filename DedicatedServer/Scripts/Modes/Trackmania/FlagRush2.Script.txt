@@ -119,6 +119,13 @@ FlagRush_FlagState::SetUnspawned();
 FlagRush_Handicaps::ClearQueue();
 ***
 
+***AfterEndTurn***
+***
+foreach (Player in Players) {
+	UnspawnPlayer(Player);
+}
+***
+
 // ~~~~~~~~~~ PlayLoop ~~~~~~~~~~ //
 
 ***PlayLoop***
@@ -235,6 +242,7 @@ if (
 	FlagRush_PreviousSettings_UseCrudeExtrapolation = S_UseCrudeExtrapolation;
 	FlagRush_PreviousSettings_UseReversedBases = S_UseReversedBases;
 	FlagRush_PreviousSettings_UseCollisions = S_UseCollisions;
+	UsePvPCollisions = S_UseCollisions;
 	if (MB_TurnIsRunning()) {
 		FlagRush_Messages::CriticalSettingUpdate_RestartTurn();
 		MB_StopTurn();

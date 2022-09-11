@@ -38,6 +38,8 @@
 // Constants //
 ///////////////
 
+#Const C_Debug False
+
 // Duration / Timings for sequences and/or messages
 #Const C_Duration_Podium				15000
 #Const C_Duration_MapStart			3000
@@ -145,6 +147,9 @@ declare Boolean Private_OvertimeIsRunning;
 
 ***Settings***
 ***
+declare Boolean FlagRush_Debug for This;
+FlagRush_Debug = C_Debug;
+
 // ModeBase settings
 MB_Settings_UseDefaultPodiumSequence = False;
 
@@ -268,7 +273,7 @@ StartTime = Now; // Start time has to be set otherwise cannot spawn players
 if (S_UseWarmUp) +++Private_WarmUp+++
 ***
 
-***EndMap***
+***AfterEndMap***
 ***
 declare Boolean MapIsValid = Progression_MapIsInvalid();
 FlagRush_XmlRpc::Send_MapEnd(MapIsValid);
@@ -299,12 +304,6 @@ if (Progression_MatchPointLimitReached()) {
 }
 ***
 
-***AfterEndMap***
-***
-FlagRush_Scores::EndMap();
-FlagRush_UI::EndMap();
-***
-
 // ~~~~~~~~~~ Round ~~~~~~~~~~ //
 
 ***InitRound***
@@ -331,7 +330,10 @@ Private_60SecondsWarningEnabled = Private_Progression_RoundTimeRemaining > 60000
 Private_OvertimeIsRunning = False;
 declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
 FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
+***
 
+***AfterEndRound***
+***
 declare Boolean RoundIsValid = Progression_RoundIsInvalid();
 FlagRush_XmlRpc::Send_RoundEnd(RoundIsValid);
 if (RoundIsValid) {
@@ -357,11 +359,6 @@ UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 if (Progression_MapPointLimitReached()) MB_StopMap();
 ***
 
-***AfterEndRound***
-***
-FlagRush_Scores::EndRound();
-***
-
 // ~~~~~~~~~~ Turn ~~~~~~~~~~ //
 
 ***StartTurn***
@@ -385,12 +382,12 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 ***
 Private_Progression_RoundTimeRemaining = EndTime - Now;
 ModeUtils::SetEndTime(-1);
-MB_ClearAllMessages();
+***
+
+***AfterEndTurn***
+***
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
 MB_Sleep(C_Duration_TurnEnd);
-foreach (Player in Players) {
-	UnspawnPlayer(Player);
-}
 ***
 
 // ~~~~~~~~~~ PlayLoop ~~~~~~~~~~ //
@@ -535,16 +532,20 @@ FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 // TODO: Find a way to work around this. It hurts.
 ***Yield***
 ***
+ModeEvents::Yield(); // Keep as first in yield
 ModeCommands::Yield();
+FlagRush_UI::Yield();
 { +++Private_Yield_HandleProgressionsCommands+++ }
 { +++Private_Yield_HandleCriticalModeScriptSettingsUpdates+++ }
-FlagRush_UI::Yield();
-ModeEvents::Yield();
+{ +++Private_Yield_HandlePlayerLifecycleEvents+++ }
+***
 
+***Private_Yield_HandlePlayerLifecycleEvents***
+***
 declare Boolean ReinitTeams;
 declare Boolean SkipMatch;
 foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
-	if (Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerAdded) {
+	if (Event.Type == ModeEvents::C_PlayerLifecycle_PlayerAdded) {
 		SetPlayerClan(Event.Player, Event.Player.RequestedClan);
 		declare Boolean WelcomeMessageWasSent for Event.Player.User; // Players are removed and added during map load
 		if (!WelcomeMessageWasSent){
@@ -554,15 +555,15 @@ foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 	}
 
 	// Check if player event requires team reinitialization
-	declare Boolean PlayerAdded = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerAdded && !Event.IsSpectator;
-	declare Boolean PlayerRemoved = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerRemoved && !Event.IsSpectator;
-	declare Boolean PlayerClanChange = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerClanChange;
-	declare Boolean PlayerSpectatorChange = Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerToSpectator
-			|| Event.Type == ModeEvents::C_PlayerLifecycleEventType_SpectatorToPlayer;
+	declare Boolean PlayerAdded = Event.Type == ModeEvents::C_PlayerLifecycle_PlayerAdded && !Event.IsSpectator;
+	declare Boolean PlayerRemoved = Event.Type == ModeEvents::C_PlayerLifecycle_PlayerRemoved && !Event.IsSpectator;
+	declare Boolean PlayerClanChange = Event.Type == ModeEvents::C_PlayerLifecycle_PlayerClanChange;
+	declare Boolean PlayerSpectatorChange = Event.Type == ModeEvents::C_PlayerLifecycle_PlayerToSpectator
+			|| Event.Type == ModeEvents::C_PlayerLifecycle_SpectatorToPlayer;
 	ReinitTeams = ReinitTeams || PlayerAdded || PlayerRemoved || PlayerClanChange || PlayerSpectatorChange;
 
 	// Skip match if no player is left after player left or moved to spectator
-	SkipMatch = SkipMatch || Players.count == 0 && (PlayerRemoved || Event.Type == ModeEvents::C_PlayerLifecycleEventType_PlayerToSpectator);
+	SkipMatch = SkipMatch || Players.count == 0 && (PlayerRemoved || Event.Type == ModeEvents::C_PlayerLifecycle_PlayerToSpectator);
 }
 
 if (ReinitTeams) {
@@ -626,12 +627,28 @@ if (
 ***Private_Yield_HandleProgressionsCommands***
 ***
 declare CommandUtils::K_Command[] PendingCommands;
+
+// XmlRpc
+foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
+	switch (XmlRpcEvent.Type) {
+		case CXmlRpcEvent::EType::CallbackArray: {
+			switch (XmlRpcEvent.ParamArray1) {
+				case "Trackmania.ForceEndRound": {
+					PendingCommands.add(CommandUtils::FromNameAndParams(C_Command_SkipRound, [], "XmlRpc"));
+				}
+			}
+		}
+	}
+}
+
+// Mode commands
 foreach (Event in PendingEvents) {
 	if (Event.Type == CSmModeEvent::EType::OnCommand) {
 		PendingCommands.add(CommandUtils::FromEvent(Event));
 	}
 }
 
+// ModeCommandsUi
 foreach (Command in ModeCommands::GetPendingCommands()) {
 	PendingCommands.add(Command);
 }

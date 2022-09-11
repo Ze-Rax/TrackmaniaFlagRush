@@ -176,10 +176,6 @@ Void StartMap() {
 	Layers::Update(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
 }
 
-Void EndMap() {
-	FlagRush_UIMarkers::EndMap();
-}
-
 Void Yield() {
 	FlagRush_UIMarkers::Yield();
 

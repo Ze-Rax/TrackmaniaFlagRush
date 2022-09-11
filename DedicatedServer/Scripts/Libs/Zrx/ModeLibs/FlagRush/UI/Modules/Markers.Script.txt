@@ -235,10 +235,6 @@ Void StartMap() {
 	}
 }
 
-Void EndMap() {
-	FlagMarker_Remove();
-}
-
 Void Yield() {
 	declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
 	declare CUIConfigMarker::EHudVisibility FlagMarkerVisibility;

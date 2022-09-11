@@ -16,9 +16,9 @@
 // Markers are automatically removed on map switch. Use IDs to prevent reference errors.
 declare Ident G_FlagMarkerId;
 declare Ident[] G_FlagSpawnMarkerIds;
+declare Ident[] G_BaseMarkerIds;
 
 Text GetManialink() {
-
 	declare Text BasesFrameInstancesXml;
 	declare Integer NbBasesPerTeam = FlagRush_Map::GetBases(1).count;
 	for(Clan, 1, 2) {
@@ -174,10 +174,18 @@ Text GetManialink() {
 }
 
 CUIConfigMarker Private_GetMarker(Ident Id) {
-	if (UIManager.UIAll.Markers.existskey(Id)) {
-		return UIManager.UIAll.Markers[Id];
+	if (!UIManager.UIAll.Markers.existskey(Id)) {
+		return Null;
 	}
-	return Null;
+	return UIManager.UIAll.Markers[Id];
+}
+
+Void Private_RemoveMarker(Ident Id) {
+	declare CUIConfigMarker Marker = Private_GetMarker(Id);
+	if (Marker == Null) {
+		return;
+	}
+	UIManager.UIAll.RemoveMarker(Marker);
 }
 
 Void FlagMarker_Remove() {
@@ -212,49 +220,59 @@ Void FlagMarker_SetOnPosition(Vec3 Position) {
 	G_FlagMarkerId = FlagMarker.Id;
 }
 
-Void StartMap() {
-	UIManager.UIAll.ClearMarkers();
+Void FlagMarker_SetVisible(Boolean Visible) {
+	declare CUIConfigMarker FlagMarker = Private_GetMarker(G_FlagMarkerId);
+	if (FlagMarker == Null) {
+		return;
+	}
 
+	if (Visible) {
+		FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+	} else {
+		FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
+	}
+}
+
+Void FlagSpawnMarkers_SetVisible(Boolean Visible) {
+	foreach (FlagSpawnMarkerId in G_FlagSpawnMarkerIds) {
+		declare CUIConfigMarker FlagSpawnMarker = Private_GetMarker(FlagSpawnMarkerId);
+		if (FlagSpawnMarker == Null) {
+			continue;
+		}
+
+		if (Visible) {
+			FlagSpawnMarker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
+		} else {
+			FlagSpawnMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
+		}
+	}
+}
+
+Void CreateMapMarkers() {
 	// Create Markers for the Bases
+	foreach (Id in G_BaseMarkerIds) {
+		Private_RemoveMarker(Id);
+	}
+	G_BaseMarkerIds = [];
 	for(Clan, 1, 2) {
 		for(BaseIndex, 0, FlagRush_Map::GetBases(Clan).count -1) {
 			declare CUIConfigMarker MarkerBase = UIManager.UIAll.AddMarker(FlagRush_Map::GetBases(Clan)[BaseIndex]);
 			MarkerBase.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
 			MarkerBase.ManialinkFrameId = """marker-base-team{{{Clan}}}-{{{BaseIndex}}}""";
 			MarkerBase.Box = C_TeamBaseMarker_Box;
+			G_BaseMarkerIds.add(MarkerBase.Id);
 		}
 	}
 
 	// Create a marker for each flag spawn
+	foreach (Id in G_FlagSpawnMarkerIds) {
+		Private_RemoveMarker(Id);
+	}
 	G_FlagSpawnMarkerIds = [];
 	foreach(I => FlagSpawn in FlagRush_Map::GetFlagSpawns()) {
 		declare CUIConfigMarker Marker = UIManager.UIAll.AddMarker(FlagSpawn);
 		Marker.ManialinkFrameId = C_FlagSpawnMarkerFrameIdPrefix ^ I;
 		Marker.Box = C_FlagSpawnMarker_Box;
 		G_FlagSpawnMarkerIds.add(Marker.Id);
-	}
-}
-
-Void Yield() {
-	declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
-	declare CUIConfigMarker::EHudVisibility FlagMarkerVisibility;
-	declare CUIConfigMarker::EHudVisibility FlagSpawnMarkerVisibility;
-	if (FlagRush_Net_WarmUpIsRunning) {
-		FlagMarkerVisibility = CUIConfigMarker::EHudVisibility::Never;
-		FlagSpawnMarkerVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
-	} else {
-		FlagMarkerVisibility = CUIConfigMarker::EHudVisibility::Always;
-		FlagSpawnMarkerVisibility = CUIConfigMarker::EHudVisibility::Never;
-	}
-
-	declare CUIConfigMarker FlagMarker = Private_GetMarker(G_FlagMarkerId);
-	if(FlagMarker != Null) {
-		FlagMarker.HudVisibility = FlagMarkerVisibility;
-	}
-	foreach (FlagSpawnMarkerId in G_FlagSpawnMarkerIds) {
-		declare CUIConfigMarker FlagSpawnMarker = Private_GetMarker(FlagSpawnMarkerId);
-		if (FlagSpawnMarker != Null) {
-			FlagSpawnMarker.HudVisibility = FlagSpawnMarkerVisibility;
-		}
 	}
 }

@@ -1,3 +1,7 @@
+/**
+ * This library just manages all the layers and their lifecycle, including updating them when needed or requested.
+ */
+
 #Include "Libs/Nadeo/Layers2.Script.txt" as Layers
 
 // Modules
@@ -172,12 +176,14 @@ Void Net_SendModeScriptSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinM
 }
 
 Void StartMap() {
-	FlagRush_UIMarkers::StartMap();
+	FlagRush_UIMarkers::CreateMapMarkers();
 	Layers::Update(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
 }
 
 Void Yield() {
-	FlagRush_UIMarkers::Yield();
+	declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
+	FlagRush_UIMarkers::FlagMarker_SetVisible(!FlagRush_Net_WarmUpIsRunning);
+	FlagRush_UIMarkers::FlagSpawnMarkers_SetVisible(FlagRush_Net_WarmUpIsRunning);
 
 	if (G_PreviousPlayersCount != Players.count) {
 		G_PreviousPlayersCount = Players.count;

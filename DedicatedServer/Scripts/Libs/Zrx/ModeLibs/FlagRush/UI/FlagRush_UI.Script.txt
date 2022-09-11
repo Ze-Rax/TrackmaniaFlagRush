@@ -162,9 +162,9 @@ Void Private_DetachModules() {
 }
 
 /**
- * Sends relevant mode settings values to the clients via netwrite.
+ * Sends relevant progression mode settings values to the clients via netwrite.
  */
-Void Net_SendModeScriptSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap, Integer NbFlagsToWinRound) {
+Void Net_SendModeScriptProgressionSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap, Integer NbFlagsToWinRound) {
 	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
 	Net_FlagRush_NbMapsToWinMatch = NbMapsToWinMatch;
 
@@ -173,6 +173,14 @@ Void Net_SendModeScriptSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinM
 
 	declare netwrite Integer Net_FlagRush_NbFlagsToWinRound for Teams[0];
 	Net_FlagRush_NbFlagsToWinRound = NbFlagsToWinRound;
+}
+
+/**
+ * Sends relevant round logic mode settings values to the clients via netwrite.
+ */
+Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases) {
+	declare netwrite Boolean FlagRush_Net_UseReversedBases for Teams[0];
+	FlagRush_Net_UseReversedBases = UseReversedBases;
 }
 
 /* Lifecycle */

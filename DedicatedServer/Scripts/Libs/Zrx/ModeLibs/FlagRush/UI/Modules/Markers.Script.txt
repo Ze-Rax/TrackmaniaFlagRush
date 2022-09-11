@@ -115,6 +115,7 @@ Text GetManialink() {
 			QuadMarkerFlag.Colorize = GetTeamPrimaryColor(Null);
 
 			declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
+			declare netwrite Boolean FlagRush_Net_UseReversedBases for Teams[0];
 
 			while(True) {
 				yield;
@@ -127,8 +128,24 @@ Text GetManialink() {
 				else if (InputPlayer != Null) UIClan = InputPlayer.CurrentClan;
 
 				foreach (Clan => BaseFrames in TeamBaseMarkerFrames) {
-					declare Boolean ShowDefenseIcon = UIClan == Clan || UIClan == 0;
-					declare Vec3 Color = GetTeamPrimaryColor(Clan);
+					declare Boolean ShowDefenseIcon;
+					declare Vec3 Color;
+					if (FlagRush_Net_UseReversedBases) {
+						Color = GetTeamPrimaryColor(3 - Clan); // Color of opponent clan
+						if (UIClan == 0) {
+							ShowDefenseIcon = True;
+						} else {
+							ShowDefenseIcon = Clan != UIClan;
+						}
+					} else {
+						Color = GetTeamPrimaryColor(Clan);
+						if (UIClan == 0) {
+							ShowDefenseIcon = True;
+						} else {
+							ShowDefenseIcon = Clan == UIClan;
+						}
+					}
+
 					foreach (MarkerFrame in BaseFrames) {
 						declare CMlLabel DefenseIconLabel = (MarkerFrame.GetFirstChild("defend") as CMlLabel);
 						declare CMlLabel AttackIconLabel = (MarkerFrame.GetFirstChild("attack") as CMlLabel);

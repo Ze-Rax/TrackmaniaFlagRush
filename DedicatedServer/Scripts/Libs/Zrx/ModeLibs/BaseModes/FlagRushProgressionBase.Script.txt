@@ -72,6 +72,7 @@
 #Setting S_UseClubTags											True		as "Use club tags for team names"
 #Setting S_UseTeamSkins											True		as "Use colored skins for teams"
 
+#Setting S_SkipMatchOnLastPlayerLeave				True		as "<hidden>" // Skip the running match if the last player leaves or goes to spectator
 #Setting S_ModeCommands_AdminLoginsCsv 			"" 			as "<hidden>" // Admin logins for the mode commands ui
 
 //////////////
@@ -176,7 +177,7 @@ UseProtectClanmates = False;
 UseAllies = False;
 CrudeExtrapolation_AllowDelay = False;
 
-FlagRush_UI::Net_SendModeScriptSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
+FlagRush_UI::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
 ***
 
 ***LoadLibraries***
@@ -543,7 +544,7 @@ FlagRush_UI::Yield();
 ***Private_Yield_HandlePlayerLifecycleEvents***
 ***
 declare Boolean ReinitTeams;
-declare Boolean SkipMatch;
+declare Boolean LastPlayerLeft;
 foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 	if (Event.Type == ModeEvents::C_PlayerLifecycle_PlayerAdded) {
 		SetPlayerClan(Event.Player, Event.Player.RequestedClan);
@@ -563,14 +564,16 @@ foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 	ReinitTeams = ReinitTeams || PlayerAdded || PlayerRemoved || PlayerClanChange || PlayerSpectatorChange;
 
 	// Skip match if no player is left after player left or moved to spectator
-	SkipMatch = SkipMatch || Players.count == 0 && (PlayerRemoved || Event.Type == ModeEvents::C_PlayerLifecycle_PlayerToSpectator);
+	LastPlayerLeft = LastPlayerLeft || Players.count == 0 && (PlayerRemoved || Event.Type == ModeEvents::C_PlayerLifecycle_PlayerToSpectator);
 }
 
 if (ReinitTeams) {
 	FlagRush_Teams::Init();
 }
 
-if (SkipMatch) {
+// Skip running match if the last player left, but not if we're before the first round of the first map
+declare Boolean MatchWasStarted =  MB_GetMapCount() > 1 || MB_GetRoundCount() > 0; // At least first round on first map was started
+if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted) {
 	FlagRush_Messages::AllPlayersLeft_SkipMatch();
 	FlagRush_Common::Log("Current match was skipped as there are no players remaining");
 	MatchEndRequested = True; // Invalidate Map, Round, ...
@@ -596,7 +599,7 @@ if (
 	FlagRush_PreviousSettings_NbMapsToWinMatch = S_NbMapsToWinMatch;
 	FlagRush_PreviousSettings_NbRoundsToWinMap = S_NbRoundsToWinMap;
 	FlagRush_PreviousSettings_NbFlagsToWinRound = S_NbFlagsToWinRound;
-	FlagRush_UI::Net_SendModeScriptSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
+	FlagRush_UI::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
 }
 
 // Team configs

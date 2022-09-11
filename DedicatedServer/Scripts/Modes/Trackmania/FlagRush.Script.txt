@@ -46,6 +46,9 @@
 // Constants //
 // ========= //
 
+// TODO: Disable
+#Const C_Debug True
+
 #Const C_AssistTimeThreshold 5000
 
 // ======== //
@@ -90,6 +93,9 @@
 
 ***Settings***
 ***
+declare Boolean FlagRush_Debug for This;
+FlagRush_Debug = C_Debug;
+
 UsePvPCollisions = S_UseCollisions;
 ***
 
@@ -468,7 +474,7 @@ Void OnGameplayCommand(CommandUtils::K_Command Command) {
 		}
 		default: return;
 	}
-	declare Text Message = """{{{ FlagRush_Common::C_LogPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ CommandSource }}}.""";
+	declare Text Message = """{{{ FlagRush_Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ CommandSource }}}.""";
 	if (CommandText != "") Message ^= " " ^ CommandText;
 	UIManager.UIAll.SendChat(Message);
 }

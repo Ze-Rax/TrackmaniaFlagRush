@@ -38,8 +38,6 @@
 // Constants //
 ///////////////
 
-#Const C_Debug False
-
 // Duration / Timings for sequences and/or messages
 #Const C_Duration_Podium				15000
 #Const C_Duration_MapStart			3000
@@ -147,9 +145,6 @@ declare Boolean Private_OvertimeIsRunning;
 
 ***Settings***
 ***
-declare Boolean FlagRush_Debug for This;
-FlagRush_Debug = C_Debug;
-
 // ModeBase settings
 MB_Settings_UseDefaultPodiumSequence = False;
 
@@ -575,9 +570,11 @@ if (ReinitTeams) {
 }
 
 if (SkipMatch) {
+	FlagRush_Messages::AllPlayersLeft_SkipMatch();
+	FlagRush_Common::Log("Current match was skipped as there are no players remaining");
 	MatchEndRequested = True; // Invalidate Map, Round, ...
 	MB_StopMatch();
-	declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0]; // Can't use global variable in yield
+	declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0]; // Can't use global variable in yield
 	if (FlagRush_Net_WarmUpIsRunning) {
 		WarmUpReadyUp::Stop();
 	}
@@ -743,7 +740,7 @@ foreach (Command in PendingCommands) {
 		default: return;
 	}
 
-	declare Text Message = """{{{ FlagRush_Common::C_LogPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ CommandSource }}}.""";
+	declare Text Message = """{{{ FlagRush_Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ CommandSource }}}.""";
 	if (CommandText != "") Message ^= " " ^ CommandText;
 	UIManager.UIAll.SendChat(Message);
 }

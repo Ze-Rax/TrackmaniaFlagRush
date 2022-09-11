@@ -1,5 +1,3 @@
-#Const	C_LogPrefix	"[FlagRush]"
-
 #Const	C_SpawnAnimDuration 1500
 
 /**
@@ -7,5 +5,7 @@
  */
 Void Log(Text Message) {
 	declare Boolean FlagRush_Debug for This;
-	if(FlagRush_Debug) log(C_LogPrefix ^ " " ^ Message);
+	if(FlagRush_Debug) {
+		log(Message);
+	}
 }

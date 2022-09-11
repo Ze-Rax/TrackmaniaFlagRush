@@ -14,14 +14,16 @@
 #Const C_MessagePriority_Event				2
 #Const C_MessagePriority_Progression	3
 
+Vec3 Private_GetTeamColor(Integer Clan) {
+	return FlagRush_Teams::GetConfig(Clan).Color;
+}
+
 Text Private_GetTeamColorCode(Integer Clan) {
-	declare FlagRush_Teams::K_TeamConfig TeamConfig = FlagRush_Teams::GetConfig(Clan);
-	return """${{{ CL::RgbToHex3(TeamConfig.Color) }}}""";
+	return """${{{ CL::RgbToHex3(Private_GetTeamColor(Clan)) }}}""";
 }
 
 Text Private_GetColoredTeamName(Integer Clan) {
-	declare FlagRush_Teams::K_TeamConfig TeamConfig = FlagRush_Teams::GetConfig(Clan);
-	return """$<${{{ CL::RgbToHex3(TeamConfig.Color) }}}{{{ Teams[Clan-1].Name }}}$>""";
+	return """$<${{{ CL::RgbToHex3(Private_GetTeamColor(Clan)) }}}{{{ Teams[Clan-1].Name }}}$>""";
 }
 
 Text Private_GetColoredPlayerName(CSmPlayer Player) {
@@ -113,21 +115,23 @@ Void PauseEnd(Integer Duration) {
 
 Void FlagPickUp(CSmPlayer Player, Integer Duration) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(Player) }}} has the $<{{{ Private_GetTeamColorCode(Player.CurrentClan) }}}flag$>""";
+	declare Vec3 TeamColor = Private_GetTeamColor(Player.CurrentClan);
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag, TeamColor);
 }
 
 Void FlagScored(CSmPlayer Scorer, Integer Duration) {
-	declare Text Message= """{{{ Private_GetColoredPlayerName(Scorer) }}} scored the $<{{{ Private_GetTeamColorCode(Scorer.CurrentClan) }}}flag$>""";
+	declare Text Message= """{{{ Private_GetColoredPlayerName(Scorer) }}} scored for {{{ Private_GetColoredTeamName(Scorer.CurrentClan) }}}""";
+	declare Vec3 TeamColor = Private_GetTeamColor(Scorer.CurrentClan);
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::Finish);
 	FlagRush_Sound::Play(["file://Media/Sounds/Nadeo/CommonLibs/Game/KnockOutPlayer_01.wav", "file://Media/Sounds/Nadeo/CommonLibs/Game/ShowWinners.wav"]);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag, TeamColor);
 }
 
 Void FlagDropped(CUser OldCarrierUser, Integer Duration) {
 	declare CSmScore OldCarrierScore <=> ModeUtils::GetScore(OldCarrierUser.Login);
 	declare Text PlayerName = """$<{{{ Private_GetTeamColorCode(OldCarrierScore.TeamNum) }}}{{{ OldCarrierScore.User.Name }}}$>""";
-	declare Text Message= """{{{ PlayerName }}} dropped the $<{{{ Private_GetTeamColorCode(OldCarrierScore.TeamNum) }}}flag$>""";
+	declare Text Message= """{{{ PlayerName }}} dropped the flag$>""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag);
 }
@@ -160,6 +164,12 @@ Void TimeLimit60SecondsRemaining(Integer Duration) {
 Void TimeLimit30SecondsRemaining(Integer Duration) {
 	declare Text Message ="""$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}30 seconds remaining$>""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::TiePoint);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Chrono);
+}
+
+Void TimeLimitEnd(Integer Duration) {
+	declare Text Message = """Time is up""";
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::VictoryPoint);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Chrono);
 }
 

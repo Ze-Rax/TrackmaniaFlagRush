@@ -355,7 +355,7 @@ Void PassFlag(CSmPlayer Player) {
 	if (Player.CurrentClan != OldCarrier.CurrentClan) {
 		FlagRush_Scores::OnPlayerStealFlag(Player);
 	}
-	Player_ResetHandicaps(Player);
+	Player_ResetHandicaps(OldCarrier);
 	// New Carrier
 	FlagRush_Messages::FlagPickUp(Player, C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);

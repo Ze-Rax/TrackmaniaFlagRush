@@ -409,6 +409,7 @@ if(Progression_OvertimeIsRunning()) {
 		if (Progression_RoundIsTied() && S_UseOvertime) {
 			+++StartOvertime+++
 		} else {
+			FlagRush_Messages::TimeLimitEnd(C_Duration_EventMessage);
 			MB_StopRound();
 		}
 	}

@@ -54,7 +54,7 @@
 // Settings //
 // ======== //
 
-#Setting S_UseCrudeExtrapolation						False		as "<hidden>"
+#Setting S_UseCrudeExtrapolation						True		as "<hidden>"
 #Setting S_TrustClientSimu									True		as "<hidden>"
 
 // Gameplay
@@ -112,11 +112,12 @@ FlagRush_FlagState::Load();
 ***
 declare CMapLandmark FlagSpawn = FlagRush_Map::GetDefaultFlagSpawn();
 declare Integer FlagSpawnDate = Now + ML::NearestInteger(S_FlagInitialSpawnDelaySeconds * 1000);
-FlagRush_FlagState::SetAtLandmark(FlagSpawn, Now + ML::NearestInteger(S_FlagRespawnDelaySeconds * 1000));
+FlagRush_FlagState::SetAtLandmark(FlagSpawn, FlagSpawnDate);
 
 foreach (Player in Players) {
 	declare netwrite Integer Net_SpawnDate for Player;
 	Net_SpawnDate = -1;
+	SetPlayerClan(Player, Player.RequestedClan);
 }
 ***
 
@@ -139,15 +140,16 @@ foreach (Player in Players) {
 ***
 FlagRush_Handicaps::Yield();
 FlagRush_FlagState::Yield();
-declare FlagRush_FlagState::K_FlagState FlagState = FlagRush_FlagState::Get();
 
 // Update Flag
 if (FlagRush_FlagState::CarrierDisconnected()) DropFlag();
 if (S_DropFlagOnTeleportDetection && FlagRush_FlagState::CarrierTeleported()) {
-	DropFlag(FlagState.PrevPosition);
+	FlagRush_Messages::FlagCarrierTeleport();
+	DropFlag(FlagRush_FlagState::Get().PrevPosition);
 }
+
 if (FlagRush_FlagState::IsDropped()) {
-	if (Now > FlagState.CurrentStateEndDate) {
+	if (Now > FlagRush_FlagState::Get().CurrentStateEndDate) {
 		Flag_Reset();
 	} else {
 		foreach (Player in Players) {
@@ -160,7 +162,7 @@ if (FlagRush_FlagState::IsDropped()) {
 
 // Try pass flag
 declare CSmPlayer FlagCarrier = FlagRush_FlagState::GetFlagCarrierPlayer();
-if (FlagCarrier != Null && Now > FlagState.CurrentStateEndDate) {
+if (FlagCarrier != Null && Now > FlagRush_FlagState::Get().CurrentStateEndDate) {
 	declare CSmPlayer FlagReceiver;
 	foreach (Player in Players) {
 		if (Player == FlagCarrier || !Hitbox::AreColliding(FlagCarrier, Player)) continue;

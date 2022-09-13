@@ -547,7 +547,6 @@ declare Boolean ReinitTeams;
 declare Boolean LastPlayerLeft;
 foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 	if (Event.Type == ModeEvents::C_PlayerLifecycle_PlayerAdded) {
-		SetPlayerClan(Event.Player, Event.Player.RequestedClan);
 		declare Boolean WelcomeMessageWasSent for Event.Player.User; // Players are removed and added during map load
 		if (!WelcomeMessageWasSent){
 			FlagRush_Messages::Welcome(Event.Player, Version);
@@ -573,7 +572,7 @@ if (ReinitTeams) {
 
 // Skip running match if the last player left, but not if we're before the first round of the first map
 declare Boolean MatchWasStarted =  MB_GetMapCount() > 1 || MB_GetRoundCount() > 0; // At least first round on first map was started
-if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted) {
+if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted && Map != Null) {
 	FlagRush_Messages::AllPlayersLeft_SkipMatch();
 	FlagRush_Common::Log("Current match was skipped as there are no players remaining");
 	MatchEndRequested = True; // Invalidate Map, Round, ...

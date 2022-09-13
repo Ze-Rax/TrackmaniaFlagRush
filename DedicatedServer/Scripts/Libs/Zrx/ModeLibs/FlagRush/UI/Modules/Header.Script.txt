@@ -174,7 +174,7 @@ Text GetManialink() {
 		} else {
 			Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_NeutralLight }}};
 		}
-	} else if (FlagRush_Net_OvertimeIsRunning && !FlagRush_Net_WarmUpIsRunning) {
+	} else if (FlagRush_Net_OvertimeIsRunning && !FlagRush_Net_WarmUpIsRunning && Net_EndTime >= 0) {
 		Timer.Icon.Hide();
 		Timer.TimerLabel.Show();
 		Timer.TimerLabel.TextSizeReal = 1.5;

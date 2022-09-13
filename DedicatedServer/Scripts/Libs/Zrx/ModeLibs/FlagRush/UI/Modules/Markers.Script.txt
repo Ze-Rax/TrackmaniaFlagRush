@@ -42,11 +42,12 @@ Text GetManialink() {
 	</framemodel>
 
 	<framemodel id="model-marker-flag" hidden="1">
-		<quad pos="0 0.5" z-index="2" size="10 10" halign="center" style="UICommon64_1" substyle="Flag_light" id="quad-flag" valign="center"/>
+		<quad pos="0 1" z-index="2" size="10 10" halign="center" style="UICommon64_1" substyle="Flag_light" id="quad-flag" valign="center"/>
+		<label id="distance" pos="0 -2" z-index="2" size="10 5" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="0.4" textemboss="1" hidden="1"/>
 		<quad id="up" pos="0 7.5" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" hidden="1" />
-		<quad id="down" pos="0 -5.5" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center" hidden="1"/>
+		<quad id="down" pos="0 -6" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center" hidden="1"/>
 
-		<frame id="gauge-frame" pos="0 7" scale="0.6">
+		<frame id="gauge-frame" pos="0 7" scale="0.65">
 			<frame size="10 20" pos="0 0">
 				<quad id="gauge2" pos="0 -10" z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" rot="0" hidden="1" />
 			</frame>
@@ -109,13 +110,14 @@ Text GetManialink() {
 			declare CMlFrame FrameMarkerFlag = (Page.GetFirstChild("{{{ C_FlagMarkerFrameId }}}") as CMlFrame);
 			declare CMlFrame FrameGauge = (Page.GetFirstChild("gauge-frame") as CMlFrame);
 			declare CMlQuad QuadMarkerFlag = (FrameMarkerFlag.GetFirstChild("quad-flag") as CMlQuad);
+			declare CMlLabel LabelMarkerFlagDistance = (FrameMarkerFlag.GetFirstChild("distance") as CMlLabel);
 			declare CMlQuad QuadFlagUp = (FrameMarkerFlag.GetFirstChild("up") as CMlQuad);
 			declare CMlQuad QuadFlagDown = (FrameMarkerFlag.GetFirstChild("down") as CMlQuad);
 
 			QuadMarkerFlag.Colorize = GetTeamPrimaryColor(Null);
 
 			declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
-			declare netwrite Boolean FlagRush_Net_UseReversedBases for Teams[0];
+			declare netread Boolean FlagRush_Net_UseReversedBases for Teams[0];
 
 			while(True) {
 				yield;
@@ -157,13 +159,27 @@ Text GetManialink() {
 				}
 
 				declare CSmPlayer Player <=> GetPlayer(FlagRush_Net_FlagState.Holder.Login);
+				LabelMarkerFlagDistance.Hide();
+				QuadMarkerFlag.Size = <10., 10.>;
+				QuadMarkerFlag.RelativePosition_V3 = <0., 1.>;
 				if (GUIPlayer != Null) {
-					declare Real Distance;
-					if (Player != Null) Distance = GetPlayerPosition(Player).Y - GetPlayerPosition(GUIPlayer).Y;
-					else Distance = FlagRush_Net_FlagState.Position.Y - GetPlayerPosition(GUIPlayer).Y;
+					declare Vec3 Distance;
+					if (Player != Null) {
+						Distance = GetPlayerPosition(Player) - GetPlayerPosition(GUIPlayer);
+					} else {
+						Distance = FlagRush_Net_FlagState.Position - GetPlayerPosition(GUIPlayer);
+					}
 
-					QuadFlagDown.Visible = Distance <= {{{ -FlagRush_UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
-					QuadFlagUp.Visible = Distance >= {{{ FlagRush_UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+
+					QuadFlagDown.Visible = Distance.Y <= {{{ -FlagRush_UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+					QuadFlagUp.Visible = Distance.Y >= {{{ FlagRush_UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+
+					if (GUIPlayer.User.Login != FlagRush_Net_FlagState.Holder.Login) {
+						QuadMarkerFlag.Size = <8., 8.>;
+						QuadMarkerFlag.RelativePosition_V3 = <0., 2.>;
+						LabelMarkerFlagDistance.Value = ML::NearestInteger(ML::Distance(<0., 0., 0.>, Distance)) ^ "m";
+						LabelMarkerFlagDistance.Show();
+					}
 				} else {
 					QuadFlagDown.Hide();
 					QuadFlagUp.Hide();
@@ -174,7 +190,12 @@ Text GetManialink() {
 				if (FlagRush_Net_FlagState.CurrentStateEndDate > GameTime) {
 					declare Integer FlagStateDuration = FlagRush_Net_FlagState.CurrentStateEndDate - FlagRush_Net_FlagState.CurrentStateStartDate;
 					declare Integer FlagStateDurationRemaining = FlagRush_Net_FlagState.CurrentStateEndDate - GameTime;
-					declare Real Ratio = 1. * FlagStateDurationRemaining / FlagStateDuration;
+					declare Real Ratio;
+					if (FlagStateDuration != 0) {
+						Ratio = 1. * FlagStateDurationRemaining / FlagStateDuration;
+					} else {
+						Ratio = 0.;
+					}
 					declare Real Value = ML::Clamp(Ratio, 0.0, 1.0);
 					FrameGauge.Show();
 					RenderProgress(FrameMarkerFlag, Value);

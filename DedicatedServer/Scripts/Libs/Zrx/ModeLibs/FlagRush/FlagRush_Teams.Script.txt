@@ -216,8 +216,11 @@ Void Private_Configs_ApplyToTeams() {
  * Initializes the team configs.
  */
 Void Init() {
-	if (G_UseClubTags) Private_Configs_InitFromClubTags();
- 	else G_TeamConfigs = [Teams[0] => GetConfig(1), Teams[1] => GetConfig(2)];
+	if (G_UseClubTags) {
+		Private_Configs_InitFromClubTags();
+	} else {
+		G_TeamConfigs = [Teams[0] => K_TeamConfig{}, Teams[1] => K_TeamConfig{}];
+	}
 	Private_Configs_OverrideEmptyFields();
 	Private_Configs_AdjustAvoidHueOverlap();
 	Private_Configs_ApplyToTeams();

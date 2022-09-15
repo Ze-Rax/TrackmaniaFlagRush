@@ -476,12 +476,12 @@ Private_WarmUpIsRunning = True;
 declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
 FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
 FlagRush_Messages::WarmUpStart(C_Duration_WarmUpStart);
+WarmUpReadyUp::Start();
 MB_Sleep(C_Duration_WarmUpStart);
 declare CUIConfig::EUISequence PreviousSequence = UIManager.UIAll.UISequence;
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 { +++StartWarmUp+++ }
-WarmUpReadyUp::Start();
 while(!WarmUpReadyUp::WarmUpShouldStop()) {
 	MB_Yield();
 	WarmUpReadyUp::Yield();

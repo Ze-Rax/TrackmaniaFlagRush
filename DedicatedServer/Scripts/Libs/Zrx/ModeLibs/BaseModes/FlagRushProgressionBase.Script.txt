@@ -461,7 +461,11 @@ declare Integer DurationMVP = C_Duration_Podium - DurationScoreTable;
 // Score table phase
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMatch();
-FlagRush_Messages::MatchWin(WinnerClan, C_Duration_Podium / 3);
+if (WinnerClan == 0) {
+	FlagRush_Messages::MatchDraw(C_Duration_Podium / 3);
+} else {
+	FlagRush_Messages::MatchWin(WinnerClan, C_Duration_Podium / 3);
+}
 // Sleep during message and show scoreboard update half way through
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 MB_Sleep(DurationScoreTable / 2);

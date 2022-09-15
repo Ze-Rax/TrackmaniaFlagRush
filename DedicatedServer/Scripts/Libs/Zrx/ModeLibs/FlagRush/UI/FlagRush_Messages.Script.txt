@@ -41,6 +41,12 @@ Void MatchWin(Integer WinnerClan, Integer Duration) {
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
+Void MatchDraw(Integer Duration) {
+	declare Text Message= """Match draw""";
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+}
+
 Void MapWin(Integer WinnerClan, Integer Duration) {
 	declare Text Message= """{{{ Private_GetColoredTeamName(WinnerClan) }}} won the map""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);

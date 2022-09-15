@@ -56,6 +56,8 @@
 #Const C_Duration_PauseEnd			2000
 #Const C_Duration_EventMessage	2000
 
+#Const C_TimeLimitWarning_Seconds [60, 30]
+
 //////////////
 // Settings //
 //////////////
@@ -135,8 +137,7 @@
 
 declare Integer Private_Progression_RoundTimeRemaining;
 
-declare Boolean Private_60SecondsWarningEnabled;
-declare Boolean Private_30SecondsWarningEnabled;
+declare Boolean[Integer] Private_TimeLimitWarningsEnabled;
 
 declare Boolean Private_WarmUpIsRunning;
 declare Boolean Private_PauseIsRunning;
@@ -330,8 +331,12 @@ FlagRush_Messages::RoundStart(MB_GetRoundCount(), C_Duration_RoundStart);
 MB_Sleep(C_Duration_RoundStart);
 StartTime = Now;
 Private_Progression_RoundTimeRemaining = S_RoundTimeLimitSeconds * 1000;
-Private_30SecondsWarningEnabled = Private_Progression_RoundTimeRemaining > 30000;
-Private_60SecondsWarningEnabled = Private_Progression_RoundTimeRemaining > 60000;
+
+// Enable time limit warnings
+Private_TimeLimitWarningsEnabled = [];
+foreach (WarningSeonds in C_TimeLimitWarning_Seconds) {
+	Private_TimeLimitWarningsEnabled[WarningSeonds] = S_RoundTimeLimitSeconds > WarningSeonds;
+}
 ***
 
 ***EndRound***
@@ -425,14 +430,13 @@ if(Progression_OvertimeIsRunning()) {
 	}
 }
 
-// Time warning
-if(EndTime - Now < 60000 && Private_60SecondsWarningEnabled)  {
-	Private_60SecondsWarningEnabled = False;
-	FlagRush_Messages::TimeLimit60SecondsRemaining(C_Duration_EventMessage);
-}
-if (EndTime - Now < 30000 && Private_30SecondsWarningEnabled) {
-	Private_30SecondsWarningEnabled = False;
-	FlagRush_Messages::TimeLimit30SecondsRemaining(C_Duration_EventMessage);
+// Time warnings
+foreach (WarningSeonds => Enabled in Private_TimeLimitWarningsEnabled) {
+	if (!Enabled || (EndTime - Now) / 1000 > WarningSeonds) {
+		continue;
+	}
+	Private_TimeLimitWarningsEnabled[WarningSeonds] = False;
+	FlagRush_Messages::TimeLimitSecondsRemaining(WarningSeonds, C_Duration_EventMessage);
 }
 
 // Pause handling (Request reaction, execution on StartTurn)

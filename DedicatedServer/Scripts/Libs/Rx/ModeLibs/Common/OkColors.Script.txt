@@ -1,0 +1,113 @@
+#Const Version					"2022-09-03"
+#Const ScriptName				"OkColors.Script.txt"
+
+#Include "ColorLib" as CL
+#Include "MathLib" as ML
+
+Real f(Real x){
+	if (x > 0.0031308){
+		return ML::Clamp(1.055 * (ML::Pow(x,(1.0 / 2.4))) - 0.055,0.,1.);
+	}
+	return ML::Clamp(12.92 * x,0.,1.);
+}
+
+Vec3 lsrgb_to_rgb(Vec3 rgb){
+    return <f(rgb.X), f(rgb.Y), f(rgb.Z)>;
+}
+
+Real f_inv(Real x){
+	if (x > 0.04045){
+		return ML::Pow((x + 0.055) / (1 + 0.055),2.4);
+	}
+	return x / 12.92;
+}
+
+Vec3 rgb_to_lsrgb(Vec3 srgb){
+	return <f_inv(srgb.X), f_inv(srgb.Y), f_inv(srgb.Z)>;
+}
+
+Vec3 lsrgb_to_oklab(Vec3 rgb){
+	
+    declare Real l = 0.4122214708 * rgb.X + 0.5363325363 * rgb.Y + 0.0514459929 * rgb.Z;
+    declare Real m = 0.2119034982 * rgb.X + 0.6806995451 * rgb.Y + 0.1073969566 * rgb.Z;
+    declare Real s = 0.0883024619 * rgb.X + 0.2817188376 * rgb.Y + 0.6299787005 * rgb.Z;
+
+    declare Real l_ = ML::Pow(l,0.333333333);
+    declare Real m_ = ML::Pow(m,0.333333333);
+    declare Real s_ = ML::Pow(s,0.333333333);
+
+    return <
+        0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
+        1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
+        0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_
+    >;
+}
+
+Vec3 oklab_to_lsrgb(Vec3 oklab){
+    declare Real l_ = oklab.X + 0.3963377774 * oklab.Y + 0.2158037573 * oklab.Z;
+    declare Real m_ = oklab.X - 0.1055613458 * oklab.Y - 0.0638541728 * oklab.Z;
+    declare Real s_ = oklab.X - 0.0894841775 * oklab.Y - 1.2914855480 * oklab.Z;
+
+    declare Real l = l_ * l_ * l_;
+    declare Real m = m_ * m_ * m_;
+    declare Real s = s_ * s_ * s_;
+
+    return <
+        4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+        -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+        -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s
+    >;
+}
+
+Vec3 oklab_to_oklch(Vec3 oklab){
+	
+		declare Real l = oklab.X;
+		declare Real c = ML::Sqrt(oklab.Y * oklab.Y + oklab.Z * oklab.Z);
+		declare Real h = ML::RadToDeg(ML::Atan2(oklab.Z,oklab.Z));
+
+		if (h < 0) {
+	  	h += 360;
+		}
+		else if (h >= 360) {
+	 		h -= 360;
+		}
+  	return <l,c,h>;
+}
+
+Vec3 oklch_to_oklab(Vec3 oklch){
+    declare Real h_rad = ML::DegToRad(oklch.Z);
+
+    return <
+        oklch.X,
+        oklch.Y * ML::Cos(h_rad),
+        oklch.Y * ML::Sin(h_rad)
+    >;
+}
+
+Vec3 oklch_to_rgb(Vec3 oklch){
+	return lsrgb_to_rgb(oklab_to_lsrgb(oklch_to_oklab(oklch)));
+}
+
+Vec3 rgb_to_oklch(Vec3 rgb){
+	return oklab_to_oklch(lsrgb_to_oklab(rgb_to_lsrgb(rgb)));
+}
+
+Vec3 oklab_to_rgb(Vec3 oklab){
+	return lsrgb_to_rgb(oklab_to_lsrgb(oklab));
+}
+
+Vec3 rgb_to_oklab(Vec3 rgb){
+	return lsrgb_to_oklab(rgb_to_lsrgb(rgb));
+}
+
+Real OffsetHue(Real h,Real offset){
+	return -ML::Sin(h * ML::Pi / 180.0 - ML::Pi / 3.0) * offset;
+}
+
+Vec3 GetDarkColor(Real h){
+    oklch_to_rgb(<0.55,0.19,h>);
+}
+
+Vec3 GetLightColor(Real h){
+    oklch_to_rgb(<0.8,0.22,h+OffsetHue(h-29.233,30.)>);
+}

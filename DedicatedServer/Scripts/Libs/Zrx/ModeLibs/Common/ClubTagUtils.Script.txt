@@ -3,7 +3,7 @@
 #Include "TextLib"	as TL
 #Include "ColorLib"	as CL
 
-#Include "Libs/Zrx/Common/ColorUtils.Script.txt"	as ColorUtils
+// #Include "Libs/Zrx/Common/ColorUtils.Script.txt"	as ColorUtils
 
 #Const C_RegexPattern_NameHex3Color			"\\$[0-9a-fA-F]{1,3}"
 #Const C_TeamColorMinSaturation					0.5
@@ -44,7 +44,7 @@ Vec3 Private_ChooseColor(Vec3[] ColorsRgb) {
 	return TeamColor;
 }
 
-Vec3 ClubTagToColor(Text ClubTag) {
+/*Vec3 ClubTagToColor(Text ClubTag) {
 	// Get color texts from clubtag
 	declare Text[] ClubTagColorsText = TL::RegexFind(C_RegexPattern_NameHex3Color, ClubTag, "g");
 
@@ -63,7 +63,7 @@ Vec3 ClubTagToColor(Text ClubTag) {
 
 	declare Vec3 TeamColor = Private_ChooseColor(ValidColors);
 	return ColorUtils::ColorToMinSaturationAndValue(TeamColor, C_TeamColorMinSaturation, C_TeamColorMinValue);
-}
+}*/
 
 K_TeamConfig GetTeamConfig(Integer Clan) {
 	declare K_TeamConfig TeamConfig;

@@ -2,7 +2,7 @@
 
 #Include "ColorLib"	as CL
 
-#Include "Libs/Zrx/Common/ColorUtils.Script.txt"														as ColorUtils
+// #Include "Libs/Zrx/Common/ColorUtils.Script.txt"														as ColorUtils
 #Include "Libs/Zrx/ModeLibs/Common/ClubTagUtils.Script.txt"									as ClubTagUtils
 #Include "/Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt"	as Colors
 
@@ -167,29 +167,29 @@ Void Private_Configs_OverrideEmptyFields() {
  * Club1    |    2         2        1
  * Forced1  |    2         2      NONE
  */
-Void Private_Configs_AdjustAvoidHueOverlap() {
-	declare Text Team1ColorOverride = G_TeamColorHexOverrides.get(0, "");
-	declare Text Team2ColorOverride = G_TeamColorHexOverrides.get(1, "");
+// Void Private_Configs_AdjustAvoidHueOverlap() {
+// 	declare Text Team1ColorOverride = G_TeamColorHexOverrides.get(0, "");
+// 	declare Text Team2ColorOverride = G_TeamColorHexOverrides.get(1, "");
 
-	// Only adjust if at least one team color is not forced by settings
-	if (Team1ColorOverride == "" || Team2ColorOverride == "") {
-		// See table above
-		declare Boolean AdjustFirst = Team2ColorOverride != "" ||
-				(G_TeamConfigs[Teams[1]].ClubTag != "" && G_TeamConfigs[Teams[0]].ClubTag == "" && Team1ColorOverride == "");
+// 	// Only adjust if at least one team color is not forced by settings
+// 	if (Team1ColorOverride == "" || Team2ColorOverride == "") {
+// 		// See table above
+// 		declare Boolean AdjustFirst = Team2ColorOverride != "" ||
+// 				(G_TeamConfigs[Teams[1]].ClubTag != "" && G_TeamConfigs[Teams[0]].ClubTag == "" && Team1ColorOverride == "");
 
-		if (AdjustFirst) {
-			G_TeamConfigs[Teams[0]].Color = ColorUtils::AdjustHueOverlap(
-					G_TeamConfigs[Teams[1]].Color,
-					G_TeamConfigs[Teams[0]].Color,
-					C_HueOverlapThreshold);
-		} else {
-			G_TeamConfigs[Teams[1]].Color = ColorUtils::AdjustHueOverlap(
-					G_TeamConfigs[Teams[0]].Color,
-					G_TeamConfigs[Teams[1]].Color,
-					C_HueOverlapThreshold);
-			}
-	}
-}
+// 		if (AdjustFirst) {
+// 			G_TeamConfigs[Teams[0]].Color = ColorUtils::AdjustHueOverlap(
+// 					G_TeamConfigs[Teams[1]].Color,
+// 					G_TeamConfigs[Teams[0]].Color,
+// 					C_HueOverlapThreshold);
+// 		} else {
+// 			G_TeamConfigs[Teams[1]].Color = ColorUtils::AdjustHueOverlap(
+// 					G_TeamConfigs[Teams[0]].Color,
+// 					G_TeamConfigs[Teams[1]].Color,
+// 					C_HueOverlapThreshold);
+// 			}
+// 	}
+// }
 
 /**
  * Applies the TeamConfigs to the actual Team objects
@@ -200,8 +200,8 @@ Void Private_Configs_ApplyToTeams() {
 		declare Vec3 PrimaryColor = G_TeamConfigs[Teams[TeamIndex]].Color;
 
 		// Teams have automatic change for colors; Need full saturation and value (HSV)
-		Teams[TeamIndex].ColorPrimary = ColorUtils::ColorToFullSaturationAndValue(PrimaryColor);
-		Teams[TeamIndex].ColorSecondary = ColorUtils::ColorToFullSaturationAndValue(PrimaryColor);
+		//Teams[TeamIndex].ColorPrimary = ColorUtils::ColorToFullSaturationAndValue(PrimaryColor);
+		//Teams[TeamIndex].ColorSecondary = ColorUtils::ColorToFullSaturationAndValue(PrimaryColor);
 
 		// Use "declare for" for actual colors for UI. Player Markers still use Teams[I].ColorPrimary
 		declare Vec3 ColorPrimaryUI for Teams[TeamIndex];
@@ -222,6 +222,6 @@ Void Init() {
 		G_TeamConfigs = [Teams[0] => K_TeamConfig{}, Teams[1] => K_TeamConfig{}];
 	}
 	Private_Configs_OverrideEmptyFields();
-	Private_Configs_AdjustAvoidHueOverlap();
+	// Private_Configs_AdjustAvoidHueOverlap();
 	Private_Configs_ApplyToTeams();
 }

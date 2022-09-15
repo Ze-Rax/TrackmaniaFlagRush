@@ -1,24 +1,27 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "DedicatedServer\\Scripts"
-		}
-	],
-	"settings": {
-		"editor.tabSize": 2,
-		"editor.detectIndentation": false,
-		"editor.insertSpaces": false,
-		"diffEditor.ignoreTrimWhitespace": false,
-		"files.trimTrailingWhitespace": true
-	},
-	"extensions": {
-		"recommendations": [
-			"aessi.vscode-mslint",
-			"reaby.maniascript-support",
-			"redhat.vscode-xml"
-		]
-	}
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "DedicatedServer\\Scripts"
+    },
+    {
+      "path": "../../../OpenplanetNext/Extract/Titles/Trackmania/Scripts"
+    }
+  ],
+  "settings": {
+    "editor.tabSize": 2,
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": false,
+    "diffEditor.ignoreTrimWhitespace": false,
+    "files.trimTrailingWhitespace": true
+  },
+  "extensions": {
+    "recommendations": [
+      "aessi.vscode-mslint",
+      "reaby.maniascript-support",
+      "redhat.vscode-xml"
+    ]
+  }
 }

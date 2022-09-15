@@ -6,6 +6,9 @@
 
 #RequireContext CSmMode
 
+#Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt" as XmlRpc
+#Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt" as XmlRpc_Base
+
 /**
  *	Base for a standard game mode
  */
@@ -61,6 +64,23 @@ declare Boolean MB_Settings_UseDefaultPodiumSequence; ///< Use the default podiu
 ***
 MB_Settings_UseDefaultIntroSequence = True;
 MB_Settings_UseDefaultPodiumSequence = True;
+***
+
+***LoadLibraries***
+***
+XmlRpc::Load();
+XmlRpc_Base::Load();
+***
+
+***UnloadLibraries***
+***
+XmlRpc::Unload();
+XmlRpc_Base::Unload();
+***
+
+***Yield***
+***
+XmlRpc_Base::Yield();
 ***
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -368,12 +388,17 @@ main() {
 		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 		{ +++Settings+++ }
 		{ +++LoadLibraries+++ }
+
+		XmlRpc_Base::SendStartServer_Start(MB_Private_ServerRestarted, MB_Private_ServerModeUpdated, MB_Private_ServerModeName);
+
 		ItemList_Begin();
 		{ +++LoadItems+++ }
 		ItemList_End();
 		{ +++LoadHud+++ }
 		{ +++Rules+++ }
 		{ +++StartServer+++ }
+
+		XmlRpc_Base::SendStartServer_End(MB_Private_ServerRestarted, MB_Private_ServerModeUpdated, MB_Private_ServerModeName);
 
 		while (MB_ScriptIsRunning()) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -388,8 +413,10 @@ main() {
 			MB_Private_SectionCount_Turn = 0;
 			MB_Private_SectionCount_PlayLoop = 0;
 
+			XmlRpc_Base::SendStartMatch_Start(MB_Private_SectionCount_Match);
 			{ +++InitMatch+++ }
 			{ +++StartMatch+++ }
+			XmlRpc_Base::SendStartMatch_End(MB_Private_SectionCount_Match);
 
 			while (MB_MatchIsRunning()) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -412,9 +439,14 @@ main() {
 
 				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 				// Load a map
+				XmlRpc_Base::SendLoadingMap_Start(MB_Private_MapRestarted);
 				{ +++BeforeLoadMap+++ }
 				MB_Private_LoadMap();
 				{ +++AfterLoadMap+++ }
+				XmlRpc_Base::SendLoadingMap_End(Map, MB_Private_MapRestarted);
+
+				XmlRpc_Base::SendStartMap_Start(MB_Private_SectionCount_Map, Map, MB_Private_MapRestarted);
+
 				{ +++InitMap+++ }
 
 				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -432,6 +464,8 @@ main() {
 				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 				{ +++StartMap+++ }
 
+				XmlRpc_Base::SendStartMap_End(MB_Private_SectionCount_Map, Map, MB_Private_MapRestarted);
+
 				while (MB_MapIsRunning()) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Round section start
@@ -443,8 +477,10 @@ main() {
 					MB_Private_SectionCount_Turn = 0;
 					MB_Private_SectionCount_PlayLoop = 0;
 
+					XmlRpc_Base::SendStartRound_Start(MB_Private_SectionCount_Round);
 					{ +++InitRound+++ }
 					{ +++StartRound+++ }
+					XmlRpc_Base::SendStartRound_End(MB_Private_SectionCount_Round);
 
 					while (MB_RoundIsRunning()) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -456,11 +492,14 @@ main() {
 						MB_Private_SectionCount_Turn += 1;
 						MB_Private_SectionCount_PlayLoop = 0;
 
+						XmlRpc_Base::SendStartTurn_Start(MB_Private_SectionCount_Turn);
 						{ +++InitTurn+++ }
 						{ +++StartTurn+++ }
+						XmlRpc_Base::SendStartTurn_End(MB_Private_SectionCount_Turn);
 
 						MB_Private_SectionCount_PlayLoop += 1;
 
+						XmlRpc_Base::SendStartPlayLoop(MB_Private_SectionCount_PlayLoop);
 						{ +++InitPlayLoop+++ }
 						{ +++StartPlayLoop+++ }
 
@@ -478,25 +517,33 @@ main() {
 // Turn section end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
+						XmlRpc_Base::SendEndPlayLoop(MB_Private_SectionCount_PlayLoop);
+						XmlRpc_Base::SendEndTurn_Start(MB_Private_SectionCount_Turn);
 						{ +++EndTurn+++ }
 						{ +++AfterEndTurn+++ }
+						XmlRpc_Base::SendEndTurn_End(MB_Private_SectionCount_Turn);
 					}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Round section end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
+					XmlRpc_Base::SendEndRound_Start(MB_Private_SectionCount_Round);
 					{ +++EndRound+++ }
 					{ +++AfterEndRound+++ }
+					XmlRpc_Base::SendEndRound_End(MB_Private_SectionCount_Round);
 				}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Map section end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+				XmlRpc_Base::SendEndMap_Start(MB_Private_SectionCount_Map, Map);
 
 				{ +++EndMap+++ }
 				{ +++AfterEndMap+++ }
 
 				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 				// Podium sequence
+				XmlRpc_Base::SendPodium_Start();
 				if(!MB_Private_SkipPodiumSequence) {
 					{ +++BeforePodiumSequence+++ }
 					if (MB_Settings_UseDefaultPodiumSequence) {
@@ -506,9 +553,13 @@ main() {
 					}
 					{ +++AfterPodiumSequence+++ }
 				}
+				XmlRpc_Base::SendPodium_End();
+
+				XmlRpc_Base::SendEndMap_End(MB_Private_SectionCount_Map, Map);
 
 				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 				// Unload the current map
+				XmlRpc_Base::SendUnloadingMap_Start(Map);
 				{ +++BeforeUnloadMap+++ }
 				// Yield to process and remove every events before unloading the map
 				// This is necessary to avoid getting errors in the events about variables that does not exist anymore
@@ -516,6 +567,7 @@ main() {
 				MB_Yield();
 				MB_Private_UnloadMap();
 				{ +++AfterUnloadMap+++ }
+				XmlRpc_Base::SendUnloadingMap_End();
 
 				MB_Private_PersistentMapRestarted = False;
 				MB_Yield(); //< Needed to properly save persistent variable
@@ -524,14 +576,18 @@ main() {
 // Match section end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
+			XmlRpc_Base::SendEndMatch_Start(MB_Private_SectionCount_Match);
 			{ +++EndMatch+++ }
 			{ +++AfterEndMatch+++ }
+			XmlRpc_Base::SendEndMatch_End(MB_Private_SectionCount_Match);
 		}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Main/Server end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
+		XmlRpc_Base::SendEndServer_Start();
 		{ +++EndServer+++ }
+		XmlRpc_Base::SendEndServer_End();
 
 		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 		// Unload libraries

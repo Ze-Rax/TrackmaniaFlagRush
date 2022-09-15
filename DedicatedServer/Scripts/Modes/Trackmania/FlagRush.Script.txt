@@ -13,11 +13,14 @@
 // Libraries //
 // ========= //
 
-// !! Commented out libs are already included in base mode, but added in here for Intellisense.
+// !! Commented out libs are already included in the base mode, but added in here for IntelliSense.
 
 // General Libs
 // #Include "TextLib" as TL
 // #Include "MathLib" as ML
+
+// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"										as XmlRpc
+// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt"								as XmlRpc_Base
 
 // #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"										as EventFeed
 // #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"				as ModeCommands

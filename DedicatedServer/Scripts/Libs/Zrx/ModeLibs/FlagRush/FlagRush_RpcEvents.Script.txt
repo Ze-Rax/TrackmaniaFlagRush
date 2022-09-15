@@ -460,10 +460,9 @@ Void UnregisterCallbacks() {
 
 Void Unload() {
 	UnregisterCallbacks();
-	XmlRpc::Disable();
 }
 
 Void Load() {
-	XmlRpc::Enable();
+	Unload();
 	RegisterCallbacks();
 }

@@ -15,6 +15,10 @@
 #Include "TextLib" as TL
 #Include "MathLib" as ML
 
+// From mode base:
+// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"										as XmlRpc
+// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt"								as XmlRpc_Base
+
 #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"										as EventFeed
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"				as ModeCommands
 #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"				as CommandUtils
@@ -203,6 +207,11 @@ ModeCommands::AddQuickCommand(C_Command_EndWarmup, "UICommon64_1", "Play_light")
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipRound, "UICommon64_1", "FastForward_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
+***
+
+***UnloadLibraries***
+***
+FlagRush_XmlRpc::Unload();
 ***
 
 ***LoadHud***

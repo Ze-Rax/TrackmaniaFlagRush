@@ -14,6 +14,16 @@
 #Const C_MessagePriority_Event				2
 #Const C_MessagePriority_Progression	3
 
+Void Private_ClearAllMessages() {
+	UIManager.UIAll.ClearMessages();
+	foreach (Player in AllPlayers) {
+		declare CUIConfig UI <=> UIManager.GetUI(Player);
+		if (UI != Null) {
+			UI.ClearMessages();
+		}
+	}
+}
+
 Vec3 Private_GetTeamColor(Integer Clan) {
 	return FlagRush_Teams::GetConfig(Clan).Color;
 }
@@ -31,7 +41,7 @@ Text Private_GetColoredPlayerName(CSmPlayer Player) {
 }
 
 Void Private_QueueBigMessage(Text Message, Integer Duration, Integer Priority, CUIConfig::EUISound Sound) {
-	UIManager.UIAll.ClearMessages();
+	Private_ClearAllMessages();
 	UIManager.UIAll.QueueMessage(Duration, Priority, CUIConfig::EMessageDisplay::Big, Message, Sound, 0);
 }
 

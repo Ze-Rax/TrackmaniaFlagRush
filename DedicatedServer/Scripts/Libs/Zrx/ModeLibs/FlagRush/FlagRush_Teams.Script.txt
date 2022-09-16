@@ -9,7 +9,7 @@
 #Include "MathLib" as ML
 
 #Const	C_DefaultTeamName						"Unknown Team"
-#Const	C_DefaultTeamNames					[0 => "Team A?",1 => "Team B?"]
+#Const	C_DefaultTeamNames					[0 => "Team Teardrop",1 => "Team Feather"]
 #Const	C_DefaultTeamHue						148
 #Const	C_DefaultTeamHues						[0 => 240,1 => 20]
 

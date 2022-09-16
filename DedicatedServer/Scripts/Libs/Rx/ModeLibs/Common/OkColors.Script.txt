@@ -27,7 +27,7 @@ Vec3 rgb_to_lsrgb(Vec3 srgb){
 }
 
 Vec3 lsrgb_to_oklab(Vec3 rgb){
-	
+
     declare Real l = 0.4122214708 * rgb.X + 0.5363325363 * rgb.Y + 0.0514459929 * rgb.Z;
     declare Real m = 0.2119034982 * rgb.X + 0.6806995451 * rgb.Y + 0.1073969566 * rgb.Z;
     declare Real s = 0.0883024619 * rgb.X + 0.2817188376 * rgb.Y + 0.6299787005 * rgb.Z;
@@ -60,11 +60,10 @@ Vec3 oklab_to_lsrgb(Vec3 oklab){
 }
 
 Vec3 oklab_to_oklch(Vec3 oklab){
-	
+
 		declare Real l = oklab.X;
 		declare Real c = ML::Sqrt(oklab.Y * oklab.Y + oklab.Z * oklab.Z);
-		declare Real h = ML::RadToDeg(ML::Atan2(oklab.Z,oklab.Z));
-
+		declare Real h = ML::RadToDeg(ML::Atan2(oklab.Z,oklab.Y));
 		if (h < 0) {
 	  	h += 360;
 		}
@@ -84,30 +83,58 @@ Vec3 oklch_to_oklab(Vec3 oklch){
     >;
 }
 
-Vec3 oklch_to_rgb(Vec3 oklch){
+Vec3 HsvToRgb(Vec3 _HSV) {
+	declare RGB = <0., 0., 0.>;
+	declare H = _HSV.X;
+	declare S = _HSV.Y;
+	declare V = _HSV.Z;
+
+	declare Hi = ML::FloorInteger(H * 6.);
+	declare F = (H * 6.) - Hi;
+	declare P = V * (1. - S);
+	declare Q = V * (1. - (F * S));
+	declare T = V * (1. - ((1. - F) * S));
+
+	switch(Hi) {
+			case 0: RGB = <V, T, P>;
+			case 1: RGB = <Q, V, P>;
+			case 2: RGB = <P, V, T>;
+			case 3: RGB = <P, Q, V>;
+			case 4: RGB = <T, P, V>;
+			default: RGB = <V, P, Q>;
+	}
+
+	return RGB;
+}
+
+Real hue_shift(Real h,Real offset){
+	return h-ML::Sin((h-29.233) * ML::Pi / 180.0 - ML::Pi / 3.0) * offset;
+}
+
+Vec3 OkLchToRgb(Vec3 oklch){
 	return lsrgb_to_rgb(oklab_to_lsrgb(oklch_to_oklab(oklch)));
 }
 
-Vec3 rgb_to_oklch(Vec3 rgb){
+Vec3 RgbToOkLch(Vec3 rgb){
 	return oklab_to_oklch(lsrgb_to_oklab(rgb_to_lsrgb(rgb)));
 }
 
-Vec3 oklab_to_rgb(Vec3 oklab){
+Vec3 OkLabToRgb(Vec3 oklab){
 	return lsrgb_to_rgb(oklab_to_lsrgb(oklab));
 }
 
-Vec3 rgb_to_oklab(Vec3 rgb){
+Vec3 RgbToOkLab(Vec3 rgb){
 	return lsrgb_to_oklab(rgb_to_lsrgb(rgb));
 }
 
-Real OffsetHue(Real h,Real offset){
-	return -ML::Sin(h * ML::Pi / 180.0 - ML::Pi / 3.0) * offset;
+Vec3 GetDarkColor(Real h){
+  return OkLchToRgb(<0.3,0.22,hue_shift(h,-20.)>);
 }
 
-Vec3 GetDarkColor(Real h){
-    oklch_to_rgb(<0.55,0.19,h>);
+Vec3 GetMidColor(Real h){
+  return OkLchToRgb(<0.5,0.21,h>);
 }
 
 Vec3 GetLightColor(Real h){
-    oklch_to_rgb(<0.8,0.22,h+OffsetHue(h-29.233,30.)>);
+  return OkLchToRgb(<0.7,0.20,hue_shift(h,20.)>);
 }

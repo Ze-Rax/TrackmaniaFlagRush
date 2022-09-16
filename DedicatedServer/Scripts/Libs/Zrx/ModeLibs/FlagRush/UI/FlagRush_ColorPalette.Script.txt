@@ -17,6 +17,7 @@
 
 // Other colors
 #Const C_NeutralDark <0., 0., 0.>
+#Const C_NeutralMid <1., 1., 1.>
 #Const C_NeutralLight <1., 1., 1.>
 
 // Opacities

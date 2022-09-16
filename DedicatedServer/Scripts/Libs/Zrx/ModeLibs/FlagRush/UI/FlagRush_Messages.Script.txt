@@ -25,7 +25,8 @@ Void Private_ClearAllMessages() {
 }
 
 Vec3 Private_GetTeamColor(Integer Clan) {
-	return FlagRush_Teams::GetConfig(Clan).Color;
+	declare netwrite Vec3 Net_FlagRush_MidColor for Teams[Clan-1];
+	return Net_FlagRush_MidColor; //FlagRush_Teams::GetConfig(Clan).Color;
 }
 
 Text Private_GetTeamColorCode(Integer Clan) {

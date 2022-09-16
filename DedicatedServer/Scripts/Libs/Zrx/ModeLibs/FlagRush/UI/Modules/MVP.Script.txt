@@ -2,8 +2,6 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" 								as UIShared
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
 
-#Struct FlagRush_Teams::K_TeamSkin as K_TeamSkin
-
 Void Toggle(Boolean Status) {
 	declare netwrite Integer Net_FlagRush_MVPStamp for Teams[0];
 	declare netwrite Boolean Net_FlagRush_MVPShow for Teams[0];
@@ -12,7 +10,7 @@ Void Toggle(Boolean Status) {
 }
 
 Text GetManialink() {
-	declare K_TeamSkin[Integer] TeamSkins = FlagRush_Teams::GetTeamSkins();
+	declare Text[] TeamSkins = [FlagRush_Teams::GetSkinNameForTeam(0),FlagRush_Teams::GetSkinNameForTeam(1)];
 
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
@@ -171,19 +169,19 @@ Text GetManialink() {
 			if (Index > 2) break;
 			if (PlayerScore != Null) {
 				declare CMlFrame Frame = (Page.GetFirstChild("mvp"^Index) as CMlFrame);
-				declare Text[] TeamSkinName = [ "{{{ TeamSkins[0].SkinName }}}", "{{{ TeamSkins[1].SkinName }}}"];
-				declare Text[] TeamSkinUrl = [ "{{{ TeamSkins[0].SkinUrl }}}", "{{{ TeamSkins[1].SkinUrl }}}"];
+				declare Text[] TeamSkinName = [ "{{{ TeamSkins[0] }}}", "{{{ TeamSkins[1] }}}"];
+				// declare Text[] TeamSkinUrl = [ "{{{ TeamSkins[0] }}}", "{{{ TeamSkins[1] }}}"];
 				declare Text SkinName = PlayerScore.User.Model_CarSport_SkinName;
-				declare Text SkinUrl = PlayerScore.User.Model_CarSport_SkinUrl;
+				// declare Text SkinUrl = PlayerScore.User.Model_CarSport_SkinUrl;
 
 				if (TeamSkinName.existskey(PlayerScore.TeamNum-1)) {
 							SkinName = TeamSkinName[PlayerScore.TeamNum-1];
-							SkinUrl = TeamSkinUrl[PlayerScore.TeamNum-1];
+							// SkinUrl = TeamSkinUrl[PlayerScore.TeamNum-1];
 				} else {
-						SkinName = "{{{ TeamSkins[0].SkinName }}}";  // just to be sure the file exists for the skin url...
+						SkinName = "{{{ TeamSkins[0] }}}";  // just to be sure the file exists for the skin url...
 				}
 
-				declare ItemId = MenuSceneMgr.ItemCreate(SceneId, "CarSport", SkinName, SkinUrl);
+				declare ItemId = MenuSceneMgr.ItemCreate(SceneId, "CarSport", SkinName, "");
 				declare Pos = CarPositions[Index];
 				Items.add(K_Item{ItemId = ItemId, Position = Pos});
 				MenuSceneMgr.ItemSetLocation(SceneId, ItemId, Pos, 180., False);

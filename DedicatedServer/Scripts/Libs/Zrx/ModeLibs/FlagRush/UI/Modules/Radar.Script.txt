@@ -410,7 +410,7 @@ Text GetManialink() {
 				} else {
 					SelfMarker.Frame.Show();
 					SelfMarker.Frame.ZIndex = GetPlayerPosition(GUIPlayer).Y;
-					SelfMarker.Icon.TextColor = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
+					SelfMarker.Icon.TextColor = GetTeamMidColor(GUIPlayer.CurrentClan);
 				}
 			}
 
@@ -436,7 +436,7 @@ Text GetManialink() {
 					FlagMarker.Icon.Colorize = {{{ Colors::C_NeutralLight }}};
 				} else {
 					RelativePosition = GetPlayerPosition(FlagCarrierPlayer) - GetPlayerPosition(GUIPlayer);
-					FlagMarker.Icon.Colorize = GetTeamPrimaryColor(FlagCarrierPlayer.CurrentClan);
+					FlagMarker.Icon.Colorize = GetTeamMidColor(FlagCarrierPlayer.CurrentClan);
 				}
 				declare Vec2 RelativeRadarPosition = Rotate(-GetPlayerYaw(GUIPlayer), <-RelativePosition.X, -RelativePosition.Z>);
 
@@ -492,7 +492,7 @@ Text GetManialink() {
 				PlayerMarker.Frame.RelativePosition_V3 = RelativeRadarPosition;
 				PlayerMarker.Frame.ZIndex = GetPlayerPosition(Player).Y;
 				PlayerMarker.Frame.RelativeRotation = ML::RadToDeg(-RelativeYaw);
-				PlayerMarker.Icon.TextColor = GetTeamPrimaryColor(Player.CurrentClan);
+				PlayerMarker.Icon.TextColor = GetTeamMidColor(Player.CurrentClan);
 				PlayerMarker.Icon.Opacity = Opacity * {{{ C_PlayerMarkerIconOpacity }}};
 				PlayerMarker.Glow.Opacity = Opacity * {{{ C_PlayerMarkerGlowOpacity }}};
 			}
@@ -562,7 +562,7 @@ Text GetManialink() {
 
 					// Update visual appearance
 					+++ApplyRadarSettings+++
-					Radar_Background_Border.ModulateColor = GetTeamPrimaryColor(GUIPlayer.CurrentClan);
+					Radar_Background_Border.ModulateColor = GetTeamMidColor(GUIPlayer.CurrentClan);
 
 					UpdateMarkers();
 					yield;

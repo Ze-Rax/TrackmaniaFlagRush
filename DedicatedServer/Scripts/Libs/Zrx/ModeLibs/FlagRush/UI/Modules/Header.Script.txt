@@ -85,6 +85,8 @@ Text GetManialink() {
 	declare K_Timer Timer;
 	declare K_Carrier Carrier;
 
+	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
+
 	/**
 	 * Assigns all needed MlControl references.
 	 */
@@ -127,15 +129,15 @@ Text GetManialink() {
 	 * Set the default values for all controls.
 	 */
 	Void InitMlControls() {
-		TeamAreas[0].BackgroundGradient.Base.BgColor = {{{ FlagRush_Colors::C_BlueBase }}};
-		TeamAreas[0].BackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_BlueDark }}};
-		TeamAreas[0].BackgroundGradient.RightGradient.ModulateColor = {{{ FlagRush_Colors::C_BlueLight }}};
-		TeamAreas[0].ScoreBackground.ModulateColor = {{{ FlagRush_Colors::C_BlueBase }}};
+		TeamAreas[0].BackgroundGradient.Base.BgColor = GetTeamMidColor(1);// {{{ FlagRush_Colors::C_BlueBase }}};
+		TeamAreas[0].BackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(1); //{{{ FlagRush_Colors::C_BlueDark }}};
+		TeamAreas[0].BackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(1); //{{{ FlagRush_Colors::C_BlueLight }}};
+		TeamAreas[0].ScoreBackground.ModulateColor = GetTeamMidColor(1); //{{{ FlagRush_Colors::C_BlueBase }}};
 
-		TeamAreas[1].BackgroundGradient.Base.BgColor = {{{ FlagRush_Colors::C_RedBase }}};
-		TeamAreas[1].BackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_RedLight }}};
-		TeamAreas[1].BackgroundGradient.RightGradient.ModulateColor = {{{ FlagRush_Colors::C_RedDark }}};
-		TeamAreas[1].ScoreBackground.ModulateColor = {{{ FlagRush_Colors::C_RedBase }}};
+		TeamAreas[1].BackgroundGradient.Base.BgColor = GetTeamMidColor(2);//{{{ FlagRush_Colors::C_RedBase }}};
+		TeamAreas[1].BackgroundGradient.LeftGradient.ModulateColor = GetTeamLightColor(2);//{{{ FlagRush_Colors::C_RedLight }}};
+		TeamAreas[1].BackgroundGradient.RightGradient.ModulateColor = GetTeamDarkColor(2);//{{{ FlagRush_Colors::C_RedDark }}};
+		TeamAreas[1].ScoreBackground.ModulateColor = GetTeamMidColor(2);//{{{ FlagRush_Colors::C_RedBase }}};
 	}
 
 	/**
@@ -148,6 +150,7 @@ Text GetManialink() {
 		TeamAreas[Team].Score.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
 		TeamAreas[Team].TeamName.Value = Teams[Team].Name;
 	}
+	InitMlControls();
 	***
 
 	/**
@@ -184,7 +187,7 @@ Text GetManialink() {
 	} else {
 		Timer.Icon.Show();
 		Timer.TimerLabel.Hide();
-		Timer.Icon.Colorize = GetTeamPrimaryColor(FlagRush_Net_FlagState.Holder.Clan);
+		Timer.Icon.Colorize = GetTeamMidColor(FlagRush_Net_FlagState.Holder.Clan);
 	}
 	***
 
@@ -198,11 +201,11 @@ Text GetManialink() {
 		Carrier.CarrierLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
 	} else {
 		Carrier.CarrierLabel.Value = FlagRush_Net_FlagState.Holder.Name;
-		Carrier.CarrierLabel.TextColor = GetTeamPrimaryColor(FlagRush_Net_FlagState.Holder.Clan);
+		Carrier.CarrierLabel.TextColor = GetTeamMidColor(FlagRush_Net_FlagState.Holder.Clan);
 	}
 	***
 
-	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
+	Void DoNothing(){}
 
 	main() {
 

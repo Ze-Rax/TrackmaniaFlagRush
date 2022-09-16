@@ -72,9 +72,9 @@
 
 // Teams
 #Setting S_Team1Name 												"" 			as "Force Team 1 Name"
-// #Setting S_Team1Color 											"" 			as "Force Team 1 Color"
+#Setting S_Team1Hue 												-1 			as "Force Team 1 Hue"
 #Setting S_Team2Name 												"" 			as "Force Team 2 Name"
-// #Setting S_Team2Color 											"" 			as "Force Team 2 Color"
+#Setting S_Team2Hue 												-1 			as "Force Team 2 Hue"
 #Setting S_UseClubTags											True		as "Use club tags for team names"
 #Setting S_UseTeamSkins											True		as "Use colored skins for teams"
 
@@ -190,8 +190,10 @@ FlagRush_UI::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRound
 FlagRush_XmlRpc::Load();
 
 FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
-//FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
+FlagRush_Teams::SetTeam1HueOverride(S_Team1Hue);
+// FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
 FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
+FlagRush_Teams::SetTeam2HueOverride(S_Team2Hue);
 //FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
 FlagRush_Teams::UseClubTags(S_UseClubTags);
 FlagRush_Teams::Init();
@@ -560,7 +562,7 @@ FlagRush_UI::Yield();
 
 ***Private_Yield_HandlePlayerLifecycleEvents***
 ***
-declare Boolean ReinitTeams;
+// declare Boolean ReinitTeams;
 declare Boolean LastPlayerLeft;
 foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 	if (Event.Type == ModeEvents::C_PlayerLifecycle_PlayerAdded) {
@@ -577,15 +579,15 @@ foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 	declare Boolean PlayerClanChange = Event.Type == ModeEvents::C_PlayerLifecycle_PlayerClanChange;
 	declare Boolean PlayerSpectatorChange = Event.Type == ModeEvents::C_PlayerLifecycle_PlayerToSpectator
 			|| Event.Type == ModeEvents::C_PlayerLifecycle_SpectatorToPlayer;
-	ReinitTeams = ReinitTeams || PlayerAdded || PlayerRemoved || PlayerClanChange || PlayerSpectatorChange;
+	// ReinitTeams = ReinitTeams || PlayerAdded || PlayerRemoved || PlayerClanChange || PlayerSpectatorChange;
 
 	// Skip match if no player is left after player left or moved to spectator
 	LastPlayerLeft = LastPlayerLeft || Players.count == 0 && (PlayerRemoved || Event.Type == ModeEvents::C_PlayerLifecycle_PlayerToSpectator);
 }
 
-if (ReinitTeams) {
+/* if (ReinitTeams) {
 	FlagRush_Teams::Init();
-}
+} */
 
 // Skip running match if the last player left, but not if we're before the first round of the first map
 declare Boolean MatchWasStarted =  MB_GetMapCount() > 1 || MB_GetRoundCount() > 0; // At least first round on first map was started
@@ -622,14 +624,14 @@ if (
 declare Boolean FlagRush_PreviousSettings_UseClubTags for This;
 declare Text FlagRush_PreviousSetting_Team1Name for This;
 declare Text FlagRush_PreviousSetting_Team2Name for This;
-// declare Text FlagRush_PreviousSetting_Team1Color for This;
-// declare Text FlagRush_PreviousSetting_Team2Color for This;
+declare Integer FlagRush_PreviousSetting_Team1Hue for This;
+declare Integer FlagRush_PreviousSetting_Team2Hue for This;
 if (
 	FlagRush_PreviousSettings_UseClubTags != S_UseClubTags
 	|| FlagRush_PreviousSetting_Team1Name != S_Team1Name
 	|| FlagRush_PreviousSetting_Team2Name != S_Team2Name
-	// || FlagRush_PreviousSetting_Team1Color != S_Team1Color
-	// || FlagRush_PreviousSetting_Team2Color != S_Team2Color
+	|| FlagRush_PreviousSetting_Team1Hue != S_Team1Hue
+	|| FlagRush_PreviousSetting_Team2Hue != S_Team2Hue
 ) {
 	FlagRush_PreviousSettings_UseClubTags = S_UseClubTags;
 	FlagRush_Teams::UseClubTags(S_UseClubTags);
@@ -637,10 +639,10 @@ if (
 	FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
 	FlagRush_PreviousSetting_Team2Name = S_Team2Name;
 	FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
-	// FlagRush_PreviousSetting_Team1Color = S_Team1Color;
-	// FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
-	// FlagRush_PreviousSetting_Team2Color = S_Team2Color;
-	// FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
+	FlagRush_PreviousSetting_Team1Hue = S_Team1Hue;
+	FlagRush_Teams::SetTeam1HueOverride(S_Team1Hue);
+	FlagRush_PreviousSetting_Team2Hue = S_Team2Hue;
+	FlagRush_Teams::SetTeam2HueOverride(S_Team2Hue);
 	FlagRush_Teams::Init();
 }
 ***

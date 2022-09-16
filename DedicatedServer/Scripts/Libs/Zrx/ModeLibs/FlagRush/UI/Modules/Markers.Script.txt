@@ -114,7 +114,7 @@ Text GetManialink() {
 			declare CMlQuad QuadFlagUp = (FrameMarkerFlag.GetFirstChild("up") as CMlQuad);
 			declare CMlQuad QuadFlagDown = (FrameMarkerFlag.GetFirstChild("down") as CMlQuad);
 
-			QuadMarkerFlag.Colorize = GetTeamPrimaryColor(Null);
+			QuadMarkerFlag.Colorize = GetTeamMidColor(Null);
 
 			declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
 			declare netread Boolean FlagRush_Net_UseReversedBases for Teams[0];
@@ -123,7 +123,7 @@ Text GetManialink() {
 				yield;
 
 				/* Colors */
-				QuadMarkerFlag.Colorize = GetTeamPrimaryColor(FlagRush_Net_FlagState.Holder.Clan);
+				QuadMarkerFlag.Colorize = GetTeamMidColor(FlagRush_Net_FlagState.Holder.Clan);
 
 				declare Integer UIClan = 0;
 				if (GUIPlayer != Null) UIClan = GUIPlayer.CurrentClan;
@@ -133,14 +133,14 @@ Text GetManialink() {
 					declare Boolean ShowDefenseIcon;
 					declare Vec3 Color;
 					if (FlagRush_Net_UseReversedBases) {
-						Color = GetTeamPrimaryColor(3 - Clan); // Color of opponent clan
+						Color = GetTeamMidColor(3 - Clan); // Color of opponent clan
 						if (UIClan == 0) {
 							ShowDefenseIcon = True;
 						} else {
 							ShowDefenseIcon = Clan != UIClan;
 						}
 					} else {
-						Color = GetTeamPrimaryColor(Clan);
+						Color = GetTeamMidColor(Clan);
 						if (UIClan == 0) {
 							ShowDefenseIcon = True;
 						} else {

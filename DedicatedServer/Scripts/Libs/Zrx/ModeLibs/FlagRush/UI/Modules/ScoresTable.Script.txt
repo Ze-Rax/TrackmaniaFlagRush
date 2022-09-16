@@ -191,6 +191,48 @@ Text GetManialink() {
 	declare K_TeamScoreboard[] TeamScoreboards;
 	declare K_PageControls PageControls;
 
+	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
+
+	Void InitMlControls() {
+		// Gradients
+		// Team Blue
+		{
+			declare K_BackgroundGradient TeamNameBackgroundGradient = TeamScoreboards[0].TeamNameBackgroundGradient;
+			TeamNameBackgroundGradient.Base.BgColor = GetTeamMidColor(1);//{{{ FlagRush_Colors::C_BlueBase }}};
+			TeamNameBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(1);//{{{ FlagRush_Colors::C_BlueDark }}};
+			TeamNameBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(1);//{{{ FlagRush_Colors::C_BlueLight }}};
+
+			for (CardIndex, 0, 4) {
+				declare K_PlayerCard Playercard = TeamScoreboards[0].Playercards[CardIndex];
+				Playercard.Avatar.BgColor = GetTeamMidColor(1);//{{{ FlagRush_Colors::C_BlueBase }}};
+				declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
+				PlayercardBackgroundGradient.Base.Opacity = 0.;
+				PlayercardBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(1);//{{{ FlagRush_Colors::C_BlueDark }}};
+				PlayercardBackgroundGradient.LeftGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
+				PlayercardBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(1);//{{{ FlagRush_Colors::C_BlueLight }}};
+				PlayercardBackgroundGradient.RightGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
+			}
+		}
+		// Team Red
+		{
+			declare K_BackgroundGradient TeamNameBackgroundGradient = TeamScoreboards[1].TeamNameBackgroundGradient;
+			TeamNameBackgroundGradient.Base.BgColor = GetTeamMidColor(2);//{{{ FlagRush_Colors::C_RedBase }}};
+			TeamNameBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(2);//{{{ FlagRush_Colors::C_RedDark }}};
+			TeamNameBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(2);//{{{ FlagRush_Colors::C_RedLight }}};
+
+			for (CardIndex, 0, 4) {
+				declare K_PlayerCard Playercard = TeamScoreboards[1].Playercards[CardIndex];
+				Playercard.Avatar.BgColor = GetTeamMidColor(2);//{{{ FlagRush_Colors::C_RedBase }}};
+				declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
+				PlayercardBackgroundGradient.Base.Opacity = 0.;
+				PlayercardBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(2);//{{{ FlagRush_Colors::C_RedDark }}};
+				PlayercardBackgroundGradient.LeftGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
+				PlayercardBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(2);//{{{ FlagRush_Colors::C_RedLight }}};
+				PlayercardBackgroundGradient.RightGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
+			}
+		}
+	}
+
 	/**
 	 * Assigns all needed MlControl references and builds the scoreboard structure. Everything is accessible through TeamScoreboards.
 	 */
@@ -324,43 +366,7 @@ Text GetManialink() {
 		TeamScoreboards[Team].MapWins.Value.Value = C_CounterGlyphEmpty;
 	}
 
-	// Gradients
-	// Team Blue
-	{
-		declare K_BackgroundGradient TeamNameBackgroundGradient = TeamScoreboards[0].TeamNameBackgroundGradient;
-		TeamNameBackgroundGradient.Base.BgColor = {{{ FlagRush_Colors::C_BlueBase }}};
-		TeamNameBackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_BlueDark }}};
-		TeamNameBackgroundGradient.RightGradient.ModulateColor = {{{ FlagRush_Colors::C_BlueLight }}};
-
-		for (CardIndex, 0, 4) {
-			declare K_PlayerCard Playercard = TeamScoreboards[0].Playercards[CardIndex];
-			Playercard.Avatar.BgColor = {{{ FlagRush_Colors::C_BlueBase }}};
-			declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
-			PlayercardBackgroundGradient.Base.Opacity = 0.;
-			PlayercardBackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_BlueDark }}};
-			PlayercardBackgroundGradient.LeftGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
-			PlayercardBackgroundGradient.RightGradient.ModulateColor = {{{ FlagRush_Colors::C_BlueLight }}};
-			PlayercardBackgroundGradient.RightGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
-		}
-	}
-	// Team Red
-	{
-		declare K_BackgroundGradient TeamNameBackgroundGradient = TeamScoreboards[1].TeamNameBackgroundGradient;
-		TeamNameBackgroundGradient.Base.BgColor = {{{ FlagRush_Colors::C_RedBase }}};
-		TeamNameBackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_RedDark }}};
-		TeamNameBackgroundGradient.RightGradient.ModulateColor = {{{ FlagRush_Colors::C_RedLight }}};
-
-		for (CardIndex, 0, 4) {
-			declare K_PlayerCard Playercard = TeamScoreboards[1].Playercards[CardIndex];
-			Playercard.Avatar.BgColor = {{{ FlagRush_Colors::C_RedBase }}};
-			declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
-			PlayercardBackgroundGradient.Base.Opacity = 0.;
-			PlayercardBackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_RedDark }}};
-			PlayercardBackgroundGradient.LeftGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
-			PlayercardBackgroundGradient.RightGradient.ModulateColor = {{{ FlagRush_Colors::C_RedLight }}};
-			PlayercardBackgroundGradient.RightGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
-		}
-	}
+	InitMlControls();
 	***
 
 	/**
@@ -550,10 +556,7 @@ Text GetManialink() {
 		if (FlagRush_Net_WarmUpIsRunning && Net_WarmUpReadyUp_ReadyStates.get(Score.User.Login, False)) {
 			Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_Success }}};
 		} else {
-			switch (Score.TeamNum) {
-				case 1: Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_BlueDark  }}};
-				case 2: Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_RedDark  }}};
-			}
+			Playercard.BackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(Score.TeamNum);
 		}
 
 		Playercard.Avatar.ImageUrl = Score.User.CountryFlagUrl;
@@ -610,7 +613,7 @@ Text GetManialink() {
 			}
 
 			+++HandleEvents+++
-
+			InitMlControls();
 			UpdateTeamNames();
 			+++UpdateTeamStatistics+++
 

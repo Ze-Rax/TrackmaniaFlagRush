@@ -562,7 +562,7 @@ FlagRush_UI::Yield();
 
 ***Private_Yield_HandlePlayerLifecycleEvents***
 ***
-// declare Boolean ReinitTeams;
+declare Boolean ReinitTeamNames;
 declare Boolean LastPlayerLeft;
 foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 	if (Event.Type == ModeEvents::C_PlayerLifecycle_PlayerAdded) {
@@ -579,15 +579,15 @@ foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 	declare Boolean PlayerClanChange = Event.Type == ModeEvents::C_PlayerLifecycle_PlayerClanChange;
 	declare Boolean PlayerSpectatorChange = Event.Type == ModeEvents::C_PlayerLifecycle_PlayerToSpectator
 			|| Event.Type == ModeEvents::C_PlayerLifecycle_SpectatorToPlayer;
-	// ReinitTeams = ReinitTeams || PlayerAdded || PlayerRemoved || PlayerClanChange || PlayerSpectatorChange;
+	ReinitTeamNames = ReinitTeamNames || PlayerAdded || PlayerRemoved || PlayerClanChange || PlayerSpectatorChange;
 
 	// Skip match if no player is left after player left or moved to spectator
 	LastPlayerLeft = LastPlayerLeft || Players.count == 0 && (PlayerRemoved || Event.Type == ModeEvents::C_PlayerLifecycle_PlayerToSpectator);
 }
 
-/* if (ReinitTeams) {
-	FlagRush_Teams::Init();
-} */
+if (ReinitTeamNames) {
+	FlagRush_Teams::SetTeamNamesFromClubTags();
+}
 
 // Skip running match if the last player left, but not if we're before the first round of the first map
 declare Boolean MatchWasStarted =  MB_GetMapCount() > 1 || MB_GetRoundCount() > 0; // At least first round on first map was started

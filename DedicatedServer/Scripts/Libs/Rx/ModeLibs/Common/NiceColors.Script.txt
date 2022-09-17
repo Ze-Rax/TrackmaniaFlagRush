@@ -1,0 +1,116 @@
+#Const Version					"2022-09-03"
+#Const ScriptName				"OkColors.Script.txt"
+
+#Include "ColorLib" as CL
+#Include "MathLib" as ML
+
+#Const C_OkHueToHueLut [
+	-30.68,-27.3,-23.34,-17.92,-9.81,5.5001,
+	16.653,21.123,24.544,27.529,30.317,33.036,
+	35.772,38.590,41.553,44.731,48.209,52.109,
+	56.621,62.004,67.906,74.562,83.041,101.37,
+	125.53,145.94,155.88,161.56,165.97,169.77,
+	173.24,176.54,179.76,182.84,185.64,188.25,
+	190.70,193.05,195.33,197.58,199.88,202.33,
+	205.20,209.79,222.97,231.26,239.47,247.44,
+	254.48,261.02,267.36,273.71,280.26,287.18,
+	294.60,302.57,309.70,315.76,320.96,325.45,329.32 //wrap around
+]
+
+#Const C_HueToOkHueLut [
+	29.234,30.244,32.615,36.881,43.491,52.776,
+	64.552,77.689,90.382,101.22,109.77,116.87,
+	123.09,128.33,132.60,135.95,138.49,140.31,
+	141.51,142.20,142.50,142.86,143.72,145.25,
+	147.64,151.10,155.95,162.56,171.27,182.19,
+	194.77,208.99,224.27,238.09,248.81,256.22,
+	260.82,263.24,264.12,264.18,264.05,266.18,
+	270.67,277.36,285.38,293.77,301.91,309.48,
+	316.38,322.66,328.36,334.07,340.37,347.27,
+	354.75,362.62,370.50,377.75,383.61,387.44,389.234 //wrap around
+]
+
+Vec3 HsvToRgb(Vec3 _HSV) {
+	declare RGB = <0., 0., 0.>;
+	declare H = _HSV.X;
+	declare S = _HSV.Y;
+	declare V = _HSV.Z;
+
+	declare Hi = ML::FloorInteger(H * 6.);
+	declare F = (H * 6.) - Hi;
+	declare P = V * (1. - S);
+	declare Q = V * (1. - (F * S));
+	declare T = V * (1. - ((1. - F) * S));
+
+	switch(Hi) {
+			case 0: RGB = <V, T, P>;
+			case 1: RGB = <Q, V, P>;
+			case 2: RGB = <P, V, T>;
+			case 3: RGB = <P, Q, V>;
+			case 4: RGB = <T, P, V>;
+			default: RGB = <V, P, Q>;
+	}
+
+	return RGB;
+}
+
+Real Lerp(Real s, Real e, Real t){
+  return (s + (e - s) * t);
+}
+
+Real HueToOkHue(Real h){
+	declare Real _h = ML::Clamp(h, 0., 359.999);
+	declare Integer idx = ML::FloorInteger(_h/6);
+	declare Real t = (_h/6) - idx;
+	declare Real res = Lerp(C_HueToOkHueLut[idx],C_HueToOkHueLut[idx+1],t);
+	return res;
+}
+
+Real OkHueToHue(Real h){
+	declare Real _h = ML::Clamp(h, 0., 359.999);
+	declare Integer idx = ML::FloorInteger(_h/6);
+	declare Real t = (_h/6) - idx;
+	declare Real res = Lerp(C_OkHueToHueLut[idx],C_OkHueToHueLut[idx+1],t);
+	return res;
+}
+
+Real OffsetLight(Real h,Real offset){
+	if(h < (109.77-offset)) return offset;
+	if(h < (109.77+offset)) return 109.77-h;
+	if(h < 264.2) return -offset;
+	if(h < (264.2+offset)) return 2*offset-(264.2-h);
+
+	return offset;
+}
+
+Real OffsetDark(Real h,Real offset){
+	if(h < (109.77-offset)) return -offset;
+	if(h < (109.77)) return -(2*offset-(109.77-h));
+	if(h < (264.2-offset)) return offset;
+	if(h < (264.2+offset)) return 264.2-h;
+	return -offset;
+}
+
+Vec3 GetLightColor(Real h){
+	declare Real okH = HueToOkHue(h);
+	if(okH > 360) okH -= 360;
+	okH = okH+OffsetLight(okH,30.);
+	if(okH > 360) okH -= 360;
+	declare Real H = OkHueToHue(okH);
+	if(H < 0) H += 360;
+  return HsvToRgb(<H/360.,0.7,1.>);
+}
+
+Vec3 GetMidColor(Real h){
+  return HsvToRgb(<h/360.,0.85,0.85>);
+}
+
+Vec3 GetDarkColor(Real h){
+	declare Real okH = HueToOkHue(h);
+	if(okH > 360) okH -= 360;
+	okH = okH+OffsetDark(okH,30.);
+	if(okH > 360) okH -= 360;
+	declare Real H = OkHueToHue(okH);
+	if(H < 0) H += 360;
+  return HsvToRgb(<H/360.,1.,0.5>);
+}

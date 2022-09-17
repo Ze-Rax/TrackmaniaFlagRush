@@ -8,7 +8,8 @@
 */
 
 #RequireContext CSmMapType
-#Const Version "2021-09-26"
+
+#Const Version "2022-09-17"
 #Const C_MapTypeVersion 1
 #Const ScriptName "MapTypes/FlagRushArena.Script.txt"
 
@@ -49,6 +50,19 @@
 
 #Const C_Dbg_ButtonActivatorOpacity	0.0
 #Const C_Dbg_ButtonActivatorColor	"F00"
+
+#Const C_DefaultTeamColors [1 => <0., 0., 1.>, 2 => <1., 0., 0.>]
+
+#Const C_UIEventType_ToggleTeamColorsWindow		"ToggleTeamColorsWindow"
+#Const C_UIEventType_SetTeamColorHue					"SetTeamColorHue"
+#Const C_UIEventType_ResetTeamColorHue				"ResetTeamColorHue"
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+// Globables
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+declare CUILayer G_Toolbar;
+declare CUILayer G_TeamColorsWindow;
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Functions
@@ -131,6 +145,169 @@ Void UpdateValidability() {
 	ValidabilityRequirementsMessage = Message;
 }
 
+/**
+ * Manialink page with buttons to be added in the editor toolbar.
+ * Sends Layer custom events when buttons are clicked.
+ */
+Text GetToolbarManialink() {
+	return """
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="FlagRushArena_Toolbar">
+	<frame id="teamcolor" pos="42 -84.5">
+		<quad id="background" z-index="-1" size="12 10" halign="center" valign="center" style="UICommon128_1" substyle="BgFrameTilted2" opacity="{{{ C_UI_BackgroundOpacity }}}" />
+		<quad id="button" size="7 7" z-index="1" halign="center" valign="center" style="UICommon64_1" substyle="Flag_dark" scriptevents="1" tooltip="FlagRush Teams" />
+	</frame>
+
+	<script><!--
+	main() {
+		declare CMlQuad ButtonTeamColors <=> (Page.GetFirstChild("button") as CMlQuad);
+
+		while(True) {
+			yield;
+
+			foreach (Event in PendingEvents) {
+				switch (Event.Type) {
+					case CMlScriptEvent::Type::MouseClick: {
+						switch (Event.Control) {
+							case ButtonTeamColors: {
+								SendCustomEvent("{{{ C_UIEventType_ToggleTeamColorsWindow }}}", []);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	--></script>
+</manialink>
+	""";
+}
+
+/**
+ * Manialink page to adjust the color of the teams.
+ * Sends layer custom events when colors are reset or adjusted.
+ */
+Text GetTeamColorWindowManialink() {
+	return """
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="FlagRushArena_TeamColorsWindow">
+	<framemodel id="teamcolorselector">
+		<label id="header" pos="0 0" z-index="0" size="20 5" text="Team X" halign="center" valign="center2" textfont="GameFontSemiBold"/>
+		<frame pos="0 -8" size="45 6" halign="center" valign="center">
+			<colorpicker id="colorpicker" pos="-20 39.75" z-index="0" size="40 40" scriptevents="1" />
+		</frame>
+		<label id="hue-label" pos="0 -16" z-index="0" size="20 5" text="180" halign="center" valign="center2" textfont="GameFontRegular" textprefix="Hue: "/>
+		<label id="reset" pos="0 -24" z-index="0" size="31.7 5" text="Reset to default" halign="center" valign="center2" style="CardButtonMedium" scriptevents="1" />
+	</framemodel>
+
+	<quad pos="0 0" z-index="-1" size="100 60" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ColorPalette::C_Color_GreenThree}}}" halign="center" valign="center" />
+	<label pos="0 22.5" z-index="0" size="90 10" text="FlagRush Team Colors" halign="center" valign="center2" textfont="GameFontBlack" textsize="5" />
+
+	<frameinstance modelid="teamcolorselector" id="team-1-color" pos="-25 10"/>
+	<frameinstance modelid="teamcolorselector" id="team-2-color" pos="25 10"/>
+
+	<label id="close" pos="0 -24" z-index="0" size="20 5" text="Close" style="CardButtonMediumL" valign="center" halign="center" scriptevents="1"/>
+
+	<script><!--
+	#Include "ColorLib" as CL
+	#Include "TextLib" as TL
+
+	#Const C_DefaultTeamColors [1 => {{{ C_DefaultTeamColors[1] }}}, 2 => {{{ C_DefaultTeamColors[2] }}}]
+
+	#Struct K_TeamColorPicker {
+		CMlFrame Frame;
+		CMlLabel Header;
+		CMlColorPicker ColorPicker;
+		CMlLabel HueLabel;
+		CMlLabel ResetButton;
+	}
+
+	declare K_TeamColorPicker[Integer] G_TeamColorPickers;
+	declare CMlLabel G_CloseButton;
+
+	Void UpdateHueLabel(Integer Clan) {
+		declare CMlColorPicker ColorPicker = G_TeamColorPickers[Clan].ColorPicker;
+		declare Real Hue = CL::RgbToHsv(ColorPicker.Color).X;
+		declare CMlLabel HueLabel = G_TeamColorPickers[Clan].HueLabel;
+		HueLabel.Value = TL::FormatReal(Hue * 360, 0, False, True);
+	}
+
+	Void Init() {
+		// References
+		G_CloseButton <=> (Page.GetFirstChild("close") as CMlLabel);
+
+		// Team color pickers in window
+		for (Clan, 1, 2) {
+			declare K_TeamColorPicker TeamColorPicker;
+			// References
+			TeamColorPicker.Frame <=> (Page.GetFirstChild("team-" ^ Clan ^ "-color") as CMlFrame);
+			TeamColorPicker.Header <=> (TeamColorPicker.Frame.GetFirstChild("header") as CMlLabel);
+			TeamColorPicker.ColorPicker <=> (TeamColorPicker.Frame.GetFirstChild("colorpicker") as CMlColorPicker);
+			TeamColorPicker.HueLabel <=> (TeamColorPicker.Frame.GetFirstChild("hue-label") as CMlLabel);
+			TeamColorPicker.ResetButton <=> (TeamColorPicker.Frame.GetFirstChild("reset") as CMlLabel);
+
+			G_TeamColorPickers[Clan] = TeamColorPicker;
+
+			// Set initial values
+			TeamColorPicker.Header.Value = "Team " ^ Clan;
+			TeamColorPicker.ColorPicker.Color = C_DefaultTeamColors[Clan];
+			UpdateHueLabel(Clan);
+		}
+	}
+
+	main() {
+		Init();
+
+		declare Integer LastResetClicked = -1000;
+		while (True) {
+			yield;
+
+			foreach (Event in PendingEvents) {
+				switch (Event.Type) {
+					case CMlScriptEvent::Type::MouseClick: {
+						if (Event.Control == G_CloseButton) {
+							SendCustomEvent("{{{ C_UIEventType_ToggleTeamColorsWindow }}}", []);
+						} else {
+							foreach (Clan => TeamColorPicker in G_TeamColorPickers) {
+								switch (Event.Control) {
+									case TeamColorPicker.ColorPicker: {
+										// Setting a color (on reset) fires a Mouse click event on the color picker. Ignore that.
+										if (Now - Period == LastResetClicked) {
+											break;
+										}
+
+										declare Real Hue = CL::RgbToHsv(TeamColorPicker.ColorPicker.Color).X;
+										SendCustomEvent("{{{ C_UIEventType_SetTeamColorHue }}}", [TL::ToText(Clan), TL::ToText(Hue)]);
+										UpdateHueLabel(Clan);
+									}
+									case TeamColorPicker.ResetButton: {
+										SendCustomEvent("{{{ C_UIEventType_ResetTeamColorHue }}}", [TL::ToText(Clan)]);
+										TeamColorPicker.ColorPicker.Color = C_DefaultTeamColors[Clan];
+										UpdateHueLabel(Clan);
+										LastResetClicked = Now;
+									}
+								}
+							}
+						}
+					}
+					case CMlScriptEvent::Type::PluginCustomEvent: {
+						if (Event.CustomEventType == "{{{ C_UIEventType_SetTeamColorHue }}}") {
+							declare Integer Clan = TL::ToInteger(Event.CustomEventData[0]);
+							declare Real Hue = TL::ToReal(Event.CustomEventData[1]);
+							G_TeamColorPickers[Clan].ColorPicker.Color = CL::HsvToRgb(<Hue, 1., 1.>);
+							UpdateHueLabel(Clan);
+							LastResetClicked = Now;
+						}
+					}
+				}
+			}
+		}
+	}
+	--></script>
+</manialink>
+	""";
+}
+
 Text GetEditAnchorManialink() {
 	// To understand: Check ColorPalette.Script.txt
 	declare Color_BlueTwo = <0.1, 0.1, 0.9>;
@@ -153,7 +330,7 @@ Text GetEditAnchorManialink() {
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="FlagRushArena_AnchorEdit">
-	<frame id="anchor-window" pos="132.5 50">
+	<frame id="anchor-window" pos="132.5 50" hidden="1">
 		<frame id="header">
 			<quad pos="0 0" z-index="0" size="50 10" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{Color_HeaderPanelBackground}}}" halign="center" valign="center" opacity="{{{C_UI_BackgroundOpacity}}}"/>
 			<label pos="0 0" z-index="1" size="45 8" text="LandmarkType" halign="center" valign="center" textsize="4" style="Default" textfont="GameFontSemiBold" id="label-header"/>
@@ -356,79 +533,25 @@ Text GetEditAnchorManialink() {
 						}
 					}
 					case CMlScriptEvent::Type::MouseOver: {
-						declare CMlQuad ButtonBackground;
-						declare Vec3 BackgroundColor;
 						switch (Event.Control) {
-							case ButtonTeam1Activator: {
-								ButtonBackground = ButtonTeam1Bg;
-								BackgroundColor = {{{Color_ButtonBackground_Blue_Focus}}};
-							}
-							case ButtonTeam2Activator: {
-								ButtonBackground = ButtonTeam2Bg;
-								BackgroundColor = {{{Color_ButtonBackground_Red_Focus}}};
-							}
-							case ButtonTeamNoneActivator: {
-								ButtonBackground = ButtonTeamNoneBg;
-								BackgroundColor = {{{Color_ButtonBackground_Neutral_Focus}}};
-							}
-							case ButtonCPFunctionFlagActivator: {
-								ButtonBackground = ButtonCPFunctionFlagBg;
-								BackgroundColor = {{{Color_ButtonBackground_Neutral_Focus}}};
-							}
-							case ButtonCPFunctionNoneActivator: {
-								ButtonBackground = ButtonCPFunctionNoneBg;
-								BackgroundColor = {{{Color_ButtonBackground_Neutral_Focus}}};
-							}
-							case ButtonCPFunctionFlagDefaultActivator: {
-								ButtonBackground = ButtonCPFunctionFlagDefaultToggleBg;
-								BackgroundColor = {{{Color_ButtonBackground_Neutral_Focus}}};
-							}
-							case ButtonCPFunctionResetActivator: {
-								ButtonBackground = ButtonCPFunctionResetBg;
-								BackgroundColor = {{{Color_ButtonBackground_Neutral_Focus}}};
-							}
-						}
-
-						if(ButtonBackground != Null) {
-							ButtonBackground.Colorize = BackgroundColor;
+							case ButtonTeam1Activator: ButtonTeam1Bg.Colorize = {{{Color_ButtonBackground_Blue_Focus}}};
+							case ButtonTeam2Activator: ButtonTeam2Bg.Colorize = {{{Color_ButtonBackground_Red_Focus}}};
+							case ButtonTeamNoneActivator: ButtonTeamNoneBg.Colorize = {{{Color_ButtonBackground_Neutral_Focus}}};
+							case ButtonCPFunctionFlagActivator: ButtonCPFunctionFlagBg.Colorize = {{{Color_ButtonBackground_Neutral_Focus}}};
+							case ButtonCPFunctionNoneActivator: ButtonCPFunctionNoneBg.Colorize = {{{Color_ButtonBackground_Neutral_Focus}}};
+							case ButtonCPFunctionFlagDefaultActivator: ButtonCPFunctionFlagDefaultToggleBg.Colorize = {{{Color_ButtonBackground_Neutral_Focus}}};
+							case ButtonCPFunctionResetActivator: ButtonCPFunctionResetBg.Colorize = {{{Color_ButtonBackground_Neutral_Focus}}};
 						}
 					}
 					case CMlScriptEvent::Type::MouseOut: {
-						declare CMlQuad ButtonBackground;
-						declare Vec3 BackgroundColor;
 						switch (Event.Control) {
-							case ButtonTeam1Activator: {
-								ButtonBackground = ButtonTeam1Bg;
-								BackgroundColor = {{{Color_ButtonBackground_Blue}}};
-							}
-							case ButtonTeam2Activator: {
-								ButtonBackground = ButtonTeam2Bg;
-								BackgroundColor = {{{Color_ButtonBackground_Red}}};
-							}
-							case ButtonTeamNoneActivator: {
-								ButtonBackground = ButtonTeamNoneBg;
-								BackgroundColor = {{{Color_ButtonBackground_Neutral}}};
-							}
-							case ButtonCPFunctionFlagActivator: {
-								ButtonBackground = ButtonCPFunctionFlagBg;
-								BackgroundColor = {{{Color_ButtonBackground_Neutral}}};
-							}
-							case ButtonCPFunctionNoneActivator: {
-								ButtonBackground = ButtonCPFunctionNoneBg;
-								BackgroundColor = {{{Color_ButtonBackground_Neutral}}};
-							}
-							case ButtonCPFunctionFlagDefaultActivator: {
-								ButtonBackground = ButtonCPFunctionFlagDefaultToggleBg;
-								BackgroundColor = {{{Color_ButtonBackground_Neutral}}};
-							}
-							case ButtonCPFunctionResetActivator: {
-								ButtonBackground = ButtonCPFunctionResetBg;
-								BackgroundColor = {{{Color_ButtonBackground_Neutral}}};
-							}
-						}
-
-						if(ButtonBackground != Null) {
-							ButtonBackground.Colorize = BackgroundColor;
+							case ButtonTeam1Activator: ButtonTeam1Bg.Colorize = {{{Color_ButtonBackground_Blue}}};
+							case ButtonTeam2Activator: ButtonTeam2Bg.Colorize = {{{Color_ButtonBackground_Red}}};
+							case ButtonTeamNoneActivator: ButtonTeamNoneBg.Colorize = {{{Color_ButtonBackground_Neutral}}};
+							case ButtonCPFunctionFlagActivator: ButtonCPFunctionFlagBg.Colorize = {{{Color_ButtonBackground_Neutral}}};
+							case ButtonCPFunctionNoneActivator: ButtonCPFunctionNoneBg.Colorize = {{{Color_ButtonBackground_Neutral}}};
+							case ButtonCPFunctionFlagDefaultActivator: ButtonCPFunctionFlagDefaultToggleBg.Colorize = {{{Color_ButtonBackground_Neutral}}};
+							case ButtonCPFunctionResetActivator: ButtonCPFunctionResetBg.Colorize = {{{Color_ButtonBackground_Neutral}}};
 						}
 					}
 				}
@@ -521,6 +644,12 @@ main() {
 	InitLandmarks();
 	UpdateValidability();
 
+	G_Toolbar = UILayerCreate();
+	G_Toolbar.ManialinkPage = GetToolbarManialink();
+	G_TeamColorsWindow = UILayerCreate();
+	G_TeamColorsWindow.ManialinkPage = GetTeamColorWindowManialink();
+	G_TeamColorsWindow.IsVisible = False;
+
 	HoldLoadingScreen = False;
 	EnableMapTypeStartTest = True; // The maptype will handle the 'StartTest' event
 
@@ -536,6 +665,18 @@ main() {
 
 	while (True) {
 		yield;
+
+		foreach (Event in PendingEvents) {
+			switch (Event.Type) {
+				case CMapEditorPluginEvent::Type::LayerCustomEvent: {
+					switch (Event.CustomEventType) {
+						case C_UIEventType_ToggleTeamColorsWindow: {
+							G_TeamColorsWindow.IsVisible = !G_TeamColorsWindow.IsVisible;
+						}
+					}
+				}
+			}
+		}
 
 		// Hide config windows when not in block property mode
 		if (PlaceMode != CMapEditorPlugin::PlaceMode::BlockProperty) {

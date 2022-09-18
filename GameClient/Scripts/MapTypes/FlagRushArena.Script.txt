@@ -34,7 +34,7 @@
 // Constants
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-#Const C_Debug													True
+#Const C_Debug													False
 #Const C_Debug_ButtonActivatorOpacity		0.0
 #Const C_Debug_ButtonActivatorColor			"F0F"
 

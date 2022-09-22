@@ -118,21 +118,26 @@ Text GetTeamColorWindowManialink() {
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="FlagRushArena_TeamColorsWindow">
 	<framemodel id="teamcolorselector">
-		<label id="header" pos="0 0" z-index="0" size="20 5" text="Team X" halign="center" valign="center2" textfont="GameFontSemiBold"/>
+		<label id="header" pos="0 0" z-index="0" size="20 5" textprefix="$i" text="Team X" halign="center" valign="center2" textfont="GameFontSemiBold"/>
 		<frame pos="0 -8" size="45 6" halign="center" valign="center">
 			<colorpicker id="colorpicker" pos="-20 39.75" z-index="0" size="40 40" scriptevents="1" />
 		</frame>
-		<label id="hue-label" pos="0 -16" z-index="0" size="30 5" text="180" halign="center" valign="center2" textfont="GameFontRegular" textprefix="Hue: "/>
+		<label id="hue-label" pos="0 -16" z-index="0" size="30 5" text="180" halign="center" valign="center2" textfont="GameFontRegular" textprefix="$iHue: "/>
 		<label id="reset" pos="0 -24" z-index="0" size="30 5" text="Reset to default" halign="center" valign="center2" style="CardButtonMedium" scriptevents="1" />
 	</framemodel>
 
-	<quad pos="0 0" z-index="-1" size="100 60" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenThree }}}" halign="center" valign="center" />
-	<label pos="0 22.5" z-index="0" size="90 10" text="FlagRush Team Colors" halign="center" valign="center2" textfont="GameFontBlack" textsize="5" />
+	<frame pos="0 28.75">
+		<quad pos="0 0" z-index="-2" size="100 57.5" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenThree }}}" halign="center" valign="top" />
+		<quad pos="0 0" z-index="-1" size="100 10" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" halign="center" valign="top" />
+		<label pos="0 -5.25" z-index="0" size="90 8" text="$iFlagRush Team Colors" halign="center" valign="center2" textfont="GameFontBlack" textsize="3" />
 
-	<frameinstance modelid="teamcolorselector" id="team-1-color" pos="-25 10"/>
-	<frameinstance modelid="teamcolorselector" id="team-2-color" pos="25 10"/>
+		<frameinstance modelid="teamcolorselector" id="team-1-color" pos="-25 -15"/>
+		<frameinstance modelid="teamcolorselector" id="team-2-color" pos="25 -15"/>
 
-	<label id="close" pos="0 -24" z-index="0" size="20 5" text="Close" style="CardButtonMediumL" valign="center" halign="center" scriptevents="1"/>
+		<label id="close" pos="0 -50" z-index="0" size="20 5" text="Close" style="CardButtonMediumL" valign="center" halign="center" scriptevents="1"/>
+	</frame>
+
+
 
 	<script><!--
 	#Include "ColorLib" as CL
@@ -248,57 +253,57 @@ Text GetEditAnchorManialink() {
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="FlagRushArena_AnchorEdit">
 	<frame id="anchor-window" pos="132.5 50">
-		<frame id="header">
-			<quad pos="0 0" z-index="0" size="50 10" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" halign="center" valign="top" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
+		<frame id="header" z-index="1">
+			<quad pos="0 0" z-index="0" size="50 10" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" halign="center" valign="top"/>
 			<label pos="0 -5.25" z-index="1" size="45 8" textprefix="$i" text="LandmarkType" halign="center" valign="center2" textsize="3" textfont="GameFontBlack" id="label-header"/>
 		</frame>
 
-		<frame id="body" pos="0 -12.5">
+		<frame id="body" pos="0 0" z-index="0">
 			<frame id="body-teamselection" z-index="1" hidden="1">
-				<quad pos="0 0" z-index="0" size="50 30" halign="center" valign="top" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
-				<label pos="0 -5" size="45 5" text="$iTeam:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="FFF"/>
+				<quad pos="0 0" z-index="0" size="50 40" halign="center" valign="top" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
+				<label pos="0 -15" size="45 5" text="$iTeam:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="FFF"/>
 
-				<frame id="button-team1" pos="-11.5 -12.5">
+				<frame id="button-team1" pos="-11.5 -22.5">
 					<quad z-index="1" size="20 7" id="button-team1-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_ButtonOpacity }}}"/>
 					<label pos="0 -0.25" z-index="2" size="18 6" text="Team 1" halign="center" valign="center2" style="TextButtonMedium"/>
 					<quad z-index="3" size="20 7" id="button-team1-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
 				</frame>
 
-				<frame id="button-team2" pos="11.5 -12.5">
+				<frame id="button-team2" pos="11.5 -22.5">
 					<quad z-index="1" size="20 7" id="button-team2-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_ButtonOpacity }}}"/>
 					<label pos="0 -0.25" z-index="2" size="18 6" text="Team 2" halign="center" valign="center2" style="TextButtonMedium" />
 					<quad z-index="3" size="20 7" id="button-team2-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
 				</frame>
 
-				<label id="button-teamnone" pos="0 -22.5" z-index="2" size="45 6" text="None" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
+				<label id="button-teamnone" pos="0 -32.5" z-index="2" size="45 6" text="None" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
 			</frame>
 
 			<frame id="body-cpfunction" z-index="1" hidden="1">
-				<quad pos="0 0" z-index="0" size="50 50" halign="center" valign="top" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
-				<label pos="0 -5" size="45 5" text="$iFunction:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="FFF"/>
+				<quad pos="0 0" z-index="0" size="50 60" halign="center" valign="top" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
+				<label pos="0 -15" size="45 5" text="$iFunction:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="FFF"/>
 
-				<label id="button-cpfunctionflag" pos="0 -12.5" z-index="2" size="45 6" text="Flag spawn" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
+				<label id="button-cpfunctionflag" pos="0 -22.5" z-index="2" size="45 6" text="Flag spawn" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
 
-				<frame id="button-cpfunctionflagdefault" pos="0 -22.5" >
+				<frame id="button-cpfunctionflagdefault" pos="0 -32.5" >
 					<quad pos="16.5 0" z-index="1" size="10 8" id="button-cpfunctionflagdefault-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" opacity="{{{ C_UI_ButtonOpacity }}}"/>
 					<label pos="-5 0" z-index="2" size="30 6" id="button-cpfunctionflagdefault-label" text="Default flag spawn:" halign="center" valign="center" style="TextButtonMedium" />
-					<label pos="16.5 0.25" z-index="2" size="10 6" id="button-cpfunctionflagdefault-icon" text="" halign="center" valign="center" textfont="GameFontBlack" textsize="4" />
+					<label pos="16.5 0.25" z-index="2" size="10 6" id="button-cpfunctionflagdefault-icon" text="" halign="center" valign="center" textfont="GameFontBlack" textsize="3" />
 					<quad pos="16.5 0" z-index="3" size="10 8" id="button-cpfunctionflagdefault-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
 				</frame>
 
-				<label id="button-cpfunctionreset" pos="0 -32.5" z-index="2" size="45 6" text="Flag Reset Trigger" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
+				<label id="button-cpfunctionreset" pos="0 -42.5" z-index="2" size="45 6" text="Flag Reset Trigger" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
 
-				<label id="button-cpfunctionnone" pos="0 -42.5" z-index="2" size="45 6" text="None" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
+				<label id="button-cpfunctionnone" pos="0 -52.5" z-index="2" size="45 6" text="None" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
 			</frame>
 
 			<frame id="body-noedit" z-index="1" hidden="1">
-				<quad pos="0 0" z-index="0" size="50 35" halign="center" valign="top" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
-				<label pos="0 -5" size="45 5" text="$iUnsupported:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="{{{ ColorPalette::C_Color_Bad }}}"/>
-				<label pos="0 -10" size="45 18" text="This landmark is not supported by FlagRush and can therefore not be edited!" halign="center" valign="top" textfont="GameFontRegular" textsize="2.5" z-index="1" autonewline="1" textcolor="FFF"/>
+				<quad pos="0 0" z-index="0" size="50 45" halign="center" valign="top" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
+				<label pos="0 -15" size="45 5" text="$iUnsupported:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="{{{ ColorPalette::C_Color_Bad }}}"/>
+				<label pos="0 -20" size="45 18" text="This landmark is not supported by FlagRush and can therefore not be edited." halign="center" valign="top" textfont="GameFontRegular" textsize="2.5" z-index="1" autonewline="1" textcolor="FFF"/>
 			</frame>
 		</frame>
 
-		<frame id="order" pos="-35 -15" hidden="1">
+		<frame id="order" pos="-35 -17.5" hidden="1">
 			<quad pos="0 0" z-index="0" size="15 15" halign="center" valign="center" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
 			<label pos="0 3.5" z-index="1" size="10 5" text="Order" halign="center" valign="center" textfont="GameFontRegular" textsize="2" textcolor="FFF"/>
 			<label pos="0 -1.5" z-index="1" size="10 8" text="0" halign="center" valign="center" textfont="GameFontBlack" textsize="5" textcolor="FFF" id="label-ordervalue"/>
@@ -471,7 +476,7 @@ Text GetEditAnchorManialink() {
 		if (!Editor.AnchorData.existskey(G_SelectedAnchorId)) return;
 		declare CAnchorData Anchor <=> Editor.AnchorData[G_SelectedAnchorId];
 
-		declare Boolean IsClanOwnedLandmark = Anchor.WaypointType == CAnchorData::EWaypointType::Checkpoint || Anchor.WaypointType == CAnchorData::EWaypointType::Finish;
+		declare Boolean IsClanOwnedLandmark = Anchor.WaypointType == CAnchorData::EWaypointType::Start || Anchor.WaypointType == CAnchorData::EWaypointType::Finish;
 		declare Boolean IsValidClan = Clan == 1 || Clan == 2;
 		if ({{{ C_Debug }}}) {
 			assert(IsClanOwnedLandmark, "Selected landmark does not belong to a team");

@@ -56,17 +56,8 @@
 #Const C_DefaultTeamHues 								[1 => 0.666, 2 => 0.]
 #Const C_TeamHue_Default 								-1.
 
-// Events from and to UI Layers
-#Const C_UIEventType_ToggleTeamColorsWindow										"ToggleTeamColorsWindow"
-#Const C_UIEventType_SetTeamColorHue													"SetTeamColorHue"
-#Const C_UIEventType_SetEditLandmarkData											"SetEditLandmarkData"
-#Const C_UIEventType_EditLandmark															"EditLandmark"
-
-#Const C_UIEventData_EditLandmark_Unused											"EditLandmark_Unused"
-#Const C_UIEventData_EditLandmark_Team												"EditLandmark_Team"
-#Const C_UIEventData_EditLandmark_Function_FlagSpawn					"EditLandmark_Function_FlagSpawn"
-#Const C_UIEventData_EditLandmark_Function_DefaultFlagSpawn		"EditLandmark_Function_DefaultFlagSpawn"
-#Const C_UIEventData_EditLandmark_Function_OutOfBoundsTrigger	"EditLandmark_Function_OutOfBoundsTrigger"
+#Const C_UIEventType_ToggleTeamColorsWindow	"ToggleTeamColorsWindow"
+#Const C_UIEventType_SetTeamHue							"SetTeamHue"
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Globables
@@ -95,7 +86,7 @@ Text GetToolbarManialink() {
 
 	<script><!--
 	main() {
-		declare CMlQuad ButtonTeamColors <=> (Page.GetFirstChild("button") as CMlQuad);
+		declare CMlQuad ButtonTeamColors = (Page.GetFirstChild("button") as CMlQuad);
 
 		while (True) {
 			yield;
@@ -157,7 +148,6 @@ Text GetTeamColorWindowManialink() {
 		CMlLabel ResetButton;
 	}
 
-	declare Real[Integer] TeamHues;
 	declare K_TeamColorPicker[Integer] G_TeamColorPickers;
 	declare CMlLabel G_CloseButton;
 
@@ -166,7 +156,8 @@ Text GetTeamColorWindowManialink() {
 	 */
 	Void UpdateHueLabel(Integer Clan) {
 		declare CMlLabel HueLabel = G_TeamColorPickers[Clan].HueLabel;
-		declare Real Hue = TeamHues.get(Clan, {{{ C_TeamHue_Default }}});
+		declare metadata Real[Integer] FlagRush_Meta_TeamHues for Editor.Map;
+		declare Real Hue = FlagRush_Meta_TeamHues.get(Clan, {{{ C_TeamHue_Default }}});
 		if (Hue == {{{ C_TeamHue_Default }}}) {
 			HueLabel.Value = "Default";
 		} else {
@@ -174,35 +165,33 @@ Text GetTeamColorWindowManialink() {
 		}
 	}
 
-	Void Team_SetHue(Integer Clan, Real Hue) {
-		if (Hue == {{{ C_TeamHue_Default }}}) {
-			G_TeamColorPickers[Clan].ColorPicker.Color = CL::HsvToRgb(<C_DefaultTeamHues[Clan], 1., 1.>);
-		} else {
-			G_TeamColorPickers[Clan].ColorPicker.Color = CL::HsvToRgb(<Hue, 1., 1.>);
-		}
-		TeamHues[Clan] = Hue;
-		UpdateHueLabel(Clan);
-	}
-
 	Void Init() {
 		// References
-		G_CloseButton <=> (Page.GetFirstChild("close") as CMlLabel);
+		G_CloseButton = (Page.GetFirstChild("close") as CMlLabel);
 
 		// Team color pickers in window
 		for (Clan, 1, 2) {
 			declare K_TeamColorPicker TeamColorPicker;
 			// References
-			TeamColorPicker.Frame <=> (Page.GetFirstChild("team-" ^ Clan ^ "-color") as CMlFrame);
-			TeamColorPicker.Header <=> (TeamColorPicker.Frame.GetFirstChild("header") as CMlLabel);
-			TeamColorPicker.ColorPicker <=> (TeamColorPicker.Frame.GetFirstChild("colorpicker") as CMlColorPicker);
-			TeamColorPicker.HueLabel <=> (TeamColorPicker.Frame.GetFirstChild("hue-label") as CMlLabel);
-			TeamColorPicker.ResetButton <=> (TeamColorPicker.Frame.GetFirstChild("reset") as CMlLabel);
+			TeamColorPicker.Frame = (Page.GetFirstChild("team-" ^ Clan ^ "-color") as CMlFrame);
+			TeamColorPicker.Header = (TeamColorPicker.Frame.GetFirstChild("header") as CMlLabel);
+			TeamColorPicker.ColorPicker = (TeamColorPicker.Frame.GetFirstChild("colorpicker") as CMlColorPicker);
+			TeamColorPicker.HueLabel = (TeamColorPicker.Frame.GetFirstChild("hue-label") as CMlLabel);
+			TeamColorPicker.ResetButton = (TeamColorPicker.Frame.GetFirstChild("reset") as CMlLabel);
 
 			G_TeamColorPickers[Clan] = TeamColorPicker;
 
 			// Set initial values
 			TeamColorPicker.Header.Value = "Team " ^ Clan;
-			Team_SetHue(Clan, {{{ C_TeamHue_Default }}});
+
+			declare metadata Real[Integer] FlagRush_Meta_TeamHues for Editor.Map;
+			declare Real ColorPickerHue;
+			if (!FlagRush_Meta_TeamHues.existskey(Clan) || FlagRush_Meta_TeamHues[Clan] == {{{ C_TeamHue_Default }}}) {
+				ColorPickerHue = C_DefaultTeamHues[Clan];
+			} else {
+				ColorPickerHue = FlagRush_Meta_TeamHues[Clan];
+			}
+			TeamColorPicker.ColorPicker.Color = CL::HsvToRgb(<ColorPickerHue, 1., 1.>);
 		}
 	}
 
@@ -211,47 +200,38 @@ Text GetTeamColorWindowManialink() {
 
 		declare Integer LastResetClicked = -1000;
 		while (True) {
+			yield;
+
+			for (Clan, 1, 2) {
+				UpdateHueLabel(Clan);
+			}
+
 			foreach (Event in PendingEvents) {
 				switch (Event.Type) {
 					case CMlScriptEvent::Type::MouseClick: {
-						if (Event.Control == G_CloseButton) {
-							SendCustomEvent("{{{ C_UIEventType_ToggleTeamColorsWindow }}}", []);
-						} else {
-							foreach (Clan => TeamColorPicker in G_TeamColorPickers) {
+						if (Event.Control == G_CloseButton) SendCustomEvent("{{{ C_UIEventType_ToggleTeamColorsWindow }}}", []);
+						else {
+							for (Clan, 1, 2) {
 								switch (Event.Control) {
-									case TeamColorPicker.ColorPicker: {
-										// Setting a color (on reset) fires a Mouse click event on the color picker. Ignore that.
-										if (Now - Period == LastResetClicked) {
+									case G_TeamColorPickers[Clan].ColorPicker: {
+										// Setting color in colorpicker (for example in Team_SetHue on reset click) fires a mouse click event for whatever reason. Ignore that
+										if (LastResetClicked == Now - Period) {
 											break;
 										}
-
-										declare Real Hue = CL::RgbToHsv(TeamColorPicker.ColorPicker.Color).X;
-										SendCustomEvent("{{{ C_UIEventType_SetTeamColorHue }}}", [TL::ToText(Clan), TL::ToText(Hue)]);
-										TeamHues[Clan] = Hue;
-										UpdateHueLabel(Clan);
+										declare Real Hue = CL::RgbToHsv(G_TeamColorPickers[Clan].ColorPicker.Color).X;
+										SendCustomEvent("{{{ C_UIEventType_SetTeamHue }}}", [TL::ToText(Clan), TL::ToText(Hue)]);
 									}
-									case TeamColorPicker.ResetButton: {
-										SendCustomEvent("{{{ C_UIEventType_SetTeamColorHue }}}", [TL::ToText(Clan), TL::ToText({{{ C_TeamHue_Default }}})]);
-										Team_SetHue(Clan, {{{ C_TeamHue_Default }}});
+									case G_TeamColorPickers[Clan].ResetButton: {
 										LastResetClicked = Now;
+										SendCustomEvent("{{{ C_UIEventType_SetTeamHue }}}", [TL::ToText(Clan), TL::ToText({{{ C_TeamHue_Default }}})]);
+										G_TeamColorPickers[Clan].ColorPicker.Color = CL::HsvToRgb(<C_DefaultTeamHues[Clan], 1., 1.>);
 									}
 								}
 							}
 						}
 					}
-					case CMlScriptEvent::Type::PluginCustomEvent: {
-						// Hue was forced by maptype script
-						if (Event.CustomEventType == "{{{ C_UIEventType_SetTeamColorHue }}}") {
-							declare Integer Clan = TL::ToInteger(Event.CustomEventData[0]);
-							declare Real Hue = TL::ToReal(Event.CustomEventData[1]);
-							Team_SetHue(Clan, Hue);
-							LastResetClicked = Now;
-						}
-					}
 				}
 			}
-
-			yield; // Yield at the end to catch initialization events from maptype script
 		}
 	}
 	--></script>
@@ -524,6 +504,21 @@ Text GetEditAnchorManialink() {
 	}
 
 	/**
+	 * Gets the selected team color hue for a specified clan from the metadata.
+	 * Returns default values (Blue or Red) if there is no metadata value for the specified clan or it's set to C_TeamHue_Default.
+	 */
+	Vec3 Team_GetColor(Integer Clan) {
+		declare metadata Real[Integer] FlagRush_Meta_TeamHues for Editor.Map;
+		declare Real TeamHue;
+		if (!FlagRush_Meta_TeamHues.existskey(Clan) || FlagRush_Meta_TeamHues[Clan] == {{{ C_TeamHue_Default }}}) {
+			TeamHue = C_DefaultTeamHues[Clan];
+		} else {
+			TeamHue = FlagRush_Meta_TeamHues[Clan];
+		}
+		return CL::HsvToRgb(<TeamHue, 1., 1.>);
+	}
+
+	/**
 	 * Checks if a new anchor was selected and saves the id in a global variable.
 	 * Selected anchor is unset if editor is not in block property mode.
 	 */
@@ -597,18 +592,10 @@ Text GetEditAnchorManialink() {
 	 * depending on if they are focused or not.
 	 */
 	Void UpdateButtonColors() {
-		declare metadata Real[Integer] FlagRush_Meta_TeamHues for Editor.Map;
 		for (Clan, 1, 2) {
-			declare Real TeamHue;
-			if (FlagRush_Meta_TeamHues.existskey(Clan)) {
-				TeamHue = FlagRush_Meta_TeamHues[Clan];
-			} else {
-				TeamHue = C_DefaultTeamHues[Clan];
-			}
+			declare Vec3 TeamColor = Team_GetColor(Clan);
+			G_TeamSelection.TeamButtonColors[Clan] = [True => TeamColor * 0.25, False => TeamColor];
 
-			declare Vec3 TeamColor = CL::HsvToRgb(<TeamHue, 1., 1.>);
-			declare Vec3 TeamColorDark = CL::HsvToRgb(<TeamHue, 1., 0.25>);
-			G_TeamSelection.TeamButtonColors[Clan] = [True => TeamColorDark, False => TeamColor];
 		}
 
 		// Default to unfocused color
@@ -773,6 +760,24 @@ Void Anchor_SetUnused(CAnchorData Anchor) {
 	}
 }
 
+/**
+ * Writes the specified hue for the specified clan into the metadata of the map.
+ */
+Void Team_SetHue(Integer Clan, Real Hue) {
+	declare Boolean IsValidClan = Clan == 1 || Clan == 2;
+	declare Boolean IsValidHue = Hue == C_TeamHue_Default || (Hue >= 0. && Hue <= 1.);
+	if (C_Debug) {
+		assert(IsValidClan, """'{{{ Clan }}}' is not a valid clan.""");
+		assert(IsValidHue, """'{{{ Hue }}}' is not a valid hue.""");
+	} else {
+		if (!IsValidHue || !IsValidClan) return;
+	}
+
+	declare metadata Real[Integer] FlagRush_Meta_TeamHues for Map;
+	FlagRush_Meta_TeamHues[Clan] = Hue;
+
+}
+
 Void PlayTestRun() {
 	TMMapType::PlayTestRun_Yield();
 	ReportContext::SetContext(System, ReportContext::C_Context_MapEditor);
@@ -831,6 +836,11 @@ main() {
 					switch (Event.CustomEventType) {
 						case C_UIEventType_ToggleTeamColorsWindow: {
 							G_TeamColorsWindow.IsVisible = !G_TeamColorsWindow.IsVisible;
+						}
+						case C_UIEventType_SetTeamHue: {
+							declare Integer Clan = TL::ToInteger(Event.CustomEventData[0]);
+							declare Real Hue = TL::ToReal(Event.CustomEventData[1]);
+							Team_SetHue(Clan, Hue);
 						}
 					}
 				}

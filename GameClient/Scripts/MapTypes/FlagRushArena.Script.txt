@@ -38,12 +38,6 @@
 #Const C_Debug_ButtonActivatorOpacity		0.0
 #Const C_Debug_ButtonActivatorColor			"F0F"
 
-#Const C_WaypointType_Start							"Start"
-#Const C_WaypointType_Finish						"Finish"
-#Const C_WaypointType_Checkpoint				"Checkpoint"
-#Const C_WaypointType_StartFinish				"StartFinish"
-#Const C_WaypointType_None							"None"
-
 #Const C_AnchorTag_Spawn_Prefix					"SpawnTeam"
 #Const C_AnchorTag_Base_Prefix					"BaseTeam"
 #Const C_AnchorTag_FlagSpawn						"FlagSpawn"
@@ -275,61 +269,59 @@ Text GetEditAnchorManialink() {
 <manialink version="3" name="FlagRushArena_AnchorEdit">
 	<frame id="anchor-window" pos="132.5 50">
 		<frame id="header">
-			<quad pos="0 0" z-index="0" size="50 10" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" halign="center" valign="center" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
-			<label pos="0 0" z-index="1" size="45 8" text="LandmarkType" halign="center" valign="center" textsize="4" style="Default" textfont="GameFontSemiBold" id="label-header"/>
+			<quad pos="0 0" z-index="0" size="50 10" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" halign="center" valign="top" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
+			<label pos="0 -5.25" z-index="1" size="45 8" textprefix="$i" text="LandmarkType" halign="center" valign="center2" textsize="3" textfont="GameFontBlack" id="label-header"/>
 		</frame>
 
-		<frame id="body" pos="0 -25">
+		<frame id="body" pos="0 -12.5">
 			<frame id="body-teamselection" z-index="1" hidden="1">
-			<quad pos="0 0" z-index="0" size="50 35" halign="center" valign="center" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
-				<label pos="0 10" size="45 8" text="Team:" halign="center" valign="center" style="Default" textfont="GameFontRegular" textsize="3" z-index="1" textcolor="FFF"/>
+				<quad pos="0 0" z-index="0" size="50 30" halign="center" valign="top" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
+				<label pos="0 -5" size="45 5" text="$iTeam:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="FFF"/>
 
-				<quad pos="-12.5 0" z-index="1" size="20 8" id="button-team1-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_ButtonOpacity }}}"/>
-				<label pos="-12.5 0" z-index="2" size="20 6" text="Team 1" halign="center" valign="center" style="Default" textfont="GameFontBlack" />
-				<quad pos="-12.5 0" z-index="3" size="20 8" id="button-team1-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
+				<frame id="button-team1" pos="-11.5 -12.5">
+					<quad z-index="1" size="20 7" id="button-team1-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_ButtonOpacity }}}"/>
+					<label pos="0 -0.25" z-index="2" size="18 6" text="Team 1" halign="center" valign="center2" style="TextButtonMedium"/>
+					<quad z-index="3" size="20 7" id="button-team1-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
+				</frame>
 
-				<quad pos="12.5 0" z-index="1" size="20 8" id="button-team2-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_ButtonOpacity }}}"/>
-				<label pos="12.5 0" z-index="2" size="20 6" text="Team 2" halign="center" valign="center" style="Default" textfont="GameFontBlack" />
-				<quad pos="12.5 0" z-index="3" size="20 8" id="button-team2-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
+				<frame id="button-team2" pos="11.5 -12.5">
+					<quad z-index="1" size="20 7" id="button-team2-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_ButtonOpacity }}}"/>
+					<label pos="0 -0.25" z-index="2" size="18 6" text="Team 2" halign="center" valign="center2" style="TextButtonMedium" />
+					<quad z-index="3" size="20 7" id="button-team2-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
+				</frame>
 
-				<quad pos="0 -10" z-index="1" size="45 8" id="button-teamnone-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" opacity="{{{ C_UI_ButtonOpacity }}}"/>
-				<label pos="0 -10" z-index="2" size="45 6" text="None" halign="center" valign="center" style="Default" textfont="GameFontBlack" />
-				<quad pos="0 -10" z-index="3" size="45 8" id="button-teamnone-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
+				<label id="button-teamnone" pos="0 -22.5" z-index="2" size="45 6" text="None" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
 			</frame>
 
 			<frame id="body-cpfunction" z-index="1" hidden="1">
-				<quad pos="0 -10" z-index="0" size="50 55" halign="center" valign="center" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
-				<label pos="0 10" size="45 8" text="Function:" halign="center" valign="center" style="Default" textfont="GameFontRegular" textsize="3" z-index="1" textcolor="FFF"/>
+				<quad pos="0 0" z-index="0" size="50 50" halign="center" valign="top" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
+				<label pos="0 -5" size="45 5" text="$iFunction:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="FFF"/>
 
-				<quad pos="0 0" z-index="1" size="45 8" id="button-cpfunctionflag-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" opacity="{{{ C_UI_ButtonOpacity }}}"/>
-				<label pos="0 0" z-index="2" size="45 6" text="Flag spawn" halign="center" valign="center" style="Default" textfont="GameFontBlack" />
-				<quad pos="0 0" z-index="3" size="45 8" id="button-cpfunctionflag-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
+				<label id="button-cpfunctionflag" pos="0 -12.5" z-index="2" size="45 6" text="Flag spawn" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
 
-				<quad pos="17.5 -10" z-index="1" size="10 8" id="button-cpfunctionflagdefault-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" opacity="{{{ C_UI_ButtonOpacity }}}"/>
-				<label pos="-20 -10" z-index="2" size="30 6" id="button-cpfunctionflagdefault-label" text="Default flag spawn:" halign="left" valign="center" style="Default" textfont="GameFontBlack" />
-				<label pos="17.5 -10" z-index="2" size="10 6" id="button-cpfunctionflagdefault-icon" text="" halign="center" valign="center" style="Default" textfont="GameFontBlack" textsize="4" />
-				<quad pos="17.5 -10" z-index="3" size="10 8" id="button-cpfunctionflagdefault-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
+				<frame id="button-cpfunctionflagdefault" pos="0 -22.5" >
+					<quad pos="16.5 0" z-index="1" size="10 8" id="button-cpfunctionflagdefault-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" opacity="{{{ C_UI_ButtonOpacity }}}"/>
+					<label pos="-5 0" z-index="2" size="30 6" id="button-cpfunctionflagdefault-label" text="Default flag spawn:" halign="center" valign="center" style="TextButtonMedium" />
+					<label pos="16.5 0.25" z-index="2" size="10 6" id="button-cpfunctionflagdefault-icon" text="" halign="center" valign="center" textfont="GameFontBlack" textsize="4" />
+					<quad pos="16.5 0" z-index="3" size="10 8" id="button-cpfunctionflagdefault-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
+				</frame>
 
-				<quad pos="0 -20" z-index="1" size="45 8" id="button-cpfunctionreset-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" opacity="{{{ C_UI_ButtonOpacity }}}"/>
-				<label pos="0 -20" z-index="2" size="45 6" text="Flag Reset Trigger" halign="center" valign="center" style="Default" textfont="GameFontBlack" />
-				<quad pos="0 -20" z-index="3" size="45 8" id="button-cpfunctionreset-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
+				<label id="button-cpfunctionreset" pos="0 -32.5" z-index="2" size="45 6" text="Flag Reset Trigger" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
 
-				<quad pos="0 -30" z-index="1" size="45 8" id="button-cpfunctionnone-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" opacity="{{{ C_UI_ButtonOpacity }}}"/>
-				<label pos="0 -30" z-index="2" size="45 6" text="None" halign="center" valign="center" style="Default" textfont="GameFontBlack" />
-				<quad pos="0 -30" z-index="3" size="45 8" id="button-cpfunctionnone-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
+				<label id="button-cpfunctionnone" pos="0 -42.5" z-index="2" size="45 6" text="None" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
 			</frame>
 
 			<frame id="body-noedit" z-index="1" hidden="1">
-			<quad pos="0 0" z-index="0" size="50 35" halign="center" valign="center" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
-				<label pos="0 10" size="45 8" text="Unsupported:" halign="center" valign="center" style="Default" textfont="GameFontSemibold" textsize="3" z-index="1" textcolor="{{{ ColorPalette::C_Color_Bad }}}"/>
-				<label pos="0 -5" size="45 18" text="This landmark is not supported and can therefore not be edited!" halign="center" valign="center" style="Default" textfont="GameFontRegular" textsize="2.5" z-index="1" autonewline="1" textcolor="FFF"/>
+				<quad pos="0 0" z-index="0" size="50 35" halign="center" valign="top" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
+				<label pos="0 -5" size="45 5" text="$iUnsupported:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="{{{ ColorPalette::C_Color_Bad }}}"/>
+				<label pos="0 -10" size="45 18" text="This landmark is not supported by FlagRush and can therefore not be edited!" halign="center" valign="top" textfont="GameFontRegular" textsize="2.5" z-index="1" autonewline="1" textcolor="FFF"/>
 			</frame>
 		</frame>
 
 		<frame id="order" pos="-35 -15" hidden="1">
 			<quad pos="0 0" z-index="0" size="15 15" halign="center" valign="center" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
-			<label pos="0 3.5" z-index="1" size="10 5" text="Order" halign="center" valign="center" style="Default" textfont="GameFontRegular" textsize="2" textcolor="FFF"/>
-			<label pos="0 -1.5" z-index="1" size="10 8" text="0" halign="center" valign="center" style="Default" textfont="GameFontBlack" textsize="5" textcolor="FFF" id="label-ordervalue"/>
+			<label pos="0 3.5" z-index="1" size="10 5" text="Order" halign="center" valign="center" textfont="GameFontRegular" textsize="2" textcolor="FFF"/>
+			<label pos="0 -1.5" z-index="1" size="10 8" text="0" halign="center" valign="center" textfont="GameFontBlack" textsize="5" textcolor="FFF" id="label-ordervalue"/>
 
 			<quad pos="0 10" z-index="0" size="8 5" bgcolor="FFF" opacity="0.7" style="UICommon64_2" substyle="ArrowUpSlim_light" valign="center" halign="center" scriptevents="1" id="button-order-up"/>
 			<quad pos="0 -10" z-index="0" size="8 5" bgcolor="FFF" opacity="0.7" style="UICommon64_2" substyle="ArrowDownSlim_light" valign="center" halign="center" scriptevents="1" id="button-order-down"/>
@@ -366,15 +358,15 @@ Text GetEditAnchorManialink() {
 		CMlFrame Frame;
 		Vec3[Boolean][Integer] TeamButtonColors;
 		K_Button[Integer] TeamButtons;
-		K_Button ButtonNone;
+		CMlLabel ButtonNone;
 	}
 
 	#Struct K_Body_CPFunction {
 		CMlFrame Frame;
-		K_Button ButtonFlag;
+		CMlLabel ButtonFlag;
 		K_ToggleButton ToggleButtonDefaultSpawn;
-		K_Button ButtonOutOfBounds;
-		K_Button ButtonNone;
+		CMlLabel ButtonOutOfBounds;
+		CMlLabel ButtonNone;
 	}
 
 	#Struct K_Body_NoEdit {
@@ -388,8 +380,10 @@ Text GetEditAnchorManialink() {
 		CMlQuad ButtonDown;
 	}
 
+	// Id of last selected Anchor. NullId if no anchor selected yet or on exit block property mode
 	declare Ident G_SelectedAnchorId;
 
+	// UI Elements
 	declare CMlFrame G_WrapperFrame;
 	declare K_Header G_Header;
 	declare K_Body_TeamSelection G_TeamSelection;
@@ -397,6 +391,9 @@ Text GetEditAnchorManialink() {
 	declare K_Body_NoEdit G_NoEdit;
 	declare K_Order G_Order;
 
+	/**
+	 * Collections the required UI element references and stores them in global variables.
+	 */
 	Void InitMlControls() {
 		G_WrapperFrame = (Page.GetFirstChild("anchor-window") as CMlFrame);
 
@@ -412,20 +409,16 @@ Text GetEditAnchorManialink() {
 			Activator = (Page.GetFirstChild("button-team2-activator") as CMlQuad),
 			Background = (Page.GetFirstChild("button-team2-bg") as CMlQuad)
 		};
-		G_TeamSelection.ButtonNone.Activator = (Page.GetFirstChild("button-teamnone-activator") as CMlQuad);
-		G_TeamSelection.ButtonNone.Background = (Page.GetFirstChild("button-teamnone-bg") as CMlQuad);
+		G_TeamSelection.ButtonNone = (Page.GetFirstChild("button-teamnone") as CMlLabel);
 
 		G_CPFunction.Frame = (Page.GetFirstChild("body-cpfunction") as CMlFrame);
-		G_CPFunction.ButtonFlag.Activator = (Page.GetFirstChild("button-cpfunctionflag-activator") as CMlQuad);
-		G_CPFunction.ButtonFlag.Background = (Page.GetFirstChild("button-cpfunctionflag-bg") as CMlQuad);
+		G_CPFunction.ButtonFlag = (Page.GetFirstChild("button-cpfunctionflag") as CMlLabel);
+		G_CPFunction.ButtonOutOfBounds = (Page.GetFirstChild("button-cpfunctionreset") as CMlLabel);
+		G_CPFunction.ButtonNone = (Page.GetFirstChild("button-cpfunctionnone") as CMlLabel);
 		G_CPFunction.ToggleButtonDefaultSpawn.Activator = (Page.GetFirstChild("button-cpfunctionflagdefault-activator") as CMlQuad);
 		G_CPFunction.ToggleButtonDefaultSpawn.Background = (Page.GetFirstChild("button-cpfunctionflagdefault-bg") as CMlQuad);
 		G_CPFunction.ToggleButtonDefaultSpawn.Label = (Page.GetFirstChild("button-cpfunctionflagdefault-label") as CMlLabel);
 		G_CPFunction.ToggleButtonDefaultSpawn.IconLabel = (Page.GetFirstChild("button-cpfunctionflagdefault-icon") as CMlLabel);
-		G_CPFunction.ButtonOutOfBounds.Activator = (Page.GetFirstChild("button-cpfunctionreset-activator") as CMlQuad);
-		G_CPFunction.ButtonOutOfBounds.Background = (Page.GetFirstChild("button-cpfunctionreset-bg") as CMlQuad);
-		G_CPFunction.ButtonNone.Activator = (Page.GetFirstChild("button-cpfunctionnone-activator") as CMlQuad);
-		G_CPFunction.ButtonNone.Background = (Page.GetFirstChild("button-cpfunctionnone-bg") as CMlQuad);
 
 		G_NoEdit.Frame = (Page.GetFirstChild("body-noedit") as CMlFrame);
 
@@ -530,15 +523,36 @@ Text GetEditAnchorManialink() {
 		Anchor.Tag = "{{{ C_AnchorTag_OutOfBoundsTrigger }}}";
 	}
 
+	/**
+	 * Checks if a new anchor was selected and saves the id in a global variable.
+	 * Selected anchor is unset if editor is not in block property mode.
+	 */
+	Void UpdateSelectedAnchor() {
+		if (Editor.PlaceMode != CMapEditorPlugin::PlaceMode::BlockProperty) {
+			G_SelectedAnchorId = NullId;
+			return;
+		}
+
+		foreach (Event in Editor.PendingEvents) {
+			switch (Event.Type) {
+				case CMapEditorPluginEvent::Type::EditAnchor: {
+					G_SelectedAnchorId = Event.EditedAnchorDataId;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Chooses the right visibility for different dialogs, depending on which landmark is selected.
+	 * Also updates the valus that are displayed in the dialogs.
+	 */
 	Void UpdateDisplayedValues() {
 		// No anchor selected => Nothing to display
 		if (!Editor.AnchorData.existskey(G_SelectedAnchorId)) {
-			G_TeamSelection.Frame.Hide();
-			G_CPFunction.Frame.Hide();
-			G_NoEdit.Frame.Hide();
-			G_Order.Frame.Hide();
+			G_WrapperFrame.Hide();
 			return;
 		}
+		G_WrapperFrame.Show();
 
 		declare CAnchorData Anchor <=> Editor.AnchorData[G_SelectedAnchorId];
 
@@ -549,7 +563,13 @@ Text GetEditAnchorManialink() {
 		G_Order.Frame.Visible = False; // Not used yet
 
 		// Values
-		G_Header.Label.Value = "" ^ Anchor.WaypointType;
+		switch (Anchor.WaypointType) {
+			case CAnchorData::EWaypointType::Start: G_Header.Label.Value = "Start";
+			case CAnchorData::EWaypointType::Finish: G_Header.Label.Value = "Finish";
+			case CAnchorData::EWaypointType::Checkpoint: G_Header.Label.Value = "Checkpoint";
+			case CAnchorData::EWaypointType::StartFinish: G_Header.Label.Value = "Multilap";
+			default: G_Header.Label.Value = "Unknown landmark";
+		}
 
 		if (Anchor.Tag == "{{{ C_AnchorTag_FlagSpawn }}}" || Anchor.Tag == "{{{ C_AnchorTag_DefaultFlagSpawn }}}") {
 			G_CPFunction.ToggleButtonDefaultSpawn.Label.Opacity = 1.;
@@ -572,6 +592,10 @@ Text GetEditAnchorManialink() {
 		G_Order.Label.Value = TL::ToText(Anchor.Order);
 	}
 
+	/**
+	 * Updates the background colors of the team selection and default flag spawn toggle button
+	 * depending on if they are focused or not.
+	 */
 	Void UpdateButtonColors() {
 		declare metadata Real[Integer] FlagRush_Meta_TeamHues for Editor.Map;
 		for (Clan, 1, 2) {
@@ -590,21 +614,13 @@ Text GetEditAnchorManialink() {
 		// Default to unfocused color
 		G_TeamSelection.TeamButtons[1].Background.Colorize = G_TeamSelection.TeamButtonColors[1][False];
 		G_TeamSelection.TeamButtons[2].Background.Colorize = G_TeamSelection.TeamButtonColors[2][False];
-		G_TeamSelection.ButtonNone.Background.Colorize = {{{ ColorPalette::C_Color_Vec3_GreenTwo }}};
-		G_CPFunction.ButtonFlag.Background.Colorize = {{{ ColorPalette::C_Color_Vec3_GreenTwo }}};
-		G_CPFunction.ButtonNone.Background.Colorize = {{{ ColorPalette::C_Color_Vec3_GreenTwo }}};
 		G_CPFunction.ToggleButtonDefaultSpawn.Background.Colorize = {{{ ColorPalette::C_Color_Vec3_GreenTwo }}};
-		G_CPFunction.ButtonOutOfBounds.Background.Colorize = {{{ ColorPalette::C_Color_Vec3_GreenTwo }}};
 
 		// Selected the selected button to focused color
 		switch (Page.FocusedControl) {
 			case G_TeamSelection.TeamButtons[1].Activator: G_TeamSelection.TeamButtons[1].Background.Colorize = G_TeamSelection.TeamButtonColors[1][True];
 			case G_TeamSelection.TeamButtons[2].Activator: G_TeamSelection.TeamButtons[2].Background.Colorize = G_TeamSelection.TeamButtonColors[2][True];
-			case G_TeamSelection.ButtonNone.Activator: G_TeamSelection.ButtonNone.Background.Colorize = {{{ ColorPalette::C_Color_Vec3_GreenThree }}};
-			case G_CPFunction.ButtonFlag.Activator: G_CPFunction.ButtonFlag.Background.Colorize = {{{ ColorPalette::C_Color_Vec3_GreenThree }}};
-			case G_CPFunction.ButtonNone.Activator: G_CPFunction.ButtonNone.Background.Colorize = {{{ ColorPalette::C_Color_Vec3_GreenThree }}};
-			case G_CPFunction.ToggleButtonDefaultSpawn.Activator: G_CPFunction.ToggleButtonDefaultSpawn.Background.Colorize = {{{ ColorPalette::C_Color_Vec3_GreenThree }}};
-			case G_CPFunction.ButtonOutOfBounds.Activator: G_CPFunction.ButtonOutOfBounds.Background.Colorize = {{{ ColorPalette::C_Color_Vec3_GreenThree }}};
+			case G_CPFunction.ToggleButtonDefaultSpawn.Activator: G_CPFunction.ToggleButtonDefaultSpawn.Background.Colorize = {{{ ColorPalette::C_Color_Vec3_GreenFour }}};
 		}
 	}
 
@@ -615,19 +631,7 @@ Text GetEditAnchorManialink() {
 		while (True) {
 			yield;
 
-			// Update selected Anchor
-			foreach (Event in Editor.PendingEvents) {
-				switch (Event.Type) {
-					case CMapEditorPluginEvent::Type::EditAnchor: {
-						G_SelectedAnchorId = Event.EditedAnchorDataId;
-					}
-				}
-			}
-
-			if (Editor.PlaceMode != CMapEditorPlugin::PlaceMode::BlockProperty) {
-				G_SelectedAnchorId = NullId;
-			}
-
+			UpdateSelectedAnchor();
 			UpdateDisplayedValues();
 			UpdateButtonColors();
 
@@ -637,10 +641,10 @@ Text GetEditAnchorManialink() {
 						switch (Event.Control) {
 							case G_TeamSelection.TeamButtons[1].Activator: Anchor_SetClan(1);
 							case G_TeamSelection.TeamButtons[2].Activator: Anchor_SetClan(2);
-							case G_CPFunction.ButtonFlag.Activator: Anchor_SetFlagSpawn();
+							case G_CPFunction.ButtonFlag: Anchor_SetFlagSpawn();
 							case G_CPFunction.ToggleButtonDefaultSpawn.Activator: Anchor_ToggleDefaultFlagSpawn();
-							case G_CPFunction.ButtonOutOfBounds.Activator: Anchor_SetOutOfBoundsTrigger();
-							case G_CPFunction.ButtonNone.Activator, G_TeamSelection.ButtonNone.Activator: Anchor_SetUnused();
+							case G_CPFunction.ButtonOutOfBounds: Anchor_SetOutOfBoundsTrigger();
+							case G_CPFunction.ButtonNone, G_TeamSelection.ButtonNone: Anchor_SetUnused();
 						}
 					}
 				}

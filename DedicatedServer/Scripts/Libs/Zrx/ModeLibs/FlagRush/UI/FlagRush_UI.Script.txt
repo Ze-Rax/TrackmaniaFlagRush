@@ -1,0 +1,216 @@
+/**
+ * This library just manages all the layers and their lifecycle, including updating them when needed or requested.
+ */
+
+#Include "Libs/Nadeo/ModeLibs/Legacy/Layers2.Script.txt" as Layers
+
+// Modules
+#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"											as EventFeed
+#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"					as ModeCommands
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt"						as FlagRush_UIScoresHeader
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Menu.Script.txt"							as FlagRush_UIMenu
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt"							as FlagRush_UISound
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_UIMarkers
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Respawn.Script.txt"						as FlagRush_UIRespawn
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Spectator.Script.txt"					as FlagRush_UISpectator
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"								as FlagRush_UIMVP
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
+
+#Const C_LayerName_Dialog							"Layer_FlagRush_Dialog"
+#Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
+#Const C_LayerName_ScoresHeader				"Layer_FlagRush_ScoresHeader"
+#Const C_LayerName_MVP								"Layer_FlagRush_MVP"
+#Const C_LayerName_Markers						"Layer_FlagRush_Markers"
+#Const C_LayerName_Menu								"Layer_FlagRush_Menu"
+#Const C_LayerName_Feed								"Layer_FlagRush_Feed"
+#Const C_LayerName_Flash							"Layer_FlagRush_Flash"
+#Const C_LayerName_Sound							"Layer_FlagRush_Sound"
+#Const C_LayerName_Spectator					"Layer_FlagRush_Spectator"
+#Const C_LayerName_Respawn						"Layer_FlagRush_Respawn"
+#Const C_LayerName_ModeCommands				"Layer_ModeCommands"
+#Const C_LayerName_Radar							"Layer_FlagRush_Radar"
+
+declare Integer G_PreviousPlayersCount;
+
+Void Private_LoadUIAll() {
+	UIManager.UIAll.DisableZoomTransitions = False; // Spawn animation (camera-overview-to-car zoom effect)
+
+	UIManager.UIAll.OverlayHideNotices = True;
+	UIManager.UIAll.OverlayHideMapInfo = True;
+	UIManager.UIAll.OverlayHideOpponentsInfo = True; // ?
+	UIManager.UIAll.OverlayHideChat = False;
+	UIManager.UIAll.OverlayHideCheckPointList = True;
+	UIManager.UIAll.OverlayHideRoundScores = True;
+	UIManager.UIAll.OverlayHideCountdown = True;
+	UIManager.UIAll.OverlayHideCrosshair = True;
+	UIManager.UIAll.OverlayHideGauges = True;
+	UIManager.UIAll.OverlayHideConsumables = True;
+	UIManager.UIAll.OverlayHide321Go = True;
+	UIManager.UIAll.OverlayMute321Go = False;
+	UIManager.UIAll.OverlayHideBackground = True; // ?
+	UIManager.UIAll.OverlayHideChrono = True;
+	UIManager.UIAll.OverlayHideSpeedAndDist = True;
+	UIManager.UIAll.OverlayHidePersonnalBestAndRank = True;
+	UIManager.UIAll.OverlayHidePosition = True;
+	UIManager.UIAll.OverlayHideCheckPointTime = True;
+	UIManager.UIAll.OverlayHideEndMapLadderRecap = True;
+	UIManager.UIAll.OverlayHideMultilapInfos = True;
+	UIManager.UIAll.OverlayHideSpectatorControllers = True;
+	UIManager.UIAll.OverlayHideSpectatorInfos = True;
+	UIManager.UIAll.OverlayChatHideAvatar = True;
+
+	UIManager.UIAll.ScoreTableOnlyManialink = True; // Hide default simple score board
+
+	UIManager.UIAll.TeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
+	UIManager.UIAll.TeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenInFrustum;
+	UIManager.UIAll.OpposingTeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
+	UIManager.UIAll.OpposingTeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenVisible;
+	UIManager.UIAll.LabelsVisibility = CUIConfig::EHudVisibility::Everything;
+}
+
+Void Private_LoadModules() {
+	declare FlagRush_UIRadar::K_Config Config = FlagRush_UIRadar::K_Config {
+		Scale = 0.35,
+		MarkerScale = 1.5,
+		Position = <135., -65.>,
+		Zoom = 0.35,
+		BackgroundOpacity = 0.7,
+		DetailOpacity = 0.1
+	};
+	FlagRush_UIRadar::SetConfig(Config);
+
+	EventFeed::ClearMessages();
+}
+
+Void Private_AttachModules() {
+	// Scores header
+	Layers::Create(C_LayerName_ScoresHeader, FlagRush_UIScoresHeader::GetManialink());
+	Layers::SetType(C_LayerName_ScoresHeader, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_ScoresHeader);
+
+	// Scores table
+	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoresTable::GetManialink());
+	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
+	Layers::Attach(C_LayerName_ScoresTable);
+
+	// ModeCommands
+	Layers::Create(C_LayerName_ModeCommands, ModeCommands::GetManialink());
+	Layers::SetType(C_LayerName_ModeCommands, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_ModeCommands);
+
+	// Sound
+	Layers::Create(C_LayerName_Sound, FlagRush_UISound::GetManialink());
+	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Sound);
+
+	// Menu
+	Layers::Create(C_LayerName_Menu, FlagRush_UIMenu::GetManialink());
+	Layers::SetType(C_LayerName_Menu, CUILayer::EUILayerType::InGameMenu);
+	Layers::Attach(C_LayerName_Menu);
+
+	// Event Feed
+	Layers::Create(C_LayerName_Feed, EventFeed::GetManialink(10));
+	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Feed);
+
+	// Markers
+	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
+	Layers::SetType(C_LayerName_Markers, CUILayer::EUILayerType::Markers);
+	Layers::Attach(C_LayerName_Markers);
+
+	// Respawn Bar
+	Layers::Create(C_LayerName_Respawn, FlagRush_UIRespawn::GetManialink());
+	Layers::SetType(C_LayerName_Respawn, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Respawn);
+
+	// Spectator controls
+	Layers::Create(C_LayerName_Spectator, FlagRush_UISpectator::GetManialink());
+	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Spectator);
+
+	// Radar
+	Layers::Create(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());
+	Layers::SetType(C_LayerName_Radar, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Radar);
+
+	// Flash
+	Layers::Create(C_LayerName_Flash, FlagRush_UIFlash::GetManialink());
+	Layers::SetType(C_LayerName_Flash, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Flash);
+
+	// MVP
+	Layers::Create(C_LayerName_MVP, FlagRush_UIMVP::GetManialink());
+	Layers::SetType(C_LayerName_MVP, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_MVP);
+
+	// Spectator controls
+	Layers::Create(C_LayerName_Spectator, FlagRush_UISpectator::GetManialink());
+	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName_Spectator);
+}
+
+Void Private_DetachModules() {
+	Layers::Detach(C_LayerName_ScoresHeader);
+	Layers::Detach(C_LayerName_ScoresTable);
+	Layers::Detach(C_LayerName_ModeCommands);
+	Layers::Detach(C_LayerName_Sound);
+	Layers::Detach(C_LayerName_Menu);
+	Layers::Detach(C_LayerName_Feed);
+	Layers::Detach(C_LayerName_Markers);
+}
+
+/**
+ * Sends relevant progression mode settings values to the clients via netwrite.
+ */
+Void Net_SendModeScriptProgressionSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap, Integer NbFlagsToWinRound) {
+	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
+	Net_FlagRush_NbMapsToWinMatch = NbMapsToWinMatch;
+
+	declare netwrite Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
+	Net_FlagRush_NbRoundsToWinMap = NbRoundsToWinMap;
+
+	declare netwrite Integer Net_FlagRush_NbFlagsToWinRound for Teams[0];
+	Net_FlagRush_NbFlagsToWinRound = NbFlagsToWinRound;
+}
+
+/**
+ * Sends relevant round logic mode settings values to the clients via netwrite.
+ */
+Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases) {
+	declare netwrite Boolean FlagRush_Net_UseReversedBases for Teams[0];
+	FlagRush_Net_UseReversedBases = UseReversedBases;
+}
+
+/* Lifecycle */
+
+Void StartMap() {
+	FlagRush_UIMarkers::CreateMapMarkers();
+	Layers::Update(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
+}
+
+Void Yield() {
+	declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
+	FlagRush_UIMarkers::FlagMarker_SetVisible(!FlagRush_Net_WarmUpIsRunning);
+	FlagRush_UIMarkers::FlagSpawnMarkers_SetVisible(FlagRush_Net_WarmUpIsRunning);
+
+	if (G_PreviousPlayersCount != Players.count) {
+		G_PreviousPlayersCount = Players.count;
+		Layers::Update(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());
+	}
+}
+
+Void Unload() {
+	Private_DetachModules();
+}
+
+Void Load() {
+	Unload();
+
+	G_PreviousPlayersCount = Players.count;
+
+	Private_LoadUIAll();
+	Private_LoadModules();
+	Private_AttachModules();
+}

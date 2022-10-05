@@ -3,11 +3,9 @@
 #Include "TextLib" as TL
 
 #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"							 	as XmlRpc
-#Include "Libs/Zrx/ModeLibs/Common/TeamPointsProgression.Script.txt" 		as TeamPointsProgression
-#Include "Libs/Nadeo/TMxSM/Race/Scores.Script.txt"											as Scores
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"				as FlagRush_Common
-#Include "Libs/Zrx/ModeLibs/Common/PlayerTelemetry.Script.txt" 					as Telemetry
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"			as FlagState
+#Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"								as ModeUtils
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"			as FlagRush_FlagState
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"				as FlagRush_Scores
 
 // XMLRPC events
 #Const		C_XMLRPC_FlagPass																"FlagRush.Flag.Pass"
@@ -42,11 +40,11 @@
 #Struct K_Rpc_Player {
 	Text Login;
 	Text Name;
-	K_Rpc_Team Team;
+	Integer TeamNum;
 	Vec3 Position;
 }
 
-#Struct K_Rpc_FlagSpawn {
+#Struct K_Rpc_Landmark {
 	Integer LandmarkId;
 	Vec3 Position;
 }
@@ -54,30 +52,15 @@
 #Struct K_Rpc_Flag {
 	Vec3 Position;
 	K_Rpc_Player Carrier;
-	K_Rpc_FlagSpawn Spawn;
-}
-
-#Struct K_Rpc_TeamScore {
-	K_Rpc_Team Team;
-	Integer MatchPoints;
-	Integer MapPoints;
-	Integer RoundPoints;
+	K_Rpc_Landmark Spawn;
 }
 
 #Struct K_Rpc_PlayerScore {
 	K_Rpc_Player Player;
-	Integer RoundPoints;
-	Integer MapPoints;
-	Integer MatchPoints;
-	Integer FlagsScoredRound;
-	Integer FlagsScoredMap;
-	Integer FlagsScoredMatch;
-	Integer FlagsStolenRound;
-	Integer FlagsStolenMap;
-	Integer FlagsStolenMatch;
-	Integer AssistsRound;
-	Integer AssistsMap;
-	Integer AssistsMatch;
+	Integer Points;
+	Integer FlagsScored;
+	Integer FlagsStolen;
+	Integer Assists;
 }
 
 #Struct K_Rpc_Map {
@@ -115,7 +98,7 @@
 	Integer Time;
 	K_Rpc_Player Scorer;
 	K_Rpc_Player Assist;
-	K_Rpc_TeamScore[] TeamScores;
+	Integer[] TeamScores;
 }
 
 #Struct K_Rpc_PlayerDeath {
@@ -127,19 +110,313 @@
 	Integer Time;
 	K_Rpc_Map Map;
 	Boolean Valid;
-}
-
-#Struct K_Rpc_FlowScores {
-	Integer Time;
-	K_Rpc_Map Map;
-	Boolean Valid;
+	Integer[] TeamScores;
 	K_Rpc_PlayerScore[] PlayerScores;
-	K_Rpc_TeamScore[] TeamScores;
 }
 
 ///////////////
 // Functions //
 ///////////////
+
+/* Transformation function */
+
+/**
+ * Turns a team into an Rpc_Team.
+ */
+K_Rpc_Team TeamToRpcTeam(CTeam Team) {
+	return K_Rpc_Team {
+		Num = Teams.keyof(Team) + 1,
+		Name = Team.Name
+	};
+}
+
+/**
+ * Turns a player into an Rpc_Player.
+ */
+K_Rpc_Player PlayerToRpcPlayer(CSmPlayer Player) {
+	return K_Rpc_Player{
+		Login = Player.User.Login,
+		Name = Player.User.Name,
+		TeamNum = Player.CurrentClan,
+		Position = Player.Position
+	};
+}
+
+/**
+ * Turns a score into an Rpc_Player.
+ * Tries to find the respective player first to gather as much data as possible.
+ * If no player is found, then position is default <0., 0., 0.>.
+ */
+K_Rpc_Player ScoreToRpcPlayer(CSmScore Score) {
+	declare CSmPlayer Player <=> GetPlayer(Score.User.Login);
+	if(Player != Null) {
+		return PlayerToRpcPlayer(Player);
+	}
+
+	return K_Rpc_Player{
+		Login = Score.User.Login,
+		Name = Score.User.Login,
+		TeamNum = Score.TeamNum
+	};
+}
+
+/**
+ * Turns a user into a Rpc_Player.
+ * Tries to find the respective player or score first to gather as much data as possible.
+ * If no player is found, then position is default <0., 0., 0.>.
+ * If also no score is found, then Team is default 0.
+ */
+K_Rpc_Player UserToRpcPlayer(CUser User) {
+	declare CSmPlayer Player <=> GetPlayer(User.Login);
+	if(Player != Null) {
+		return PlayerToRpcPlayer(Player);
+	}
+
+	declare CSmScore Score <=> ModeUtils::GetScore(User.Login);
+	if(Score != Null) {
+		return ScoreToRpcPlayer(Score);
+	}
+
+	return K_Rpc_Player{
+		Login = User.Login,
+		Name = User.Name
+	};
+}
+
+/**
+ * Turns a landmark into an Rpc_Landmark.
+ */
+K_Rpc_Landmark LandmarkToRpcLandmark(CMapLandmark Landmark) {
+	return K_Rpc_Landmark {
+		LandmarkId = TL::ToInteger(TL::Replace("" ^ Landmark.Id, "#", "")),
+		Position = Landmark.Position
+	};
+}
+
+/**
+ * Turns a FlagState into an Rpc_Flag(State).
+ */
+K_Rpc_Flag FlagStateToRpcFlag(FlagRush_FlagState::K_FlagState FlagState) {
+	declare K_Rpc_Player Carrier;
+	if(FlagState.Carrier != Null) {
+		Carrier = UserToRpcPlayer(FlagState.Carrier);
+	}
+
+	declare K_Rpc_Landmark FlagSpawn;
+	if(FlagState.Landmark != Null) {
+		FlagSpawn = LandmarkToRpcLandmark(FlagState.Landmark);
+	}
+
+	return K_Rpc_Flag {
+		Position = FlagState.Position,
+		Carrier = Carrier,
+		Spawn = FlagSpawn
+	};
+}
+
+/**
+ * Reduces a map to an Rpc_Map.
+ */
+K_Rpc_Map MapToRpcMap(CMap Map) {
+	return K_Rpc_Map{
+		Name = Map.MapInfo.Name,
+		Uid = Map.MapInfo.MapUid,
+		AuthorLogin = Map.MapInfo.AuthorLogin,
+		AuthorName = Map.MapInfo.AuthorNickName
+	};
+}
+
+K_Rpc_PlayerScore ScoreToRpcPlayerScore(CSmScore Score, Integer ScoreLevel) {
+	declare Integer Points;
+	declare Integer FlagsScored;
+	declare Integer FlagsStolen;
+	declare Integer Assists;
+
+	switch (ScoreLevel) {
+		case FlagRush_Scores::C_Level_Match: {
+			Points = FlagRush_Scores::GetPlayerMatchPoints(Score);
+			FlagsScored = FlagRush_Scores::GetPlayerMatchFlagScores(Score);
+			FlagsStolen = FlagRush_Scores::GetPlayerMatchFlagSteals(Score);
+			Assists = FlagRush_Scores::GetPlayerMatchFlagScoreAssists(Score);
+		}
+		case FlagRush_Scores::C_Level_Map: {
+			Points = FlagRush_Scores::GetPlayerMapPoints(Score);
+			FlagsScored = FlagRush_Scores::GetPlayerMapFlagScores(Score);
+			FlagsStolen = FlagRush_Scores::GetPlayerMapFlagSteals(Score);
+			Assists = FlagRush_Scores::GetPlayerMapFlagScoreAssists(Score);
+		}
+		case FlagRush_Scores::C_Level_Round: {
+			Points = FlagRush_Scores::GetPlayerRoundPoints(Score);
+			FlagsScored = FlagRush_Scores::GetPlayerRoundFlagScores(Score);
+			FlagsStolen = FlagRush_Scores::GetPlayerRoundFlagSteals(Score);
+			Assists = FlagRush_Scores::GetPlayerRoundFlagScoreAssists(Score);
+		}
+	}
+
+	return K_Rpc_PlayerScore{
+		Player = ScoreToRpcPlayer(Score),
+		Points = Points,
+		FlagsScored = FlagsScored,
+		FlagsStolen = FlagsStolen,
+		Assists = Assists
+	};
+}
+
+K_Rpc_PlayerScore[] ScoresToRpcPlayerScores(Integer ScoreLevel) {
+	declare K_Rpc_PlayerScore[] Rpc_Scores;
+	foreach (Score in Scores) {
+		Rpc_Scores.add(ScoreToRpcPlayerScore(Score, ScoreLevel));
+	}
+	return Rpc_Scores;
+}
+
+Integer[] GetTeamScores(Integer ScoreLevel) {
+	switch (ScoreLevel) {
+		case FlagRush_Scores::C_Level_Match: {
+			return [FlagRush_Scores::GetClanMatchPoints(1), FlagRush_Scores::GetClanMatchPoints(2)];
+		}
+		case FlagRush_Scores::C_Level_Map: {
+			return [FlagRush_Scores::GetClanMapPoints(1), FlagRush_Scores::GetClanMapPoints(2)];
+		}
+		case FlagRush_Scores::C_Level_Round: {
+			return [FlagRush_Scores::GetClanRoundPoints(1), FlagRush_Scores::GetClanRoundPoints(2)];
+		}
+	}
+	return [];
+}
+
+K_Rpc_Flow CurrentFlowState(Integer ScoreLevel, Boolean Valid) {
+	declare K_Rpc_Map Rpc_Map;
+	if (Map != Null) {
+		Rpc_Map = MapToRpcMap(Map);
+	}
+
+	return K_Rpc_Flow{
+		Time = Now,
+		Map = Rpc_Map,
+		Valid = Valid,
+		TeamScores = GetTeamScores(ScoreLevel),
+		PlayerScores = ScoresToRpcPlayerScores(ScoreLevel)
+	};
+}
+
+K_Rpc_Flag CurrentFlagState() {
+	return FlagStateToRpcFlag(FlagRush_FlagState::Get());
+}
+
+/* Flag-Events */
+
+Void Send_FlagReset() {
+	declare K_Rpc_FlagReset Data = K_Rpc_FlagReset{
+		Time = Now,
+		Flag = CurrentFlagState()
+	};
+	XmlRpc::SendCallback(C_XMLRPC_FlagReset, Data.tojson());
+}
+
+Void Send_FlagPickup() {
+	declare K_Rpc_FlagPickup Data = K_Rpc_FlagPickup{
+		Time = Now,
+		Flag = CurrentFlagState()
+	};
+	XmlRpc::SendCallback(C_XMLRPC_FlagPickup, Data.tojson());
+}
+
+Void Send_FlagDrop(CUser OldCarrierNullable) {
+	declare K_Rpc_Player OldCarrier;
+	if(OldCarrierNullable != Null) {
+		OldCarrier = UserToRpcPlayer(OldCarrierNullable);
+	}
+
+	declare K_Rpc_FlagDrop Data = K_Rpc_FlagDrop{
+		Time = Now,
+		Flag = CurrentFlagState(),
+		OldCarrier = OldCarrier
+	};
+	XmlRpc::SendCallback(C_XMLRPC_FlagDrop, Data.tojson());
+}
+
+Void Send_FlagPass(CSmPlayer OldCarrier) {
+	declare K_Rpc_FlagPass Data = K_Rpc_FlagPass{
+		Time = Now,
+		OldCarrier = PlayerToRpcPlayer(OldCarrier),
+		Flag = CurrentFlagState()
+	};
+	XmlRpc::SendCallback(C_XMLRPC_FlagPass, Data.tojson());
+}
+
+Void Send_FlagScored(CSmPlayer _Scorer, CUser _AssistNullable) {
+	declare K_Rpc_Player Scorer = PlayerToRpcPlayer(_Scorer);
+	declare K_Rpc_Player Assist;
+	if(_AssistNullable != Null) {
+		Assist = UserToRpcPlayer(_AssistNullable);
+	}
+
+	declare K_Rpc_FlagScored Data = K_Rpc_FlagScored{
+		Time = Now,
+		Scorer = Scorer,
+		Assist = Assist,
+		TeamScores = GetTeamScores(FlagRush_Scores::C_Level_Round)
+	};
+	XmlRpc::SendCallback(C_XMLRPC_FlagScored, Data.tojson());
+}
+
+/* Player-Events */
+
+Void Send_PlayerDeath(CSmPlayer Player) {
+	declare K_Rpc_PlayerDeath Data = K_Rpc_PlayerDeath{
+		Time = Now,
+		Player = PlayerToRpcPlayer(Player)
+	};
+	XmlRpc::SendCallback(C_XMLRPC_PlayerDeath, Data.tojson());
+}
+
+/* Flow-Events */
+
+Void Send_MatchStart() {
+	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Match, True);
+	XmlRpc::SendCallback(C_XMLRPC_MatchStart, Data.tojson());
+}
+
+Void Send_MatchEnd(Boolean Valid) {
+	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Match, Valid);
+	XmlRpc::SendCallback(C_XMLRPC_MatchEnd, Data.tojson());
+}
+
+Void Send_MapStart() {
+	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Match, True);
+	XmlRpc::SendCallback(C_XMLRPC_MapStart, Data.tojson());
+}
+
+Void Send_MapEnd(Boolean Valid) {
+	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Map, Valid);
+	XmlRpc::SendCallback(C_XMLRPC_MapEnd, Data.tojson());
+}
+
+Void Send_RoundStart() {
+	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Map, True);
+	XmlRpc::SendCallback(C_XMLRPC_RoundStart, Data.tojson());
+}
+
+Void Send_RoundEnd(Boolean Valid) {
+	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Round, Valid);
+	XmlRpc::SendCallback(C_XMLRPC_RoundEnd, Data.tojson());
+}
+
+Void Send_WarmUpStart() {
+	declare K_Rpc_Flow Data = CurrentFlowState(-1, True);
+	XmlRpc::SendCallback(C_XMLRPC_WarmUpStart, Data.tojson());
+}
+
+Void Send_WarmUpEnd() {
+	declare K_Rpc_Flow Data = CurrentFlowState(-1, True);
+	XmlRpc::SendCallback(C_XMLRPC_WarmUpEnd, Data.tojson());
+}
+
+Void Send_OverTime() {
+	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Round, True);
+	XmlRpc::SendCallback(C_XMLRPC_Overtime, Data.tojson());
+}
 
 Void RegisterCallbacks() {
 	XmlRpc::RegisterCallback(C_XMLRPC_FlagReset, "Called when flag is reset");
@@ -161,281 +438,31 @@ Void RegisterCallbacks() {
 	XmlRpc::RegisterCallback(C_XMLRPC_Overtime, "Called when overtime starts");
 }
 
-/* Helpers */
+Void UnregisterCallbacks() {
+	XmlRpc::UnregisterCallback(C_XMLRPC_FlagReset);
+	XmlRpc::UnregisterCallback(C_XMLRPC_FlagPickup);
+	XmlRpc::UnregisterCallback(C_XMLRPC_FlagDrop);
+	XmlRpc::UnregisterCallback(C_XMLRPC_FlagPass);
+	XmlRpc::UnregisterCallback(C_XMLRPC_FlagScored);
 
-CSmScore GetScore(Text Login) {
-	foreach(Score in Scores) {
-		if(Score.User.Login == Login) return Score;
-	}
-	return Null;
+	XmlRpc::UnregisterCallback(C_XMLRPC_PlayerDeath);
+
+	XmlRpc::UnregisterCallback(C_XMLRPC_MatchStart);
+	XmlRpc::UnregisterCallback(C_XMLRPC_MatchEnd);
+	XmlRpc::UnregisterCallback(C_XMLRPC_MapStart);
+	XmlRpc::UnregisterCallback(C_XMLRPC_MapEnd);
+	XmlRpc::UnregisterCallback(C_XMLRPC_RoundStart);
+	XmlRpc::UnregisterCallback(C_XMLRPC_RoundEnd);
+	XmlRpc::UnregisterCallback(C_XMLRPC_WarmUpStart);
+	XmlRpc::UnregisterCallback(C_XMLRPC_WarmUpEnd);
+	XmlRpc::UnregisterCallback(C_XMLRPC_Overtime);
 }
 
-/* Transformation function */
-
-K_Rpc_Team TeamToRpcTeam(CTeam Team) {
-	return K_Rpc_Team {
-		Num = Teams.keyof(Team) + 1,
-		Name = Team.Name
-	};
+Void Unload() {
+	UnregisterCallbacks();
 }
 
-K_Rpc_Player PlayerToRpcPlayer(CSmPlayer Player) {
-	declare K_Rpc_Team Team;
-	if(Player.CurrentClan > 0) {
-		Team = TeamToRpcTeam(Teams[Player.CurrentClan - 1]);
-	}
-
-	return K_Rpc_Player{
-		Login = Player.User.Login,
-		Name = Player.User.Name,
-		Team = Team,
-		Position = Player.Position
-	};
-}
-
-K_Rpc_Player ScoreToRpcPlayer(CSmScore Score) {
-	declare CSmPlayer Player <=> GetPlayer(Score.User.Login);
-	if(Player != Null) {
-		return PlayerToRpcPlayer(Player);
-	}
-
-	declare K_Rpc_Team Team;
-	if(Score.TeamNum > 0) {
-		Team = TeamToRpcTeam(Teams[Score.TeamNum - 1]);
-	}
-
-	return K_Rpc_Player{
-		Login = Score.User.Login,
-		Name = Score.User.Login,
-		Team = Team
-	};
-}
-
-K_Rpc_Player UserToRpcPlayer(CUser User) {
-	declare CSmPlayer Player <=> GetPlayer(User.Login);
-	if(Player != Null) {
-		return PlayerToRpcPlayer(Player);
-	}
-
-	declare CSmScore Score <=> GetScore(User.Login);
-	if(Score != Null) {
-		return ScoreToRpcPlayer(Score);
-	}
-
-	return K_Rpc_Player{
-		Login = User.Login,
-		Name = User.Name
-	};
-}
-
-K_Rpc_FlagSpawn LandmarkToRpcFlagSpawn(CMapLandmark Landmark) {
-	return K_Rpc_FlagSpawn {
-		LandmarkId = TL::ToInteger(TL::Replace("" ^ Landmark.Id, "#", "")),
-		Position = Landmark.Position
-	};
-}
-
-K_Rpc_Flag FlagStateToRpcFlag(FlagState::K_FlagState FlagState) {
-	declare K_Rpc_Player Carrier;
-	if(FlagState.Carrier != Null) {
-		Carrier = UserToRpcPlayer(FlagState.Carrier);
-	}
-
-	declare K_Rpc_FlagSpawn FlagSpawn;
-	if(FlagState.Landmark != Null) {
-		FlagSpawn = LandmarkToRpcFlagSpawn(FlagState.Landmark);
-	}
-
-	return K_Rpc_Flag {
-		Position = FlagState.Position,
-		Carrier = Carrier,
-		Spawn = FlagSpawn
-	};
-}
-
-K_Rpc_Flag CurrentFlagStateToRpcFlag() {
-	return FlagStateToRpcFlag(FlagState::Get());
-}
-
-K_Rpc_Map MapToRpcMap(CMap Map) {
-	return K_Rpc_Map{
-		Name = Map.MapInfo.Name,
-		Uid = Map.MapInfo.MapUid,
-		AuthorLogin = Map.MapInfo.AuthorLogin,
-		AuthorName = Map.MapInfo.AuthorNickName
-	};
-}
-
-K_Rpc_Map CurrentMapToRpcMap() {
-	if (Map != Null) {
-		return MapToRpcMap(Map);
-	}
-	return K_Rpc_Map{};
-}
-
-K_Rpc_TeamScore TeamToRpcTeamScore(CTeam Team) {
-	declare Integer TeamNum = Teams.keyof(Team) + 1;
-	return K_Rpc_TeamScore{
-		Team = TeamToRpcTeam(Team),
-		MatchPoints = TeamPointsProgression::GetClanMapsWon(TeamNum),
-		MapPoints = TeamPointsProgression::GetClanRoundsWon(TeamNum),
-		RoundPoints = Scores::GetClanRoundPoints(TeamNum)
-	};
-}
-
-K_Rpc_PlayerScore ScoreToRpcPlayerScore(CSmScore Score) {
-	return K_Rpc_PlayerScore{
-		Player = ScoreToRpcPlayer(Score),
-		RoundPoints = Scores::GetPlayerRoundPoints(Score),
-		MapPoints = Scores::GetPlayerMapPoints(Score),
-		MatchPoints = Scores::GetPlayerMatchPoints(Score),
-		FlagsScoredRound = Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored),
-		FlagsScoredMap = Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored),
-		FlagsScoredMatch = Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsScored),
-		FlagsStolenRound = Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen),
-		FlagsStolenMap = Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen),
-		FlagsStolenMatch = Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagsStolen),
-		AssistsRound = Telemetry::GetPlayerRoundInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagScoreAssists),
-		AssistsMap = Telemetry::GetPlayerMapInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagScoreAssists),
-		AssistsMatch = Telemetry::GetPlayerMatchInteger(Score, FlagRush_Common::C_Telemetry_Key_FlagScoreAssists)
-	};
-}
-
-K_Rpc_Flow CurrentMatchStateToRpcFlow() {
-	return K_Rpc_Flow{
-		Time = Now,
-		Map = CurrentMapToRpcMap()
-	};
-}
-
-K_Rpc_FlowScores CurrentMatchStateToRpcFlowScores() {
-	declare K_Rpc_TeamScore[] TeamScores = [TeamToRpcTeamScore(Teams[0]), TeamToRpcTeamScore(Teams[1])];
-	declare K_Rpc_PlayerScore[] PlayerScores = [];
-	foreach (Score in Scores) {
-		PlayerScores.add(ScoreToRpcPlayerScore(Score));
-	}
-
-	return K_Rpc_FlowScores{
-		Time = Now,
-		Map = CurrentMapToRpcMap(),
-		TeamScores = TeamScores,
-		PlayerScores = PlayerScores
-	};
-}
-
-/* Flag-Events */
-
-Void Send_FlagReset(FlagState::K_FlagState FlagState) {
-	declare K_Rpc_FlagReset Data = K_Rpc_FlagReset{
-		Time = Now,
-		Flag = CurrentFlagStateToRpcFlag()
-	};
-	XmlRpc::SendCallback(C_XMLRPC_FlagReset, Data.tojson());
-}
-
-Void Send_FlagPickup(FlagState::K_FlagState FlagState) {
-	declare K_Rpc_FlagPickup Data = K_Rpc_FlagPickup{
-		Time = Now,
-		Flag = CurrentFlagStateToRpcFlag()
-	};
-	XmlRpc::SendCallback(C_XMLRPC_FlagPickup, Data.tojson());
-}
-
-Void Send_FlagDrop(FlagState::K_FlagState FlagState, CUser OldCarrierNullable) {
-	declare K_Rpc_Player OldCarrier;
-	if(OldCarrierNullable != Null) {
-		OldCarrier = UserToRpcPlayer(OldCarrierNullable);
-	}
-
-	declare K_Rpc_FlagDrop Data = K_Rpc_FlagDrop{
-		Time = Now,
-		Flag = CurrentFlagStateToRpcFlag(),
-		OldCarrier = OldCarrier
-	};
-	XmlRpc::SendCallback(C_XMLRPC_FlagDrop, Data.tojson());
-}
-
-Void Send_FlagPass(FlagState::K_FlagState FlagState, CSmPlayer OldCarrier) {
-	declare K_Rpc_FlagPass Data = K_Rpc_FlagPass{
-		Time = Now,
-		OldCarrier = PlayerToRpcPlayer(OldCarrier),
-		Flag = CurrentFlagStateToRpcFlag()
-	};
-	XmlRpc::SendCallback(C_XMLRPC_FlagPass, Data.tojson());
-}
-
-Void Send_FlagScored(CSmPlayer _Scorer, CUser _AssistNullable) {
-	declare K_Rpc_Player Scorer = PlayerToRpcPlayer(_Scorer);
-	declare K_Rpc_Player Assist;
-	if(_AssistNullable != Null) {
-		Assist = UserToRpcPlayer(_AssistNullable);
-	}
-
-	declare K_Rpc_FlagScored Data = K_Rpc_FlagScored{
-		Time = Now,
-		Scorer = Scorer,
-		Assist = Assist,
-		TeamScores = [TeamToRpcTeamScore(Teams[0]), TeamToRpcTeamScore(Teams[1])]
-	};
-	XmlRpc::SendCallback(C_XMLRPC_FlagScored, Data.tojson());
-}
-
-/* Player-Events */
-
-Void Send_PlayerDeath(CSmPlayer Player) {
-	declare K_Rpc_PlayerDeath Data = K_Rpc_PlayerDeath{
-		Time = Now,
-		Player = PlayerToRpcPlayer(Player)
-	};
-	XmlRpc::SendCallback(C_XMLRPC_PlayerDeath, Data.tojson());
-}
-
-/* Flow-Events */
-
-Void Send_MatchStart() {
-	declare K_Rpc_Flow Data = CurrentMatchStateToRpcFlow();
-	XmlRpc::SendCallback(C_XMLRPC_MatchStart, Data.tojson());
-}
-
-Void Send_MatchEnd() {
-	declare K_Rpc_FlowScores Data = CurrentMatchStateToRpcFlowScores();
-	Data.Valid = True;
-	XmlRpc::SendCallback(C_XMLRPC_MatchEnd, Data.tojson());
-}
-
-Void Send_MapStart() {
-	declare K_Rpc_Flow Data = CurrentMatchStateToRpcFlow();
-	XmlRpc::SendCallback(C_XMLRPC_MapStart, Data.tojson());
-}
-
-Void Send_MapEnd(Boolean Valid) {
-	declare K_Rpc_FlowScores Data = CurrentMatchStateToRpcFlowScores();
-	Data.Valid = Valid;
-	XmlRpc::SendCallback(C_XMLRPC_MapEnd, Data.tojson());
-}
-
-Void Send_RoundStart() {
-	declare K_Rpc_Flow Data = CurrentMatchStateToRpcFlow();
-	XmlRpc::SendCallback(C_XMLRPC_RoundStart, Data.tojson());
-}
-
-Void Send_RoundEnd(Boolean Valid) {
-	declare K_Rpc_FlowScores Data = CurrentMatchStateToRpcFlowScores();
-	Data.Valid = Valid;
-	XmlRpc::SendCallback(C_XMLRPC_RoundEnd, Data.tojson());
-}
-
-Void Send_WarmUpStart() {
-	declare K_Rpc_Flow Data = CurrentMatchStateToRpcFlow();
-	XmlRpc::SendCallback(C_XMLRPC_WarmUpStart, Data.tojson());
-}
-
-Void Send_WarmUpEnd() {
-	declare K_Rpc_Flow Data = CurrentMatchStateToRpcFlow();
-	XmlRpc::SendCallback(C_XMLRPC_WarmUpEnd, Data.tojson());
-}
-
-Void Send_OverTime() {
-	declare K_Rpc_Flow Data = CurrentMatchStateToRpcFlow();
-	XmlRpc::SendCallback(C_XMLRPC_Overtime, Data.tojson());
+Void Load() {
+	Unload();
+	RegisterCallbacks();
 }

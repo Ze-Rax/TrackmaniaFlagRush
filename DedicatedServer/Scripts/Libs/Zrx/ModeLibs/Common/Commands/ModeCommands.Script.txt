@@ -9,6 +9,8 @@
 #Const C_InternalCommand_AddPermitPermittedUser		"Permit"
 #Const C_InternalCommand_RemovePermittedUser			"RemovePermissions"
 
+#Struct CommandUtils::K_Command as K_Command
+
 #Struct K_QuickCommand {
 	Text Command;
 	Text IconStyle;
@@ -18,7 +20,7 @@
 declare K_QuickCommand[] G_QuickCommands;
 declare Text[] G_AdminLogins;
 declare Text[] G_PermittedUserLogins;
-declare CommandUtils::K_Command[] G_PendingCommands;
+declare K_Command[] G_PendingCommands;
 
 /**
  * Sends the changed users to the UIs and saves them persistently for the server.
@@ -27,12 +29,6 @@ Void Private_OnPermissionsUpdate() {
 	// Send the permitted users to the UIs
 	declare netwrite Text[] Net_ModeCommands_PermittedUserLogins for Teams[0];
 	Net_ModeCommands_PermittedUserLogins = G_PermittedUserLogins;
-
-	// Save the admins and permitted users persistently on the server
-	declare persistent Text[] Persistent_ModeCommands_AdminLogins for This;
-	Persistent_ModeCommands_AdminLogins = G_AdminLogins;
-	declare persistent Text[] Persistent_ModeCommands_PermittedUserLogins for This;
-	Persistent_ModeCommands_PermittedUserLogins = G_PermittedUserLogins;
 }
 
 /**
@@ -159,19 +155,19 @@ main() {
 						} else if (Event.Control == ButtonCustomCommandSend) {
 							OnSendCommand();
 						} else {
-							if(QuickCommands.existskey(Event.Control as CMlQuad)) {
+							if(Event.Control is CMlQuad && QuickCommands.existskey(Event.Control as CMlQuad)) {
 								declare Text CommandName = "{{{ CommandUtils::C_CommandPrefix }}}" ^ QuickCommands[Event.Control as CMlQuad].Value;
 								SendCustomEvent(CommandName, []);
 							}
 						}
 					}
 					case CMlScriptEvent::Type::MouseOver: {
-						if(QuickCommands.existskey(Event.Control as CMlQuad)) {
+						if(Event.Control is CMlQuad && QuickCommands.existskey(Event.Control as CMlQuad)) {
 							QuickCommands[Event.Control as CMlQuad].Visible = True;
 						}
 					}
 					case CMlScriptEvent::Type::MouseOut: {
-						if(QuickCommands.existskey(Event.Control as CMlQuad)) {
+						if(Event.Control is CMlQuad && QuickCommands.existskey(Event.Control as CMlQuad)) {
 							QuickCommands[Event.Control as CMlQuad].Visible = False;
 						}
 					}
@@ -295,31 +291,31 @@ Void ClearAdmins() {
 /**
  * Gets a list of all pending Commands.
  */
-CommandUtils::K_Command[] GetPendingCommands() {
+K_Command[] GetPendingCommands() {
 	return G_PendingCommands;
 }
 
 /**
  * Handles commands that manage the lib itself.
  */
-Void Private_HandleInternalCommand(CommandUtils::K_Command Command) {
+Void Private_HandleInternalCommand(K_Command Command) {
 	switch (Command.Name) {
-		case CommandUtils::C_CommandPrefix ^ C_InternalCommandPrefix ^ C_InternalCommand_AddAdmin: {
+		case C_InternalCommandPrefix ^ C_InternalCommand_AddAdmin: {
 			declare CSmPlayer NewAdmin = GetPlayer(Command.ValueText);
 			if(NewAdmin != Null) {
 				AddAdmin(NewAdmin.User.Login);
 			}
 		}
-		case CommandUtils::C_CommandPrefix ^ C_InternalCommandPrefix ^ C_InternalCommand_RemoveAdmin: {
+		case C_InternalCommandPrefix ^ C_InternalCommand_RemoveAdmin: {
 			RemoveAdmin(Command.ValueText);
 		}
-		case CommandUtils::C_CommandPrefix ^ C_InternalCommandPrefix ^ C_InternalCommand_AddPermitPermittedUser: {
+		case C_InternalCommandPrefix ^ C_InternalCommand_AddPermitPermittedUser: {
 			declare CSmPlayer NewPermittedUser = GetPlayer(Command.ValueText);
 			if(NewPermittedUser != Null) {
 				AddPermittedUser(NewPermittedUser.User.Login);
 			}
 		}
-		case CommandUtils::C_CommandPrefix ^ C_InternalCommandPrefix ^ C_InternalCommand_RemovePermittedUser: {
+		case C_InternalCommandPrefix ^ C_InternalCommand_RemovePermittedUser: {
 			RemovePermittedUser(Command.ValueText);
 		}
 	}
@@ -332,9 +328,9 @@ Void Yield() {
 	G_PendingCommands.clear();
 
 	foreach (Event in UIManager.PendingEvents) {
-		if(TL::StartsWith("Command_", Event.CustomEventType)) {
-			declare CommandUtils::K_Command Command = CommandUtils::FromEvent(Event);
-			if(TL::StartsWith("Command_MC:", Event.CustomEventType) && IsAdmin(Command.Source)) {
+		if(TL::StartsWith(CommandUtils::C_CommandPrefix, Event.CustomEventType)) {
+			declare K_Command Command = CommandUtils::FromEvent(Event);
+			if(TL::StartsWith(C_InternalCommandPrefix, Command.Name) && IsAdmin(Command.Source)) {
 				Private_HandleInternalCommand(Command);
 			} else if(IsPermittedUser(Command.Source)) {
 				G_PendingCommands.add(Command);

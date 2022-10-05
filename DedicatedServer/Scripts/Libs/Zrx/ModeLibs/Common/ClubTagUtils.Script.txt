@@ -23,7 +23,7 @@ Vec3[] Private_FilterColors(Vec3[] ColorsRgb) {
 	declare Vec3[] ValidColors = [];
 	foreach (Color in ColorsRgb) {
 		declare ColorHsv = CL::RgbToHsv(Color);
-		if(ColorHsv.Y != 0 && ColorHsv.Z != 0) {
+		if (ColorHsv.Y != 0. && ColorHsv.Z != 0.) {
 			ValidColors.add(Color);
 		}
 	}
@@ -51,7 +51,9 @@ Vec3 ClubTagToColor(Text ClubTag) {
 	declare Vec3[] ClubTagColors = [];
 	foreach (ColorText in ClubTagColorsText) {
 		declare Text ColorHex = TL::SubText(ColorText, 1, 3);
-		for(I, 1, 3 - TL::Length(ColorHex)) ColorHex ^= "0"; // Add 0s for $f and $ff formats, else HexToRgb outputs values that don't correspond to text formatting.
+		for (I, 1, 3 - TL::Length(ColorHex)) {
+			ColorHex ^= "0"; // Add 0s for $f and $ff formats, else HexToRgb outputs values that don't correspond to text formatting.
+		}
 		ClubTagColors.add(CL::HexToRgb(ColorHex));
 	}
 	if (ClubTagColors.count < 1) return C_InvalidColor;
@@ -66,24 +68,23 @@ Vec3 ClubTagToColor(Text ClubTag) {
 K_TeamConfig GetTeamConfig(Integer Clan) {
 	declare K_TeamConfig TeamConfig;
 
-	declare Text ClubTagTeam = "";
 	declare Boolean ClubTagMissmatch;
+	declare Text[] ClubTagsTeam;
 	foreach (Player in Players) {
-		if (Player.CurrentClan == Clan && !Player.RequestsSpectate) {
-			if (ClubTagTeam != "" && Player.User.ClubTag != ClubTagTeam) {
+		if (Player.CurrentClan == Clan && !Player.RequestsSpectate) { // Is playing
+			if (ClubTagsTeam.count == 0) {
+				ClubTagsTeam.add(Player.User.ClubTag);
+			} else if (!ClubTagsTeam.exists(Player.User.ClubTag)) {
 				ClubTagMissmatch = True;
 				break;
-			}
-			else {
-				ClubTagTeam = Player.User.ClubTag;
 			}
 		}
 	}
 
-	if(!ClubTagMissmatch) {
-		TeamConfig.ClubTag = ClubTagTeam;
-		TeamConfig.Name = TL::StripFormatting(ClubTagTeam);
-	//	TeamConfig.Color = ClubTagToColor(ClubTagTeam);
+	if(!ClubTagMissmatch && ClubTagsTeam.count == 1) {
+		TeamConfig.ClubTag = ClubTagsTeam[0];
+		TeamConfig.Name = TL::StripFormatting(ClubTagsTeam[0]);
+	//	TeamConfig.Color = ClubTagToColor(ClubTagsTeam[0]);
 	}
 
 	return TeamConfig;

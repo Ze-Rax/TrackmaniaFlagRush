@@ -1,0 +1,816 @@
+/**
+ * Modebase for FlagRush that handles the general match progression (when a round ends, when a map ends, show respective messages, ...)
+ * This modebase extends a modified version of Nadeos lowest level mode base, contains the main server loop. Mind the differences.
+ */
+
+// #RequireContext CSmMode
+
+#Extends "Libs/Zrx/ModeLibs/BaseModes/ModeBase.Script.txt"
+
+///////////////
+// Libraries //
+///////////////
+
+// General Libs
+#Include "TextLib" as TL
+#Include "MathLib" as ML
+
+// From mode base:
+// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"										as XmlRpc
+// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt"								as XmlRpc_Base
+
+#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"										as EventFeed
+#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"				as ModeCommands
+#Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"				as CommandUtils
+#Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"										as ModeUtils
+#Include "Libs/Zrx/ModeLibs/Common/ModeEvents.Script.txt"										as ModeEvents
+#Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
+
+// FlagRush Libs
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"						as FlagRush_Common
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"								as FlagRush_Map
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"						as FlagRush_Scores
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_RpcEvents.Script.txt"					as FlagRush_XmlRpc
+
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"							as FlagRush_MVP
+
+///////////////
+// Constants //
+///////////////
+
+// Duration / Timings for sequences and/or messages
+#Const C_Duration_Podium				15000
+#Const C_Duration_MapStart			3000
+#Const C_Duration_MapEnd				5000
+#Const C_Duration_RoundStart		3000
+#Const C_Duration_RoundEnd			5000
+#Const C_Duration_TurnEnd				3000
+#Const C_Duration_Overtime			2000
+#Const C_Duration_WarmUpStart		2000
+#Const C_Duration_WarmUpEnd			2000
+#Const C_Duration_PauseStart		2000
+#Const C_Duration_PauseEnd			2000
+#Const C_Duration_EventMessage	2000
+
+#Const C_TimeLimitWarning_Seconds [60, 30]
+
+//////////////
+// Settings //
+//////////////
+
+#Setting S_NbMapsToWinMatch									1 			as "Number of maps to win a match"
+#Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"
+#Setting S_NbFlagsToWinRound								3				as "Number of flags scored to win a round"
+#Setting S_RoundTimeLimitSeconds						360 		as "Round Timelimit (seconds)"
+#Setting S_UseTurns													False 	as "<hidden>" // "Use turns (Reset after a player scores a flag)"
+#Setting S_UseOvertime											True 		as "Use overtime when round is tied"
+#Setting S_UseWarmUp												True		as "Use warm up"
+
+// Teams
+#Setting S_Team1Name 												"" 			as "Force Team 1 Name"
+// #Setting S_Team1Color 											"" 			as "Force Team 1 Color"
+#Setting S_Team2Name 												"" 			as "Force Team 2 Name"
+// #Setting S_Team2Color 											"" 			as "Force Team 2 Color"
+#Setting S_UseClubTags											True		as "Use club tags for team names"
+#Setting S_UseTeamSkins											True		as "Use colored skins for teams"
+
+#Setting S_SkipMatchOnLastPlayerLeave				True		as "<hidden>" // Skip the running match if the last player leaves or goes to spectator
+#Setting S_ModeCommands_AdminLoginsCsv 			"" 			as "<hidden>" // Admin logins for the mode commands ui
+
+//////////////
+// Commands //
+//////////////
+
+// Constants are used for Commands from other sources, like UI Events.
+// Constants value has to be the same as the name of the respective command without the Command_ prefix.
+// The Parameter for the Command has to be sent with the Event in the Params array.
+// In case of Vec2/Vec3/Int2/Int3 commands, X, Y & Z each take a seperate entry in the params array.
+#Command	Command_PauseRound							(Boolean) as		"Pause round"
+#Const		C_Command_Pause																	"PauseRound"
+
+#Command	Command_EndWarmup								(Boolean) as 		"End warmup"
+#Const		C_Command_EndWarmup															"EndWarmup"
+
+#Command	Command_SkipRound								(Boolean) as		"Skip round"
+#Const		C_Command_SkipRound															"SkipRound"
+
+// #Command	Command_SkipMap									(Boolean) as				"Skip map"
+#Const		C_Command_SkipMap																"SkipMap"
+
+#Command	Command_SetTeam1RoundScore			(Integer) as		"Set Team 1 Round Score"
+#Const		C_Command_SetTeam1RoundScore										"SetTeam1RoundScore"
+
+#Command	Command_SetTeam2RoundScore			(Integer) as		"Set Team 2 Round Score"
+#Const		C_Command_SetTeam2RoundScore										"SetTeam2RoundScore"
+
+#Command	Command_SetTeam1MapScore				(Integer) as		"Set Team 1 Map Score"
+#Const		C_Command_SetTeam1MapScore											"SetTeam1MapScore"
+
+#Command	Command_SetTeam2MapScore				(Integer) as		"Set Team 2 Map Score"
+#Const		C_Command_SetTeam2MapScore											"SetTeam2MapScore"
+
+#Command	Command_SetTeam1MatchScore			(Integer) as		"Set Team 1 Match Score"
+#Const		C_Command_SetTeam1MatchScore										"SetTeam1MatchScore"
+
+#Command	Command_SetTeam2MatchScore			(Integer) as		"Set Team 2 Match Score"
+#Const		C_Command_SetTeam2MatchScore										"SetTeam2MatchScore"
+
+#Command	Command_ClearScores							(Boolean) as		"Clear all scores"
+#Const		C_Command_ClearScores														"ClearScores"
+
+// #Command	Command_Announce								(Text)		as		"Show big anouncement message"
+#Const		C_Command_Announce															"Announce"
+
+// #Command	Command_BalanceTeams						(Boolean) as		"Balance Teams"
+#Const		C_Command_BalanceTeams													"BalanceTeams"
+
+#Const		C_Command_SetBots																"SetBots"
+#Const		C_Command_SetTimeLeft														"SetTimeLeft"
+
+//////////////////////
+// Global Variables //
+//////////////////////
+
+declare Integer Private_Progression_RoundTimeRemaining;
+
+declare Boolean[Integer] Private_TimeLimitWarningsEnabled;
+
+declare Boolean Private_WarmUpIsRunning;
+declare Boolean Private_PauseIsRunning;
+declare Boolean Private_OvertimeIsRunning;
+
+///////////
+// Plugs //
+///////////
+
+// ~~~~~~~~~~ Setup ~~~~~~~~~~ //
+
+***Settings***
+***
+// ModeBase settings
+MB_Settings_UseDefaultPodiumSequence = False;
+
+// CSmMode settings
+SpawnInvulnerabilityDuration = 0;
+UnspawnAnimDuration = 0;
+SpawnDelayDuration = 0;
+RespawnBehaviour = CSmMode::ERespawnBehaviour::DoNothing; // Still just givesup when set to "Custom" and no Event?
+GiveUpBehaviour = CSmMode::EGiveUpBehaviour::DoNothing;
+CheckpointBehaviour = CSmMode::ECheckpointBehaviour::Custom;
+UseMultiClans = False;
+UseClans = True;
+UseForcedClans = False;
+UsePvPCollisions = False; // Should be set by FlagRush.Script.txt depending on S_UseCollisions
+UsePvECollisions = True; // Force player visibility and dynamic item sync
+UseGuns = False;
+UsePvPWeapons = False;
+UseInterractiveScreensIn3d = False;
+UseLaserVsBullets = False;
+UseLaserSkewering = False;
+UsePlayerTagging = False;
+UseBeaconsWithRecipients = False;
+UseAmmoBonusOnHit = False;
+UseSameWallJump = False;
+UseDefaultActionEvents = False;
+UseLaunchedCheckpoints = False;
+ReadonlyLaunchedCheckpoints = False;
+UseProtectClanmates = False;
+UseAllies = False;
+CrudeExtrapolation_AllowDelay = False;
+
+FlagRush_UI::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
+***
+
+***LoadLibraries***
+***
+FlagRush_XmlRpc::Load();
+
+FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
+//FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
+FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
+//FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
+FlagRush_Teams::UseClubTags(S_UseClubTags);
+FlagRush_Teams::Init();
+
+declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
+foreach(Login in ModeCommandsAdminLogins) {
+	ModeCommands::AddAdmin(Login);
+}
+ModeCommands::AddAdmin("W2ZNWNzVQV6z3hXuNgRMRg");	// Ze-Rax
+ModeCommands::AddAdmin("EdbzfLXMS_aI_PjZCVaygQ");	// Reaby
+ModeCommands::AddAdmin("BiC3-GdBTzaUQxlcSw-qbQ"); // Geekid
+ModeCommands::AddAdmin("pTuyJG9STcCN_11BiU3t0Q"); // Rxelux
+ModeCommands::AddQuickCommand(C_Command_EndWarmup, "UICommon64_1", "Play_light");
+ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
+ModeCommands::AddQuickCommand(C_Command_SkipRound, "UICommon64_1", "FastForward_light");
+ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
+***
+
+***UnloadLibraries***
+***
+FlagRush_XmlRpc::Unload();
+***
+
+***LoadHud***
+***
+FlagRush_UI::Load();
+***
+
+***LoadItems***
+***
+FlagRush_Teams::LoadSkins();
+***
+
+// ~~~~~~~~~~ Server ~~~~~~~~~~ //
+***StartServer***
+***
+Private_WarmUpIsRunning = False;
+declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
+FlagRush_Net_WarmUpIsRunning = False;
+Private_PauseIsRunning = False;
+declare netwrite Boolean FlagRush_Net_PauseIsRunning for Teams[0];
+FlagRush_Net_PauseIsRunning = False;
+Private_OvertimeIsRunning = False;
+declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
+FlagRush_Net_OvertimeIsRunning = False;
+
+ModeUtils::SetEndTime(-1);
+***
+
+// ~~~~~~~~~~ Match ~~~~~~~~~~ //
+
+***InitMatch***
+***
+FlagRush_Scores::StartMatch();
+FlagRush_XmlRpc::Send_MatchStart();
+***
+
+***EndMatch***
+***
+FlagRush_XmlRpc::Send_MatchEnd(MatchEndRequested);
+***
+
+***AfterEndMatch***
+***
+FlagRush_Scores::EndMatch();
+***
+
+// ~~~~~~~~~~ Map ~~~~~~~~~~ //
+
+***InitMap***
+***
+FlagRush_Scores::StartMap();
+declare Boolean MapValid = FlagRush_Map::InitLandmarks();
+if (!MapValid) {
+	MatchEndRequested = True;
+	FlagRush_Messages::InvalidMap();
+}
+FlagRush_XmlRpc::Send_MapStart();
+FlagRush_UI::StartMap();
+MB_Synchro();
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
+***
+
+***StartMap***
+***
+MB_Sleep(C_Duration_MapStart);
+
+StartTime = Now; // Start time has to be set otherwise cannot spawn players
+if (S_UseWarmUp && !MatchEndRequested) +++Private_WarmUp+++
+***
+
+***AfterEndMap***
+***
+declare Boolean MapIsValid = Progression_MapIsInvalid();
+FlagRush_XmlRpc::Send_MapEnd(MapIsValid);
+if (MapIsValid) {
+	FlagRush_Messages::MapSkip(C_Duration_MapEnd);
+	FlagRush_Scores::Clear(FlagRush_Scores::C_Level_Map);
+} else {
+	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMap();
+	if (WinnerClan == 0) {
+		FlagRush_Messages::MapDraw(C_Duration_MapEnd);
+	} else {
+		FlagRush_Messages::MapWin(WinnerClan, C_Duration_MapEnd);
+		FlagRush_Scores::OnClanMapWin(WinnerClan);
+	}
+}
+
+// Sleep during message and show scoreboard update half way through
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
+MB_Sleep(C_Duration_MapEnd / 2);
+FlagRush_Scores::EndMap();
+MB_Sleep(C_Duration_MapEnd / 2);
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
+
+if (Progression_MatchPointLimitReached()) {
+	MB_StopMatch();
+} else {
+	MB_SkipPodiumSequence(); // Podium == Match end MVP
+}
+***
+
+// ~~~~~~~~~~ Round ~~~~~~~~~~ //
+
+***InitRound***
+***
+FlagRush_Scores::StartRound();
+FlagRush_XmlRpc::Send_RoundStart();
+declare Boolean Progression_RoundEndRequested for This;
+Progression_RoundEndRequested = False;
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
+***
+
+***StartRound***
+***
+FlagRush_Messages::RoundStart(MB_GetRoundCount(), C_Duration_RoundStart);
+MB_Sleep(C_Duration_RoundStart);
+StartTime = Now;
+Private_Progression_RoundTimeRemaining = S_RoundTimeLimitSeconds * 1000;
+
+// Enable time limit warnings
+Private_TimeLimitWarningsEnabled = [];
+foreach (WarningSeonds in C_TimeLimitWarning_Seconds) {
+	Private_TimeLimitWarningsEnabled[WarningSeonds] = S_RoundTimeLimitSeconds > WarningSeonds;
+}
+***
+
+***EndRound***
+***
+Private_OvertimeIsRunning = False;
+declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
+FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
+***
+
+***AfterEndRound***
+***
+declare Boolean RoundIsValid = Progression_RoundIsInvalid();
+FlagRush_XmlRpc::Send_RoundEnd(RoundIsValid);
+if (RoundIsValid) {
+	FlagRush_Messages::RoundSkip(C_Duration_RoundEnd);
+	FlagRush_Scores::Clear(FlagRush_Scores::C_Level_Round);
+} else {
+	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateRound();
+	if (WinnerClan == 0) {
+		FlagRush_Messages::RoundDraw(C_Duration_RoundEnd);
+	} else {
+		FlagRush_Messages::RoundWin(WinnerClan, C_Duration_RoundEnd);
+		FlagRush_Scores::OnClanRoundWin(WinnerClan);
+	}
+}
+
+// Sleep during message and show scoreboard update half way through
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
+MB_Sleep(C_Duration_RoundEnd / 2);
+FlagRush_Scores::EndRound();
+MB_Sleep(C_Duration_RoundEnd / 2);
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
+
+if (Progression_MapPointLimitReached()) MB_StopMap();
+***
+
+// ~~~~~~~~~~ Turn ~~~~~~~~~~ //
+
+***StartTurn***
+***
+// Pause handling (Execution)
+declare Boolean Progression_PauseRequested for This;
+if (Progression_PauseRequested) {
+	Progression_PauseRequested = False;
+	+++Private_Pause+++
+}
+
+// Set end time
+if (S_RoundTimeLimitSeconds > 0) {
+	ModeUtils::SetEndTime(Now + Private_Progression_RoundTimeRemaining + FlagRush_Common::C_SpawnAnimDuration);
+}
+
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
+***
+
+***EndTurn***
+***
+Private_Progression_RoundTimeRemaining = EndTime - Now;
+ModeUtils::SetEndTime(-1);
+***
+
+***AfterEndTurn***
+***
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
+MB_Sleep(C_Duration_TurnEnd);
+***
+
+// ~~~~~~~~~~ PlayLoop ~~~~~~~~~~ //
+
+***PlayLoop***
+***
+// Round skip (Map skip handled by base mode)
+declare Boolean Progression_RoundEndRequested for This;
+if (Progression_RoundEndRequested) MB_StopRound();
+
+// Round end & overtime conditions
+if(Progression_OvertimeIsRunning()) {
+	if (!Progression_RoundIsTied()) {
+		MB_StopRound();
+	}
+} else {
+	if (Progression_FlagLimitReached()) {
+		MB_StopRound();
+	} else if (Progression_TimeLimitReached()) {
+		if (Progression_RoundIsTied() && S_UseOvertime) {
+			+++StartOvertime+++
+		} else {
+			FlagRush_Messages::TimeLimitEnd(C_Duration_EventMessage);
+			MB_StopRound();
+		}
+	}
+}
+
+// Time warnings
+foreach (WarningSeonds => Enabled in Private_TimeLimitWarningsEnabled) {
+	if (!Enabled || (EndTime - Now) / 1000 > WarningSeonds) {
+		continue;
+	}
+	Private_TimeLimitWarningsEnabled[WarningSeonds] = False;
+	FlagRush_Messages::TimeLimitSecondsRemaining(WarningSeonds, C_Duration_EventMessage);
+}
+
+// Pause handling (Request reaction, execution on StartTurn)
+declare Boolean Progression_PauseRequested for This;
+if (Progression_PauseRequested) {
+	MB_StopTurn();
+}
+***
+
+***StartOvertime***
+***
+FlagRush_XmlRpc::Send_OverTime();
+Private_OvertimeIsRunning = True;
+declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
+FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
+FlagRush_Messages::OvertimeStart(C_Duration_Overtime);
+***
+
+// ~~~~~~~~~~ Podium (Match end MVP) ~~~~~~~~~~ //
+
+***PodiumSequence***
+***
+declare Integer DurationScoreTable = C_Duration_Podium / 3;
+declare Integer DurationMVP = C_Duration_Podium - DurationScoreTable;
+
+// Score table phase
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
+declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMatch();
+if (WinnerClan == 0) {
+	FlagRush_Messages::MatchDraw(C_Duration_Podium / 3);
+} else {
+	FlagRush_Messages::MatchWin(WinnerClan, C_Duration_Podium / 3);
+}
+// Sleep during message and show scoreboard update half way through
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
+MB_Sleep(DurationScoreTable / 2);
+FlagRush_Scores::EndMatch();
+MB_Sleep(DurationScoreTable / 2);
+UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
+
+// MVP phase
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::None;
+FlagRush_MVP::Toggle(True);
+MB_Sleep(DurationMVP);
+FlagRush_MVP::Toggle(False);
+***
+
+// ~~~~~~~~~~ WarmUp / Pause ~~~~~~~~~~ //
+
+***Private_WarmUp***
+***
+FlagRush_XmlRpc::Send_WarmUpStart();
+Private_WarmUpIsRunning = True;
+declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
+FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
+FlagRush_Messages::WarmUpStart(C_Duration_WarmUpStart);
+WarmUpReadyUp::Start();
+MB_Sleep(C_Duration_WarmUpStart);
+declare CUIConfig::EUISequence PreviousSequence = UIManager.UIAll.UISequence;
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
+
+{ +++StartWarmUp+++ }
+while(!WarmUpReadyUp::WarmUpShouldStop()) {
+	MB_Yield();
+	WarmUpReadyUp::Yield();
+	foreach (WuruEvent in WarmUpReadyUp::GetPendingEvents()) {
+		switch (WuruEvent.Type) {
+			case WarmUpReadyUp::C_Event_Type_TimeoutStart,
+					WarmUpReadyUp::C_Event_Type_TimeoutUpdate,
+					WarmUpReadyUp::C_Event_Type_TimeoutAbort: {
+				// Refrech EndTime net variable when it's updated by WURU
+				ModeUtils::SetEndTime(EndTime);
+			}
+		}
+	}
+	+++WarmUpLoop+++
+}
+{ +++EndWarmUp+++ }
+
+ModeUtils::SetEndTime(-1);
+FlagRush_Messages::WarmUpEnd(C_Duration_WarmUpEnd);
+UIManager.UIAll.UISequence = PreviousSequence;
+MB_Sleep(C_Duration_WarmUpEnd);
+Private_WarmUpIsRunning = False;
+FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
+FlagRush_XmlRpc::Send_WarmUpEnd();
+***
+
+***Private_Pause***
+***
+Private_PauseIsRunning = True;
+declare netwrite Boolean FlagRush_Net_PauseIsRunning for Teams[0];
+FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
+ModeUtils::SetEndTime(-1);
+FlagRush_Messages::PauseStart(C_Duration_PauseStart);
+MB_Sleep(C_Duration_PauseStart);
+
+{ +++Private_WarmUp+++ }
+
+FlagRush_Messages::PauseEnd(C_Duration_PauseEnd);
+MB_Sleep(C_Duration_PauseEnd);
+Private_PauseIsRunning = False;
+FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
+***
+
+// ~~~~~~~~~~ Yield ~~~~~~~~~~ //
+
+// Cannot use non-library functions or globales in here, as this is executed during MB_Yield() in the modebase,
+// which is defined before any function or globale that could be defined in any extend.
+// Only code directly or plugs which don't contain non-library functions or non ModeBase globales themselves.
+// TODO: Find a way to work around this. It hurts.
+***Yield***
+***
+ModeEvents::Yield(); // Keep as first in yield
+ModeCommands::Yield();
+FlagRush_UI::Yield();
+{ +++Private_Yield_HandleProgressionsCommands+++ }
+{ +++Private_Yield_HandleCriticalModeScriptSettingsUpdates+++ }
+{ +++Private_Yield_HandlePlayerLifecycleEvents+++ }
+***
+
+***Private_Yield_HandlePlayerLifecycleEvents***
+***
+declare Boolean ReinitTeams;
+declare Boolean LastPlayerLeft;
+foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
+	if (Event.Type == ModeEvents::C_PlayerLifecycle_PlayerAdded) {
+		declare Boolean WelcomeMessageWasSent for Event.Player.User; // Players are removed and added during map load
+		if (!WelcomeMessageWasSent){
+			FlagRush_Messages::Welcome(Event.Player, Version);
+			WelcomeMessageWasSent = True;
+		}
+	}
+
+	// Check if player event requires team reinitialization
+	declare Boolean PlayerAdded = Event.Type == ModeEvents::C_PlayerLifecycle_PlayerAdded && !Event.IsSpectator;
+	declare Boolean PlayerRemoved = Event.Type == ModeEvents::C_PlayerLifecycle_PlayerRemoved && !Event.IsSpectator;
+	declare Boolean PlayerClanChange = Event.Type == ModeEvents::C_PlayerLifecycle_PlayerClanChange;
+	declare Boolean PlayerSpectatorChange = Event.Type == ModeEvents::C_PlayerLifecycle_PlayerToSpectator
+			|| Event.Type == ModeEvents::C_PlayerLifecycle_SpectatorToPlayer;
+	ReinitTeams = ReinitTeams || PlayerAdded || PlayerRemoved || PlayerClanChange || PlayerSpectatorChange;
+
+	// Skip match if no player is left after player left or moved to spectator
+	LastPlayerLeft = LastPlayerLeft || Players.count == 0 && (PlayerRemoved || Event.Type == ModeEvents::C_PlayerLifecycle_PlayerToSpectator);
+}
+
+if (ReinitTeams) {
+	FlagRush_Teams::Init();
+}
+
+// Skip running match if the last player left, but not if we're before the first round of the first map
+declare Boolean MatchWasStarted =  MB_GetMapCount() > 1 || MB_GetRoundCount() > 0; // At least first round on first map was started
+if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted && Map != Null) {
+	FlagRush_Messages::AllPlayersLeft_SkipMatch();
+	FlagRush_Common::Log("Current match was skipped as there are no players remaining");
+	MatchEndRequested = True; // Invalidate Map, Round, ...
+	MB_StopMatch();
+	declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0]; // Can't use global variable in yield
+	if (FlagRush_Net_WarmUpIsRunning) {
+		WarmUpReadyUp::Stop();
+	}
+}
+***
+
+***Private_Yield_HandleCriticalModeScriptSettingsUpdates***
+***
+// Point limit settings
+declare Integer FlagRush_PreviousSettings_NbMapsToWinMatch for This;
+declare Integer FlagRush_PreviousSettings_NbRoundsToWinMap for This;
+declare Integer FlagRush_PreviousSettings_NbFlagsToWinRound for This;
+if (
+	FlagRush_PreviousSettings_NbMapsToWinMatch  != S_NbMapsToWinMatch
+	|| FlagRush_PreviousSettings_NbRoundsToWinMap  != S_NbRoundsToWinMap
+	|| FlagRush_PreviousSettings_NbFlagsToWinRound != S_NbFlagsToWinRound
+) {
+	FlagRush_PreviousSettings_NbMapsToWinMatch = S_NbMapsToWinMatch;
+	FlagRush_PreviousSettings_NbRoundsToWinMap = S_NbRoundsToWinMap;
+	FlagRush_PreviousSettings_NbFlagsToWinRound = S_NbFlagsToWinRound;
+	FlagRush_UI::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
+}
+
+// Team configs
+declare Boolean FlagRush_PreviousSettings_UseClubTags for This;
+declare Text FlagRush_PreviousSetting_Team1Name for This;
+declare Text FlagRush_PreviousSetting_Team2Name for This;
+// declare Text FlagRush_PreviousSetting_Team1Color for This;
+// declare Text FlagRush_PreviousSetting_Team2Color for This;
+if (
+	FlagRush_PreviousSettings_UseClubTags != S_UseClubTags
+	|| FlagRush_PreviousSetting_Team1Name != S_Team1Name
+	|| FlagRush_PreviousSetting_Team2Name != S_Team2Name
+	// || FlagRush_PreviousSetting_Team1Color != S_Team1Color
+	// || FlagRush_PreviousSetting_Team2Color != S_Team2Color
+) {
+	FlagRush_PreviousSettings_UseClubTags = S_UseClubTags;
+	FlagRush_Teams::UseClubTags(S_UseClubTags);
+	FlagRush_PreviousSetting_Team1Name = S_Team1Name;
+	FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
+	FlagRush_PreviousSetting_Team2Name = S_Team2Name;
+	FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
+	// FlagRush_PreviousSetting_Team1Color = S_Team1Color;
+	// FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
+	// FlagRush_PreviousSetting_Team2Color = S_Team2Color;
+	// FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
+	FlagRush_Teams::Init();
+}
+***
+
+***Private_Yield_HandleProgressionsCommands***
+***
+declare CommandUtils::K_Command[] PendingCommands;
+
+// XmlRpc
+foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
+	switch (XmlRpcEvent.Type) {
+		case CXmlRpcEvent::EType::CallbackArray: {
+			switch (XmlRpcEvent.ParamArray1) {
+				case "Trackmania.ForceEndRound": {
+					PendingCommands.add(CommandUtils::FromNameAndParams(C_Command_SkipRound, [], "XmlRpc"));
+				}
+			}
+		}
+	}
+}
+
+// Mode commands
+foreach (Event in PendingEvents) {
+	if (Event.Type == CSmModeEvent::EType::OnCommand) {
+		PendingCommands.add(CommandUtils::FromEvent(Event));
+	}
+}
+
+// ModeCommandsUi
+foreach (Command in ModeCommands::GetPendingCommands()) {
+	PendingCommands.add(Command);
+}
+
+foreach (Command in PendingCommands) {
+	// Display a message in chat
+	declare Text CommandSource = CommandUtils::ResolveSource(Command);
+	declare Text CommandText;
+
+	// Handle the command
+	switch(Command.Name) {
+		case C_Command_EndWarmup: {
+			WarmUpReadyUp::Stop();
+			CommandText = "The warmup was ended.";
+		}
+		case C_Command_Pause: {
+			declare Boolean Progression_PauseRequested for This;
+			Progression_PauseRequested = True;
+			CommandText = "The round was paused.";
+		}
+		case C_Command_SkipRound: {
+			declare Boolean Progression_RoundEndRequested for This;
+			Progression_RoundEndRequested = True;
+			CommandText = "The round was skipped.";
+		}
+		case C_Command_SkipMap: {
+			MatchEndRequested = True;
+			CommandText = "The map was skipped.";
+		}
+		case C_Command_SetTeam1RoundScore: {
+			declare Integer Value = ML::Max(Command.ValueInteger, 0);
+			FlagRush_Scores::SetClanRoundPoints(1, Value);
+			FlagRush_Scores::Net_SendTeamScores();
+			CommandText = """Set {{{ Teams[0].Name }}} round score to {{{ Value }}}.""";
+		}
+		case C_Command_SetTeam2RoundScore: {
+			declare Integer Value = ML::Max(Command.ValueInteger, 0);
+			FlagRush_Scores::SetClanRoundPoints(2, Value);
+			FlagRush_Scores::Net_SendTeamScores();
+			CommandText = """Set {{{ Teams[1].Name }}} round score to {{{ Value }}}.""";
+		}
+		case C_Command_SetTeam1MapScore: {
+			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbRoundsToWinMap);
+			FlagRush_Scores::SetClanMapPoints(1, Value);
+			FlagRush_Scores::Net_SendTeamScores();
+			CommandText = """Set {{{ Teams[0].Name }}} map score to {{{ Value }}}.""";
+		}
+		case C_Command_SetTeam2MapScore: {
+			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbRoundsToWinMap);
+			FlagRush_Scores::SetClanMapPoints(2, Value);
+			FlagRush_Scores::Net_SendTeamScores();
+			CommandText = """Set {{{ Teams[1].Name }}} map score to {{{ Value }}}.""";
+		}
+		case C_Command_SetTeam1MatchScore: {
+			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbMapsToWinMatch);
+			FlagRush_Scores::SetClanMatchPoints(1, Value);
+			FlagRush_Scores::Net_SendTeamScores();
+			CommandText = """Set {{{ Teams[0].Name }}} match score to {{{ Value }}}.""";
+		}
+		case C_Command_SetTeam2MatchScore: {
+			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbMapsToWinMatch);
+			FlagRush_Scores::SetClanMatchPoints(2, Value);
+			FlagRush_Scores::Net_SendTeamScores();
+			CommandText = """Set {{{ Teams[1].Name }}} match score to {{{ Value }}}.""";
+		}
+		case C_Command_ClearScores: {
+			FlagRush_Scores::Clear();
+			CommandText = "Cleared all scores.";
+		}
+		case C_Command_BalanceTeams: {
+			ServerAdmin.AutoTeamBalance();
+			CommandText = "The teams were balanced.";
+		}
+		case C_Command_SetBots: {
+			declare Integer Amount = ML::Max(Command.ValueInteger, 0);
+			Users_SetNbFakeUsers(Amount, Amount);
+			CommandText = """Set {{{ Amount }}} bots.""";
+		}
+		case C_Command_SetTimeLeft: {
+			if (!MB_TurnIsRunning()) return;
+			ModeUtils::SetEndTime(Now + Command.ValueInteger * 1000);
+			CommandText = """Set time limit to {{{ Command.ValueInteger }}} seconds remaining.""";
+		}
+		case C_Command_Announce: {
+			UIManager.UIAll.QueueMessage(3000, FlagRush_Messages::C_MessagePriority_Default, CUIConfig::EMessageDisplay::Big, Command.ValueText, CUIConfig::EUISound::Default, 1);
+			CommandText = """Message: $<{{{ Command.ValueText }}}$>""";
+		}
+		default: return;
+	}
+
+	declare Text Message = """{{{ FlagRush_Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ CommandSource }}}.""";
+	if (CommandText != "") Message ^= " " ^ CommandText;
+	UIManager.UIAll.SendChat(Message);
+}
+***
+
+///////////////
+// Functions //
+///////////////
+
+Boolean Progression_WarmUpIsRunning() {
+	return Private_WarmUpIsRunning;
+}
+
+Boolean Progression_PauseIsRunning() {
+	return Private_PauseIsRunning;
+}
+
+Boolean Progression_OvertimeIsRunning() {
+	return Private_OvertimeIsRunning;
+}
+
+Boolean Progression_MatchPointLimitReached() {
+	return ML::Max(FlagRush_Scores::GetClanMatchPoints(1), FlagRush_Scores::GetClanMatchPoints(2)) >= S_NbMapsToWinMatch;
+}
+
+Boolean Progression_MapPointLimitReached() {
+	return ML::Max(FlagRush_Scores::GetClanMapPoints(1), FlagRush_Scores::GetClanMapPoints(2)) >= S_NbRoundsToWinMap;
+}
+
+Boolean Progression_FlagLimitReached() {
+	if (S_NbFlagsToWinRound <= 0) return False;
+	declare Integer RoundPointsTeam1 = FlagRush_Scores::GetClanRoundPoints(1);
+	declare Integer RoundPointsTeam2 = FlagRush_Scores::GetClanRoundPoints(2);
+	return ML::Max(RoundPointsTeam1, RoundPointsTeam2) >= S_NbFlagsToWinRound;
+}
+
+Boolean Progression_TimeLimitReached() {
+	if (S_RoundTimeLimitSeconds <= 0) return False;
+	return Now > EndTime;
+}
+
+Boolean Progression_RoundIsTied() {
+	return FlagRush_MatchEvaluation::EvaluateRound() == 0;
+}
+
+Boolean Progression_MapIsInvalid() {
+	return MatchEndRequested;
+}
+
+Boolean Progression_RoundIsInvalid() {
+	declare Boolean Progression_RoundEndRequested for This;
+	return Progression_RoundEndRequested || MatchEndRequested;
+}

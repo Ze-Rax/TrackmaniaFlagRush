@@ -1,4 +1,5 @@
 #Include "TextLib" as TL
+#Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt" as ModeUtils
 
 #Const 	C_CommandPrefix		"Command_"
 #Const	C_Source_Mode			"CSmModeEvent"
@@ -18,8 +19,8 @@
 }
 
 /**
-*		Transfroms a Text and Params into a Command
-*/
+ * Transfroms a Text and Params into a Command
+ */
 K_Command FromNameAndParams(Text Name, Text[] Params, Text Source) {
 	declare K_Command Command = K_Command {
 		Name = Name,
@@ -54,8 +55,8 @@ K_Command FromNameAndParams(Text Name, Text[] Params, Text Source) {
 }
 
 /**
-*		Transforms a Text into a Command
-*/
+ * Transforms a Text into a Command
+ */
 K_Command FromText(Text CommandText, Text Source) {
 	declare K_Command Command;
 	declare Text[] CommandSplit = TL::Split(" ", CommandText);
@@ -66,11 +67,12 @@ K_Command FromText(Text CommandText, Text Source) {
 }
 
 /**
-*		Transforms a CSmModeEvent into a Command struct
-*/
+ * Transforms a CSmModeEvent into a Command struct. Command_ prefix is removed if present.
+ */
 K_Command FromEvent(CSmModeEvent Event) {
+	declare Text UnprefixedName = TL::RegexReplace("""^{{{ C_CommandPrefix }}}""", Event.CommandName, "", "");
 	return K_Command {
-		Name					= Event.CommandName,
+		Name					= UnprefixedName,
 		ValueBoolean	= Event.CommandValueBoolean,
 		ValueInteger	= Event.CommandValueInteger,
 		ValueReal			= Event.CommandValueReal,
@@ -84,12 +86,29 @@ K_Command FromEvent(CSmModeEvent Event) {
 }
 
 /**
-*		Transforms a CUIConfigEvent into a Command struct
-*/
+ * Transforms a CUIConfigEvent into a Command struct. Command_ prefix is removed if present.
+ */
 K_Command FromEvent(CUIConfigEvent Event) {
 	declare Text Source;
 	if(Event.UI != Null && GetPlayer(Event.UI) != Null) {
 		Source = GetPlayer(Event.UI).User.Login;
 	}
-	return FromNameAndParams(Event.CustomEventType, Event.CustomEventData, Source);
+	declare Text UnprefixedName = TL::RegexReplace("""^{{{ C_CommandPrefix }}}""", Event.CustomEventType, "", "");
+	return FromNameAndParams(UnprefixedName, Event.CustomEventData, Source);
+}
+
+/**
+ * Resolves the source of a command to a displayable name.
+ */
+Text ResolveSource(K_Command Command) {
+	if (Command.Source == "") {
+		return "Unknown Source";
+	}
+
+	declare CUser User = ModeUtils::GetUser(Command.Source);
+	if (User != Null) {
+		return User.Name;
+	}
+
+	return Command.Source;
 }

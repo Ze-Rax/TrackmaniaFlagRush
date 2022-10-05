@@ -1,5 +1,5 @@
 // #RequireContext CMlScriptIngame
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" 								as UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" 								as UIShared
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
 
 #Struct FlagRush_Teams::K_TeamSkin as K_TeamSkin
@@ -16,7 +16,7 @@ Text GetManialink() {
 
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-	<manialink version="3">
+	<manialink version="3" name="FlagRush_MVP">
 		<framemodel id="player">
 			<label id="name" pos="0 0" z-index="0" size="80 8" text="PlayerName" textfont="GameFontBlack" textsize="6" halign="center" valign="center2"/>
 			<label id="score" pos="0 -6" z-index="0" size="80 8" text="# Points" textfont="GameFontRegular" textsize="4" halign="center" valign="center"/>
@@ -34,7 +34,7 @@ Text GetManialink() {
 			<frameinstance id="mvp0" pos="0 -40" modelid="player" hidden="1" />
 			<frameinstance id="mvp1" pos="-65 -25" modelid="player" hidden="1" />
 			<frameinstance id="mvp2" pos="65 -25" modelid="player" hidden="1" />
-			<quad id="background" pos="0 0" z-index="-2" size="320 200" image="file:///Media/Manialinks/Nadeo/TMNext/Menus/PageGarage/Garage_background.png" opacity="1" halign="center" valign="center" />
+			<quad id="background" pos="0 0" z-index="-2" size="320 200" image="file:///Media/Manialinks/Nadeo/TMNext/Menus/PageGarage/Garage_background.dds" opacity="1" halign="center" valign="center" />
 			<frame size="360 80" valign="center" halign="center" pos="0 -10">
 				<camera id="camera" pos="0 10" size="360 180" valign="center" halign="center" />
 			</frame>

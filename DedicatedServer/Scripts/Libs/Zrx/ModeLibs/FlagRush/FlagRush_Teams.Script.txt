@@ -177,14 +177,17 @@ Void Private_Configs_AdjustAvoidHueOverlap() {
 		declare Boolean AdjustFirst = Team2ColorOverride != "" ||
 				(G_TeamConfigs[Teams[1]].ClubTag != "" && G_TeamConfigs[Teams[0]].ClubTag == "" && Team1ColorOverride == "");
 
-		if (AdjustFirst) G_TeamConfigs[Teams[0]].Color = ColorUtils::AdjustHueOverlap(
-				G_TeamConfigs[Teams[1]].Color,
-				G_TeamConfigs[Teams[0]].Color,
-				C_HueOverlapThreshold);
-		else G_TeamConfigs[Teams[1]].Color = ColorUtils::AdjustHueOverlap(
-				G_TeamConfigs[Teams[0]].Color,
-				G_TeamConfigs[Teams[1]].Color,
-				C_HueOverlapThreshold);
+		if (AdjustFirst) {
+			G_TeamConfigs[Teams[0]].Color = ColorUtils::AdjustHueOverlap(
+					G_TeamConfigs[Teams[1]].Color,
+					G_TeamConfigs[Teams[0]].Color,
+					C_HueOverlapThreshold);
+		} else {
+			G_TeamConfigs[Teams[1]].Color = ColorUtils::AdjustHueOverlap(
+					G_TeamConfigs[Teams[0]].Color,
+					G_TeamConfigs[Teams[1]].Color,
+					C_HueOverlapThreshold);
+			}
 	}
 }
 
@@ -192,7 +195,7 @@ Void Private_Configs_AdjustAvoidHueOverlap() {
  * Applies the TeamConfigs to the actual Team objects
  */
 Void Private_Configs_ApplyToTeams() {
-	for(TeamIndex, 0, 1) {
+	for (TeamIndex, 0, 1) {
 		Teams[TeamIndex].Name = G_TeamConfigs[Teams[TeamIndex]].Name;
 		declare Vec3 PrimaryColor = G_TeamConfigs[Teams[TeamIndex]].Color;
 
@@ -213,8 +216,11 @@ Void Private_Configs_ApplyToTeams() {
  * Initializes the team configs.
  */
 Void Init() {
-	if (G_UseClubTags) Private_Configs_InitFromClubTags();
- 	else G_TeamConfigs = [Teams[0] => GetConfig(1), Teams[1] => GetConfig(2)];
+	if (G_UseClubTags) {
+		Private_Configs_InitFromClubTags();
+	} else {
+		G_TeamConfigs = [Teams[0] => K_TeamConfig{}, Teams[1] => K_TeamConfig{}];
+	}
 	Private_Configs_OverrideEmptyFields();
 	Private_Configs_AdjustAvoidHueOverlap();
 	Private_Configs_ApplyToTeams();

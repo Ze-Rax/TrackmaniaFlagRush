@@ -55,7 +55,7 @@ These events are being sent via Xml-Rpc Callbacks. For the actual payload defini
 ### FlagRush.Flow.MatchEnd
 
 - Sent when a match ends.
-- Payload: `K_Rpc_FlowScores`
+- Payload: `K_Rpc_Flow`
 
 ### FlagRush.Flow.MapStart
 
@@ -65,7 +65,7 @@ These events are being sent via Xml-Rpc Callbacks. For the actual payload defini
 ### FlagRush.Flow.MapEnd
 
 - Sent when a map ends.
-- Payload: `K_Rpc_FlowScores`
+- Payload: `K_Rpc_Flow`
 
 ### FlagRush.Flow.RoundStart
 
@@ -75,7 +75,7 @@ These events are being sent via Xml-Rpc Callbacks. For the actual payload defini
 ### FlagRush.Flow.RoundEnd
 
 - Sent when a round ends.
-- Payload: `K_Rpc_FlowScores`
+- Payload: `K_Rpc_Flow`
 
 ### FlagRush.Flow.Overtime
 
@@ -134,7 +134,7 @@ These are the structs that are actually being sent by the callbacks. Definition 
 	Integer Time;
 	K_Rpc_Player Scorer;
 	K_Rpc_Player Assist;
-	K_Rpc_TeamScore[] TeamScores;
+	Integer[] TeamScores;
 }
 ```
 
@@ -150,16 +150,8 @@ These are the structs that are actually being sent by the callbacks. Definition 
 	Integer Time;
 	K_Rpc_Map Map;
 	Boolean Valid;
-}
-```
-
-```
-#Struct K_Rpc_FlowScores {
-	Integer Time;
-	K_Rpc_Map Map;
-	Boolean Valid;
+	Integer[] TeamScores;
 	K_Rpc_PlayerScore[] PlayerScores;
-	K_Rpc_TeamScore[] TeamScores;
 }
 ```
 
@@ -178,13 +170,13 @@ These are structs that represent objects present on the server with their most r
 #Struct K_Rpc_Player {
 	Text Login;
 	Text Name;
-	K_Rpc_Team Team;
+	Integer TeamNum;
 	Vec3 Position;
 }
 ```
 
 ```
-#Struct K_Rpc_FlagSpawn {
+#Struct K_Rpc_Landmark {
 	Integer LandmarkId;
 	Vec3 Position;
 }
@@ -194,34 +186,17 @@ These are structs that represent objects present on the server with their most r
 #Struct K_Rpc_Flag {
 	Vec3 Position;
 	K_Rpc_Player Carrier;
-	K_Rpc_FlagSpawn Spawn;
-}
-```
-
-```
-#Struct K_Rpc_TeamScore {
-	K_Rpc_Team Team;
-	Integer MatchPoints;
-	Integer MapPoints;
-	Integer RoundPoints;
+	K_Rpc_Landmark Spawn;
 }
 ```
 
 ```
 #Struct K_Rpc_PlayerScore {
 	K_Rpc_Player Player;
-	Integer RoundPoints;
-	Integer MapPoints;
-	Integer MatchPoints;
-	Integer FlagsScoredRound;
-	Integer FlagsScoredMap;
-	Integer FlagsScoredMatch;
-	Integer FlagsStolenRound;
-	Integer FlagsStolenMap;
-	Integer FlagsStolenMatch;
-	Integer AssistsRound;
-	Integer AssistsMap;
-	Integer AssistsMatch;
+	Integer Points;
+	Integer FlagsScored;
+	Integer FlagsStolen;
+	Integer Assists;
 }
 ```
 

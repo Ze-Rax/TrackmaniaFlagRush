@@ -77,8 +77,8 @@ Real OkHueToHue(Real h){
 Real OffsetLight(Real h,Real offset){
 	if(h < (109.77-offset)) return offset;
 	if(h < (109.77+offset)) return 109.77-h;
-	if(h < 264.2) return -offset;
-	if(h < (264.2+offset)) return 2*offset-(264.2-h);
+	if(h < 274) return -offset;
+	if(h < (274+offset)) return 2*offset-(274-h);
 
 	return offset;
 }
@@ -86,15 +86,15 @@ Real OffsetLight(Real h,Real offset){
 Real OffsetDark(Real h,Real offset){
 	if(h < (109.77-offset)) return -offset;
 	if(h < (109.77)) return -(2*offset-(109.77-h));
-	if(h < (264.2-offset)) return offset;
-	if(h < (264.2+offset)) return 264.2-h;
+	if(h < (274-offset)) return offset;
+	if(h < (274+offset)) return 274-h;
 	return -offset;
 }
 
 Vec3 GetLightColor(Real h){
 	declare Real okH = HueToOkHue(h);
 	if(okH > 360) okH -= 360;
-	okH = okH+OffsetLight(okH,30.);
+	okH = okH+OffsetLight(okH,12.);
 	if(okH > 360) okH -= 360;
 	declare Real H = OkHueToHue(okH);
 	if(H < 0) H += 360;
@@ -108,7 +108,7 @@ Vec3 GetMidColor(Real h){
 Vec3 GetDarkColor(Real h){
 	declare Real okH = HueToOkHue(h);
 	if(okH > 360) okH -= 360;
-	okH = okH+OffsetDark(okH,30.);
+	okH = okH+OffsetDark(okH,12.);
 	if(okH > 360) okH -= 360;
 	declare Real H = OkHueToHue(okH);
 	if(H < 0) H += 360;

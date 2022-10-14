@@ -1,0 +1,17 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/landmark.schema.json",
+	"title": "Landmark",
+	"description": "Representation of a map landmark",
+	"type": "object",
+	"properties": {
+		"LandmarkId": {
+			"description": "The trackmania engine nod id of the landmark. This is not consistent across map loads. The same landmark can (and will most likely) have a different id when the map is reloaded at a later point",
+			"type": "integer"
+		},
+		"Position": {
+			"description": "The X, Y & Z components of the landmark position in world space",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/position.schema.json"
+		}
+	}
+}

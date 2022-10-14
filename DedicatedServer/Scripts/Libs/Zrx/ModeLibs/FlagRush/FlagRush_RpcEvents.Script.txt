@@ -8,34 +8,29 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"				as FlagRush_Scores
 
 // XMLRPC events
-#Const		C_XMLRPC_FlagPass																"FlagRush.Flag.Pass"
-#Const		C_XMLRPC_FlagDrop																"FlagRush.Flag.Drop"
-#Const		C_XMLRPC_FlagReset															"FlagRush.Flag.Reset"
-#Const 		C_XMLRPC_FlagPickup															"FlagRush.Flag.Pickup"
-#Const		C_XMLRPC_FlagScored															"FlagRush.Flag.Scored"
+#Const		C_Event_Flag_Pass																"FlagRush.Flag.Pass"
+#Const		C_Event_Flag_Drop																"FlagRush.Flag.Drop"
+#Const		C_Event_Flag_Reset															"FlagRush.Flag.Reset"
+#Const 		C_Event_Flag_Pickup															"FlagRush.Flag.Pickup"
+#Const		C_Event_Flag_Scored															"FlagRush.Flag.Scored"
 
-#Const		C_XMLRPC_PlayerDeath														"FlagRush.Player.Death"
+#Const		C_Event_Player_Death														"FlagRush.Player.Death"
 
-#Const		C_XMLRPC_MatchStart															"FlagRush.Flow.MatchStart"
-#Const		C_XMLRPC_MatchEnd																"FlagRush.Flow.MatchEnd"
-#Const		C_XMLRPC_MapStart																"FlagRush.Flow.MapStart"
-#Const		C_XMLRPC_MapEnd																	"FlagRush.Flow.MapEnd"
-#Const		C_XMLRPC_RoundStart															"FlagRush.Flow.RoundStart"
-#Const		C_XMLRPC_RoundEnd																"FlagRush.Flow.RoundEnd"
-#Const		C_XMLRPC_Overtime																"FlagRush.Flow.Overtime"
-#Const 		C_XMLRPC_WarmUpStart 														"FlagRush.Flow.WarmUpStart"
-#Const 		C_XMLRPC_WarmUpEnd 															"FlagRush.Flow.WarmUpEnd"
+#Const		C_Event_Flow_MatchStart													"FlagRush.Flow.MatchStart"
+#Const		C_Event_Flow_MatchEnd														"FlagRush.Flow.MatchEnd"
+#Const		C_Event_Flow_MapStart														"FlagRush.Flow.MapStart"
+#Const		C_Event_Flow_MapEnd															"FlagRush.Flow.MapEnd"
+#Const		C_Event_Flow_RoundStart													"FlagRush.Flow.RoundStart"
+#Const		C_Event_Flow_RoundEnd														"FlagRush.Flow.RoundEnd"
+#Const		C_Event_Flow_Overtime														"FlagRush.Flow.Overtime"
+#Const 		C_Event_Flow_WarmUpStart 												"FlagRush.Flow.WarmUpStart"
+#Const 		C_Event_Flow_WarmUpEnd 													"FlagRush.Flow.WarmUpEnd"
 
 /////////////
 // Structs //
 /////////////
 
 /* Components */
-
-#Struct K_Rpc_Team {
-	Integer Num;
-	Text Name;
-}
 
 #Struct K_Rpc_Player {
 	Text Login;
@@ -67,51 +62,90 @@
 	Text Name;
 	Text Uid;
 	Text AuthorLogin;
-	Text AuthorName;
 }
 
 /* Events */
 
-#Struct K_Rpc_FlagPass {
+#Struct K_Event_Flag_Pass {
 	Integer Time;
 	K_Rpc_Player OldCarrier;
 	K_Rpc_Flag Flag;
 }
 
-#Struct K_Rpc_FlagDrop {
+#Struct K_Event_Flag_Drop {
 	Integer Time;
 	K_Rpc_Player OldCarrier;
 	K_Rpc_Flag Flag;
 }
 
-#Struct K_Rpc_FlagReset {
+#Struct K_Event_Flag_Reset {
 	Integer Time;
 	K_Rpc_Flag Flag;
 }
 
-#Struct K_Rpc_FlagPickup {
+#Struct K_Event_Flag_Pickup {
 	Integer Time;
 	K_Rpc_Flag Flag;
 }
 
-#Struct K_Rpc_FlagScored {
+#Struct K_Event_Flag_Scored {
 	Integer Time;
 	K_Rpc_Player Scorer;
 	K_Rpc_Player Assist;
 	Integer[] TeamScores;
 }
 
-#Struct K_Rpc_PlayerDeath {
+#Struct K_Event_Player_Death {
 	Integer Time;
 	K_Rpc_Player Player;
 }
 
-#Struct K_Rpc_Flow {
+#Struct K_Event_Flow_MatchStart {
 	Integer Time;
-	K_Rpc_Map Map;
+}
+
+#Struct K_Event_Flow_MatchEnd {
+	Integer Time;
 	Boolean Valid;
 	Integer[] TeamScores;
 	K_Rpc_PlayerScore[] PlayerScores;
+}
+
+#Struct K_Event_Flow_MapStart {
+	Integer Time;
+	K_Rpc_Map Map;
+}
+
+#Struct K_Event_Flow_MapEnd {
+	Integer Time;
+	Boolean Valid;
+	K_Rpc_Map Map;
+	Integer[] TeamScores;
+	K_Rpc_PlayerScore[] PlayerScores;
+}
+
+#Struct K_Event_Flow_RoundStart {
+	Integer Time;
+}
+
+#Struct K_Event_Flow_RoundEnd {
+	Integer Time;
+	Boolean Valid;
+	Integer[] TeamScores;
+	K_Rpc_PlayerScore[] PlayerScores;
+}
+
+#Struct K_Event_Flow_WarmUpStart {
+	Integer Time;
+}
+
+#Struct K_Event_Flow_WarmUpEnd {
+	Integer Time;
+}
+
+#Struct K_Event_Flow_Overtime {
+	Integer Time;
+	Integer[] TeamScores;
 }
 
 ///////////////
@@ -119,16 +153,6 @@
 ///////////////
 
 /* Transformation function */
-
-/**
- * Turns a team into an Rpc_Team.
- */
-K_Rpc_Team TeamToRpcTeam(CTeam Team) {
-	return K_Rpc_Team {
-		Num = Teams.keyof(Team) + 1,
-		Name = Team.Name
-	};
-}
 
 /**
  * Turns a player into an Rpc_Player.
@@ -214,6 +238,10 @@ K_Rpc_Flag FlagStateToRpcFlag(FlagRush_FlagState::K_FlagState FlagState) {
 	};
 }
 
+K_Rpc_Flag CurrentFlagState() {
+	return FlagStateToRpcFlag(FlagRush_FlagState::Get());
+}
+
 /**
  * Reduces a map to an Rpc_Map.
  */
@@ -221,8 +249,7 @@ K_Rpc_Map MapToRpcMap(CMap Map) {
 	return K_Rpc_Map{
 		Name = Map.MapInfo.Name,
 		Uid = Map.MapInfo.MapUid,
-		AuthorLogin = Map.MapInfo.AuthorLogin,
-		AuthorName = Map.MapInfo.AuthorNickName
+		AuthorLogin = Map.MapInfo.AuthorLogin
 	};
 }
 
@@ -285,41 +312,22 @@ Integer[] GetTeamScores(Integer ScoreLevel) {
 	return [];
 }
 
-K_Rpc_Flow CurrentFlowState(Integer ScoreLevel, Boolean Valid) {
-	declare K_Rpc_Map Rpc_Map;
-	if (Map != Null) {
-		Rpc_Map = MapToRpcMap(Map);
-	}
-
-	return K_Rpc_Flow{
-		Time = Now,
-		Map = Rpc_Map,
-		Valid = Valid,
-		TeamScores = GetTeamScores(ScoreLevel),
-		PlayerScores = ScoresToRpcPlayerScores(ScoreLevel)
-	};
-}
-
-K_Rpc_Flag CurrentFlagState() {
-	return FlagStateToRpcFlag(FlagRush_FlagState::Get());
-}
-
 /* Flag-Events */
 
 Void Send_FlagReset() {
-	declare K_Rpc_FlagReset Data = K_Rpc_FlagReset{
+	declare K_Event_Flag_Reset Data = K_Event_Flag_Reset{
 		Time = Now,
 		Flag = CurrentFlagState()
 	};
-	XmlRpc::SendCallback(C_XMLRPC_FlagReset, Data.tojson());
+	XmlRpc::SendCallback(C_Event_Flag_Reset, Data.tojson());
 }
 
 Void Send_FlagPickup() {
-	declare K_Rpc_FlagPickup Data = K_Rpc_FlagPickup{
+	declare K_Event_Flag_Pickup Data = K_Event_Flag_Pickup{
 		Time = Now,
 		Flag = CurrentFlagState()
 	};
-	XmlRpc::SendCallback(C_XMLRPC_FlagPickup, Data.tojson());
+	XmlRpc::SendCallback(C_Event_Flag_Pickup, Data.tojson());
 }
 
 Void Send_FlagDrop(CUser OldCarrierNullable) {
@@ -328,21 +336,21 @@ Void Send_FlagDrop(CUser OldCarrierNullable) {
 		OldCarrier = UserToRpcPlayer(OldCarrierNullable);
 	}
 
-	declare K_Rpc_FlagDrop Data = K_Rpc_FlagDrop{
+	declare K_Event_Flag_Drop Data = K_Event_Flag_Drop{
 		Time = Now,
 		Flag = CurrentFlagState(),
 		OldCarrier = OldCarrier
 	};
-	XmlRpc::SendCallback(C_XMLRPC_FlagDrop, Data.tojson());
+	XmlRpc::SendCallback(C_Event_Flag_Drop, Data.tojson());
 }
 
 Void Send_FlagPass(CSmPlayer OldCarrier) {
-	declare K_Rpc_FlagPass Data = K_Rpc_FlagPass{
+	declare K_Event_Flag_Pass Data = K_Event_Flag_Pass{
 		Time = Now,
 		OldCarrier = PlayerToRpcPlayer(OldCarrier),
 		Flag = CurrentFlagState()
 	};
-	XmlRpc::SendCallback(C_XMLRPC_FlagPass, Data.tojson());
+	XmlRpc::SendCallback(C_Event_Flag_Pass, Data.tojson());
 }
 
 Void Send_FlagScored(CSmPlayer _Scorer, CUser _AssistNullable) {
@@ -352,110 +360,140 @@ Void Send_FlagScored(CSmPlayer _Scorer, CUser _AssistNullable) {
 		Assist = UserToRpcPlayer(_AssistNullable);
 	}
 
-	declare K_Rpc_FlagScored Data = K_Rpc_FlagScored{
+	declare K_Event_Flag_Scored Data = K_Event_Flag_Scored{
 		Time = Now,
 		Scorer = Scorer,
 		Assist = Assist,
 		TeamScores = GetTeamScores(FlagRush_Scores::C_Level_Round)
 	};
-	XmlRpc::SendCallback(C_XMLRPC_FlagScored, Data.tojson());
+	XmlRpc::SendCallback(C_Event_Flag_Scored, Data.tojson());
 }
 
 /* Player-Events */
 
 Void Send_PlayerDeath(CSmPlayer Player) {
-	declare K_Rpc_PlayerDeath Data = K_Rpc_PlayerDeath{
+	declare K_Event_Player_Death Data = K_Event_Player_Death{
 		Time = Now,
 		Player = PlayerToRpcPlayer(Player)
 	};
-	XmlRpc::SendCallback(C_XMLRPC_PlayerDeath, Data.tojson());
+	XmlRpc::SendCallback(C_Event_Player_Death, Data.tojson());
 }
 
 /* Flow-Events */
 
 Void Send_MatchStart() {
-	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Match, True);
-	XmlRpc::SendCallback(C_XMLRPC_MatchStart, Data.tojson());
+	declare K_Event_Flow_MatchStart Data = K_Event_Flow_MatchStart{
+		Time = Now
+	};
+	XmlRpc::SendCallback(C_Event_Flow_MatchStart, Data.tojson());
 }
 
 Void Send_MatchEnd(Boolean Valid) {
-	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Match, Valid);
-	XmlRpc::SendCallback(C_XMLRPC_MatchEnd, Data.tojson());
+	declare K_Event_Flow_MatchEnd Data = K_Event_Flow_MatchEnd{
+		Time = Now,
+		Valid = Valid,
+		TeamScores = GetTeamScores(FlagRush_Scores::C_Level_Match),
+		PlayerScores = ScoresToRpcPlayerScores(FlagRush_Scores::C_Level_Match)
+	};
+	XmlRpc::SendCallback(C_Event_Flow_MatchEnd, Data.tojson());
 }
 
 Void Send_MapStart() {
-	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Match, True);
-	XmlRpc::SendCallback(C_XMLRPC_MapStart, Data.tojson());
+	declare K_Event_Flow_MapStart Data = K_Event_Flow_MapStart{
+		Time = Now,
+		Map = MapToRpcMap(Map)
+	};
+	XmlRpc::SendCallback(C_Event_Flow_MapStart, Data.tojson());
 }
 
 Void Send_MapEnd(Boolean Valid) {
-	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Map, Valid);
-	XmlRpc::SendCallback(C_XMLRPC_MapEnd, Data.tojson());
+	declare K_Event_Flow_MapEnd Data = K_Event_Flow_MapEnd{
+		Time = Now,
+		Valid = Valid,
+		Map = MapToRpcMap(Map),
+		TeamScores = GetTeamScores(FlagRush_Scores::C_Level_Map),
+		PlayerScores = ScoresToRpcPlayerScores(FlagRush_Scores::C_Level_Map)
+	};
+	XmlRpc::SendCallback(C_Event_Flow_MapEnd, Data.tojson());
 }
 
 Void Send_RoundStart() {
-	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Map, True);
-	XmlRpc::SendCallback(C_XMLRPC_RoundStart, Data.tojson());
+	declare K_Event_Flow_RoundStart Data = K_Event_Flow_RoundStart{
+		Time = Now
+	};
+	XmlRpc::SendCallback(C_Event_Flow_RoundStart, Data.tojson());
 }
 
 Void Send_RoundEnd(Boolean Valid) {
-	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Round, Valid);
-	XmlRpc::SendCallback(C_XMLRPC_RoundEnd, Data.tojson());
+	declare K_Event_Flow_RoundEnd Data = K_Event_Flow_RoundEnd{
+		Time = Now,
+		Valid = Valid,
+		TeamScores = GetTeamScores(FlagRush_Scores::C_Level_Round),
+		PlayerScores = ScoresToRpcPlayerScores(FlagRush_Scores::C_Level_Round)
+	};
+	XmlRpc::SendCallback(C_Event_Flow_RoundEnd, Data.tojson());
 }
 
 Void Send_WarmUpStart() {
-	declare K_Rpc_Flow Data = CurrentFlowState(-1, True);
-	XmlRpc::SendCallback(C_XMLRPC_WarmUpStart, Data.tojson());
+	declare K_Event_Flow_WarmUpStart Data = K_Event_Flow_WarmUpStart{
+		Time = Now
+	};
+	XmlRpc::SendCallback(C_Event_Flow_WarmUpStart, Data.tojson());
 }
 
 Void Send_WarmUpEnd() {
-	declare K_Rpc_Flow Data = CurrentFlowState(-1, True);
-	XmlRpc::SendCallback(C_XMLRPC_WarmUpEnd, Data.tojson());
+	declare K_Event_Flow_WarmUpEnd Data = K_Event_Flow_WarmUpEnd{
+		Time = Now
+	};
+	XmlRpc::SendCallback(C_Event_Flow_WarmUpEnd, Data.tojson());
 }
 
-Void Send_OverTime() {
-	declare K_Rpc_Flow Data = CurrentFlowState(FlagRush_Scores::C_Level_Round, True);
-	XmlRpc::SendCallback(C_XMLRPC_Overtime, Data.tojson());
+Void Send_Overtime() {
+	declare K_Event_Flow_Overtime Data = K_Event_Flow_Overtime{
+		Time = Now,
+		TeamScores = GetTeamScores(FlagRush_Scores::C_Level_Round)
+	};
+	XmlRpc::SendCallback(C_Event_Flow_Overtime, Data.tojson());
 }
 
 Void RegisterCallbacks() {
-	XmlRpc::RegisterCallback(C_XMLRPC_FlagReset, "Called when flag is reset");
-	XmlRpc::RegisterCallback(C_XMLRPC_FlagPickup, "Called when a player picks up the flag");
-	XmlRpc::RegisterCallback(C_XMLRPC_FlagDrop, 	"Called when flag is dropped");
-	XmlRpc::RegisterCallback(C_XMLRPC_FlagPass, "Called when flag is passed or stolen");
-	XmlRpc::RegisterCallback(C_XMLRPC_FlagScored, "Called when flag is scored");
+	XmlRpc::RegisterCallback(C_Event_Flag_Reset, "Called when flag is reset");
+	XmlRpc::RegisterCallback(C_Event_Flag_Pickup, "Called when a player picks up the flag");
+	XmlRpc::RegisterCallback(C_Event_Flag_Drop, 	"Called when flag is dropped");
+	XmlRpc::RegisterCallback(C_Event_Flag_Pass, "Called when flag is passed or stolen");
+	XmlRpc::RegisterCallback(C_Event_Flag_Scored, "Called when flag is scored");
 
-	XmlRpc::RegisterCallback(C_XMLRPC_PlayerDeath, "Called when player gets out of bounds");
+	XmlRpc::RegisterCallback(C_Event_Player_Death, "Called when player gets out of bounds");
 
-	XmlRpc::RegisterCallback(C_XMLRPC_MatchStart, "Called when a match starts");
-	XmlRpc::RegisterCallback(C_XMLRPC_MatchEnd, "Called when a match ends");
-	XmlRpc::RegisterCallback(C_XMLRPC_MapStart, "Called when a map starts");
-	XmlRpc::RegisterCallback(C_XMLRPC_MapEnd, "Called when a map ends");
-	XmlRpc::RegisterCallback(C_XMLRPC_RoundStart, "Called when a round starts");
-	XmlRpc::RegisterCallback(C_XMLRPC_RoundEnd, "Called when a round ends");
-	XmlRpc::RegisterCallback(C_XMLRPC_WarmUpStart, "Called when warmup starts");
-	XmlRpc::RegisterCallback(C_XMLRPC_WarmUpEnd, "Called when warmup ends");
-	XmlRpc::RegisterCallback(C_XMLRPC_Overtime, "Called when overtime starts");
+	XmlRpc::RegisterCallback(C_Event_Flow_MatchStart, "Called when a match starts");
+	XmlRpc::RegisterCallback(C_Event_Flow_MatchEnd, "Called when a match ends");
+	XmlRpc::RegisterCallback(C_Event_Flow_MapStart, "Called when a map starts");
+	XmlRpc::RegisterCallback(C_Event_Flow_MapEnd, "Called when a map ends");
+	XmlRpc::RegisterCallback(C_Event_Flow_RoundStart, "Called when a round starts");
+	XmlRpc::RegisterCallback(C_Event_Flow_RoundEnd, "Called when a round ends");
+	XmlRpc::RegisterCallback(C_Event_Flow_WarmUpStart, "Called when warmup starts");
+	XmlRpc::RegisterCallback(C_Event_Flow_WarmUpEnd, "Called when warmup ends");
+	XmlRpc::RegisterCallback(C_Event_Flow_Overtime, "Called when overtime starts");
 }
 
 Void UnregisterCallbacks() {
-	XmlRpc::UnregisterCallback(C_XMLRPC_FlagReset);
-	XmlRpc::UnregisterCallback(C_XMLRPC_FlagPickup);
-	XmlRpc::UnregisterCallback(C_XMLRPC_FlagDrop);
-	XmlRpc::UnregisterCallback(C_XMLRPC_FlagPass);
-	XmlRpc::UnregisterCallback(C_XMLRPC_FlagScored);
+	XmlRpc::UnregisterCallback(C_Event_Flag_Reset);
+	XmlRpc::UnregisterCallback(C_Event_Flag_Pickup);
+	XmlRpc::UnregisterCallback(C_Event_Flag_Drop);
+	XmlRpc::UnregisterCallback(C_Event_Flag_Pass);
+	XmlRpc::UnregisterCallback(C_Event_Flag_Scored);
 
-	XmlRpc::UnregisterCallback(C_XMLRPC_PlayerDeath);
+	XmlRpc::UnregisterCallback(C_Event_Player_Death);
 
-	XmlRpc::UnregisterCallback(C_XMLRPC_MatchStart);
-	XmlRpc::UnregisterCallback(C_XMLRPC_MatchEnd);
-	XmlRpc::UnregisterCallback(C_XMLRPC_MapStart);
-	XmlRpc::UnregisterCallback(C_XMLRPC_MapEnd);
-	XmlRpc::UnregisterCallback(C_XMLRPC_RoundStart);
-	XmlRpc::UnregisterCallback(C_XMLRPC_RoundEnd);
-	XmlRpc::UnregisterCallback(C_XMLRPC_WarmUpStart);
-	XmlRpc::UnregisterCallback(C_XMLRPC_WarmUpEnd);
-	XmlRpc::UnregisterCallback(C_XMLRPC_Overtime);
+	XmlRpc::UnregisterCallback(C_Event_Flow_MatchStart);
+	XmlRpc::UnregisterCallback(C_Event_Flow_MatchEnd);
+	XmlRpc::UnregisterCallback(C_Event_Flow_MapStart);
+	XmlRpc::UnregisterCallback(C_Event_Flow_MapEnd);
+	XmlRpc::UnregisterCallback(C_Event_Flow_RoundStart);
+	XmlRpc::UnregisterCallback(C_Event_Flow_RoundEnd);
+	XmlRpc::UnregisterCallback(C_Event_Flow_WarmUpStart);
+	XmlRpc::UnregisterCallback(C_Event_Flow_WarmUpEnd);
+	XmlRpc::UnregisterCallback(C_Event_Flow_Overtime);
 }
 
 Void Unload() {

@@ -1,0 +1,21 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/events/flow/map.schema.json",
+	"title": "Map",
+	"description": "Representation of a FlagRush map.",
+	"type": "object",
+	"properties": {
+		"AuthorLogin": {
+			"description": "The game login of the map author.",
+			"type": "string"
+		},
+		"Name": {
+			"description": "The display name of the map.",
+			"type": "string"
+		},
+		"Uid": {
+			"description": "The unique identifier of the map.",
+			"type": "string"
+		}
+	}
+}

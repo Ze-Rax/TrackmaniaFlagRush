@@ -1,0 +1,17 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/events/flag/flagPickup.schema.json",
+	"title": "FlagPickup",
+	"description": "Event data which is sent when the flag is picked up by any player by any means.",
+	"type": "object",
+	"properties": {
+		"Time": {
+			"description": "The server time when the event was sent.",
+			"type": "integer"
+		},
+		"Flag": {
+			"description": "The flag state after the pass (includes new carrier).",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/flag.schema.json"
+		}
+	}
+}

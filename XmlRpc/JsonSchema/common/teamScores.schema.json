@@ -1,0 +1,12 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/teamScores.schema.json",
+	"title": "TeamScores",
+	"description": "Representation of the team scores",
+	"type": "array",
+	"minItems": 2,
+	"maxItems": 2,
+	"items": {
+		"type": "integer"
+	}
+}

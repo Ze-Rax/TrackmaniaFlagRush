@@ -1,0 +1,29 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/events/flow/playerScore.schema.json",
+	"title": "PlayerScore",
+	"description": "The scores of a player at a specific segment (match, map, round)",
+	"type": "object",
+	"properties": {
+		"Player": {
+			"description": "The player that the scores belong to",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/playerScores.schema.json"
+		},
+		"Points": {
+			"description": "The overall points the player has in the segment",
+			"type": "integer"
+		},
+		"Assists": {
+			"description": "The number of assists the player performed in the segment",
+			"type": "integer"
+		},
+		"FlagsScored": {
+			"description": "The number of flag the player scored in the segment",
+			"type": "integer"
+		},
+		"FlagsStolen": {
+			"description": "The number of flags the player stole in the segment",
+			"type": "integer"
+		}
+	}
+}

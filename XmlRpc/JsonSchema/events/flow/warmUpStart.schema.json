@@ -1,0 +1,13 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/events/flow/warmUpStart.schema.json",
+	"title": "WarmUpStart",
+	"description": "Event data which is sent when the warm up started.",
+	"type": "object",
+	"properties": {
+		"Time": {
+			"description": "Servertime (in ms) when the warmup started",
+			"type": "integer"
+		}
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/events/flow/mapStart.schema.json",
+	"title": "MapStart",
+	"description": "Event data which is sent when the map started.",
+	"type": "object",
+	"properties": {
+		"Time": {
+			"description": "Servertime (in ms) when the map started",
+			"type": "integer"
+		},
+		"Map": {
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/map.schema.json",
+			"description": "The map that is started"
+		}
+	}
+}

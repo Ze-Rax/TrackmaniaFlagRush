@@ -196,7 +196,6 @@ FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
 FlagRush_Teams::SetTeam2HueOverride(S_Team2Hue);
 //FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
 FlagRush_Teams::UseClubTags(S_UseClubTags);
-FlagRush_Teams::Init();
 
 declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
 foreach(Login in ModeCommandsAdminLogins) {
@@ -273,6 +272,7 @@ if (!MapValid) {
 }
 FlagRush_XmlRpc::Send_MapStart();
 FlagRush_UI::StartMap();
+FlagRush_Teams::Init();
 MB_Synchro();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 ***
@@ -586,7 +586,7 @@ foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 }
 
 if (ReinitTeamNames) {
-	FlagRush_Teams::SetTeamNamesFromClubTags();
+	FlagRush_Teams::Init();
 }
 
 // Skip running match if the last player left, but not if we're before the first round of the first map

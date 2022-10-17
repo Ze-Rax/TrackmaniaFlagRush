@@ -127,7 +127,8 @@ Void Private_OverrideEmptyFields() {
 			G_TeamConfigs[TeamIndex].Name = GetDefaultTeamName(TeamIndex + 1);
 	}
 }
-Void SetTeamNamesFromClubTags(){
+
+Void Private_SetTeamNamesFromClubTags(){
 	if (G_UseClubTags) {
 		for (TeamIndex, 0, 1) {
 			declare Boolean ClubTagMissmatch;
@@ -146,10 +147,20 @@ Void SetTeamNamesFromClubTags(){
 			if(!ClubTagMissmatch && ClubTagsTeam.count == 1) {
 				G_TeamConfigs[TeamIndex].ClubTag = ClubTagsTeam[0];
 				G_TeamConfigs[TeamIndex].Name = TL::StripFormatting(ClubTagsTeam[0]);
-				Teams[TeamIndex].Name = G_TeamConfigs[TeamIndex].Name;
-			}else{
-				Teams[TeamIndex].Name = GetDefaultTeamName(TeamIndex+1);
 			}
+		}
+	}
+}
+
+Void Private_SetTeamHueFromMapType() {
+	if(Map != Null){
+		declare metadata Real[Integer] FlagRush_Meta_TeamHues for Map;
+		for (TeamIndex, 0, 1) {
+			declare Real TeamHue = FlagRush_Meta_TeamHues.get(TeamIndex+1,-1.);
+			if(TeamHue > 0){
+				TeamHue*=360;
+			}
+			G_TeamConfigs[TeamIndex].Hue = ML::NearestInteger(TeamHue);
 		}
 	}
 }
@@ -157,9 +168,11 @@ Void SetTeamNamesFromClubTags(){
 Void Private_ApplyToTeams() {
 
 	for (TeamIndex, 0, 1) {
+		Teams[TeamIndex].Name = G_TeamConfigs[TeamIndex].Name;
+
 		declare Integer Hue = G_TeamConfigs[TeamIndex].Hue;
 
-		declare Vec3 LightColor =   NCL::GetLightColor(Hue*1.);
+		declare Vec3 LightColor = NCL::GetLightColor(Hue*1.);
 		declare Vec3 MidColor = NCL::GetMidColor(Hue*1.);
 		declare Vec3 DarkColor = NCL::GetDarkColor(Hue*1.);
 
@@ -181,7 +194,8 @@ Void Private_ApplyToTeams() {
 
 Void Init() {
 	G_TeamConfigs = [0 => K_TeamConfig{}, 1 => K_TeamConfig{}];
+	Private_SetTeamHueFromMapType();
+	Private_SetTeamNamesFromClubTags();
 	Private_OverrideEmptyFields();
 	Private_ApplyToTeams();
-	SetTeamNamesFromClubTags();
 }

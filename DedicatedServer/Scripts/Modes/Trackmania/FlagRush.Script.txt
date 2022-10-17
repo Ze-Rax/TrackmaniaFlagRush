@@ -409,9 +409,9 @@ Void ScoreFlag(CSmPlayer Player) {
 			FlagRush_Scores::OnPlayerScoreFlagAssist(AssistScore);
 		}
 	}
-	Flag_Reset(True);
 	Player_ResetHandicaps(Player);
 	FlagRush_XmlRpc::Send_FlagScored(Player, Assist);
+	Flag_Reset(True);
 	if (S_UseTurns) MB_StopTurn();
 }
 

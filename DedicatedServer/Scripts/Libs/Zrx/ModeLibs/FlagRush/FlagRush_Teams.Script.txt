@@ -4,37 +4,27 @@
 #Include "TextLib" as TL
 
 #Const	C_DefaultTeamHue						120
-#Const	C_DefaultTeamHues						[0 => 240,1 => 0]
+#Const	C_DefaultTeamHues						[0 => 240, 1 => 0]
 
-#Const C_SkinNames [
-	"Skins/Models/CarSport/Stadium_Clan_ladybug.zip",
-	"Skins/Models/CarSport/Stadium_Clan_fox.zip",
-	"Skins/Models/CarSport/Stadium_Clan_bee.zip",
-	"Skins/Models/CarSport/Stadium_Clan_grasshopper.zip",
-	"Skins/Models/CarSport/Stadium_Clan_crocodile.zip",
-	"Skins/Models/CarSport/Stadium_Clan_peafowl.zip",
-	"Skins/Models/CarSport/Stadium_Clan_rabbit.zip",
-	"Skins/Models/CarSport/Stadium_Clan_polar_bear.zip",
-	"Skins/Models/CarSport/Stadium_Clan_dolphin.zip",
-	"Skins/Models/CarSport/Stadium_Clan_butterfly.zip",
-	"Skins/Models/CarSport/Stadium_Clan_octopus.zip",
-	"Skins/Models/CarSport/Stadium_Clan_pig.zip",
-	"Skins/Models/CarSport/Stadium_Clan_ladybug.zip"
-]
-#Const C_HueSkinLut [
-	"Red",
-	"Orange",
-	"Yellow",
-	"Lime",
-	"Green",
-	"Teal",
-	"Cyan",
-	"Azure",
-	"Blue",
-	"Purple",
-	"Magenta",
-	"Rose",
-	"Red"
+#Struct K_TeamColor {
+	Text TeamName;
+	Text SkinName;
+}
+
+#Const C_TeamColorLut [
+	K_TeamColor{ TeamName = "Red", SkinName = "Skins/Models/CarSport/Stadium_Clan_ladybug.zip" },
+	K_TeamColor{ TeamName = "Orange", SkinName = "Skins/Models/CarSport/Stadium_Clan_fox.zip" },
+	K_TeamColor{ TeamName = "Yellow", SkinName = "Skins/Models/CarSport/Stadium_Clan_bee.zip" },
+	K_TeamColor{ TeamName = "Lime", SkinName = "Skins/Models/CarSport/Stadium_Clan_grasshopper.zip" },
+	K_TeamColor{ TeamName = "Green", SkinName = "Skins/Models/CarSport/Stadium_Clan_crocodile.zip" },
+	K_TeamColor{ TeamName = "Teal", SkinName = "Skins/Models/CarSport/Stadium_Clan_peafowl.zip" },
+	K_TeamColor{ TeamName = "Cyan", SkinName = "Skins/Models/CarSport/Stadium_Clan_rabbit.zip" },
+	K_TeamColor{ TeamName = "Azure", SkinName = "Skins/Models/CarSport/Stadium_Clan_polar_bear.zip" },
+	K_TeamColor{ TeamName = "Blue", SkinName = "Skins/Models/CarSport/Stadium_Clan_dolphin.zip" },
+	K_TeamColor{ TeamName = "Purple", SkinName = "Skins/Models/CarSport/Stadium_Clan_butterfly.zip" },
+	K_TeamColor{ TeamName = "Magenta", SkinName = "Skins/Models/CarSport/Stadium_Clan_octopus.zip" },
+	K_TeamColor{ TeamName = "Rose", SkinName = "Skins/Models/CarSport/Stadium_Clan_pig.zip" },
+	K_TeamColor{ TeamName = "Red", SkinName = "Skins/Models/CarSport/Stadium_Clan_ladybug.zip" }
 ]
 
 #Struct K_TeamConfig {
@@ -51,33 +41,33 @@ declare Integer[Integer] G_TeamHueOverrides;
 declare Ident[Integer] G_SkinIds;
 declare Boolean G_UseClubTags;
 
-Integer GetClosestLutId(Integer Hue){
-	declare Integer id = 0;
-	declare Integer dist = 400;
-	for(i, 0, 12){
-		declare Integer h = i*30;
-		if(ML::Abs(Hue-h) < dist){
-			dist = ML::Abs(Hue-h);
-			id = i;
+Integer Private_GetClosestLutIndex(Integer Hue) {
+	declare Integer LutIdx = 0;
+	declare Integer Dist = 400;
+	for (I, 0, 12) {
+		declare Integer H = I * 30;
+		if (ML::Abs(Hue - H) < Dist){
+			Dist = ML::Abs(Hue - H);
+			LutIdx = I;
 		}
 	}
-	return id;
+	return LutIdx;
 }
 
 Void SetTeam1NameOverride(Text Name) {
-	G_TeamNameOverrides[0] = Name;
-}
-
-Void SetTeam2NameOverride(Text Name) {
 	G_TeamNameOverrides[1] = Name;
 }
 
+Void SetTeam2NameOverride(Text Name) {
+	G_TeamNameOverrides[2] = Name;
+}
+
 Void SetTeam1HueOverride(Integer Hue) {
-	G_TeamHueOverrides[0] = Hue;
+	G_TeamHueOverrides[1] = Hue;
 }
 
 Void SetTeam2HueOverride(Integer Hue) {
-	G_TeamHueOverrides[1] = Hue;
+	G_TeamHueOverrides[2] = Hue;
 }
 
 Void UseClubTags(Boolean UseClubTags) {
@@ -85,117 +75,116 @@ Void UseClubTags(Boolean UseClubTags) {
 }
 
 Void LoadSkins() {
-	for(i, 0, C_SkinNames.count-1){
-		G_SkinIds[i] = ItemList_AddWithSkin("CarSport", C_SkinNames[i]);
+	foreach (Index => TeamColor in C_TeamColorLut) {
+		G_SkinIds[Index] = ItemList_AddWithSkin("CarSport", TeamColor.SkinName);
 	}
 }
 
-Ident GetSkinModelIdForTeam(Integer Team) {
-	if (G_TeamConfigs.existskey(Team)) {
-		return G_TeamConfigs[Team].ItemId;
+Ident GetSkinModelIdForTeam(Integer Clan) {
+	if (G_TeamConfigs.existskey(Clan)) {
+		return G_TeamConfigs[Clan].ItemId;
 	}
 	return NullId;
 }
 
-Text GetSkinNameForTeam(Integer Team) {
-	if (G_TeamConfigs.existskey(Team)) {
-		return G_TeamConfigs[Team].SkinName;
+Text GetSkinNameForTeam(Integer Clan) {
+	if (G_TeamConfigs.existskey(Clan)) {
+		return G_TeamConfigs[Clan].SkinName;
 	}
 	return "";
 }
 
 Integer GetDefaultTeamHue(Integer Clan) {
-	return C_DefaultTeamHues.get(Clan-1, C_DefaultTeamHue);
+	return C_DefaultTeamHues.get(Clan - 1, C_DefaultTeamHue);
 }
 
 Text GetDefaultTeamName(Integer Clan) {
-	declare Integer Idx = GetClosestLutId(G_TeamConfigs[Clan-1].Hue);
-	return "Team "^C_HueSkinLut[Idx];
+	declare Text Teamname = "???";
+	if (G_TeamConfigs.existskey(Clan)) {
+		declare Integer Idx = Private_GetClosestLutIndex(G_TeamConfigs[Clan].Hue);
+		Teamname = C_TeamColorLut[Idx].TeamName;
+	}
+	return "Team " ^ Teamname;
 }
 
-Void Private_OverrideEmptyFields() {
-	for(TeamIndex, 0, 1) {
+Void Private_OverrideForcedOrEmptyFields() {
+	for(Clan, 1, 2) {
+		if(G_TeamHueOverrides.get(Clan, -1) != -1) // Forced
+			G_TeamConfigs[Clan].Hue = G_TeamHueOverrides[Clan];
+		else if (G_TeamConfigs[Clan].Hue == 0) // Was empty
+			G_TeamConfigs[Clan].Hue = GetDefaultTeamHue(Clan);
 
-		if(G_TeamHueOverrides.get(TeamIndex, -1) != -1)
-			G_TeamConfigs[TeamIndex].Hue = G_TeamHueOverrides[TeamIndex];
-		else if (G_TeamConfigs[TeamIndex].Hue == 0)
-			G_TeamConfigs[TeamIndex].Hue = GetDefaultTeamHue(TeamIndex + 1);
-
-		if (G_TeamNameOverrides.get(TeamIndex, "") != "")	// Forced
-			G_TeamConfigs[TeamIndex].Name = G_TeamNameOverrides[TeamIndex];
-		else if (G_TeamConfigs[TeamIndex].Name == "")					// Was empty
-			G_TeamConfigs[TeamIndex].Name = GetDefaultTeamName(TeamIndex + 1);
+		if (G_TeamNameOverrides.get(Clan, "") != "") // Forced
+			G_TeamConfigs[Clan].Name = G_TeamNameOverrides[Clan];
+		else if (G_TeamConfigs[Clan].Name == "") // Was empty
+			G_TeamConfigs[Clan].Name = GetDefaultTeamName(Clan);
 	}
 }
 
 Void Private_SetTeamNamesFromClubTags(){
-	if (G_UseClubTags) {
-		for (TeamIndex, 0, 1) {
-			declare Boolean ClubTagMissmatch;
-			declare Text[] ClubTagsTeam;
-			foreach (Player in Players) {
-				if (Player.CurrentClan == TeamIndex+1 && !Player.RequestsSpectate) { // Is playing
-					if (ClubTagsTeam.count == 0) {
-						ClubTagsTeam.add(Player.User.ClubTag);
-					} else if (!ClubTagsTeam.exists(Player.User.ClubTag)) {
-						ClubTagMissmatch = True;
-						break;
-					}
+	for (Clan, 1, 2) {
+		declare Boolean ClubTagMissmatch;
+		declare Text[] ClubTagsTeam;
+		foreach (Player in Players) {
+			if (Player.CurrentClan == Clan && !Player.RequestsSpectate) { // Is playing
+				if (ClubTagsTeam.count == 0) {
+					ClubTagsTeam.add(Player.User.ClubTag);
+				} else if (!ClubTagsTeam.exists(Player.User.ClubTag)) {
+					ClubTagMissmatch = True;
+					break;
 				}
 			}
+		}
 
-			if(!ClubTagMissmatch && ClubTagsTeam.count == 1) {
-				G_TeamConfigs[TeamIndex].ClubTag = ClubTagsTeam[0];
-				G_TeamConfigs[TeamIndex].Name = TL::StripFormatting(ClubTagsTeam[0]);
-			}
+		if (!ClubTagMissmatch && ClubTagsTeam.count == 1) {
+			G_TeamConfigs[Clan].ClubTag = ClubTagsTeam[0];
+			G_TeamConfigs[Clan].Name = TL::StripFormatting(ClubTagsTeam[0]);
 		}
 	}
 }
 
 Void Private_SetTeamHueFromMapType() {
-	if(Map != Null){
-		declare metadata Real[Integer] FlagRush_Meta_TeamHues for Map;
-		for (TeamIndex, 0, 1) {
-			declare Real TeamHue = FlagRush_Meta_TeamHues.get(TeamIndex+1,-1.);
-			if(TeamHue > 0){
-				TeamHue*=360;
-			}
-			G_TeamConfigs[TeamIndex].Hue = ML::NearestInteger(TeamHue);
+	declare metadata Real[Integer] FlagRush_Meta_TeamHues for Map;
+	for (Clan, 1, 2) {
+		declare Real TeamHue = FlagRush_Meta_TeamHues.get(Clan, -1.);
+		if(TeamHue > 0){
+			TeamHue *= 360;
 		}
+		G_TeamConfigs[Clan].Hue = ML::NearestInteger(TeamHue);
 	}
 }
 
 Void Private_ApplyToTeams() {
+	for (Clan, 1, 2) {
+		Teams[Clan - 1].Name = G_TeamConfigs[Clan].Name;
 
-	for (TeamIndex, 0, 1) {
-		Teams[TeamIndex].Name = G_TeamConfigs[TeamIndex].Name;
-
-		declare Integer Hue = G_TeamConfigs[TeamIndex].Hue;
+		declare Integer Hue = G_TeamConfigs[Clan].Hue;
 
 		declare Vec3 LightColor = NCL::GetLightColor(Hue*1.);
 		declare Vec3 MidColor = NCL::GetMidColor(Hue*1.);
 		declare Vec3 DarkColor = NCL::GetDarkColor(Hue*1.);
 
-		Teams[TeamIndex].ColorPrimary = MidColor;
-		Teams[TeamIndex].ColorSecondary = MidColor;
+		Teams[Clan - 1].ColorPrimary = MidColor;
+		Teams[Clan - 1].ColorSecondary = MidColor;
 
-		declare netwrite Vec3 Net_FlagRush_LightColor for Teams[TeamIndex];
+		declare netwrite Vec3 Net_FlagRush_LightColor for Teams[Clan - 1];
 		Net_FlagRush_LightColor = LightColor;
-		declare netwrite Vec3 Net_FlagRush_MidColor for Teams[TeamIndex];
+		declare netwrite Vec3 Net_FlagRush_MidColor for Teams[Clan - 1];
 		Net_FlagRush_MidColor = MidColor;
-		declare netwrite Vec3 Net_FlagRush_DarkColor for Teams[TeamIndex];
+		declare netwrite Vec3 Net_FlagRush_DarkColor for Teams[Clan - 1];
 		Net_FlagRush_DarkColor = DarkColor;
 
-		declare Integer id = GetClosestLutId(Hue);
-		G_TeamConfigs[TeamIndex].SkinName = C_SkinNames[id];
-		G_TeamConfigs[TeamIndex].ItemId = G_SkinIds.get(id,NullId);
+		declare Integer LutIdx = Private_GetClosestLutIndex(Hue);
+		G_TeamConfigs[Clan].SkinName = C_TeamColorLut[LutIdx].SkinName;
+		G_TeamConfigs[Clan].ItemId = G_SkinIds.get(LutIdx, NullId);
+		log("""Clan {{{Clan}}}, Config: {{{G_TeamConfigs[Clan]}}}""");
 	}
 }
 
 Void Init() {
-	G_TeamConfigs = [0 => K_TeamConfig{}, 1 => K_TeamConfig{}];
-	Private_SetTeamHueFromMapType();
-	Private_SetTeamNamesFromClubTags();
-	Private_OverrideEmptyFields();
+	G_TeamConfigs = [1 => K_TeamConfig{}, 2 => K_TeamConfig{}];
+	if (Map != Null) Private_SetTeamHueFromMapType();
+	if (G_UseClubTags) Private_SetTeamNamesFromClubTags();
+	Private_OverrideForcedOrEmptyFields();
 	Private_ApplyToTeams();
 }

@@ -72,9 +72,9 @@
 
 // Teams
 #Setting S_Team1Name 												"" 			as "Force Team 1 Name"
-#Setting S_Team1Hue 												-1 			as "Force Team 1 Hue"
+#Setting S_Team1Hue 												-1 			as "Force Team 1 Hue. Range: [0, 360] or -1 for default"
 #Setting S_Team2Name 												"" 			as "Force Team 2 Name"
-#Setting S_Team2Hue 												-1 			as "Force Team 2 Hue"
+#Setting S_Team2Hue 												-1 			as "Force Team 2 Hue. Range: [0, 360] or -1 for default"
 #Setting S_UseClubTags											True		as "Use club tags for team names"
 #Setting S_UseTeamSkins											True		as "Use colored skins for teams"
 
@@ -191,10 +191,8 @@ FlagRush_XmlRpc::Load();
 
 FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
 FlagRush_Teams::SetTeam1HueOverride(S_Team1Hue);
-// FlagRush_Teams::SetTeam1ColorHexOverride(S_Team1Color);
 FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
 FlagRush_Teams::SetTeam2HueOverride(S_Team2Hue);
-//FlagRush_Teams::SetTeam2ColorHexOverride(S_Team2Color);
 FlagRush_Teams::UseClubTags(S_UseClubTags);
 
 declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);

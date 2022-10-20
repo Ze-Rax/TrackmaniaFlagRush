@@ -198,36 +198,36 @@ Text GetManialink() {
 		// Team Blue
 		{
 			declare K_BackgroundGradient TeamNameBackgroundGradient = TeamScoreboards[0].TeamNameBackgroundGradient;
-			TeamNameBackgroundGradient.Base.BgColor = GetTeamMidColor(1);//{{{ FlagRush_Colors::C_BlueBase }}};
-			TeamNameBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(1);//{{{ FlagRush_Colors::C_BlueDark }}};
-			TeamNameBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(1);//{{{ FlagRush_Colors::C_BlueLight }}};
+			TeamNameBackgroundGradient.Base.BgColor = GetTeamMidColor(1);
+			TeamNameBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(1);
+			TeamNameBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(1);
 
 			for (CardIndex, 0, 4) {
 				declare K_PlayerCard Playercard = TeamScoreboards[0].Playercards[CardIndex];
-				Playercard.Avatar.BgColor = GetTeamMidColor(1);//{{{ FlagRush_Colors::C_BlueBase }}};
+				Playercard.Avatar.BgColor = GetTeamMidColor(1);
 				declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
 				PlayercardBackgroundGradient.Base.Opacity = 0.;
-				PlayercardBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(1);//{{{ FlagRush_Colors::C_BlueDark }}};
+				PlayercardBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(1);
 				PlayercardBackgroundGradient.LeftGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
-				PlayercardBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(1);//{{{ FlagRush_Colors::C_BlueLight }}};
+				PlayercardBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(1);
 				PlayercardBackgroundGradient.RightGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
 			}
 		}
 		// Team Red
 		{
 			declare K_BackgroundGradient TeamNameBackgroundGradient = TeamScoreboards[1].TeamNameBackgroundGradient;
-			TeamNameBackgroundGradient.Base.BgColor = GetTeamMidColor(2);//{{{ FlagRush_Colors::C_RedBase }}};
-			TeamNameBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(2);//{{{ FlagRush_Colors::C_RedDark }}};
-			TeamNameBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(2);//{{{ FlagRush_Colors::C_RedLight }}};
+			TeamNameBackgroundGradient.Base.BgColor = GetTeamMidColor(2);
+			TeamNameBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(2);
+			TeamNameBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(2);
 
 			for (CardIndex, 0, 4) {
 				declare K_PlayerCard Playercard = TeamScoreboards[1].Playercards[CardIndex];
-				Playercard.Avatar.BgColor = GetTeamMidColor(2);//{{{ FlagRush_Colors::C_RedBase }}};
+				Playercard.Avatar.BgColor = GetTeamMidColor(2);
 				declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
 				PlayercardBackgroundGradient.Base.Opacity = 0.;
-				PlayercardBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(2);//{{{ FlagRush_Colors::C_RedDark }}};
+				PlayercardBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(2);
 				PlayercardBackgroundGradient.LeftGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
-				PlayercardBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(2);//{{{ FlagRush_Colors::C_RedLight }}};
+				PlayercardBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(2);
 				PlayercardBackgroundGradient.RightGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
 			}
 		}

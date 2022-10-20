@@ -46,10 +46,7 @@ Text GetManialink() {
 			}
 
 			GaugeFrame.Size.X = ML::Clamp(80. * Ratio, 0., 80.);
-			declare Integer teamId = InputPlayer.CurrentClan-1;
-			if (Teams.existskey(teamId)) {
-				RespawnQuad.Colorize = GetTeamMidColor(Teams[teamId]) * 0.5;
-			}
+			RespawnQuad.Colorize = GetTeamDarkColor(InputPlayer.CurrentClan);
 			RespawnLabel.SetText("Respawning in " ^ (SecondsRemaining + 1) ^ "...");
 
 		}

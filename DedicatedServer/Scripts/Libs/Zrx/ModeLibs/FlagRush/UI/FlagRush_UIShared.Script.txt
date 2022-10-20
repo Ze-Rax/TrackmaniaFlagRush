@@ -19,13 +19,13 @@ Text GetTeamColorNetreadFunctions() {
 		}
 
 		Vec3 GetTeamMidColor(CTeam Team) {
-			if (Team == Null) return {{{ Colors::C_NeutralMid }}};
+			if (Team == Null) return {{{ Colors::C_TeamNeutral }}};
 			declare netread Vec3 Net_FlagRush_MidColor for Team;
 			return Net_FlagRush_MidColor;
 		}
 
 		Vec3 GetTeamMidColor(Integer Clan) {
-			if (Clan <= 0 || Clan > Teams.count) return {{{ Colors::C_NeutralMid }}};
+			if (Clan <= 0 || Clan > Teams.count) return {{{ Colors::C_TeamNeutral }}};
 			return GetTeamMidColor(Teams[Clan-1]);
 		}
 

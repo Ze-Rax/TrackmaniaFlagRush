@@ -194,6 +194,7 @@ FlagRush_Teams::SetTeam1HueOverride(S_Team1Hue);
 FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
 FlagRush_Teams::SetTeam2HueOverride(S_Team2Hue);
 FlagRush_Teams::UseClubTags(S_UseClubTags);
+FlagRush_Teams::Init();
 
 declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
 foreach(Login in ModeCommandsAdminLogins) {

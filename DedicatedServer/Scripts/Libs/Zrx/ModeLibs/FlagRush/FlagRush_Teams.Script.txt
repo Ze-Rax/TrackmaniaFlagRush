@@ -3,8 +3,9 @@
 #Include "MathLib" as ML
 #Include "TextLib" as TL
 
-#Const	C_DefaultTeamHue						120
-#Const	C_DefaultTeamHues						[0 => 240, 1 => 0]
+#Const C_Hue_UseDefault			-1
+#Const C_DefaultTeamHue			120
+#Const C_DefaultTeamHues		[0 => 240, 1 => 0]
 
 #Struct K_TeamColor {
 	Text TeamName;
@@ -63,11 +64,19 @@ Void SetTeam2NameOverride(Text Name) {
 }
 
 Void SetTeam1HueOverride(Integer Hue) {
-	G_TeamHueOverrides[1] = Hue;
+	if (Hue < 0) {
+		G_TeamHueOverrides[1] = C_Hue_UseDefault;
+	} else {
+		G_TeamHueOverrides[1] = ML::Min(Hue, 360);
+	}
 }
 
 Void SetTeam2HueOverride(Integer Hue) {
-	G_TeamHueOverrides[2] = Hue;
+	if (Hue < 0) {
+		G_TeamHueOverrides[2] = C_Hue_UseDefault;
+	} else {
+		G_TeamHueOverrides[2] = ML::Min(Hue, 360);
+	}
 }
 
 Void UseClubTags(Boolean UseClubTags) {
@@ -109,15 +118,17 @@ Text GetDefaultTeamName(Integer Clan) {
 
 Void Private_OverrideForcedOrEmptyFields() {
 	for(Clan, 1, 2) {
-		if(G_TeamHueOverrides.get(Clan, -1) != -1) // Forced
+		if (G_TeamHueOverrides.get(Clan, C_Hue_UseDefault) != C_Hue_UseDefault) { // Forced
 			G_TeamConfigs[Clan].Hue = G_TeamHueOverrides[Clan];
-		else if (G_TeamConfigs[Clan].Hue == 0) // Was empty
+		} else if (G_TeamConfigs[Clan].Hue == C_Hue_UseDefault) { // Was empty
 			G_TeamConfigs[Clan].Hue = GetDefaultTeamHue(Clan);
+		}
 
-		if (G_TeamNameOverrides.get(Clan, "") != "") // Forced
+		if (G_TeamNameOverrides.get(Clan, "") != "") { // Forced
 			G_TeamConfigs[Clan].Name = G_TeamNameOverrides[Clan];
-		else if (G_TeamConfigs[Clan].Name == "") // Was empty
+		} else if (G_TeamConfigs[Clan].Name == "") { // Was empty
 			G_TeamConfigs[Clan].Name = GetDefaultTeamName(Clan);
+		}
 	}
 }
 
@@ -143,14 +154,19 @@ Void Private_SetTeamNamesFromClubTags(){
 	}
 }
 
-Void Private_SetTeamHueFromMapType() {
+Void Private_SetTeamHueFromMap() {
 	declare metadata Real[Integer] FlagRush_Meta_TeamHues for Map;
 	for (Clan, 1, 2) {
-		declare Real TeamHue = FlagRush_Meta_TeamHues.get(Clan, -1.);
-		if(TeamHue > 0){
-			TeamHue *= 360;
+		declare Integer Hue = C_Hue_UseDefault;
+		if (FlagRush_Meta_TeamHues.existskey(Clan)) {
+			if (FlagRush_Meta_TeamHues[Clan] < 0) {
+				Hue = C_Hue_UseDefault;
+			} else {
+				declare Real HueReal = ML::Min(FlagRush_Meta_TeamHues[Clan], 1.);
+				Hue = ML::NearestInteger(HueReal * 360);
+			}
 		}
-		G_TeamConfigs[Clan].Hue = ML::NearestInteger(TeamHue);
+		G_TeamConfigs[Clan].Hue = Hue;
 	}
 }
 
@@ -160,9 +176,9 @@ Void Private_ApplyToTeams() {
 
 		declare Integer Hue = G_TeamConfigs[Clan].Hue;
 
-		declare Vec3 LightColor = NCL::GetLightColor(Hue*1.);
-		declare Vec3 MidColor = NCL::GetMidColor(Hue*1.);
-		declare Vec3 DarkColor = NCL::GetDarkColor(Hue*1.);
+		declare Vec3 LightColor = NCL::GetLightColor(Hue * 1.);
+		declare Vec3 MidColor = NCL::GetMidColor(Hue * 1.);
+		declare Vec3 DarkColor = NCL::GetDarkColor(Hue * 1.);
 
 		Teams[Clan - 1].ColorPrimary = MidColor;
 		Teams[Clan - 1].ColorSecondary = MidColor;
@@ -177,13 +193,12 @@ Void Private_ApplyToTeams() {
 		declare Integer LutIdx = Private_GetClosestLutIndex(Hue);
 		G_TeamConfigs[Clan].SkinName = C_TeamColorLut[LutIdx].SkinName;
 		G_TeamConfigs[Clan].ItemId = G_SkinIds.get(LutIdx, NullId);
-		log("""Clan {{{Clan}}}, Config: {{{G_TeamConfigs[Clan]}}}""");
 	}
 }
 
 Void Init() {
-	G_TeamConfigs = [1 => K_TeamConfig{}, 2 => K_TeamConfig{}];
-	if (Map != Null) Private_SetTeamHueFromMapType();
+	G_TeamConfigs = [1 => K_TeamConfig{ Hue = C_Hue_UseDefault }, 2 => K_TeamConfig{ Hue = C_Hue_UseDefault }];
+	if (Map != Null) Private_SetTeamHueFromMap();
 	if (G_UseClubTags) Private_SetTeamNamesFromClubTags();
 	Private_OverrideForcedOrEmptyFields();
 	Private_ApplyToTeams();

@@ -10,7 +10,7 @@ Void Toggle(Boolean Status) {
 }
 
 Text GetManialink() {
-	declare Text[] TeamSkins = [FlagRush_Teams::GetSkinNameForTeam(0),FlagRush_Teams::GetSkinNameForTeam(1)];
+	declare Text[] TeamSkins = [FlagRush_Teams::GetSkinNameForTeam(1), FlagRush_Teams::GetSkinNameForTeam(2)];
 
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>

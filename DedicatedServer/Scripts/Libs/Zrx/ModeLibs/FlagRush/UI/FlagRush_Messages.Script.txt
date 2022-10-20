@@ -46,86 +46,100 @@ Void Private_QueueBigMessage(Text Message, Integer Duration, Integer Priority, C
 	UIManager.UIAll.QueueMessage(Duration, Priority, CUIConfig::EMessageDisplay::Big, Message, Sound, 0);
 }
 
+Void Private_SendChat(Text Message) {
+	UIManager.UIAll.SendChat("""{{{ C_ChatPrefix }}} $<{{{ Message }}}$>""");
+}
+
 Void MatchWin(Integer WinnerClan, Integer Duration) {
-	declare Text Message= """{{{ Private_GetColoredTeamName(WinnerClan) }}} won the match""";
+	declare Text Message = """{{{ Private_GetColoredTeamName(WinnerClan) }}} won the match""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void MatchDraw(Integer Duration) {
-	declare Text Message= """Match draw""";
+	declare Text Message = """Match draw""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void MapWin(Integer WinnerClan, Integer Duration) {
-	declare Text Message= """{{{ Private_GetColoredTeamName(WinnerClan) }}} won the map""";
+	declare Text Message = """{{{ Private_GetColoredTeamName(WinnerClan) }}} won the map""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void MapDraw(Integer Duration) {
-	declare Text Message= "Map draw";
+	declare Text Message = "Map draw";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void MapSkip(Integer Duration) {
-	declare Text Message= "Map skipped";
+	declare Text Message = "Map skipped";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void RoundStart(Integer NbRound, Integer Duration) {
-	declare Text Message= """Round {{{ NbRound }}} start""";
+	declare Text Message = """Round {{{ NbRound }}} start""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void RoundWin(Integer WinnerClan, Integer Duration)  {
-	declare Text Message= """{{{ Private_GetColoredTeamName(WinnerClan) }}} won the round""";
+	declare Text Message = """{{{ Private_GetColoredTeamName(WinnerClan) }}} won the round""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void RoundDraw(Integer Duration) {
-	declare Text Message= "Round draw";
+	declare Text Message = "Round draw";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void RoundSkip(Integer Duration) {
-	declare Text Message= "Round skipped";
+	declare Text Message = "Round skipped";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void OvertimeStart(Integer Duration) {
-	declare Text Message= """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}Overtime$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}Overtime$>""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void WarmUpStart(Integer Duration) {
-	declare Text Message= """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}WarmUp$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}WarmUp$>""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void WarmUpEnd(Integer Duration) {
-	declare Text Message= """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}WarmUp end$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}WarmUp end$>""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
+Void WarmUpWaitForApproval() {
+	declare Text Message = """$<${{{CL::RgbToHex3(FlagRush_Colors::C_Warning)}}}Waiting for admin confirmation to start the match.$>""";
+	Private_SendChat(Message);
+}
+
+Void WarmUpApproved() {
+	declare Text Message = """$<${{{CL::RgbToHex3(FlagRush_Colors::C_Success)}}}The match can start.$>""";
+	Private_SendChat(Message);
+}
+
 Void PauseStart(Integer Duration) {
-	declare Text Message= """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}The round was paused$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}The round was paused$>""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void PauseEnd(Integer Duration) {
-	declare Text Message= """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}The round continues$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}The round continues$>""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
@@ -138,7 +152,7 @@ Void FlagPickUp(CSmPlayer Player, Integer Duration) {
 }
 
 Void FlagScored(CSmPlayer Scorer, Integer Duration) {
-	declare Text Message= """{{{ Private_GetColoredPlayerName(Scorer) }}} scored for {{{ Private_GetColoredTeamName(Scorer.CurrentClan) }}}""";
+	declare Text Message = """{{{ Private_GetColoredPlayerName(Scorer) }}} scored for {{{ Private_GetColoredTeamName(Scorer.CurrentClan) }}}""";
 	declare Vec3 TeamColor = Private_GetTeamColor(Scorer.CurrentClan);
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::Finish);
 	FlagRush_Sound::Play(["file://Media/Sounds/Nadeo/CommonLibs/Game/KnockOutPlayer_01.wav", "file://Media/Sounds/Nadeo/CommonLibs/Game/ShowWinners.wav"]);
@@ -148,13 +162,13 @@ Void FlagScored(CSmPlayer Scorer, Integer Duration) {
 Void FlagDropped(CUser OldCarrierUser, Integer Duration) {
 	declare CSmScore OldCarrierScore <=> ModeUtils::GetScore(OldCarrierUser.Login);
 	declare Text PlayerName = """$<{{{ Private_GetTeamColorCode(OldCarrierScore.TeamNum) }}}{{{ OldCarrierScore.User.Name }}}$>""";
-	declare Text Message= """{{{ PlayerName }}} dropped the flag$>""";
+	declare Text Message = """{{{ PlayerName }}} dropped the flag$>""";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag);
 }
 
 Void FlagReset(Integer Duration) {
-	declare Text Message= "The flag was reset";
+	declare Text Message = "The flag was reset";
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::Warning);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag);
 }
@@ -165,7 +179,7 @@ Void FlagCarrierTeleport() {
 }
 
 Void PlayerOutOfBounds(CSmPlayer Player) {
-	declare Text Message= """{{{ Private_GetColoredPlayerName(Player) }}} went out of bounds""";
+	declare Text Message = """{{{ Private_GetColoredPlayerName(Player) }}} went out of bounds""";
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 	// Play a Sound for the dead player
 	declare CUIConfig UI = UIManager.GetUI(Player);
@@ -190,13 +204,16 @@ Void Welcome(CSmPlayer Player, Text Version) {
 }
 
 Void CriticalSettingUpdate_RestartTurn() {
-	UIManager.UIAll.SendChat("""{{{ C_ChatPrefix }}} $<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}A critical setting was updated! Restarting the the current turn...$>""");
+	declare Text Message = """{{{ C_ChatPrefix }}} $<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}A critical setting was updated! Restarting the the current turn...$>""";
+	Private_SendChat(Message);
 }
 
 Void InvalidMap() {
-	UIManager.UIAll.SendChat("""{{{ C_ChatPrefix }}} $<${{{ CL::RgbToHex3(FlagRush_Colors::C_Error) }}}The map does not conform to the FlagRush map specification. Skipping...$>""");
+	declare Text Message = """{{{ C_ChatPrefix }}} $<${{{ CL::RgbToHex3(FlagRush_Colors::C_Error) }}}The map does not conform to the FlagRush map specification. Skipping...$>""";
+	Private_SendChat(Message);
 }
 
 Void AllPlayersLeft_SkipMatch() {
-	UIManager.UIAll.SendChat("""{{{ C_ChatPrefix }}} $<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}All players left, skipping match...$>""");
+	declare Text Message = """{{{ C_ChatPrefix }}} $<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}All players left, skipping match...$>""";
+	Private_SendChat(Message);
 }

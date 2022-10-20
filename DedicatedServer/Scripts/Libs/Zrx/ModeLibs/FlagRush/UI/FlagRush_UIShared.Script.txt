@@ -7,16 +7,39 @@
  */
 Text GetTeamColorNetreadFunctions() {
 	return """
-			Vec3 GetTeamPrimaryColor(CTeam Team) {
-				if (Team == Null) return {{{ Colors::C_NeutralLight }}};
-				declare netread Vec3 Net_FlagRush_PrimaryColor for Team;
-				return Net_FlagRush_PrimaryColor;
-			}
+		Vec3 GetTeamLightColor(CTeam Team) {
+			if (Team == Null) return {{{ Colors::C_NeutralLight }}};
+			declare netread Vec3 Net_FlagRush_LightColor for Team;
+			return Net_FlagRush_LightColor;
+		}
 
-			Vec3 GetTeamPrimaryColor(Integer Clan) {
-				if (Clan <= 0 || Clan > Teams.count) return {{{ Colors::C_NeutralLight }}};
-				return GetTeamPrimaryColor(Teams[Clan-1]);
-			}
+		Vec3 GetTeamLightColor(Integer Clan) {
+			if (Clan <= 0 || Clan > Teams.count) return {{{ Colors::C_NeutralLight }}};
+			return GetTeamLightColor(Teams[Clan-1]);
+		}
+
+		Vec3 GetTeamMidColor(CTeam Team) {
+			if (Team == Null) return {{{ Colors::C_TeamNeutral }}};
+			declare netread Vec3 Net_FlagRush_MidColor for Team;
+			return Net_FlagRush_MidColor;
+		}
+
+		Vec3 GetTeamMidColor(Integer Clan) {
+			if (Clan <= 0 || Clan > Teams.count) return {{{ Colors::C_TeamNeutral }}};
+			return GetTeamMidColor(Teams[Clan-1]);
+		}
+
+		Vec3 GetTeamDarkColor(CTeam Team) {
+			if (Team == Null) return {{{ Colors::C_NeutralDark }}};
+			declare netread Vec3 Net_FlagRush_DarkColor for Team;
+			return Net_FlagRush_DarkColor;
+		}
+
+		Vec3 GetTeamDarkColor(Integer Clan) {
+			if (Clan <= 0 || Clan > Teams.count) return {{{ Colors::C_NeutralDark }}};
+			return GetTeamDarkColor(Teams[Clan-1]);
+		}
+
 """;
 }
 

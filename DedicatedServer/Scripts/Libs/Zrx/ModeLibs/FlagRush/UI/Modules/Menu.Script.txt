@@ -281,7 +281,7 @@ Text GetManialink() {
 		G_PauseMenu.TeamsMenu.PageControls.ButtonPrevious.Visible = PageIndex > 0;
 
 		for (TeamIndex, 0, 1) {
-			declare Vec3 TeamColor = GetTeamPrimaryColor(TeamIndex + 1);
+			declare Vec3 TeamColor = GetTeamMidColor(TeamIndex + 1);
 			G_PauseMenu.TeamsMenu.TeamLists[TeamIndex].ButtonJoin.Background.Colorize = TeamColor;
 			G_PauseMenu.TeamsMenu.TeamLists[TeamIndex].ButtonJoin.Label.Value = "Join " ^ Teams[TeamIndex].Name;
 

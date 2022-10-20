@@ -302,7 +302,7 @@ Void Player_Initialize(CSmPlayer Player) {
 	Player.UseCrudeExtrapolation = !UsePvPCollisions && S_UseCrudeExtrapolation;
 	Player.Dossard_Number = "  ";
 	Player.Dossard_Color = <1., 1., 1.>;
-	if (S_UseTeamSkins) Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan - 1);
+	if (S_UseTeamSkins) Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
 	else Player.ForceModelId = NullId;
 }
 

@@ -387,13 +387,13 @@ main() {
 
 		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 		{ +++Settings+++ }
+		ItemList_Begin();
+		{ +++LoadItems+++ }
+		ItemList_End();
 		{ +++LoadLibraries+++ }
 
 		XmlRpc_Base::SendStartServer_Start(MB_Private_ServerRestarted, MB_Private_ServerModeUpdated, MB_Private_ServerModeName);
 
-		ItemList_Begin();
-		{ +++LoadItems+++ }
-		ItemList_End();
 		{ +++LoadHud+++ }
 		{ +++Rules+++ }
 		{ +++StartServer+++ }

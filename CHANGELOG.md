@@ -6,6 +6,10 @@
 + Added callvotes page to pause menu.
 + Added a distance indicator to the flag marker.
 + Match is reset when all players leave the server or go to spec.
++ Added map specific team colors
+  + Requires the new maptype
+  + Mappers can choose hues for the team colors in the map editor or keep the default ones
+  + The old maptype and maps are still supported
 * Adjusted markers for bases
 	* The base you have to attack shows a crosshair icon in the color of the opposite team.
 	* The base you have to defend shows a shield icon in the color of your team.

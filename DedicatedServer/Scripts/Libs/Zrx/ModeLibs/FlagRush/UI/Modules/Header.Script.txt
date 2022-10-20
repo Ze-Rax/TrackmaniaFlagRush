@@ -19,7 +19,7 @@ Text GetManialink() {
 			</frame>
 			<label pos="-32.5 -0.5" z-index="1" size="35 8" text="Team Blue" textcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralLight) }}}" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
 
-			<quad pos="-60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(FlagRush_Colors::C_BlueBase) }}}" halign="center"/>
+			<quad pos="-60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(FlagRush_Colors::C_TeamBlue) }}}" halign="center"/>
 			<label pos="-60 -0.5" z-index="2" size="11.8 9" text="0" halign="center" valign="center2" textsize="5" textcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralLight) }}}" id="score" textfont="GameFontBlack" />
 		</frame>
 
@@ -29,7 +29,7 @@ Text GetManialink() {
 			</frame>
 			<label pos="32.5 -0.5" z-index="1" size="35 8" text="Team Red" textcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralLight) }}}" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
 
-			<quad pos="60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(FlagRush_Colors::C_RedBase) }}}" halign="center"/>
+			<quad pos="60 " z-index="1" size="10 8" valign="center" id="background-score" style="UICommon64_1" substyle="BgFrame1" colorize="{{{ CL::RgbToHex6(FlagRush_Colors::C_TeamRed) }}}" halign="center"/>
 			<label pos="60 -0.5" z-index="2" size="11.8 9" text="0" halign="center" valign="center2" textsize="5" textcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralLight) }}}" id="score" textfont="GameFontBlack" />
 		</frame>
 
@@ -85,6 +85,8 @@ Text GetManialink() {
 	declare K_Timer Timer;
 	declare K_Carrier Carrier;
 
+	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
+
 	/**
 	 * Assigns all needed MlControl references.
 	 */
@@ -127,99 +129,97 @@ Text GetManialink() {
 	 * Set the default values for all controls.
 	 */
 	Void InitMlControls() {
-		TeamAreas[0].BackgroundGradient.Base.BgColor = {{{ FlagRush_Colors::C_BlueBase }}};
-		TeamAreas[0].BackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_BlueDark }}};
-		TeamAreas[0].BackgroundGradient.RightGradient.ModulateColor = {{{ FlagRush_Colors::C_BlueLight }}};
-		TeamAreas[0].ScoreBackground.ModulateColor = {{{ FlagRush_Colors::C_BlueBase }}};
+		TeamAreas[0].BackgroundGradient.Base.BgColor = GetTeamMidColor(1);
+		TeamAreas[0].BackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(1);
+		TeamAreas[0].BackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(1);
+		TeamAreas[0].ScoreBackground.ModulateColor = GetTeamMidColor(1);
 
-		TeamAreas[1].BackgroundGradient.Base.BgColor = {{{ FlagRush_Colors::C_RedBase }}};
-		TeamAreas[1].BackgroundGradient.LeftGradient.ModulateColor = {{{ FlagRush_Colors::C_RedLight }}};
-		TeamAreas[1].BackgroundGradient.RightGradient.ModulateColor = {{{ FlagRush_Colors::C_RedDark }}};
-		TeamAreas[1].ScoreBackground.ModulateColor = {{{ FlagRush_Colors::C_RedBase }}};
+		TeamAreas[1].BackgroundGradient.Base.BgColor = GetTeamMidColor(2);
+		TeamAreas[1].BackgroundGradient.LeftGradient.ModulateColor = GetTeamLightColor(2);
+		TeamAreas[1].BackgroundGradient.RightGradient.ModulateColor = GetTeamDarkColor(2);
+		TeamAreas[1].ScoreBackground.ModulateColor = GetTeamMidColor(2);
 	}
 
 	/**
 	 * Updates the round scores (flags scored) for the teams.
 	 */
-	***UpdateTeams***
-	***
-	for (Team, 0, 1) {
-		declare netread Integer Net_FlagRush_TeamRoundScore for Teams[Team];
-		TeamAreas[Team].Score.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
-		TeamAreas[Team].TeamName.Value = Teams[Team].Name;
+	Void UpdateTeams() {
+		for (Team, 0, 1) {
+			declare netread Integer Net_FlagRush_TeamRoundScore for Teams[Team];
+			TeamAreas[Team].Score.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
+			TeamAreas[Team].TeamName.Value = Teams[Team].Name;
+		}
+		InitMlControls();
 	}
-	***
 
 	/**
 	 * Updates the center timer.
 	 */
-	***UpdateTimer***
-	***
-	declare Integer RoundTimeLeft = Net_EndTime - GameTime;
-	declare Boolean IsTimeLeft = RoundTimeLeft > 0;
-	Timer.TimerLabel.TextSizeReal = 2.;
-	Timer.TimerLabel.AutoNewLine = False;
-	if(IsTimeLeft) {
-		Timer.Icon.Hide();
-		Timer.TimerLabel.Show();
-		Timer.TimerLabel.Value = TL::TimeToText(
-			ML::Max(RoundTimeLeft, 0),
-			RoundTimeLeft < 10000 && !FlagRush_Net_WarmUpIsRunning
-		);
+	Void UpdateTimer() {
+		declare netread Integer Net_EndTime for Teams[0];
+		declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
+		declare netread Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
 
-		if (FlagRush_Net_WarmUpIsRunning) {
+		declare Integer RoundTimeLeft = Net_EndTime - GameTime;
+		declare Boolean IsTimeLeft = RoundTimeLeft > 0;
+		Timer.TimerLabel.TextSizeReal = 2.;
+		Timer.TimerLabel.AutoNewLine = False;
+		if(IsTimeLeft) {
+			Timer.Icon.Hide();
+			Timer.TimerLabel.Show();
+			Timer.TimerLabel.Value = TL::TimeToText(
+				ML::Max(RoundTimeLeft, 0),
+				RoundTimeLeft < 10000 && !FlagRush_Net_WarmUpIsRunning
+			);
+
+			if (FlagRush_Net_WarmUpIsRunning) {
+				Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
+			} else if (IsTimeLeft && RoundTimeLeft / 1000 < 30) {
+				Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_Error }}};
+			} else {
+				Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_NeutralLight }}};
+			}
+		} else if (FlagRush_Net_OvertimeIsRunning && !FlagRush_Net_WarmUpIsRunning && Net_EndTime >= 0) {
+			Timer.Icon.Hide();
+			Timer.TimerLabel.Show();
+			Timer.TimerLabel.TextSizeReal = 1.5;
+			Timer.TimerLabel.AutoNewLine = True; // Else multi line string won't be centered
+			Timer.TimerLabel.Value = "Overtime" ^ "\n" ^ "+" ^ TL::TimeToText(-RoundTimeLeft);
 			Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
-		} else if (IsTimeLeft && RoundTimeLeft / 1000 < 30) {
-			Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_Error }}};
 		} else {
-			Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_NeutralLight }}};
+			declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
+			Timer.Icon.Colorize = GetTeamMidColor(FlagRush_Net_FlagState.Holder.Clan);
+			Timer.Icon.Show();
+			Timer.TimerLabel.Hide();
 		}
-	} else if (FlagRush_Net_OvertimeIsRunning && !FlagRush_Net_WarmUpIsRunning && Net_EndTime >= 0) {
-		Timer.Icon.Hide();
-		Timer.TimerLabel.Show();
-		Timer.TimerLabel.TextSizeReal = 1.5;
-		Timer.TimerLabel.AutoNewLine = True; // Else multi line string won't be centered
-		Timer.TimerLabel.Value = "Overtime" ^ "\n" ^ "+" ^ TL::TimeToText(-RoundTimeLeft);
-		Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
-	} else {
-		Timer.Icon.Show();
-		Timer.TimerLabel.Hide();
-		Timer.Icon.Colorize = GetTeamPrimaryColor(FlagRush_Net_FlagState.Holder.Clan);
 	}
-	***
 
 	/**
 	 * Updates the flag carrier display.
 	 */
-	***UpdateCarrier***
-	***
-	if (FlagRush_Net_WarmUpIsRunning) {
-		Carrier.CarrierLabel.Value = "WarmUp";
-		Carrier.CarrierLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
-	} else {
-		Carrier.CarrierLabel.Value = FlagRush_Net_FlagState.Holder.Name;
-		Carrier.CarrierLabel.TextColor = GetTeamPrimaryColor(FlagRush_Net_FlagState.Holder.Clan);
+	Void UpdateCarrier() {
+		declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
+		if (FlagRush_Net_WarmUpIsRunning) {
+			Carrier.CarrierLabel.Value = "WarmUp";
+			Carrier.CarrierLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
+		} else {
+			declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
+			Carrier.CarrierLabel.Value = FlagRush_Net_FlagState.Holder.Name;
+			Carrier.CarrierLabel.TextColor = GetTeamMidColor(FlagRush_Net_FlagState.Holder.Clan);
+		}
 	}
-	***
-
-	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
 
 	main() {
 
 		AssignMlControlReferences();
 		InitMlControls();
 
-		declare netread Integer Net_EndTime for Teams[0];
-		declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
-		declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
-		declare netread Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
-
 		while (True) {
 			yield;
 
-			+++UpdateTeams+++
-			+++UpdateTimer+++
-			+++UpdateCarrier+++
+			UpdateTeams();
+			UpdateTimer();
+			UpdateCarrier();
 		}
 	}
 	--></script>

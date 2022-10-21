@@ -69,6 +69,7 @@
 #Setting S_UseTurns													False 	as "<hidden>" // "Use turns (Reset after a player scores a flag)"
 #Setting S_UseOvertime											True 		as "Use overtime when round is tied"
 #Setting S_UseWarmUp												True		as "Use warm up"
+#Setting S_WarmUpWaitForApproval						False		as "<hidden>" // Wait for admin approval in warmup to continue (for competition situations)
 
 // Teams
 #Setting S_Team1Name 												"" 			as "Force Team 1 Name"
@@ -127,6 +128,9 @@
 
 // #Command	Command_BalanceTeams						(Boolean) as		"Balance Teams"
 #Const		C_Command_BalanceTeams													"BalanceTeams"
+
+#Command	Command_ApproveWarmUpEnd				(Boolean) as		"<hidden>"
+#Const		C_Command_ApproveWarmUpEnd											"ApproveWarmUpEnd"
 
 #Const		C_Command_SetBots																"SetBots"
 #Const		C_Command_SetTimeLeft														"SetTimeLeft"
@@ -494,7 +498,8 @@ Private_WarmUpIsRunning = True;
 declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
 FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
 FlagRush_Messages::WarmUpStart(C_Duration_WarmUpStart);
-WarmUpReadyUp::Start();
+WarmUpReadyUp::Start(S_WarmUpWaitForApproval);
+if (S_WarmUpWaitForApproval) FlagRush_Messages::WarmUpWaitForApproval();
 MB_Sleep(C_Duration_WarmUpStart);
 declare CUIConfig::EUISequence PreviousSequence = UIManager.UIAll.UISequence;
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
@@ -753,6 +758,15 @@ foreach (Command in PendingCommands) {
 			if (!MB_TurnIsRunning()) return;
 			ModeUtils::SetEndTime(Now + Command.ValueInteger * 1000);
 			CommandText = """Set time limit to {{{ Command.ValueInteger }}} seconds remaining.""";
+		}
+		case C_Command_ApproveWarmUpEnd: {
+			WarmUpReadyUp::SetWarmUpEndApproval(Command.ValueBoolean);
+			if (Command.ValueBoolean) {
+				FlagRush_Messages::WarmUpApproved();
+			} else {
+				FlagRush_Messages::WarmUpWaitForApproval();
+			}
+			CommandText = """Approvel given: {{{ Command.ValueBoolean }}}.""";
 		}
 		case C_Command_Announce: {
 			UIManager.UIAll.QueueMessage(3000, FlagRush_Messages::C_MessagePriority_Default, CUIConfig::EMessageDisplay::Big, Command.ValueText, CUIConfig::EUISound::Default, 1);

@@ -15,5 +15,9 @@
 #Const C_NeutralDark <0., 0., 0.>
 #Const C_NeutralLight <1., 1., 1.>
 
+#Const C_Gold <0.910, 0.757, 0.102>
+#Const C_Silver <0.710, 0.737, 0.776>
+#Const C_Bronze <0.647, 0.400, 0.235>
+
 // Opacities
 #Const C_TransparentBackgroundOpacity 0.7

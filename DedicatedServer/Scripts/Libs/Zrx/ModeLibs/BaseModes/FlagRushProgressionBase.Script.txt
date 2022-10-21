@@ -43,7 +43,8 @@
 ///////////////
 
 // Duration / Timings for sequences and/or messages
-#Const C_Duration_Podium				15000
+#Const C_Duration_Podium				10000
+#Const C_Duration_MatchEnd			5000
 #Const C_Duration_MapStart			3000
 #Const C_Duration_MapEnd				5000
 #Const C_Duration_RoundStart		3000
@@ -460,29 +461,41 @@ FlagRush_Messages::OvertimeStart(C_Duration_Overtime);
 
 ***PodiumSequence***
 ***
-declare Integer DurationScoreTable = C_Duration_Podium / 3;
-declare Integer DurationMVP = C_Duration_Podium - DurationScoreTable;
-
 // Score table phase
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMatch();
 if (WinnerClan == 0) {
-	FlagRush_Messages::MatchDraw(C_Duration_Podium / 3);
+	FlagRush_Messages::MatchDraw(C_Duration_MatchEnd);
 } else {
-	FlagRush_Messages::MatchWin(WinnerClan, C_Duration_Podium / 3);
+	FlagRush_Messages::MatchWin(WinnerClan, C_Duration_MatchEnd);
 }
 // Sleep during message and show scoreboard update half way through
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-MB_Sleep(DurationScoreTable / 2);
+MB_Sleep(C_Duration_MatchEnd / 2);
 FlagRush_Scores::EndMatch();
-MB_Sleep(DurationScoreTable / 2);
+MB_Sleep(C_Duration_MatchEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
-// MVP phase
-UIManager.UIAll.UISequence = CUIConfig::EUISequence::None;
-FlagRush_MVP::Toggle(True);
-MB_Sleep(DurationMVP);
-FlagRush_MVP::Toggle(False);
+// Actual podium phase
+declare CSmScore[] PodiumPlayerScores;
+declare Text[] PodiumPlayerLogins;
+for (I, 0, 2) {
+	if (!Scores.existskey(I)) break;
+	PodiumPlayerScores.add(Scores[I]);
+	PodiumPlayerLogins.add(Scores[I].User.Login);
+}
+FlagRush_UI::AttachPodiumBackground(PodiumPlayerScores);
+UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
+// TODO: Fix when CMode::HasPodium is available
+declare PodiumStartTime = Now;
+while ( Now < PodiumStartTime + C_Duration_Podium) {
+	MB_Yield();
+	// Sequence only completes if there is no podium, but also only after multiple yields
+	declare Boolean HasNoPodium = UIManager.UIAll.UISequenceIsCompleted;
+	if (HasNoPodium) break;
+}
+FlagRush_UI::DetachPodiumBackground();
 ***
 
 // ~~~~~~~~~~ WarmUp / Pause ~~~~~~~~~~ //

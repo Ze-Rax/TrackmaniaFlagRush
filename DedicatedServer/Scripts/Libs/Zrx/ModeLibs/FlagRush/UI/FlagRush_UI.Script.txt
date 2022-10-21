@@ -17,11 +17,12 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MVP.Script.txt"								as FlagRush_UIMVP
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/PodiumBackground.Script.txt"	as FlagRush_Podium
 
-#Const C_LayerName_Dialog							"Layer_FlagRush_Dialog"
+#Const C_AttachId_Podium							"16x9_StadiumSmall"
+
 #Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
 #Const C_LayerName_ScoresHeader				"Layer_FlagRush_ScoresHeader"
-#Const C_LayerName_MVP								"Layer_FlagRush_MVP"
 #Const C_LayerName_Markers						"Layer_FlagRush_Markers"
 #Const C_LayerName_Menu								"Layer_FlagRush_Menu"
 #Const C_LayerName_Feed								"Layer_FlagRush_Feed"
@@ -31,6 +32,7 @@
 #Const C_LayerName_Respawn						"Layer_FlagRush_Respawn"
 #Const C_LayerName_ModeCommands				"Layer_ModeCommands"
 #Const C_LayerName_Radar							"Layer_FlagRush_Radar"
+#Const C_LayerName_Podium							"Layer_FlagRush_Podium"
 
 declare Integer G_PreviousPlayersCount;
 
@@ -140,15 +142,27 @@ Void Private_AttachModules() {
 	Layers::SetType(C_LayerName_Flash, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Flash);
 
-	// MVP
-	Layers::Create(C_LayerName_MVP, FlagRush_UIMVP::GetManialink());
-	Layers::SetType(C_LayerName_MVP, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName_MVP);
+	// Podium background
+	Layers::Create(C_LayerName_Podium, ""); // Empty Manialink; Content set when set active
+	Layers::SetType(C_LayerName_Podium, CUILayer::EUILayerType::ScreenIn3d);
+	Layers::Get(C_LayerName_Podium).AttachId = C_AttachId_Podium;
+	// Don't attach yet; only explicitly during podium
 
 	// Spectator controls
 	Layers::Create(C_LayerName_Spectator, FlagRush_UISpectator::GetManialink());
 	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Spectator);
+}
+
+Void AttachPodiumBackground(CSmScore[] PodiumPlayerScores) {
+	Layers::Update(C_LayerName_Podium, FlagRush_Podium::GetManialink(PodiumPlayerScores));
+	Layers::Attach(C_LayerName_Podium);
+	Layers::Hide(C_LayerName_Markers);
+}
+
+Void DetachPodiumBackground() {
+	Layers::Detach(C_LayerName_Podium);
+	Layers::Show(C_LayerName_Markers);
 }
 
 Void Private_DetachModules() {

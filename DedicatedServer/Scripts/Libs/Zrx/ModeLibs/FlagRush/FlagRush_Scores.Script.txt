@@ -91,6 +91,38 @@ Integer GetPlayerMatchFlagSteals(CSmScore Score) {
 	return Telemetry::GetPlayerMatchInteger(Score, C_Telemetry_Key_FlagsStolen);
 }
 
+CSmScore[] Private_MapToScoreArray(Integer[CSmScore] Arr) {
+	declare CSmScore[] Result;
+	foreach (Score => Value in Arr) {
+		Result.add(Score);
+	}
+	return Result;
+}
+
+CSmScore[] GetPlayerFlagsScoredMatchRanking() {
+	declare Integer[CSmScore] FlagsScored;
+	foreach (Score in Scores) {
+		FlagsScored[Score] = GetPlayerMatchFlagScores(Score);
+	}
+	return Private_MapToScoreArray(FlagsScored.sortreverse());
+}
+
+CSmScore[] GetPlayerAssistsMatchRanking() {
+	declare Integer[CSmScore] Assists;
+	foreach (Score in Scores) {
+		Assists[Score] = GetPlayerMatchFlagScoreAssists(Score);
+	}
+	return Private_MapToScoreArray(Assists.sortreverse());
+}
+
+CSmScore[] GetPlayerFlagsStealsMatchRanking() {
+	declare Integer[CSmScore] FlagSteals;
+	foreach (Score in Scores) {
+		FlagSteals[Score] = GetPlayerMatchFlagSteals(Score);
+	}
+	return Private_MapToScoreArray(FlagSteals.sortreverse());
+}
+
 /* Net send scores */
 
 Void Net_SendTeamScores() {

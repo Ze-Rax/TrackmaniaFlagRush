@@ -1,0 +1,219 @@
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt" as FlagRush_Scores
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
+
+#Struct K_PodiumPlaceConfig {
+	Boolean Present;
+	Text Name;
+	Text Avatar;
+	Integer Clan;
+	Integer Points;
+	Integer FlagsScored;
+	Integer FlagsScoredPlacement;
+	Integer Assists;
+	Integer AssistsPlacement;
+	Integer FlagsStolen;
+	Integer FlagsStolenPlacement;
+}
+
+Text GetManialink(CSmScore[] PodiumScores) {
+
+	declare CSmScore[] FlagsScoredMatchRanking = FlagRush_Scores::GetPlayerFlagsScoredMatchRanking();
+	declare CSmScore[] AssistsMatchRanking = FlagRush_Scores::GetPlayerAssistsMatchRanking();
+	declare CSmScore[] FlagsStolenMatchRanking = FlagRush_Scores::GetPlayerFlagsStealsMatchRanking();
+
+	declare netwrite K_PodiumPlaceConfig[Integer] FlagRush_Net_PodiumPlacementConfigs for Teams[0];
+	for (Placement, 1, 3) {
+		declare Integer ScoreIndex = Placement - 1;
+		if (PodiumScores.existskey(ScoreIndex)) {
+			declare CSmScore PlacementScore <=> PodiumScores[ScoreIndex];
+			FlagRush_Net_PodiumPlacementConfigs[Placement] = K_PodiumPlaceConfig{
+				Present = True,
+				Name = PlacementScore.User.Name,
+				Avatar = PlacementScore.User.CountryFlagUrl,
+				Clan = PlacementScore.TeamNum,
+				Points = FlagRush_Scores::GetPlayerMatchPoints(PlacementScore),
+				FlagsScored = FlagRush_Scores::GetPlayerMatchFlagScores(PlacementScore),
+				FlagsScoredPlacement = FlagsScoredMatchRanking.keyof(PlacementScore) + 1,
+				Assists = FlagRush_Scores::GetPlayerMatchFlagScoreAssists(PlacementScore),
+				AssistsPlacement = AssistsMatchRanking.keyof(PlacementScore) + 1,
+				FlagsStolen = FlagRush_Scores::GetPlayerMatchFlagSteals(PlacementScore),
+				FlagsStolenPlacement = FlagsStolenMatchRanking.keyof(PlacementScore) + 1
+			};
+		} else {
+			FlagRush_Net_PodiumPlacementConfigs[Placement] = K_PodiumPlaceConfig{ Present = False };
+		}
+	}
+
+	return """
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="FlagRush_PodiumBackground">
+	<framemodel id="gradient">
+		<quad pos="0 0" z-index="-1" size="180 106" bgcolor="222" id="base" halign="center" valign="center"/>
+		<quad pos="-90 0" z-index="0" size="108 106" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="444" id="left" valign="center" halign="left"/>
+		<quad pos="90 0" z-index="0" size="108 106" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="000" id="right" rot="180" valign="center" halign="left"/>
+	</framemodel>
+
+	<framemodel id="statistic">
+		<label id="name" pos="0 0" z-index="0" size="50 5" text="$iStatistic:" valign="center2" textfont="GameFontSemiBold" halign="right" textsize="6" textemboss="1"/>
+		<label id="value" text="$i0" valign="center2" textfont="GameFontSemiBold" halign="left" pos="10" textsize="6" size="50" textemboss="1"/>
+	</framemodel>
+
+	<framemodel id="player">
+		<quad id="card-background" z-index="0" size="80 15" bgcolor="000" opacity="0.7" halign="center" valign="center"/>
+		<quad id="avatar" pos="-39" z-index="1" size="13 13" bgcolor="FFF" halign="left" valign="center" keepratio="Fit"/>
+		<label id="name" pos="7.5" z-index="1" size="60 15" text="Playername" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="8" textemboss="1"/>
+		<label id="points" text="0" textprefix="P$n $mo$n $mi$n $mn$n $mt$n $ms$n $m:$n  $m" valign="center2" halign="center" pos="0 -20" size="100" textfont="GameFontBlack" textsize="10" textemboss="1"/>
+
+		<frameinstance modelid="statistic" id="flags-scored" data-name="Flags scored" pos="15 -35"/>
+		<frameinstance modelid="statistic" id="assists" data-name="Assists" pos="15 -45"/>
+		<frameinstance modelid="statistic" id="flags-stolen" data-name="Flags stolen" pos="15 -55"/>
+	</framemodel>
+
+	<frame id="background" z-index="-1">
+		<frameinstance id="background-pos-1" modelid="gradient" pos="0" rot="-90"/>
+		<frameinstance id="background-pos-2" modelid="gradient" pos="-106" rot="-90"/>
+		<frameinstance id="background-pos-3" modelid="gradient" pos="106" rot="-90"/>
+
+		<frame>
+			<quad image="file://Media/Painter/Stencils/28-Checker5A/Brush.tga" pos="190 -140" size="180 180" opacity="0.3" halign="right" valign="bottom" blend="add"/>
+			<quad image="file://Media/Painter/Stencils/28-Checker5A/Brush.tga" pos="-190 140" size="180 180" opacity="0.3" rot="180" halign="right" valign="bottom" blend="add" />
+		</frame>
+
+		<quad id="divider-1-2" pos="-53 0" z-index="0" size="1 180" bgcolor="000" valign="center" halign="right"/>
+		<quad id="divider-1-3" pos="53 0" z-index="0" size="1 180" bgcolor="000" valign="center" halign="left"/>
+	</frame>
+
+	<frame id="content">
+		<label pos="0 50" z-index="0" size="100 25" text="M$n $mV$n $mP" halign="center" valign="center2" textfont="GameFontBlack" textsize="25" textemboss="1"/>
+
+		<frameinstance id="pos-1" modelid="player" pos="0 25"/>
+		<frameinstance id="pos-2" modelid="player" pos="-106 25"/>
+		<frameinstance id="pos-3" modelid="player" pos="106 25"/>
+	</frame>
+
+
+	<script><!--
+	#Include "TextLib" as TL
+
+	#Struct K_PodiumPlaceConfig {
+		Boolean Present;
+		Text Name;
+		Text Avatar;
+		Integer Clan;
+		Integer Points;
+		Integer FlagsScored;
+		Integer FlagsScoredPlacement;
+		Integer Assists;
+		Integer AssistsPlacement;
+		Integer FlagsStolen;
+		Integer FlagsStolenPlacement;
+	}
+
+	#Struct K_Gradient {
+		CMlFrame Frame;
+		CMlQuad Base;
+		CMlQuad Left;
+		CMlQuad Right;
+	}
+
+	#Struct K_Player {
+		K_Gradient BackgroundGradient;
+		CMlFrame ContentFrame;
+		CMlQuad CardBackground;
+		CMlLabel Name;
+		CMlQuad Avatar;
+		CMlLabel Points;
+		CMlLabel FlagsScored;
+		CMlLabel Assists;
+		CMlLabel FlagsStolen;
+	}
+
+	declare K_Player[] G_Players;
+
+	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
+
+	Vec3 PlacementToTextColor(Integer Placement) {
+		switch (Placement) {
+			case 1: return {{{ FlagRush_Colors::C_Gold }}};
+			case 2: return {{{ FlagRush_Colors::C_Silver }}};
+			case 3: return {{{ FlagRush_Colors::C_Bronze }}};
+		}
+		return {{{ FlagRush_Colors::C_NeutralLight }}};
+	}
+
+	Void InitMlControls() {
+		// Get references
+		declare CMlFrame BackgroundFrame <=> (Page.GetFirstChild("background") as CMlFrame);
+		declare CMlFrame ContentFrame <=> (Page.GetFirstChild("content") as CMlFrame);
+
+		for (I, 1, 3) {
+			declare CMlFrame GradientFrame = (BackgroundFrame.GetFirstChild("background-pos-" ^ I) as CMlFrame);
+			declare K_Gradient Gradient = K_Gradient{
+				Frame = GradientFrame,
+				Base = (GradientFrame.GetFirstChild("base") as CMlQuad),
+				Left = (GradientFrame.GetFirstChild("left") as CMlQuad),
+				Right = (GradientFrame.GetFirstChild("right") as CMlQuad)
+			};
+
+			declare CMlFrame PlayerFrame = (ContentFrame.GetFirstChild("pos-" ^ I) as CMlFrame);
+			declare CMlFrame FlagsScoredFrame = (PlayerFrame.GetFirstChild("flags-scored") as CMlFrame);
+			declare CMlFrame AssistsFrame = (PlayerFrame.GetFirstChild("assists") as CMlFrame);
+			declare CMlFrame FlagsStolenFrame = (PlayerFrame.GetFirstChild("flags-stolen") as CMlFrame);
+
+			// Save references
+			declare K_Player Player = K_Player{
+				BackgroundGradient = Gradient,
+				ContentFrame = PlayerFrame,
+				CardBackground = (ContentFrame.GetFirstChild("card-background") as CMlQuad),
+				Name = (PlayerFrame.GetFirstChild("name") as CMlLabel),
+				Avatar = (PlayerFrame.GetFirstChild("avatar") as CMlQuad),
+				Points = (PlayerFrame.GetFirstChild("points") as CMlLabel),
+				FlagsScored = (FlagsScoredFrame.GetFirstChild("value") as CMlLabel),
+				Assists = (AssistsFrame.GetFirstChild("value") as CMlLabel),
+				FlagsStolen = (FlagsStolenFrame.GetFirstChild("value") as CMlLabel)
+			};
+			G_Players.add(Player);
+
+			// Initalize texts of statistic
+			(FlagsScoredFrame.GetFirstChild("name") as CMlLabel).Value = FlagsScoredFrame.DataAttributeGet("name") ^ ":";
+			(AssistsFrame.GetFirstChild("name") as CMlLabel).Value = AssistsFrame.DataAttributeGet("name") ^ ":";
+			(FlagsStolenFrame.GetFirstChild("name") as CMlLabel).Value = FlagsStolenFrame.DataAttributeGet("name") ^ ":";
+		}
+	}
+
+	Void SetContent() {
+		declare netread K_PodiumPlaceConfig[Integer] FlagRush_Net_PodiumPlacementConfigs for Teams[0];
+		foreach (Index => Player in G_Players) {
+			declare K_PodiumPlaceConfig Config = FlagRush_Net_PodiumPlacementConfigs.get(Index + 1, K_PodiumPlaceConfig{ Present = False });
+			if (!Config.Present) {
+				Player.ContentFrame.Hide();
+				continue;
+			}
+
+			Player.BackgroundGradient.Base.BgColor = GetTeamMidColor(Config.Clan);
+			Player.BackgroundGradient.Left.ModulateColor = GetTeamDarkColor(Config.Clan);
+			Player.BackgroundGradient.Right.ModulateColor = GetTeamLightColor(Config.Clan);
+			Player.Name.Value = Config.Name;
+			Player.Avatar.BgColor = GetTeamMidColor(Config.Clan);
+			Player.Avatar.ImageUrl = Config.Avatar;
+			Player.Points.Value = TL::ToText(Config.Points);
+			Player.Points.TextColor = PlacementToTextColor(Index + 1);
+			Player.FlagsScored.Value = TL::ToText(Config.FlagsScored);
+			Player.FlagsScored.TextColor = PlacementToTextColor(Config.FlagsScoredPlacement);
+			Player.Assists.Value = TL::ToText(Config.Assists);
+			Player.Assists.TextColor = PlacementToTextColor(Config.AssistsPlacement);
+			Player.FlagsStolen.Value = TL::ToText(Config.FlagsStolen);
+			Player.FlagsStolen.TextColor = PlacementToTextColor(Config.FlagsStolenPlacement);
+		}
+	}
+
+	main() {
+		InitMlControls();
+		SetContent();
+	}
+	--></script>
+</manialink>
+	""";
+}

@@ -107,3 +107,16 @@ Text GetLogoTransparentFramemodel() {
 	</framemodel>
 	""";
 }
+
+/**
+ * Returns a framemodel for gradients with base size 100x100 and modelid "gradient"
+ */
+Text GetGradientFramemodel() {
+	return """
+	<framemodel id="gradient">
+		<quad pos="0 0" z-index="-1" size="100 100" bgcolor="c44" id="base" halign="center" valign="center"/>
+		<quad pos="-50 0" z-index="0" size="50 100" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b24" id="gradient-left" valign="center" halign="left"/>
+		<quad pos="50 0" z-index="0" size="50 100" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b42" id="gradient-right" valign="center" halign="left" rot="180"/>
+	</framemodel>
+	""";
+}

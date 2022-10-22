@@ -49,11 +49,7 @@ Text GetManialink(CSmScore[] PodiumScores) {
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="FlagRush_PodiumBackground">
-	<framemodel id="gradient">
-		<quad pos="0 0" z-index="-1" size="180 106" bgcolor="222" id="base" halign="center" valign="center"/>
-		<quad pos="-90 0" z-index="0" size="108 106" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="444" id="left" valign="center" halign="left"/>
-		<quad pos="90 0" z-index="0" size="108 106" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="000" id="right" rot="180" valign="center" halign="left"/>
-	</framemodel>
+	{{{ FlagRush_UIShared::GetGradientFramemodel() }}}
 
 	<framemodel id="statistic">
 		<label id="name" pos="0 0" z-index="0" size="50 5" text="$iStatistic:" valign="center2" textfont="GameFontSemiBold" halign="right" textsize="6" textemboss="1"/>
@@ -72,17 +68,23 @@ Text GetManialink(CSmScore[] PodiumScores) {
 	</framemodel>
 
 	<frame id="background" z-index="-1">
-		<frameinstance id="background-pos-1" modelid="gradient" pos="0" rot="-90"/>
-		<frameinstance id="background-pos-2" modelid="gradient" pos="-106" rot="-90"/>
-		<frameinstance id="background-pos-3" modelid="gradient" pos="106" rot="-90"/>
+		<frame size="{{{ 320 / 3 }}} 180" pos="0" halign="center" valign="center">
+			<frameinstance id="background-pos-1" modelid="gradient" rot="-90" scale="1.8"/>
+		</frame>
+		<frame size="{{{ 320 / 3 }}} 180" pos="{{{ -320 / 3 }}}" halign="center" valign="center">
+			<frameinstance id="background-pos-2" modelid="gradient" rot="-90" scale="1.8"/>
+		</frame>
+		<frame size="{{{ 320 / 3 }}} 180" pos="{{{ 320 / 3 }}}" halign="center" valign="center">
+			<frameinstance id="background-pos-3" modelid="gradient" rot="-90" scale="1.8"/>
+		</frame>
 
 		<frame>
 			<quad image="file://Media/Painter/Stencils/28-Checker5A/Brush.tga" pos="190 -140" size="180 180" opacity="0.3" halign="right" valign="bottom" blend="add"/>
 			<quad image="file://Media/Painter/Stencils/28-Checker5A/Brush.tga" pos="-190 140" size="180 180" opacity="0.3" rot="180" halign="right" valign="bottom" blend="add" />
 		</frame>
 
-		<quad id="divider-1-2" pos="-53 0" z-index="0" size="1 180" bgcolor="000" valign="center" halign="right"/>
-		<quad id="divider-1-3" pos="53 0" z-index="0" size="1 180" bgcolor="000" valign="center" halign="left"/>
+		<quad id="divider-1-2" pos="{{{ -160 / 3 }}}" z-index="0" size="1 180" bgcolor="000" valign="center" halign="center"/>
+		<quad id="divider-1-3" pos="{{{ 160 / 3 }}}" z-index="0" size="1 180" bgcolor="000" valign="center" halign="center"/>
 	</frame>
 
 	<frame id="content">
@@ -153,8 +155,8 @@ Text GetManialink(CSmScore[] PodiumScores) {
 			declare K_Gradient Gradient = K_Gradient{
 				Frame = GradientFrame,
 				Base = (GradientFrame.GetFirstChild("base") as CMlQuad),
-				Left = (GradientFrame.GetFirstChild("left") as CMlQuad),
-				Right = (GradientFrame.GetFirstChild("right") as CMlQuad)
+				Left = (GradientFrame.GetFirstChild("gradient-left") as CMlQuad),
+				Right = (GradientFrame.GetFirstChild("gradient-right") as CMlQuad)
 			};
 
 			declare CMlFrame PlayerFrame = (ContentFrame.GetFirstChild("pos-" ^ I) as CMlFrame);
@@ -189,6 +191,9 @@ Text GetManialink(CSmScore[] PodiumScores) {
 			declare K_PodiumPlaceConfig Config = FlagRush_Net_PodiumPlacementConfigs.get(Index + 1, K_PodiumPlaceConfig{ Present = False });
 			if (!Config.Present) {
 				Player.ContentFrame.Hide();
+				Player.BackgroundGradient.Base.BgColor = <0.1, 0.1, 0.1>;
+				Player.BackgroundGradient.Left.ModulateColor = <0., 0., 0.>;
+				Player.BackgroundGradient.Right.ModulateColor = <0.2, 0.2, 0.2>;
 				continue;
 			}
 

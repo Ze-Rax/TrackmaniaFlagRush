@@ -6,16 +6,12 @@ Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_ScoresHeader">
-	<framemodel id="gradient">
-		<quad pos="0 0" z-index="-1" size="1 1" bgcolor="c44" id="base" halign="center" valign="center"/>
-		<quad pos="0 0" z-index="1" size="1 1" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b24" id="gradient-left" valign="center" halign="center"/>
-		<quad pos="0 0" z-index="0" size="1 1" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b42" id="gradient-right" rot="180" valign="center" halign="center"/>
-	</framemodel>
+	{{{ FlagRush_UIShared::GetGradientFramemodel() }}}
 
 	<frame id="main" pos="0 82.5">
 		<frame id="team0" z-index="1">
 			<frame id="background" size="60 7.5" pos="-30" halign="center" valign="center">
-				<frameinstance modelid="gradient" id="gradient" pos="-10" scale="100"/>
+				<frameinstance modelid="gradient" id="gradient" scale="0.6"/>
 			</frame>
 			<label pos="-32.5 -0.5" z-index="1" size="35 8" text="Team Blue" textcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralLight) }}}" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
 
@@ -25,7 +21,7 @@ Text GetManialink() {
 
 		<frame id="team1" z-index="1">
 			<frame id="background" size="60 7.5" pos="30" halign="center" valign="center">
-				<frameinstance modelid="gradient" id="gradient" pos="-10" scale="100"/>
+				<frameinstance modelid="gradient" id="gradient" scale="0.6" rot="180"/>
 			</frame>
 			<label pos="32.5 -0.5" z-index="1" size="35 8" text="Team Red" textcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralLight) }}}" halign="center" textsize="4" id="name" textfont="GameFontRegular" valign="center2"/>
 
@@ -129,15 +125,12 @@ Text GetManialink() {
 	 * Set the default values for all controls.
 	 */
 	Void InitMlControls() {
-		TeamAreas[0].BackgroundGradient.Base.BgColor = GetTeamMidColor(1);
-		TeamAreas[0].BackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(1);
-		TeamAreas[0].BackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(1);
-		TeamAreas[0].ScoreBackground.ModulateColor = GetTeamMidColor(1);
-
-		TeamAreas[1].BackgroundGradient.Base.BgColor = GetTeamMidColor(2);
-		TeamAreas[1].BackgroundGradient.LeftGradient.ModulateColor = GetTeamLightColor(2);
-		TeamAreas[1].BackgroundGradient.RightGradient.ModulateColor = GetTeamDarkColor(2);
-		TeamAreas[1].ScoreBackground.ModulateColor = GetTeamMidColor(2);
+		for (Clan , 1, 2) {
+			TeamAreas[Clan - 1].BackgroundGradient.Base.BgColor = GetTeamMidColor(Clan);
+			TeamAreas[Clan - 1].BackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(Clan);
+			TeamAreas[Clan - 1].BackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(Clan);
+			TeamAreas[Clan - 1].ScoreBackground.ModulateColor = GetTeamMidColor(Clan);
+		}
 	}
 
 	/**

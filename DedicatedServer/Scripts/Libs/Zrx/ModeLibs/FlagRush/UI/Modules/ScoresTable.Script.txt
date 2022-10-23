@@ -15,11 +15,13 @@ Text GetManialink() {
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_ScoresTable">
 	{{{ FlagRush_UIShared::GetLogoTransparentFramemodel() }}}
+	{{{ FlagRush_UIShared::GetGradientFramemodel() }}}
 
-	<framemodel id="gradient">
-		<quad pos="0 0" z-index="-1" size="1 1" bgcolor="c44" id="base" halign="center" valign="center"/>
-		<quad pos="0 0" z-index="0" size="1 1" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b24" id="gradient-left" valign="center" halign="center"/>
-		<quad pos="0 0" z-index="0" size="1 1" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b42" id="gradient-right" rot="180" valign="center" halign="center"/>
+	<!-- The playercard is supposed to be transparent; Hard to do with our usual gradients; Instead use specific gradient without base and 100% gradient width -->
+	<framemodel id="playercard-gradient">
+		<quad pos="0 0" z-index="-1" size="100 100" bgcolor="c44" id="base" halign="center" valign="center" hidden="1"/>
+		<quad id="gradient-left" pos="-50 0" z-index="0" size="100 100" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b24" opacity="{{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}}" valign="center" halign="left"/>
+		<quad id="gradient-right" pos="50 0" z-index="0" size="100 100" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b42" opacity="{{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}}" valign="center" halign="left" rot="180"/>
 	</framemodel>
 
 	<framemodel id="playerstatistic-card">
@@ -31,7 +33,7 @@ Text GetManialink() {
 	<framemodel id="playercard">
 		<!-- Background -->
 		<frame size="100 10" halign="center" valign="center" id="background-gradient" z-index="-1">
-			<frameinstance modelid="gradient" id="gradient" scale="100"/>
+			<frameinstance modelid="playercard-gradient" id="gradient" scale="1"/>
 		</frame>
 
 		<!-- Stat cards -->
@@ -94,16 +96,8 @@ Text GetManialink() {
 	<frame id="scorestable" pos="0 44">
 		<frame id="header">
 			<frame id="background" size="206 10" halign="center" valign="top" z-index="-1">
-				<frame id="gradient-team-0">
-					<quad pos="10.8 0" z-index="-1" size="110 50" bgcolor="f00" rot="-25" halign="right" valign="bottom" id="base"/>
-					<quad pos="10.8 0" size="110 50" rot="-25" halign="right" valign="bottom" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="f04" id="gradient-left"/>
-					<quad pos="10.8 0" size="110 50" rot="155" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="f40" halign="left" valign="top" id="gradient-right"/>
-				</frame>
-				<frame id="gradient-team-1">
-					<quad pos="-10.8 -10" z-index="-1" size="110 50" bgcolor="00f" rot="155" halign="right" valign="bottom" id="base"/>
-					<quad pos="-10.8 -10" size="110 50" rot="155" halign="right" valign="bottom" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="40f" id="gradient-left"/>
-					<quad pos="-10.8 -10" size="110 50" rot="-25" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="04f" halign="left" valign="top" id="gradient-right"/>
-				</frame>
+				<frameinstance modelid="gradient" id="gradient-team-0" rot="-25" scale="1.1" pos="-60.5 27.5" />
+				<frameinstance modelid="gradient" id="gradient-team-1" rot="155" scale="1.1" pos="60.5 -37.5" />
 
 				<quad pos="0 -5" z-index="1" size="30 1" bgcolor="000" halign="center" valign="center" rot="-25"/>
 
@@ -196,39 +190,18 @@ Text GetManialink() {
 	Void InitMlControls() {
 		// Gradients
 		// Team Blue
-		{
-			declare K_BackgroundGradient TeamNameBackgroundGradient = TeamScoreboards[0].TeamNameBackgroundGradient;
-			TeamNameBackgroundGradient.Base.BgColor = GetTeamMidColor(1);
-			TeamNameBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(1);
-			TeamNameBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(1);
+		for (Clan, 1, 2) {
+			declare K_BackgroundGradient TeamNameBackgroundGradient = TeamScoreboards[Clan - 1].TeamNameBackgroundGradient;
+			TeamNameBackgroundGradient.Base.BgColor = GetTeamMidColor(Clan);
+			TeamNameBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(Clan);
+			TeamNameBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(Clan);
 
 			for (CardIndex, 0, 4) {
-				declare K_PlayerCard Playercard = TeamScoreboards[0].Playercards[CardIndex];
-				Playercard.Avatar.BgColor = GetTeamMidColor(1);
+				declare K_PlayerCard Playercard = TeamScoreboards[Clan - 1].Playercards[CardIndex];
+				Playercard.Avatar.BgColor = GetTeamMidColor(Clan);
 				declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
-				PlayercardBackgroundGradient.Base.Opacity = 0.;
-				PlayercardBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(1);
-				PlayercardBackgroundGradient.LeftGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
-				PlayercardBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(1);
-				PlayercardBackgroundGradient.RightGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
-			}
-		}
-		// Team Red
-		{
-			declare K_BackgroundGradient TeamNameBackgroundGradient = TeamScoreboards[1].TeamNameBackgroundGradient;
-			TeamNameBackgroundGradient.Base.BgColor = GetTeamMidColor(2);
-			TeamNameBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(2);
-			TeamNameBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(2);
-
-			for (CardIndex, 0, 4) {
-				declare K_PlayerCard Playercard = TeamScoreboards[1].Playercards[CardIndex];
-				Playercard.Avatar.BgColor = GetTeamMidColor(2);
-				declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
-				PlayercardBackgroundGradient.Base.Opacity = 0.;
-				PlayercardBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(2);
-				PlayercardBackgroundGradient.LeftGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
-				PlayercardBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(2);
-				PlayercardBackgroundGradient.RightGradient.Opacity = {{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}};
+				PlayercardBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(Clan);
+				PlayercardBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(Clan);
 			}
 		}
 	}

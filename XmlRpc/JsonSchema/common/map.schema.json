@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/events/flow/map.schema.json",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/map.schema.json",
 	"title": "Map",
 	"description": "Representation of a FlagRush map.",
 	"type": "object",
@@ -16,6 +16,17 @@
 		"Uid": {
 			"description": "The unique identifier of the map.",
 			"type": "string"
+		},
+		"DefaultFlagSpawn": {
+			"description": "The default flag spawn of the map.",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/landmark.schema.json"
+		},
+		"FlagSpawns": {
+			"description": "All available flag spawns of the map. Includes the default flag spawn.",
+			"type": "array",
+			"items": {
+				"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/landmark.schema.json"
+			}
 		}
 	}
 }

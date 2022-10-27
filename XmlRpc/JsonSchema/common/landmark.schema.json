@@ -6,7 +6,7 @@
 	"type": "object",
 	"properties": {
 		"LandmarkId": {
-			"description": "The trackmania engine nod id of the landmark. This is not consistent across map loads. The same landmark can (and will most likely) have a different id when the map is reloaded at a later point",
+			"description": "The trackmania engine nod id of the landmark. This is not consistent across map loads. The same landmark will have a different id when the map is unloaded and loaded at a later point",
 			"type": "integer"
 		},
 		"Position": {

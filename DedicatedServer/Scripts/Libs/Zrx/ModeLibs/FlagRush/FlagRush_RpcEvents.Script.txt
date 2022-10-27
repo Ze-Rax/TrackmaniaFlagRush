@@ -6,6 +6,7 @@
 #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"								as ModeUtils
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"			as FlagRush_FlagState
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"				as FlagRush_Scores
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"						as FlagRush_Map
 
 // XMLRPC events
 #Const		C_Event_Flag_Pass																"FlagRush.Flag.Pass"
@@ -62,6 +63,8 @@
 	Text Name;
 	Text Uid;
 	Text AuthorLogin;
+	K_Rpc_Landmark DefaultFlagSpawn;
+	K_Rpc_Landmark[] FlagSpawns;
 }
 
 /* Events */
@@ -207,9 +210,6 @@ K_Rpc_Player UserToRpcPlayer(CUser User) {
 	};
 }
 
-/**
- * Turns a landmark into an Rpc_Landmark.
- */
 K_Rpc_Landmark LandmarkToRpcLandmark(CMapLandmark Landmark) {
 	return K_Rpc_Landmark {
 		LandmarkId = TL::ToInteger(TL::Replace("" ^ Landmark.Id, "#", "")),
@@ -217,9 +217,6 @@ K_Rpc_Landmark LandmarkToRpcLandmark(CMapLandmark Landmark) {
 	};
 }
 
-/**
- * Turns a FlagState into an Rpc_Flag(State).
- */
 K_Rpc_Flag FlagStateToRpcFlag(FlagRush_FlagState::K_FlagState FlagState) {
 	declare K_Rpc_Player Carrier;
 	if(FlagState.Carrier != Null) {
@@ -242,14 +239,20 @@ K_Rpc_Flag CurrentFlagState() {
 	return FlagStateToRpcFlag(FlagRush_FlagState::Get());
 }
 
-/**
- * Reduces a map to an Rpc_Map.
- */
 K_Rpc_Map MapToRpcMap(CMap Map) {
+
+	declare K_Rpc_Landmark DefaultFlagSpawn = LandmarkToRpcLandmark(FlagRush_Map::GetDefaultFlagSpawn());
+	declare K_Rpc_Landmark[] FlagSpawns;
+	foreach (FlagSpawn in FlagRush_Map::GetFlagSpawns()) {
+		FlagSpawns.add(LandmarkToRpcLandmark(FlagSpawn));
+	}
+
 	return K_Rpc_Map{
 		Name = Map.MapInfo.Name,
 		Uid = Map.MapInfo.MapUid,
-		AuthorLogin = Map.MapInfo.AuthorLogin
+		AuthorLogin = Map.MapInfo.AuthorLogin,
+		DefaultFlagSpawn = DefaultFlagSpawn,
+		FlagSpawns = FlagSpawns
 	};
 }
 

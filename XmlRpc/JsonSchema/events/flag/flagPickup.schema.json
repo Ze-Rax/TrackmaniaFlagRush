@@ -6,11 +6,11 @@
 	"type": "object",
 	"properties": {
 		"Time": {
-			"description": "The server time when the event was sent.",
+			"description": "The server time when the flag was picked up.",
 			"type": "integer"
 		},
 		"Flag": {
-			"description": "The flag state after the pass (includes new carrier).",
+			"description": "The flag state after the pickup (includes new carrier).",
 			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/flag.schema.json"
 		}
 	}

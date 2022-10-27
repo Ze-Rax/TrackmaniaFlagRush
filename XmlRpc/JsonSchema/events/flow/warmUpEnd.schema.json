@@ -6,7 +6,7 @@
 	"type": "object",
 	"properties": {
 		"Time": {
-			"description": "Servertime (in ms) when the warmup started",
+			"description": "Servertime (in ms) when the warmup started.",
 			"type": "integer"
 		}
 	}

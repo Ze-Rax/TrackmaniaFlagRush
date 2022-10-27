@@ -6,11 +6,11 @@
 	"type": "object",
 	"properties": {
 		"Time": {
-			"description": "Servertime (in ms) when the overtime started",
+			"description": "Servertime (in ms) when the overtime started.",
 			"type": "integer"
 		},
 		"TeamScores": {
-			"description": "The number of flags scored per team in the current round",
+			"description": "The number of flags scored per team in the current round.",
 			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/teamScores.schema.json"
 		}
 	}

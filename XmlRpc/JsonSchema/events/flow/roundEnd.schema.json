@@ -6,22 +6,22 @@
 	"type": "object",
 	"properties": {
 		"Time": {
-			"description": "Servertime (in ms) when the map ended",
+			"description": "Servertime (in ms) when the map ended.",
 			"type": "integer"
 		},
 		"Valid": {
-			"description": "Whether the map was valid. False if the map was explicitly skipped, else true",
+			"description": "Whether the map was valid. False if the map was explicitly skipped, else true.",
 			"type": "boolean"
 		},
 		"PlayerScores": {
-			"description": "The scores of the players that participated in the map",
+			"description": "The scores of the players that participated in the map.",
 			"type": "array",
 			"items": {
 				"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/playerScore.schema.json"
 			}
 		},
 		"TeamScores": {
-			"description": "The number of rounds won per team",
+			"description": "The number of rounds won per team.",
 			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/teamScores.schema.json"
 		}
 	}

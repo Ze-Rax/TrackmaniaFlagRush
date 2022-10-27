@@ -2,7 +2,7 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/position.schema.json",
 	"title": "Position",
-	"description": "Representation of a world space position",
+	"description": "Representation of a world space position. Array components represent the X, Y and Z coordinates.",
 	"type": "array",
 	"minItems": 3,
 	"maxItems": 3,

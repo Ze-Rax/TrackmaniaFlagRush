@@ -217,7 +217,8 @@ K_Rpc_Landmark LandmarkToRpcLandmark(CMapLandmark Landmark) {
 	};
 }
 
-K_Rpc_Flag FlagStateToRpcFlag(FlagRush_FlagState::K_FlagState FlagState) {
+K_Rpc_Flag CurrentFlagStateToRpcFlag() {
+	declare FlagRush_FlagState::K_FlagState FlagState = FlagRush_FlagState::Get();
 	declare K_Rpc_Player Carrier;
 	if(FlagState.Carrier != Null) {
 		Carrier = UserToRpcPlayer(FlagState.Carrier);
@@ -235,11 +236,13 @@ K_Rpc_Flag FlagStateToRpcFlag(FlagRush_FlagState::K_FlagState FlagState) {
 	};
 }
 
-K_Rpc_Flag CurrentFlagState() {
-	return FlagStateToRpcFlag(FlagRush_FlagState::Get());
-}
-
-K_Rpc_Map MapToRpcMap(CMap Map) {
+K_Rpc_Map CurrentMapToRpcMap() {
+	declare Boolean FlagRush_Debug for This;
+	if (FlagRush_Debug) {
+		assert(Map != Null, "Cannot send map data when no map is loaded.");
+	} else {
+		if (Map == Null) return K_Rpc_Map{};
+	}
 
 	declare K_Rpc_Landmark DefaultFlagSpawn = LandmarkToRpcLandmark(FlagRush_Map::GetDefaultFlagSpawn());
 	declare K_Rpc_Landmark[] FlagSpawns;
@@ -320,7 +323,7 @@ Integer[] GetTeamScores(Integer ScoreLevel) {
 Void Send_FlagReset() {
 	declare K_Event_Flag_Reset Data = K_Event_Flag_Reset{
 		Time = Now,
-		Flag = CurrentFlagState()
+		Flag = CurrentFlagStateToRpcFlag()
 	};
 	XmlRpc::SendCallback(C_Event_Flag_Reset, Data.tojson());
 }
@@ -328,7 +331,7 @@ Void Send_FlagReset() {
 Void Send_FlagPickup() {
 	declare K_Event_Flag_Pickup Data = K_Event_Flag_Pickup{
 		Time = Now,
-		Flag = CurrentFlagState()
+		Flag = CurrentFlagStateToRpcFlag()
 	};
 	XmlRpc::SendCallback(C_Event_Flag_Pickup, Data.tojson());
 }
@@ -341,7 +344,7 @@ Void Send_FlagDrop(CUser OldCarrierNullable) {
 
 	declare K_Event_Flag_Drop Data = K_Event_Flag_Drop{
 		Time = Now,
-		Flag = CurrentFlagState(),
+		Flag = CurrentFlagStateToRpcFlag(),
 		OldCarrier = OldCarrier
 	};
 	XmlRpc::SendCallback(C_Event_Flag_Drop, Data.tojson());
@@ -351,7 +354,7 @@ Void Send_FlagPass(CSmPlayer OldCarrier) {
 	declare K_Event_Flag_Pass Data = K_Event_Flag_Pass{
 		Time = Now,
 		OldCarrier = PlayerToRpcPlayer(OldCarrier),
-		Flag = CurrentFlagState()
+		Flag = CurrentFlagStateToRpcFlag()
 	};
 	XmlRpc::SendCallback(C_Event_Flag_Pass, Data.tojson());
 }
@@ -404,7 +407,7 @@ Void Send_MatchEnd(Boolean Valid) {
 Void Send_MapStart() {
 	declare K_Event_Flow_MapStart Data = K_Event_Flow_MapStart{
 		Time = Now,
-		Map = MapToRpcMap(Map)
+		Map = CurrentMapToRpcMap()
 	};
 	XmlRpc::SendCallback(C_Event_Flow_MapStart, Data.tojson());
 }
@@ -413,7 +416,7 @@ Void Send_MapEnd(Boolean Valid) {
 	declare K_Event_Flow_MapEnd Data = K_Event_Flow_MapEnd{
 		Time = Now,
 		Valid = Valid,
-		Map = MapToRpcMap(Map),
+		Map = CurrentMapToRpcMap(),
 		TeamScores = GetTeamScores(FlagRush_Scores::C_Level_Map),
 		PlayerScores = ScoresToRpcPlayerScores(FlagRush_Scores::C_Level_Map)
 	};

@@ -6,11 +6,11 @@
 	"type": "object",
 	"properties": {
 		"Time": {
-			"description": "Servertime (in ms) when the flag was reset",
+			"description": "Servertime (in ms) when the flag was reset.",
 			"type": "integer"
 		},
 		"Flag": {
-			"description": "The new flag state after the reset",
+			"description": "The new flag state after the reset.",
 			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/flag.schema.json"
 		}
 	}

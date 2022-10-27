@@ -6,7 +6,7 @@
 	"type": "object",
 	"properties": {
 		"Time": {
-			"description": "Servertime (in ms) when the round started",
+			"description": "Servertime (in ms) when the round started.",
 			"type": "integer"
 		}
 	}

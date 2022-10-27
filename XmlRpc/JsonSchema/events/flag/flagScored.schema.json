@@ -6,19 +6,19 @@
 	"type": "object",
 	"properties": {
 		"Time": {
-			"description": "Servertime (in ms) when the flag was scored",
+			"description": "Servertime (in ms) when the flag was scored.",
 			"type": "integer"
 		},
 		"Scorer": {
-			"description": "The player that scored the flag",
+			"description": "The player that scored the flag.",
 			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/player.schema.json"
 		},
 		"Assist": {
-			"description": "The player that assisted in scoring the flag",
+			"description": "The player that assisted in scoring the flag.",
 			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/player.schema.json"
 		},
 		"TeamScores": {
-			"description": "The round scores of the teams after the flag was scored",
+			"description": "The round scores of the teams after the flag was scored.",
 			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/teamScores.schema.json"
 		}
 	}

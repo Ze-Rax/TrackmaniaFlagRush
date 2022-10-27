@@ -2,15 +2,15 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/player/playerDeath.schema.json",
 	"title": "PlayerDeath",
-	"description": "Event data which is sent when a player dies. (Squished by moving block, Out-Of-Bounds-Trigger, ...)",
+	"description": "Event data which is sent when a player dies (Squished by moving block, Out-Of-Bounds-Trigger, ...).",
 	"type": "object",
 	"properties": {
 		"Time": {
-			"description": "Servertime (in ms) when the player was eliminated",
+			"description": "Servertime (in ms) when the player was eliminated.",
 			"type": "integer"
 		},
 		"Player": {
-			"description": "The player that was eliminated",
+			"description": "The player that was eliminated.",
 			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/player.schema.json"
 		}
 	}

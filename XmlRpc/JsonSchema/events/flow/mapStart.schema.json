@@ -6,12 +6,12 @@
 	"type": "object",
 	"properties": {
 		"Time": {
-			"description": "Servertime (in ms) when the map started",
+			"description": "Servertime (in ms) when the map started.",
 			"type": "integer"
 		},
 		"Map": {
-			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/map.schema.json",
-			"description": "The map that is started"
+			"description": "The map that is started",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/map.schema.json"
 		}
 	}
 }

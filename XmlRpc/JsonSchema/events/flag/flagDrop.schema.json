@@ -6,15 +6,15 @@
 	"type": "object",
 	"properties": {
 		"Time": {
-			"description": "Servertime (in ms) when the flag was dropped",
+			"description": "Servertime (in ms) when the flag was dropped.",
 			"type": "integer"
 		},
 		"Flag": {
-			"description": "The new flag state after the drop",
+			"description": "The new flag state after the drop.",
 			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/flag.schema.json"
 		},
 		"OldCarrier": {
-			"description": "The player that dropped the flag",
+			"description": "The player that dropped the flag.",
 			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/player.schema.json"
 		}
 	}

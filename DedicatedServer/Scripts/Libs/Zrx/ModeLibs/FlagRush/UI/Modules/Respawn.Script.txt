@@ -31,24 +31,25 @@ Text GetManialink() {
 		declare Integer TotalRespawnTime = -1;
 		while (True) {
 			yield;
+
 			declare Integer MillisRemaining = Net_SpawnDate - GameTime + {{{ FlagRush_Common::C_SpawnAnimDuration }}};
 			if (Net_SpawnDate <= 0 || MillisRemaining <= 0 || IsSpectator) {
-				RespawnFrame.Visible = False;
+				RespawnFrame.Hide();
+				TotalRespawnTime = -1;
 				continue;
 			}
-
-			declare Integer SecondsRemaining = MillisRemaining / 1000;
-			declare Real Ratio = ML::NearestReal(MillisRemaining) / TotalRespawnTime;
-			RespawnFrame.Visible = True;
 
 			if (TotalRespawnTime <= 0) {
 				TotalRespawnTime = MillisRemaining;
 			}
+			declare Real Ratio = ML::NearestReal(MillisRemaining) / TotalRespawnTime;
 
+			// Display
+			declare Integer SecondsRemaining = MillisRemaining / 1000 + 1;
 			GaugeFrame.Size.X = ML::Clamp(80. * Ratio, 0., 80.);
 			RespawnQuad.Colorize = GetTeamDarkColor(InputPlayer.CurrentClan);
-			RespawnLabel.SetText("Respawning in " ^ (SecondsRemaining + 1) ^ "...");
-
+			RespawnLabel.SetText("Respawning in " ^ SecondsRemaining ^ "...");
+			RespawnFrame.Show();
 		}
 	}
 	--></script>

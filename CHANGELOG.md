@@ -16,7 +16,7 @@
 	* The base you have to attack shows a crosshair icon in the color of the opposite team.
 	* The base you have to defend shows a shield icon in the color of your team.
 * Adjusted respawn timer UI to take spawn animation duration into account.
-* Adjusted default respawn delay to 4.0 seconds (from 3.0 seconds)
+* Adjusted respawn delay functionality. Respawn delay is now dependent on the amount of players in a team: `Respawn delay = Amount of player in the team * S_RespawnDelayPerPlayer (Setting)`
 * Adjusted default flag carrier acceleration coef to 0.66 (from 0.7)
 * Adjusted default flag carrier adherence coef to 0.9 (from 1.0)
 * Fix Z-Index of the UI that broke after the september Trackmania update.

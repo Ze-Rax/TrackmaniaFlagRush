@@ -187,9 +187,134 @@ Text GetManialink() {
 
 	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
 
-	Void InitMlControls() {
-		// Gradients
-		// Team Blue
+	/**
+	 * Gets the player object for a given login.
+	 * Returns Null if the player was not found.
+	 */
+	CSmPlayer GetPlayer(Text Login) {
+		foreach (Player in Players) if (Player.User.Login == Login) return Player;
+		return Null;
+	}
+
+	/**
+	 * Assigns all needed MlControl references and builds the scoreboard structure. Everything is accessible through TeamScoreboards.
+	 */
+	Void AssignMlControlReferences() {
+		for (TeamIndex, 0, 1) {
+			declare CMlLabel TeamName = (Page.GetFirstChild("teamname-" ^ TeamIndex) as CMlLabel);
+			declare CMlFrame TeamBoard = (Page.GetFirstChild("scorestable-team-" ^ TeamIndex) as CMlFrame);
+
+			// Header Background Gradient
+			declare CMlFrame GradientFrame = (Page.GetFirstChild("gradient-team-" ^ TeamIndex) as CMlFrame);
+			declare K_BackgroundGradient TeamNameBackgroundGradient = K_BackgroundGradient {
+				Base = (GradientFrame.GetFirstChild("base") as CMlQuad),
+				LeftGradient = (GradientFrame.GetFirstChild("gradient-left") as CMlQuad),
+				RightGradient = (GradientFrame.GetFirstChild("gradient-right") as CMlQuad)
+			};
+
+			// Team Statistics
+			declare CMlFrame TeamStatisticsFrame = (TeamBoard.GetFirstChild("teamstatistics") as CMlFrame);
+
+			declare CMlFrame TeamPointsStatisticFrame = (TeamStatisticsFrame.GetFirstChild("points") as CMlFrame);
+			declare K_TeamStatistic TeamPointsStatistic = K_TeamStatistic {
+				Frame = TeamPointsStatisticFrame,
+				Name = (TeamPointsStatisticFrame.GetFirstChild("name") as CMlLabel),
+				Value = (TeamPointsStatisticFrame.GetFirstChild("value") as CMlLabel)
+			};
+			declare CMlFrame TeamRoundWinsStatisticFrame = (TeamStatisticsFrame.GetFirstChild("round-wins") as CMlFrame);
+			declare K_TeamStatistic TeamRoundWinsStatistic = K_TeamStatistic {
+				Frame = TeamRoundWinsStatisticFrame,
+				Name = (TeamRoundWinsStatisticFrame.GetFirstChild("name") as CMlLabel),
+				Value = (TeamRoundWinsStatisticFrame.GetFirstChild("value") as CMlLabel)
+			};
+			declare CMlFrame TeamMapWinsStatisticFrame = (TeamStatisticsFrame.GetFirstChild("map-wins") as CMlFrame);
+			declare K_TeamStatistic TeamMapWinsStatistic = K_TeamStatistic {
+				Frame = TeamMapWinsStatisticFrame,
+				Name = (TeamMapWinsStatisticFrame.GetFirstChild("name") as CMlLabel),
+				Value = (TeamMapWinsStatisticFrame.GetFirstChild("value") as CMlLabel)
+			};
+
+			// Playercards
+			declare K_PlayerCard[] Playercards = [];
+			declare CMlFrame PlayerList = (TeamBoard.GetFirstChild("playerlist") as CMlFrame);
+			for (CardIndex, 0, 4) {
+				declare CMlFrame PlayercardFrame = (PlayerList.GetFirstChild("playercard-"^CardIndex) as CMlFrame);
+
+				// Name, Clubtag, Avatar, Status
+				declare CMlLabel PlayerName = (PlayercardFrame.GetFirstChild("name") as CMlLabel);
+				declare CMlLabel PlayerClubtag = (PlayercardFrame.GetFirstChild("clubtag") as CMlLabel);
+				declare CMlQuad PlayerAvatar = (PlayercardFrame.GetFirstChild("avatar") as CMlQuad);
+				declare CMlQuad PlayerStatus = (PlayercardFrame.GetFirstChild("status") as CMlQuad);
+
+				// Player Statistics
+				declare CMlFrame PlayerStatisticPointsFrame = (PlayercardFrame.GetFirstChild("playerstatistic-points") as CMlFrame);
+				declare K_PlayerStatistic PlayerStatisticPoints = K_PlayerStatistic {
+					Frame = PlayerStatisticPointsFrame,
+					Total = (PlayerStatisticPointsFrame.GetFirstChild("total") as CMlLabel),
+					Add = (PlayerStatisticPointsFrame.GetFirstChild("add") as CMlLabel)
+				};
+				declare CMlFrame PlayerStatisticFlagsScoredFrame = (PlayercardFrame.GetFirstChild("playerstatistic-flagsscored") as CMlFrame);
+				declare K_PlayerStatistic PlayerStatisticFlagsScored = K_PlayerStatistic {
+					Frame = PlayerStatisticFlagsScoredFrame,
+					Total = (PlayerStatisticFlagsScoredFrame.GetFirstChild("total") as CMlLabel),
+					Add = (PlayerStatisticFlagsScoredFrame.GetFirstChild("add") as CMlLabel)
+				};
+				declare CMlFrame PlayerStatisticFlagsStolenFrame = (PlayercardFrame.GetFirstChild("playerstatistic-flagsstolen") as CMlFrame);
+				declare K_PlayerStatistic PlayerStatisticFlagsStolen = K_PlayerStatistic {
+					Frame = PlayerStatisticFlagsStolenFrame,
+					Total = (PlayerStatisticFlagsStolenFrame.GetFirstChild("total") as CMlLabel),
+					Add = (PlayerStatisticFlagsStolenFrame.GetFirstChild("add") as CMlLabel)
+				};
+				declare CMlFrame PlayerStatisticAssistsFrame = (PlayercardFrame.GetFirstChild("playerstatistic-assists") as CMlFrame);
+				declare K_PlayerStatistic PlayerStatisticAssists = K_PlayerStatistic {
+					Frame = PlayerStatisticAssistsFrame,
+					Total = (PlayerStatisticAssistsFrame.GetFirstChild("total") as CMlLabel),
+					Add = (PlayerStatisticAssistsFrame.GetFirstChild("add") as CMlLabel)
+				};
+
+				// Background Gradient
+				declare CMlFrame BackgroundGradientFrame = (PlayercardFrame.GetFirstChild("gradient") as CMlFrame);
+				declare K_BackgroundGradient PlayercardBackgroundGradient = K_BackgroundGradient {
+					Base = (BackgroundGradientFrame.GetFirstChild("base") as CMlQuad),
+					LeftGradient = (BackgroundGradientFrame.GetFirstChild("gradient-left") as CMlQuad),
+					RightGradient = (BackgroundGradientFrame.GetFirstChild("gradient-right") as CMlQuad)
+				};
+
+				Playercards.add(K_PlayerCard {
+					Frame = PlayercardFrame,
+					BackgroundGradient = PlayercardBackgroundGradient,
+					Avatar = PlayerAvatar,
+					Name = PlayerName,
+					ClubTag = PlayerClubtag,
+					Status = PlayerStatus,
+					Points = PlayerStatisticPoints,
+					FlagsScored = PlayerStatisticFlagsScored,
+					FlagsStolen = PlayerStatisticFlagsStolen,
+					Assists = PlayerStatisticAssists
+				});
+			}
+
+			TeamScoreboards.add(K_TeamScoreboard {
+				TeamName = TeamName,
+				TeamNameBackgroundGradient = TeamNameBackgroundGradient,
+				TeamBoard = TeamBoard,
+				Playerlist = PlayerList,
+				FlagsScored = TeamPointsStatistic,
+				RoundWins = TeamRoundWinsStatistic,
+				MapWins = TeamMapWinsStatistic,
+				Playercards = Playercards
+			});
+
+			declare CMlFrame PageControlsFrame = (Page.GetFirstChild("pagecontrols") as CMlFrame);
+			PageControls = K_PageControls {
+				Frame = PageControlsFrame,
+				Next = (PageControlsFrame.GetFirstChild("page-next") as CMlQuad),
+				Previous = (PageControlsFrame.GetFirstChild("page-previous") as CMlQuad)
+			};
+		}
+	}
+
+	Void InitGradients() {
 		for (Clan, 1, 2) {
 			declare K_BackgroundGradient TeamNameBackgroundGradient = TeamScoreboards[Clan - 1].TeamNameBackgroundGradient;
 			TeamNameBackgroundGradient.Base.BgColor = GetTeamMidColor(Clan);
@@ -207,267 +332,18 @@ Text GetManialink() {
 	}
 
 	/**
-	 * Assigns all needed MlControl references and builds the scoreboard structure. Everything is accessible through TeamScoreboards.
-	 */
-	***AssignMlControlReferences***
-	***
-	for (Team, 0, 1) {
-		declare CMlLabel TeamName = (Page.GetFirstChild("teamname-"^Team) as CMlLabel);
-		declare CMlFrame TeamBoard = (Page.GetFirstChild("scorestable-team-"^Team) as CMlFrame);
-
-		// Header Background Gradient
-		declare CMlFrame GradientFrame = (Page.GetFirstChild("gradient-team-"^Team) as CMlFrame);
-		declare K_BackgroundGradient TeamNameBackgroundGradient = K_BackgroundGradient {
-			Base = (GradientFrame.GetFirstChild("base") as CMlQuad),
-			LeftGradient = (GradientFrame.GetFirstChild("gradient-left") as CMlQuad),
-			RightGradient = (GradientFrame.GetFirstChild("gradient-right") as CMlQuad)
-		};
-
-		// Team Statistics
-		declare CMlFrame TeamStatisticsFrame = (TeamBoard.GetFirstChild("teamstatistics") as CMlFrame);
-
-		declare CMlFrame TeamPointsStatisticFrame = (TeamStatisticsFrame.GetFirstChild("points") as CMlFrame);
-		declare K_TeamStatistic TeamPointsStatistic = K_TeamStatistic {
-			Frame = TeamPointsStatisticFrame,
-			Name = (TeamPointsStatisticFrame.GetFirstChild("name") as CMlLabel),
-			Value = (TeamPointsStatisticFrame.GetFirstChild("value") as CMlLabel)
-		};
-		declare CMlFrame TeamRoundWinsStatisticFrame = (TeamStatisticsFrame.GetFirstChild("round-wins") as CMlFrame);
-		declare K_TeamStatistic TeamRoundWinsStatistic = K_TeamStatistic {
-			Frame = TeamRoundWinsStatisticFrame,
-			Name = (TeamRoundWinsStatisticFrame.GetFirstChild("name") as CMlLabel),
-			Value = (TeamRoundWinsStatisticFrame.GetFirstChild("value") as CMlLabel)
-		};
-		declare CMlFrame TeamMapWinsStatisticFrame = (TeamStatisticsFrame.GetFirstChild("map-wins") as CMlFrame);
-		declare K_TeamStatistic TeamMapWinsStatistic = K_TeamStatistic {
-			Frame = TeamMapWinsStatisticFrame,
-			Name = (TeamMapWinsStatisticFrame.GetFirstChild("name") as CMlLabel),
-			Value = (TeamMapWinsStatisticFrame.GetFirstChild("value") as CMlLabel)
-		};
-
-		// Playercards
-		declare K_PlayerCard[] Playercards = [];
-		declare CMlFrame PlayerList = (TeamBoard.GetFirstChild("playerlist") as CMlFrame);
-		for (CardIndex, 0, 4) {
-			declare CMlFrame PlayercardFrame = (PlayerList.GetFirstChild("playercard-"^CardIndex) as CMlFrame);
-
-			// Name, Clubtag, Avatar, Status
-			declare CMlLabel PlayerName = (PlayercardFrame.GetFirstChild("name") as CMlLabel);
-			declare CMlLabel PlayerClubtag = (PlayercardFrame.GetFirstChild("clubtag") as CMlLabel);
-			declare CMlQuad PlayerAvatar = (PlayercardFrame.GetFirstChild("avatar") as CMlQuad);
-			declare CMlQuad PlayerStatus = (PlayercardFrame.GetFirstChild("status") as CMlQuad);
-
-			// Player Statistics
-			declare CMlFrame PlayerStatisticPointsFrame = (PlayercardFrame.GetFirstChild("playerstatistic-points") as CMlFrame);
-			declare K_PlayerStatistic PlayerStatisticPoints = K_PlayerStatistic {
-				Frame = PlayerStatisticPointsFrame,
-				Total = (PlayerStatisticPointsFrame.GetFirstChild("total") as CMlLabel),
-				Add = (PlayerStatisticPointsFrame.GetFirstChild("add") as CMlLabel)
-			};
-			declare CMlFrame PlayerStatisticFlagsScoredFrame = (PlayercardFrame.GetFirstChild("playerstatistic-flagsscored") as CMlFrame);
-			declare K_PlayerStatistic PlayerStatisticFlagsScored = K_PlayerStatistic {
-				Frame = PlayerStatisticFlagsScoredFrame,
-				Total = (PlayerStatisticFlagsScoredFrame.GetFirstChild("total") as CMlLabel),
-				Add = (PlayerStatisticFlagsScoredFrame.GetFirstChild("add") as CMlLabel)
-			};
-			declare CMlFrame PlayerStatisticFlagsStolenFrame = (PlayercardFrame.GetFirstChild("playerstatistic-flagsstolen") as CMlFrame);
-			declare K_PlayerStatistic PlayerStatisticFlagsStolen = K_PlayerStatistic {
-				Frame = PlayerStatisticFlagsStolenFrame,
-				Total = (PlayerStatisticFlagsStolenFrame.GetFirstChild("total") as CMlLabel),
-				Add = (PlayerStatisticFlagsStolenFrame.GetFirstChild("add") as CMlLabel)
-			};
-			declare CMlFrame PlayerStatisticAssistsFrame = (PlayercardFrame.GetFirstChild("playerstatistic-assists") as CMlFrame);
-			declare K_PlayerStatistic PlayerStatisticAssists = K_PlayerStatistic {
-				Frame = PlayerStatisticAssistsFrame,
-				Total = (PlayerStatisticAssistsFrame.GetFirstChild("total") as CMlLabel),
-				Add = (PlayerStatisticAssistsFrame.GetFirstChild("add") as CMlLabel)
-			};
-
-			// Background Gradient
-			declare CMlFrame BackgroundGradientFrame = (PlayercardFrame.GetFirstChild("gradient") as CMlFrame);
-			declare K_BackgroundGradient PlayercardBackgroundGradient = K_BackgroundGradient {
-				Base = (BackgroundGradientFrame.GetFirstChild("base") as CMlQuad),
-				LeftGradient = (BackgroundGradientFrame.GetFirstChild("gradient-left") as CMlQuad),
-				RightGradient = (BackgroundGradientFrame.GetFirstChild("gradient-right") as CMlQuad)
-			};
-
-			Playercards.add(K_PlayerCard {
-				Frame = PlayercardFrame,
-				BackgroundGradient = PlayercardBackgroundGradient,
-				Avatar = PlayerAvatar,
-				Name = PlayerName,
-				ClubTag = PlayerClubtag,
-				Status = PlayerStatus,
-				Points = PlayerStatisticPoints,
-				FlagsScored = PlayerStatisticFlagsScored,
-				FlagsStolen = PlayerStatisticFlagsStolen,
-				Assists = PlayerStatisticAssists
-			});
-		}
-
-		TeamScoreboards.add(K_TeamScoreboard {
-			TeamName = TeamName,
-			TeamNameBackgroundGradient = TeamNameBackgroundGradient,
-			TeamBoard = TeamBoard,
-			Playerlist = PlayerList,
-			FlagsScored = TeamPointsStatistic,
-			RoundWins = TeamRoundWinsStatistic,
-			MapWins = TeamMapWinsStatistic,
-			Playercards = Playercards
-		});
-
-		declare CMlFrame PageControlsFrame = (Page.GetFirstChild("pagecontrols") as CMlFrame);
-		PageControls = K_PageControls {
-			Frame = PageControlsFrame,
-			Next = (PageControlsFrame.GetFirstChild("page-next") as CMlQuad),
-			Previous = (PageControlsFrame.GetFirstChild("page-previous") as CMlQuad)
-		};
-	}
-	***
-
-	/**
 	 * Set the default values for all controls.
 	 */
-	***InitMlControls***
-	***
-	for (Team, 0, 1) {
-		TeamScoreboards[Team].FlagsScored.Name.Value = "Flags scored";
-		TeamScoreboards[Team].FlagsScored.Value.Value = "0";
-		TeamScoreboards[Team].RoundWins.Name.Value = "Round wins";
-		TeamScoreboards[Team].RoundWins.Value.Value = C_CounterGlyphEmpty;
-		TeamScoreboards[Team].MapWins.Name.Value = "Map wins";
-		TeamScoreboards[Team].MapWins.Value.Value = C_CounterGlyphEmpty;
-	}
-
-	InitMlControls();
-	***
-
-	/**
-	 * Updates the team statistics (Scored point, round wins, map wins).
-	 */
-	***UpdateTeamStatistics***
-	***
-	for (Team, 0, 1) {
-		declare netread Integer Net_FlagRush_TeamRoundScore for Teams[Team];
-		if (Net_FlagRush_NbFlagsToWinRound > 0) {
-			TeamScoreboards[Team].FlagsScored.Value.Value = Net_FlagRush_TeamRoundScore ^ "/" ^ Net_FlagRush_NbFlagsToWinRound;
-		} else {
-			TeamScoreboards[Team].FlagsScored.Value.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
+	Void InitMlControls() {
+		for (TeamIndex, 0, 1) {
+			TeamScoreboards[TeamIndex].FlagsScored.Name.Value = "Flags scored";
+			TeamScoreboards[TeamIndex].FlagsScored.Value.Value = "0";
+			TeamScoreboards[TeamIndex].RoundWins.Name.Value = "Round wins";
+			TeamScoreboards[TeamIndex].RoundWins.Value.Value = C_CounterGlyphEmpty;
+			TeamScoreboards[TeamIndex].MapWins.Name.Value = "Map wins";
+			TeamScoreboards[TeamIndex].MapWins.Value.Value = C_CounterGlyphEmpty;
 		}
-
-
-		declare netread Integer Net_FlagRush_TeamMapScore for Teams[Team];
-		TeamScoreboards[Team].RoundWins.Value.Value = TeamScoreToGlyphsOrRatio(Net_FlagRush_TeamMapScore, Net_FlagRush_NbRoundsToWinMap);
-
-		declare netread Integer Net_FlagRush_TeamMatchScore for Teams[Team];
-		TeamScoreboards[Team].MapWins.Value.Value = TeamScoreToGlyphsOrRatio(Net_FlagRush_TeamMatchScore, Net_FlagRush_NbMapsToWinMatch);
-	}
-	***
-
-	/**
-	 * Updates all the playercards withg the scores of the currently selected page.
-	 */
-	***UpdatePlayerCards***
-	***
-	foreach (TeamIndex => TeamScoreboard in TeamScoreboards) {
-		foreach (PlayerIndex => Playercard in TeamScoreboard.Playercards)	 {
-			declare CSmScore[] TeamScores = ScoresToDisplay[TeamIndex];
-			declare Integer ScoreIndex = PageControls.CurrentPageIndex * {{{ C_PlayersPerPage }}} + PlayerIndex;
-			if(TeamScores.existskey(ScoreIndex)) {
-				Playercard.Frame.Show();
-				UpdatePlayercard(Playercard, TeamScores[ScoreIndex]);
-			} else {
-				Playercard.Frame.Hide();
-			}
-
-		}
-	}
-	***
-
-	/**
-	 * Filters the scores that should be displayed on the scoreboard and gets the slice for the current page.
-	 */
-	***UpdateScoresToDisplay***
-	***
-	ScoresToDisplay = FilterScoresToDisplay();
-	PageScoresToDisplay = [
-		0 => ScoresToDisplay[0].slice(PageControls.CurrentPageIndex * {{{ C_PlayersPerPage }}}, {{{ C_PlayersPerPage }}}),
-		1 => ScoresToDisplay[1].slice(PageControls.CurrentPageIndex * {{{ C_PlayersPerPage }}}, {{{ C_PlayersPerPage }}})
-	];
-	***
-
-	/**
-	 * Updates page count and page index and manages the page control visibility.
-	 */
-	***UpdatePageState***
-	***
-	PageControls.PagesCount	= ((ML::Max(ScoresToDisplay[0].count, ScoresToDisplay[1].count) - 1) / {{{ C_PlayersPerPage }}}) + 1;
-	PageControls.CurrentPageIndex = ML::Clamp(PageControls.CurrentPageIndex, 0, PageControls.PagesCount - 1);
-
-	// Show page controls if there is more than one page
-	PageControls.Frame.Visible = PageControls.PagesCount >= 2;
-	PageControls.Previous.Visible = PageControls.CurrentPageIndex >= 1;
-	PageControls.Next.Visible = PageControls.CurrentPageIndex < PageControls.PagesCount - 1;
-	***
-
-	/**
-	 * Handles all user input events that can occur on the scoreboard.
-	 */
-	***HandleEvents***
-	***
-	foreach(Event in PendingEvents) {
-		switch(Event.Type) {
-			case CMlScriptEvent::Type::KeyPress: {
-				switch(Event.KeyCode) {
-					case 104: +++PreviousPage+++ // Page up key
-					case 79: +++NextPage+++	// Page down key
-				}
-			}
-			case CMlScriptEvent::Type::MouseClick: {
-				if (Event.ControlId == "boundingbox") {
-					SetSpectateTarget(Event.Control.Parent.DataAttributeGet("playerlogin"));
-				}
-				switch(Event.ControlId) {
-					case "page-previous": +++PreviousPage+++
-					case "page-next": +++NextPage+++
-				}
-			}
-		}
-	}
-	***
-
-	/**
-	 * Requests the next page to be displayed.
-	 */
-	***NextPage***
-	***
-	PageControls.CurrentPageIndex += 1;
-	+++UpdatePageState+++
-	***
-
-	/**
-	 * Requests the previous page to be displayed.
-	 */
-	***PreviousPage***
-	***
-	PageControls.CurrentPageIndex -= 1;
-	+++UpdatePageState+++
-	***
-
-	/**
-	 * Gets the player object for a given login.
-	 * Returns Null if the player was not found.
-	 */
-	 CSmPlayer GetPlayer(Text Login) {
-		foreach (Player in Players) if (Player.User.Login == Login) return Player;
-		return Null;
-	}
-
-	/**
-	 * Updates the names of the teams in the header of the scoreboard.
-	 */
-	Void UpdateTeamNames() {
-		for (Index, 0, 1) TeamScoreboards[Index].TeamName.Value = Teams[Index].Name;
+		InitGradients();
 	}
 
 	/**
@@ -484,25 +360,28 @@ Text GetManialink() {
 	}
 
 	/**
-	 * Filters out scores that should not be displayed:
-	 *     - Do not display disconnected players or spectators with less than one point.
-	 *     - Do not display disconnected players or spectators in warmup, regardless of points.
-	 * Scores are returned in an array with the clan number as key.
+	 * Updates the team statistics (Scored point, round wins, map wins).
 	 */
-	CSmScore[][Integer] FilterScoresToDisplay() {
-		declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
-		declare CSmScore[][Integer] ScoresToDisplay = [0 => [], 1 => []];
-		foreach (Score in Scores) {
-			if(Score.TeamNum <= 0 || Score.TeamNum > 2) continue;
-			declare CSmPlayer ScorePlayer <=> GetPlayer(Score.User.Login);
-			declare Boolean PlayerIsDisconnectedOrSpectator = ScorePlayer == Null || ScorePlayer.RequestsSpectate;
+	Void UpdateTeamStatistics() {
+		declare netread Integer Net_FlagRush_NbFlagsToWinRound for Teams[0];
+		declare netread Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
+		declare netread Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
 
-			// In warmup, do not show disonnected or spectating players.
-			// Outside of warmup, do not show disconnected or spectating players with no points.
-			if(PlayerIsDisconnectedOrSpectator && (FlagRush_Net_WarmUpIsRunning || Score.Points + Score.RoundPoints <= 0)) continue;
-			ScoresToDisplay[Score.TeamNum - 1].add(Score);
+		for (TeamIndex, 0, 1) {
+			declare netread Integer Net_FlagRush_TeamRoundScore for Teams[TeamIndex];
+			if (Net_FlagRush_NbFlagsToWinRound > 0) {
+				TeamScoreboards[TeamIndex].FlagsScored.Value.Value = Net_FlagRush_TeamRoundScore ^ "/" ^ Net_FlagRush_NbFlagsToWinRound;
+			} else {
+				TeamScoreboards[TeamIndex].FlagsScored.Value.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
+			}
+
+
+			declare netread Integer Net_FlagRush_TeamMapScore for Teams[TeamIndex];
+			TeamScoreboards[TeamIndex].RoundWins.Value.Value = TeamScoreToGlyphsOrRatio(Net_FlagRush_TeamMapScore, Net_FlagRush_NbRoundsToWinMap);
+
+			declare netread Integer Net_FlagRush_TeamMatchScore for Teams[TeamIndex];
+			TeamScoreboards[TeamIndex].MapWins.Value.Value = TeamScoreToGlyphsOrRatio(Net_FlagRush_TeamMatchScore, Net_FlagRush_NbMapsToWinMatch);
 		}
-		return ScoresToDisplay;
 	}
 
 	/**
@@ -567,17 +446,111 @@ Text GetManialink() {
 		Playercard.Assists.Add.Value = TL::ToText(Net_FlagRush_FlagsAssists_Round);
 	}
 
+	/**
+	 * Updates all the playercards withg the scores of the currently selected page.
+	 */
+	Void UpdatePlayerCards(CSmScore[][Integer] ScoresToDisplay) {
+		foreach (TeamIndex => TeamScoreboard in TeamScoreboards) {
+			declare CSmScore[] TeamScores = ScoresToDisplay[TeamIndex + 1];
+			foreach (PlayerIndex => Playercard in TeamScoreboard.Playercards)	 {
+				declare Integer ScoreIndex = PageControls.CurrentPageIndex * {{{ C_PlayersPerPage }}} + PlayerIndex;
+				if(TeamScores.existskey(ScoreIndex)) {
+					Playercard.Frame.Show();
+					UpdatePlayercard(Playercard, TeamScores[ScoreIndex]);
+				} else {
+					Playercard.Frame.Hide();
+				}
+
+			}
+		}
+	}
+
+	/**
+	 * Filters out scores that should not be displayed:
+	 *     - Do not display disconnected players or spectators with less than one point.
+	 *     - Do not display disconnected players or spectators in warmup, regardless of points.
+	 * Scores are returned in an array with the clan number as key.
+	 */
+	CSmScore[][Integer] FilterScoresToDisplay() {
+		declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
+		declare CSmScore[][Integer] ScoresToDisplay = [1 => [], 2 => []];
+		foreach (Score in Scores) {
+			if (Score.TeamNum <= 0 || Score.TeamNum > 2) continue;
+			declare CSmPlayer ScorePlayer <=> GetPlayer(Score.User.Login);
+			declare Boolean PlayerIsDisconnectedOrSpectator = ScorePlayer == Null || ScorePlayer.RequestsSpectate;
+
+			// In warmup, do not show disonnected or spectating players.
+			// Outside of warmup, do not show disconnected or spectating players with no points.
+			if (PlayerIsDisconnectedOrSpectator && (FlagRush_Net_WarmUpIsRunning || Score.Points + Score.RoundPoints <= 0)) {
+				continue;
+			}
+			ScoresToDisplay[Score.TeamNum].add(Score);
+		}
+		return ScoresToDisplay;
+	}
+
+	/**
+	 * Updates page count and page index and manages the page control visibility.
+	 */
+	Void UpdatePageState(CSmScore[][Integer] ScoresToDisplay) {
+		PageControls.PagesCount	= ((ML::Max(ScoresToDisplay[1].count, ScoresToDisplay[2].count) - 1) / {{{ C_PlayersPerPage }}}) + 1;
+		PageControls.CurrentPageIndex = ML::Clamp(PageControls.CurrentPageIndex, 0, PageControls.PagesCount - 1);
+
+		// Show page controls if there is more than one page
+		PageControls.Frame.Visible = PageControls.PagesCount >= 2;
+		PageControls.Previous.Visible = PageControls.CurrentPageIndex >= 1;
+		PageControls.Next.Visible = PageControls.CurrentPageIndex < PageControls.PagesCount - 1;
+	}
+
+	/**
+	 * Requests the next page to be displayed.
+	 */
+	Void NextPage() {
+		PageControls.CurrentPageIndex += 1;
+	}
+
+	/**
+	 * Requests the previous page to be displayed.
+	 */
+	Void PreviousPage() {
+		PageControls.CurrentPageIndex -= 1;
+	}
+
+	/**
+	 * Handles all user input events that can occur on the scoreboard.
+	 */
+	Void HandleEvents() {
+		foreach(Event in PendingEvents) {
+			switch(Event.Type) {
+				case CMlScriptEvent::Type::KeyPress: {
+					switch(Event.KeyCode) {
+						case 104: PreviousPage(); // Page up key
+						case 79: NextPage();	// Page down key
+					}
+				}
+				case CMlScriptEvent::Type::MouseClick: {
+					if (Event.ControlId == "boundingbox") {
+						SetSpectateTarget(Event.Control.Parent.DataAttributeGet("playerlogin"));
+					}
+					switch(Event.ControlId) {
+						case "page-previous": PreviousPage();
+						case "page-next": NextPage();
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Updates the names of the teams in the header of the scoreboard.
+	 */
+	Void UpdateTeamNames() {
+		for (Index, 0, 1) TeamScoreboards[Index].TeamName.Value = Teams[Index].Name;
+	}
+
 	main() {
-		declare netread Integer Net_FlagRush_NbFlagsToWinRound for Teams[0];
-		declare netread Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
-		declare netread Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
-
-		declare CSmScore[][Integer] ScoresToDisplay;
-		declare CSmScore[][Integer] PageScoresToDisplay;
-
-		+++AssignMlControlReferences+++
-		+++InitMlControls+++
-		+++UpdateScoresToDisplay+++
+		AssignMlControlReferences();
+		InitMlControls();
 
 		while(True) {
 			yield;
@@ -585,17 +558,16 @@ Text GetManialink() {
 				continue;
 			}
 
-			+++HandleEvents+++
-			InitMlControls();
+			HandleEvents();
+			InitGradients();
 			UpdateTeamNames();
-			+++UpdateTeamStatistics+++
+			UpdateTeamStatistics();
 
-			+++UpdateScoresToDisplay+++
-			+++UpdatePageState+++
-			+++UpdatePlayerCards+++
+			declare CSmScore[][Integer] ScoresToDisplay = FilterScoresToDisplay();
+			UpdatePageState(ScoresToDisplay);
+			UpdatePlayerCards(ScoresToDisplay);
 		}
 	}
-
 	--></script>
 
 	</manialink>

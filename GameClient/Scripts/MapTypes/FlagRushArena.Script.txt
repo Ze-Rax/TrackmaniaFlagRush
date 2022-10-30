@@ -690,10 +690,14 @@ Void UpdateValidability() {
 
 	declare Text[] ValidationErrors;
 	declare metadata Real[Integer] FlagRush_Meta_TeamHues for Map;
-	declare Text[Integer] TeamColorCodes = [
-		1 => CL::RgbToHex3(CL::HsvToRgb(<FlagRush_Meta_TeamHues.get(1, C_DefaultTeamHues[1]), 1., 1.>)),
-		2 => CL::RgbToHex3(CL::HsvToRgb(<FlagRush_Meta_TeamHues.get(2, C_DefaultTeamHues[2]), 1., 1.>))
-	];
+	declare Text[Integer] TeamColorCodes = [];
+	for (Clan, 1, 2) {
+		declare Real Hue = FlagRush_Meta_TeamHues.get(Clan, C_TeamHue_Default);
+		if (Hue == C_TeamHue_Default) Hue = C_DefaultTeamHues[Clan];
+		TeamColorCodes[Clan] = CL::RgbToHex3(CL::HsvToRgb(<Hue, 1., 1.>));
+
+	}
+
 	if (SpawnsTeam1Count != 1) {
 		ValidationErrors.add("""You must place exactly one $<${{{ TeamColorCodes[1] }}}{{{ C_AnchorTag_Spawn_Prefix }}}1$>! ({{{ SpawnsTeam1Count }}}/1)""");
 	}

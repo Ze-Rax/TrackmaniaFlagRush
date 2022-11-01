@@ -73,7 +73,7 @@
 #Setting S_FlagCarrierControl								1.0 		as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
 #Setting S_FlagCarrierAdherence							0.9 		as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
 #Setting S_RespawnSpeedLimitKmh							30.			as "<hidden>" // Speed limit for player to respawn
-#Setting S_RespawnDelay											4.0 		as "Respawn Delay (seconds) (+1.5s Spawn animation)"
+#Setting S_RespawnDelayPerPlayer						1.0 		as "Respawn delay (seconds) per player in a team"
 #Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
 #Setting S_DropFlagOnTeleportDetection			True		as "<hidden>"
 #Setting S_UseCollisions										False		as "Use collisions (experimental)"
@@ -323,7 +323,8 @@ Void Player_Spawn(CSmPlayer Player) {
 Void Player_Unspawn(CSmPlayer Player) {
 	UnspawnPlayer(Player);
 	declare netwrite Integer Net_SpawnDate for Player;
-	Net_SpawnDate = Now + ML::NearestInteger(S_RespawnDelay * 1000);
+	declare Integer SpawnDelay = ML::NearestInteger(S_RespawnDelayPerPlayer * ClansNbPlayers[Player.RequestedClan] * 1000);
+	Net_SpawnDate = Now + SpawnDelay;
 }
 
 Void Player_ApplyHandicaps(CSmPlayer Player) {

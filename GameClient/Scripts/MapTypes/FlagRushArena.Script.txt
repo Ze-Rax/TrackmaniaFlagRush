@@ -664,6 +664,9 @@ Void UpdateValidability() {
 	declare BasesTeam2Count = 0;
 	declare FlagSpawnsCount = 0;
 	declare DefaultFlagSpawnsCount = 0;
+	GetItemsCountRequest.clear();
+	GetItemsCountRequest.add("Podium");
+	declare HasPodium = GetItemsCountResult() > 0;
 
 	foreach (Anchor in AnchorData) {
 		switch (Anchor.WaypointType) {
@@ -685,49 +688,51 @@ Void UpdateValidability() {
 		}
 	}
 
-	declare IsValid = True;
-	declare Message = "$fff$sYour map is missing the following reqirements:\n";
+	declare Text[] ValidationErrors;
+	declare metadata Real[Integer] FlagRush_Meta_TeamHues for Map;
+	declare Text[Integer] TeamColorCodes = [];
+	for (Clan, 1, 2) {
+		declare Real Hue = FlagRush_Meta_TeamHues.get(Clan, C_TeamHue_Default);
+		if (Hue == C_TeamHue_Default) Hue = C_DefaultTeamHues[Clan];
+		TeamColorCodes[Clan] = CL::RgbToHex3(CL::HsvToRgb(<Hue, 1., 1.>));
+
+	}
 
 	if (SpawnsTeam1Count != 1) {
-		IsValid = False;
-		Message ^= "\n" ^ """You must place exactly one $44f{{{ C_AnchorTag_Spawn_Prefix }}}1$fff! ({{{ SpawnsTeam1Count }}}/1)""";
+		ValidationErrors.add("""You must place exactly one $<${{{ TeamColorCodes[1] }}}{{{ C_AnchorTag_Spawn_Prefix }}}1$>! ({{{ SpawnsTeam1Count }}}/1)""");
 	}
 	if (SpawnsTeam2Count != 1) {
-		IsValid = False;
-		Message ^= "\n" ^ """You must place exactly one $f44{{{ C_AnchorTag_Spawn_Prefix }}}2$fff! ({{{ SpawnsTeam2Count }}}/1)""";
+		ValidationErrors.add("""You must place exactly one $<${{{ TeamColorCodes[2] }}}{{{ C_AnchorTag_Spawn_Prefix }}}2$>! ({{{ SpawnsTeam2Count }}}/1)""");
 	}
 	if (BasesTeam1Count  < 1) {
-		IsValid = False;
-		Message ^= "\n" ^ """You must place at least one $44f{{{ C_AnchorTag_Base_Prefix }}}1$fff! ({{{ BasesTeam1Count }}}/1)""";
+		ValidationErrors.add("""You must place at least one $<${{{ TeamColorCodes[1] }}}{{{ C_AnchorTag_Base_Prefix }}}1$>! ({{{ BasesTeam1Count }}}/1)""");
 	}
 	if (BasesTeam2Count  < 1) {
-		IsValid = False;
-		Message ^= "\n" ^ """You must place at least one $f44{{{ C_AnchorTag_Base_Prefix }}}2$fff! ({{{ BasesTeam1Count }}}/1)""";
+		ValidationErrors.add("""You must place at least one $<${{{ TeamColorCodes[2] }}}{{{ C_AnchorTag_Base_Prefix }}}2$>! ({{{ BasesTeam1Count }}}/1)""");
 	}
 	if (BasesTeam1Count != BasesTeam2Count) {
-		IsValid = False;
-		Message ^= "\n" ^ """You must place as many $44f{{{ C_AnchorTag_Base_Prefix }}}1$fff as $f44{{{ C_AnchorTag_Base_Prefix }}}2$fff! ($44f{{{ BasesTeam1Count }}}$fff-$f44{{{ BasesTeam2Count }}}$fff)""";
+		ValidationErrors.add("""You must place as many $<${{{ TeamColorCodes[1] }}}{{{ C_AnchorTag_Base_Prefix }}}1$> as $<${{{ TeamColorCodes[2] }}}{{{ C_AnchorTag_Base_Prefix }}}2$>! ($<${{{ TeamColorCodes[1] }}}{{{ BasesTeam1Count }}}$>-$<${{{ TeamColorCodes[2] }}}{{{ BasesTeam2Count }}}$>)""");
 	}
 	if (FlagSpawnsCount  < 1) {
-		IsValid = False;
-		Message ^= "\n" ^ """You must place at least one {{{ C_AnchorTag_FlagSpawn }}}!""";
+		ValidationErrors.add("""You must place at least one {{{ C_AnchorTag_FlagSpawn }}}!""");
 	}
-	if (DefaultFlagSpawnsCount == 0) {
-		IsValid = False;
-		Message ^= "\n" ^ """You haven't set a default {{{ C_AnchorTag_FlagSpawn }}}!""";
+	if (DefaultFlagSpawnsCount != 1) {
+		ValidationErrors.add("""You must set exactly one default {{{ C_AnchorTag_DefaultFlagSpawn }}}! ({{{ DefaultFlagSpawnsCount }}}/1)""");
 	}
-	if (DefaultFlagSpawnsCount > 1) {
-		IsValid = False;
-		Message ^= "\n" ^ """You cannot have more than one default {{{ C_AnchorTag_FlagSpawn }}}! ({{{ DefaultFlagSpawnsCount }}}/1)""";
+	if (!HasPodium) {
+		ValidationErrors.add("You must place a Podium!");
 	}
-	Message ^= "\n\n" ^ "Need help? Check out $4cf$l[https://docs.google.com/document/d/e/2PACX-1vRVujmSYunjz7mrLf5sTF4BDS7GwayxjWyY8clXgyiZzgH_EYz0d7mx2EJHu0FdNoyoJgPyEpkD-yoe/pub]this FlagRush Mapping Guide$l$fff by Realspace!";
 
-	if (IsValid) {
+	if (ValidationErrors.count == 0) {
 		ValidationStatus = CMapType::ValidationStatus::Validated;
 	} else {
 		ValidationStatus = CMapType::ValidationStatus::NotValidable;
 	}
-	ValidabilityRequirementsMessage = Message;
+	ValidabilityRequirementsMessage = """$fff$sYour map is missing the following reqirements:
+
+{{{ TL::Join("\n", ValidationErrors) }}}
+
+Need help? Check out $4cf$l[https://docs.google.com/document/d/e/2PACX-1vRVujmSYunjz7mrLf5sTF4BDS7GwayxjWyY8clXgyiZzgH_EYz0d7mx2EJHu0FdNoyoJgPyEpkD-yoe/pub]this FlagRush Mapping Guide$l$fff by Realspace!""";
 }
 
 /**

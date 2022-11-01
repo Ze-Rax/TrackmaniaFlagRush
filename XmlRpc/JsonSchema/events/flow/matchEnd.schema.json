@@ -1,0 +1,28 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/events/flow/matchEnd.schema.json",
+	"title": "MatchEndtart",
+	"description": "Event data which is sent when the match ended.",
+	"type": "object",
+	"properties": {
+		"Time": {
+			"description": "Servertime (in ms) when the match ended.",
+			"type": "integer"
+		},
+		"Valid": {
+			"description": "Whether the match was valid. False if the match was explicitly skipped, else true.",
+			"type": "boolean"
+		},
+		"PlayerScores": {
+			"description": "The scores of the players that participated in the match.",
+			"type": "array",
+			"items": {
+				"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/playerScore.schema.json"
+			}
+		},
+		"TeamScores": {
+			"description": "The number of maps won per team.",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/teamScores.schema.json"
+		}
+	}
+}

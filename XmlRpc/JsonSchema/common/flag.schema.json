@@ -1,0 +1,21 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/flag.schema.json",
+	"title": "Flag",
+	"description": "Representation of the state of the flag, including position and carrier.",
+	"type": "object",
+	"properties": {
+		"Position": {
+			"description": "The position of the flag in world space.",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/position.schema.json"
+		},
+		"Carrier": {
+			"description": "The player that is carrying the flag. If the Login of the carrier is an empty string, then it's not being carried.",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/player.schema.json"
+		},
+		"Spawn": {
+			"description": "The flag spawn landmark that the flag is set on. If the LandmarkId is 0, then it's not being carried.",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/landmark.schema.json"
+		}
+	}
+}

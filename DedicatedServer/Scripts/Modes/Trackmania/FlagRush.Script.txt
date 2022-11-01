@@ -440,9 +440,11 @@ Void OnPlayerRequestsRespawn(CSmPlayer Player) {
 }
 
 Void OnPlayerDeath(CSmPlayer Player) {
-	if (Player == FlagRush_FlagState::GetFlagCarrierPlayer()) DropFlag();
-	Player_Unspawn(Player);
+	if (Player == FlagRush_FlagState::GetFlagCarrierPlayer()) {
+		DropFlag();
+	}
 	FlagRush_XmlRpc::Send_PlayerDeath(Player);
+	Player_Unspawn(Player);
 }
 
 Void OnPlayerOutOfBound(CSmPlayer Player) {
@@ -450,8 +452,8 @@ Void OnPlayerOutOfBound(CSmPlayer Player) {
 	if (Player == FlagRush_FlagState::GetFlagCarrierPlayer()) {
 		DropFlag(FlagRush_FlagState::Get().LastSafePosition);
 	}
-	Player_Unspawn(Player);
 	FlagRush_XmlRpc::Send_PlayerDeath(Player);
+	Player_Unspawn(Player);
 }
 
 Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {

@@ -1,0 +1,28 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/events/flow/RoundEnd.schema.json",
+	"title": "RoundEnd",
+	"description": "Event data which is sent when the round ended.",
+	"type": "object",
+	"properties": {
+		"Time": {
+			"description": "Servertime (in ms) when the map ended.",
+			"type": "integer"
+		},
+		"Valid": {
+			"description": "Whether the map was valid. False if the map was explicitly skipped, else true.",
+			"type": "boolean"
+		},
+		"PlayerScores": {
+			"description": "The scores of the players that participated in the map.",
+			"type": "array",
+			"items": {
+				"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/playerScore.schema.json"
+			}
+		},
+		"TeamScores": {
+			"description": "The number of rounds won per team.",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/teamScores.schema.json"
+		}
+	}
+}

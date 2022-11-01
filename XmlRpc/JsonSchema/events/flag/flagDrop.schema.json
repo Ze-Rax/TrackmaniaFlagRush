@@ -1,0 +1,21 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/events/flag/flagDrop.schema.json",
+	"title": "FlagDrop",
+	"description": "Event data which is sent when the flag is dropped by a player.",
+	"type": "object",
+	"properties": {
+		"Time": {
+			"description": "Servertime (in ms) when the flag was dropped.",
+			"type": "integer"
+		},
+		"Flag": {
+			"description": "The new flag state after the drop.",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/flag.schema.json"
+		},
+		"OldCarrier": {
+			"description": "The player that dropped the flag.",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/player.schema.json"
+		}
+	}
+}

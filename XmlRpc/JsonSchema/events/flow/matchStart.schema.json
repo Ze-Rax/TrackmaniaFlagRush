@@ -1,0 +1,13 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/events/flow/matchStart.schema.json",
+	"title": "MatchStart",
+	"description": "Event data which is sent when the match started.",
+	"type": "object",
+	"properties": {
+		"Time": {
+			"description": "Servertime (in ms) when the match started.",
+			"type": "integer"
+		}
+	}
+}

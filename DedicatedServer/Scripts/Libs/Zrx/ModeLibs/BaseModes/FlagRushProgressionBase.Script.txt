@@ -291,9 +291,9 @@ if (S_UseWarmUp && !MatchEndRequested) +++Private_WarmUp+++
 
 ***AfterEndMap***
 ***
-declare Boolean MapIsValid = Progression_MapIsInvalid();
+declare Boolean MapIsValid = Progression_MapIsValid();
 FlagRush_XmlRpc::Send_MapEnd(MapIsValid);
-if (MapIsValid) {
+if (!MapIsValid) {
 	FlagRush_Messages::MapSkip(C_Duration_MapEnd);
 	FlagRush_Scores::Clear(FlagRush_Scores::C_Level_Map);
 } else {
@@ -354,9 +354,9 @@ FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
 
 ***AfterEndRound***
 ***
-declare Boolean RoundIsValid = Progression_RoundIsInvalid();
+declare Boolean RoundIsValid = Progression_RoundIsValid();
 FlagRush_XmlRpc::Send_RoundEnd(RoundIsValid);
-if (RoundIsValid) {
+if (!RoundIsValid) {
 	FlagRush_Messages::RoundSkip(C_Duration_RoundEnd);
 	FlagRush_Scores::Clear(FlagRush_Scores::C_Level_Round);
 } else {
@@ -454,7 +454,7 @@ if (Progression_PauseRequested) {
 
 ***StartOvertime***
 ***
-FlagRush_XmlRpc::Send_OverTime();
+FlagRush_XmlRpc::Send_Overtime();
 Private_OvertimeIsRunning = True;
 declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
 FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
@@ -834,11 +834,11 @@ Boolean Progression_RoundIsTied() {
 	return FlagRush_MatchEvaluation::EvaluateRound() == 0;
 }
 
-Boolean Progression_MapIsInvalid() {
-	return MatchEndRequested;
+Boolean Progression_MapIsValid() {
+	return !MatchEndRequested;
 }
 
-Boolean Progression_RoundIsInvalid() {
+Boolean Progression_RoundIsValid() {
 	declare Boolean Progression_RoundEndRequested for This;
-	return Progression_RoundEndRequested || MatchEndRequested;
+	return Progression_MapIsValid() && !Progression_RoundEndRequested;
 }

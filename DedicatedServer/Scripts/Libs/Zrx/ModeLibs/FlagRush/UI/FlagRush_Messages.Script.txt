@@ -204,16 +204,16 @@ Void Welcome(CSmPlayer Player, Text Version) {
 }
 
 Void CriticalSettingUpdate_RestartTurn() {
-	declare Text Message = """{{{ C_ChatPrefix }}} $<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}A critical setting was updated! Restarting the the current turn...$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}A critical setting was updated! Restarting the the current turn...$>""";
 	Private_SendChat(Message);
 }
 
 Void InvalidMap() {
-	declare Text Message = """{{{ C_ChatPrefix }}} $<${{{ CL::RgbToHex3(FlagRush_Colors::C_Error) }}}The map does not conform to the FlagRush map specification. Skipping...$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Error) }}}The map does not conform to the FlagRush map specification. Skipping...$>""";
 	Private_SendChat(Message);
 }
 
 Void AllPlayersLeft_SkipMatch() {
-	declare Text Message = """{{{ C_ChatPrefix }}} $<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}All players left, skipping match...$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}All players left, skipping match...$>""";
 	Private_SendChat(Message);
 }

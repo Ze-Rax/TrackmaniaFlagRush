@@ -5,6 +5,7 @@
 
 #Const C_FlagMarkerFrameId						"marker-flag"
 #Const C_FlagSpawnMarkerFrameIdPrefix	"marker-flag-spawn-"
+#Const C_FlagSpawnMarkerFrameDefault	"marker-flag-defaultspawn"
 
 #Const C_FlagMarker_Box_Player		<0., 1., 0.>
 #Const C_FlagMarker_Box_Landmark	<0., 2., 0.>
@@ -28,31 +29,35 @@ Text GetManialink() {
 	}
 
 	declare Text FlagSpawnMarkerFrameInstancesXml;
-	for(I, 0, FlagRush_Map::GetFlagSpawns().count - 1) {
-		FlagSpawnMarkerFrameInstancesXml ^= """<frameinstance modelid="model-marker-flag" id="{{{C_FlagSpawnMarkerFrameIdPrefix ^ I}}}" scale="0.7"/>""";
+	for(I, 0, FlagRush_Map::GetFlagSpawns().count - 2) {
+		FlagSpawnMarkerFrameInstancesXml ^= """<frameinstance modelid="model-marker-flagspawn" id="{{{ C_FlagSpawnMarkerFrameIdPrefix ^ I }}}"/>""";
 	}
 
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="FlagRush_Markers">
 
-	<framemodel id="model-marker-base" hidden="1">➴
-		<label id="defend" pos="0 0" z-index="1" size="10 10" text="" textsize="5" halign="center" valign="center2" hidden="1"/>
-		<label id="attack" pos="0 0" z-index="1" size="10 10" text="" textsize="5" halign="center" valign="center2" hidden="1"/>
+	<framemodel id="model-marker-base" hidden="1">
+		<label id="quad-icon" pos="0 0" z-index="1" size="10 10" text="" textsize="5" halign="center" valign="center2"/>
+	</framemodel>
+
+	<framemodel id="model-marker-flagspawn" hidden="1">
+		<quad id="quad-flag" pos="0" size="8 8" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light"/>
+		<label id="label-order" pos="0 4" halign="center" valign="center2" text="0" textprefix="#" textsize="0.5" textfont="GameFontExtraBold" textemboss="1" hidden="1"/>
 	</framemodel>
 
 	<framemodel id="model-marker-flag" hidden="1">
-		<quad pos="0 1" z-index="2" size="10 10" halign="center" style="UICommon64_1" substyle="Flag_light" id="quad-flag" valign="center"/>
+		<quad id="quad-flag" pos="0 1" z-index="2" size="10 10" halign="center" style="UICommon64_1" substyle="Flag_light"  valign="center"/>
 		<label id="distance" pos="0 -2" z-index="2" size="10 5" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="0.4" textemboss="1" hidden="1"/>
 		<quad id="up" pos="0 7.5" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" hidden="1" />
 		<quad id="down" pos="0 -6" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center" hidden="1"/>
 
 		<frame id="gauge-frame" pos="0 7" scale="0.65">
 			<frame size="10 20" pos="0 0">
-				<quad id="gauge2" pos="0 -10" z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" rot="0" hidden="1" />
+				<quad id="gauge-left" pos="0 -10" z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" rot="0" hidden="1" />
 			</frame>
 			<frame size="10 20" pos="-10 0">
-				<quad id="gauge1" pos="10 -10" z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" rot="180" hidden="1"/>
+				<quad id="gauge-right" pos="10 -10" z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" rot="180" hidden="1"/>
 			</frame>
 		</frame>
 	</framemodel>
@@ -62,6 +67,7 @@ Text GetManialink() {
 		<frameinstance modelid="model-marker-flag" id="{{{ C_FlagMarkerFrameId }}}"/>
 	</frame>
 	<frame z-index="1">
+		<frameinstance modelid="model-marker-flagspawn" id="{{{ C_FlagSpawnMarkerFrameDefault }}}"/>
 		{{{ FlagSpawnMarkerFrameInstancesXml }}}
 	</frame>
 	<frame z-index="0">
@@ -71,139 +77,196 @@ Text GetManialink() {
 	<script><!--
 		#Include "MathLib" as ML
 
+		#Const C_Flag_NoStealOpacity 0.5
+		#Const C_BaseIcon_Attack ""
+		#Const C_BaseIcon_Defend ""
+
+		#Struct K_BaseMarker {
+			CMlFrame Frame;
+			CMlLabel Icon;
+		}
+
+		#Struct K_FlagSpawnMarker {
+			CMlFrame Frame;
+			CMlQuad Icon;
+			CMlLabel Order;
+		}
+
+		#Struct K_CircularGauge {
+			CMlFrame Frame;
+			CMlQuad Left;
+			CMlQuad Right;
+		}
+
+		#Struct K_FlagMarker {
+			CMlFrame Frame;
+			CMlQuad Icon;
+			CMlLabel Distance;
+			CMlQuad Up;
+			CMlQuad Down;
+			K_CircularGauge Gauge;
+		}
+
 		{{{ FlagRush_UIShared::GetFlagStateStructs() }}}
+
+		declare K_BaseMarker[][Integer] G_TeamBaseMarkers;
+		declare K_FlagSpawnMarker[] G_FlagSpawnMarkers;
+		declare K_FlagSpawnMarker G_DefaultFlagSpawnMarker;
+		declare K_FlagMarker G_FlagMarker;
 
 		{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
 		{{{ FlagRush_UIShared::GetLoginMappingFunctions() }}}
 		{{{ FlagRush_UIShared::GetPlayerPositionFunctions() }}}
 
-		/** render progress between 0.0 - 1.0 */
-		Void RenderProgress(CMlFrame Frame, Real Value) {
-			declare CMlQuad Gauge1 = Frame.GetFirstChild("gauge1") as CMlQuad;
-			declare CMlQuad Gauge2 = Frame.GetFirstChild("gauge2") as CMlQuad;
+		Void RenderGauge(K_CircularGauge Gauge, Real Value) {
 			if (Value <= 0.01) {
-				Gauge1.Hide();
-				Gauge2.Hide();
+				Gauge.Right.Hide();
+				Gauge.Left.Hide();
 				return;
 			} else if (Value <= 0.5) {
-				Gauge1.Show();
-				Gauge2.Hide();
-				Gauge1.RelativeRotation = -180. + Value * 360;
-				Gauge2.RelativeRotation = 0.;
+				Gauge.Right.Show();
+				Gauge.Left.Hide();
+				Gauge.Right.RelativeRotation = -180. + Value * 360;
+				Gauge.Left.RelativeRotation = 0.;
 			} else {
-				Gauge1.Show();
-				Gauge2.Show();
-				Gauge1.RelativeRotation = 0.;
-				Gauge2.RelativeRotation = 180. + Value * 360;
+				Gauge.Right.Show();
+				Gauge.Left.Show();
+				Gauge.Right.RelativeRotation = 0.;
+				Gauge.Left.RelativeRotation = 180. + Value * 360;
+			}
+		}
+
+		Void AssignMlControlReferences() {
+			// Team bases
+			for (Clan, 1, 2) {
+				G_TeamBaseMarkers[Clan] = [];
+				for (I, 0, {{{NbBasesPerTeam-1}}}) {
+					declare CMlFrame FrameMarkerBase = (Page.GetFirstChild("marker-base-team" ^ Clan ^ "-" ^ I) as CMlFrame);
+					declare CMlLabel Icon = (FrameMarkerBase.GetFirstChild("quad-icon") as CMlLabel);
+					G_TeamBaseMarkers[Clan].add(K_BaseMarker{ Frame = FrameMarkerBase, Icon = Icon });
+				}
+			}
+
+			// Flag spawns
+			for(I, 0, {{{ FlagRush_Map::GetFlagSpawns().count - 2 }}}) {
+				declare CMlFrame FlagSpawnFrame = (Page.GetFirstChild("{{{ C_FlagSpawnMarkerFrameIdPrefix }}}" ^ I) as CMlFrame);
+				declare CMlQuad FlagSpawnIcon = (FlagSpawnFrame.GetFirstChild("quad-flag") as CMlQuad);
+				declare CMlLabel FlagSpawnOrder = (FlagSpawnFrame.GetFirstChild("label-order") as CMlLabel);
+				G_FlagSpawnMarkers.add(K_FlagSpawnMarker{ Frame = FlagSpawnFrame, Icon = FlagSpawnIcon, Order = FlagSpawnOrder});
+			}
+
+			declare CMlFrame FlagSpawnFrame = (Page.GetFirstChild("{{{ C_FlagSpawnMarkerFrameDefault }}}") as CMlFrame);
+			declare CMlQuad FlagSpawnIcon = (FlagSpawnFrame.GetFirstChild("quad-flag") as CMlQuad);
+			declare CMlLabel FlagSpawnOrder = (FlagSpawnFrame.GetFirstChild("label-order") as CMlLabel);
+			G_DefaultFlagSpawnMarker = K_FlagSpawnMarker{ Frame = FlagSpawnFrame, Icon = FlagSpawnIcon, Order = FlagSpawnOrder};
+			G_FlagSpawnMarkers.add(G_DefaultFlagSpawnMarker);
+
+			// Flag marker
+			declare CMlFrame FlagFrame <=> (Page.GetFirstChild("{{{ C_FlagMarkerFrameId }}}") as CMlFrame);
+			declare CMlQuad FlagIcon <=> (FlagFrame.GetFirstChild("quad-flag") as CMlQuad);
+			declare CMlLabel FlagDistance <=> (Page.GetFirstChild("distance") as CMlLabel);
+			declare CMlQuad FlagUp <=> (FlagFrame.GetFirstChild("up") as CMlQuad);
+			declare CMlQuad FlagDown <=> (FlagFrame.GetFirstChild("down") as CMlQuad);
+			declare CMlFrame FlagGaugeFrame <=> (FlagFrame.GetFirstChild("gauge-frame") as CMlFrame);
+			declare CMlQuad FlagGaugeLeft <=> (FlagGaugeFrame.GetFirstChild("gauge-left") as CMlQuad);
+			declare CMlQuad FlagGaugeRight <=> (FlagGaugeFrame.GetFirstChild("gauge-right") as CMlQuad);
+			declare K_CircularGauge FlagGauge = K_CircularGauge{ Frame = FlagGaugeFrame, Left = FlagGaugeLeft, Right = FlagGaugeRight };
+			G_FlagMarker = K_FlagMarker{ Frame = FlagFrame, Icon = FlagIcon, Distance = FlagDistance, Up = FlagUp, Down = FlagDown, Gauge = FlagGauge };
+		}
+
+		Void InitMlControls() {
+			G_DefaultFlagSpawnMarker.Order.Value = "1";
+			G_DefaultFlagSpawnMarker.Order.Show();
+		}
+
+		Void UpdateBaseMarkers() {
+			declare netread Boolean FlagRush_Net_UseReversedBases for Teams[0];
+
+			declare Integer UIClan = 0;
+			if (GUIPlayer != Null) UIClan = GUIPlayer.CurrentClan;
+			else if (InputPlayer != Null) UIClan = InputPlayer.CurrentClan;
+
+			foreach (Clan => BaseMarkers in G_TeamBaseMarkers) {
+				declare Boolean ShowDefenseIcon;
+				declare Vec3 Color;
+				if (FlagRush_Net_UseReversedBases) {
+					Color = GetTeamMidColor(3 - Clan); // Color of opponent clan
+					ShowDefenseIcon = UIClan == 0 || Clan != UIClan;
+				} else {
+					Color = GetTeamMidColor(Clan);
+					ShowDefenseIcon = UIClan == 0 || Clan == UIClan;
+				}
+
+				foreach (BaseMarker in BaseMarkers) {
+					BaseMarker.Icon.TextColor = Color;
+					if (ShowDefenseIcon) {
+						BaseMarker.Icon.Value = C_BaseIcon_Defend;
+					} else {
+						BaseMarker.Icon.Value = C_BaseIcon_Attack;
+					}
+				}
+			}
+		}
+
+		Void UpdateFlagMarker() {
+			declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
+			declare CSmPlayer CarrierPlayer <=> GetPlayer(FlagRush_Net_FlagState.Holder.Login);
+
+			// Color
+			G_FlagMarker.Icon.Colorize = GetTeamMidColor(FlagRush_Net_FlagState.Holder.Clan);
+
+			// Distance & height indicator
+			declare Boolean HideDistance = GUIPlayer == Null || GUIPlayer == CarrierPlayer;
+			if (HideDistance) {
+				G_FlagMarker.Up.Hide();
+				G_FlagMarker.Down.Hide();
+				G_FlagMarker.Distance.Hide();
+				G_FlagMarker.Icon.RelativePosition_V3 = <0., 1.>;
+				G_FlagMarker.Icon.RelativeScale = 1.;
+			} else {
+				declare Vec3 Distance;
+				if (CarrierPlayer != Null) {
+					Distance = GetPlayerPosition(CarrierPlayer) - GetPlayerPosition(GUIPlayer);
+				} else {
+					Distance = FlagRush_Net_FlagState.Position - GetPlayerPosition(GUIPlayer);
+				}
+
+				G_FlagMarker.Up.Visible = Distance.Y >= {{{ FlagRush_UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+				G_FlagMarker.Down.Visible = Distance.Y <= {{{ -FlagRush_UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
+				G_FlagMarker.Distance.Value = ML::NearestInteger(ML::Distance(<0., 0., 0.>, Distance)) ^ "m";
+				G_FlagMarker.Distance.Show();
+				G_FlagMarker.Icon.RelativePosition_V3 = <0., 2.>;
+				G_FlagMarker.Icon.RelativeScale = 0.8;
+			}
+
+			// Gauge Animation
+			if (FlagRush_Net_FlagState.CurrentStateEndDate <= GameTime) {
+				G_FlagMarker.Gauge.Frame.Hide();
+				G_FlagMarker.Icon.Opacity = 1.;
+			} else {
+				declare Integer FlagStateDuration = FlagRush_Net_FlagState.CurrentStateEndDate - FlagRush_Net_FlagState.CurrentStateStartDate;
+				declare Integer FlagStateDurationRemaining = FlagRush_Net_FlagState.CurrentStateEndDate - GameTime;
+				declare Real Ratio;
+				if (FlagStateDuration != 0) {
+					Ratio = 1. * FlagStateDurationRemaining / FlagStateDuration;
+					Ratio = ML::Clamp(Ratio, 0.0, 1.0);
+				} else {
+					Ratio = 0.;
+				}
+
+				RenderGauge(G_FlagMarker.Gauge, Ratio);
+				G_FlagMarker.Gauge.Frame.Show();
+				G_FlagMarker.Icon.Opacity = C_Flag_NoStealOpacity;
 			}
 		}
 
 		main() {
-			declare CMlFrame[][Integer] TeamBaseMarkerFrames = [1 => [], 2 => []];
-			for (Clan, 1, 2) {
-				for (I, 0, {{{NbBasesPerTeam-1}}}) {
-					declare CMlFrame FrameMarkerBase = (Page.GetFirstChild("marker-base-team" ^ Clan ^ "-" ^ I) as CMlFrame);
-					TeamBaseMarkerFrames[Clan].add(FrameMarkerBase);
-				}
-			}
-
-			declare CMlFrame FrameMarkerFlag = (Page.GetFirstChild("{{{ C_FlagMarkerFrameId }}}") as CMlFrame);
-			declare CMlFrame FrameGauge = (Page.GetFirstChild("gauge-frame") as CMlFrame);
-			declare CMlQuad QuadMarkerFlag = (FrameMarkerFlag.GetFirstChild("quad-flag") as CMlQuad);
-			declare CMlLabel LabelMarkerFlagDistance = (FrameMarkerFlag.GetFirstChild("distance") as CMlLabel);
-			declare CMlQuad QuadFlagUp = (FrameMarkerFlag.GetFirstChild("up") as CMlQuad);
-			declare CMlQuad QuadFlagDown = (FrameMarkerFlag.GetFirstChild("down") as CMlQuad);
-
-			QuadMarkerFlag.Colorize = GetTeamMidColor(Null);
-
-			declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
-			declare netread Boolean FlagRush_Net_UseReversedBases for Teams[0];
-
+			AssignMlControlReferences();
+			InitMlControls();
 			while(True) {
 				yield;
-
-				/* Colors */
-				QuadMarkerFlag.Colorize = GetTeamMidColor(FlagRush_Net_FlagState.Holder.Clan);
-
-				declare Integer UIClan = 0;
-				if (GUIPlayer != Null) UIClan = GUIPlayer.CurrentClan;
-				else if (InputPlayer != Null) UIClan = InputPlayer.CurrentClan;
-
-				foreach (Clan => BaseFrames in TeamBaseMarkerFrames) {
-					declare Boolean ShowDefenseIcon;
-					declare Vec3 Color;
-					if (FlagRush_Net_UseReversedBases) {
-						Color = GetTeamMidColor(3 - Clan); // Color of opponent clan
-						if (UIClan == 0) {
-							ShowDefenseIcon = True;
-						} else {
-							ShowDefenseIcon = Clan != UIClan;
-						}
-					} else {
-						Color = GetTeamMidColor(Clan);
-						if (UIClan == 0) {
-							ShowDefenseIcon = True;
-						} else {
-							ShowDefenseIcon = Clan == UIClan;
-						}
-					}
-
-					foreach (MarkerFrame in BaseFrames) {
-						declare CMlLabel DefenseIconLabel = (MarkerFrame.GetFirstChild("defend") as CMlLabel);
-						declare CMlLabel AttackIconLabel = (MarkerFrame.GetFirstChild("attack") as CMlLabel);
-						DefenseIconLabel.Visible = ShowDefenseIcon;
-						DefenseIconLabel.TextColor = Color;
-						AttackIconLabel.Visible = !ShowDefenseIcon;
-						AttackIconLabel.TextColor = Color;
-					}
-				}
-
-				declare CSmPlayer Player <=> GetPlayer(FlagRush_Net_FlagState.Holder.Login);
-				LabelMarkerFlagDistance.Hide();
-				QuadMarkerFlag.Size = <10., 10.>;
-				QuadMarkerFlag.RelativePosition_V3 = <0., 1.>;
-				if (GUIPlayer != Null) {
-					declare Vec3 Distance;
-					if (Player != Null) {
-						Distance = GetPlayerPosition(Player) - GetPlayerPosition(GUIPlayer);
-					} else {
-						Distance = FlagRush_Net_FlagState.Position - GetPlayerPosition(GUIPlayer);
-					}
-
-
-					QuadFlagDown.Visible = Distance.Y <= {{{ -FlagRush_UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
-					QuadFlagUp.Visible = Distance.Y >= {{{ FlagRush_UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
-
-					if (GUIPlayer.User.Login != FlagRush_Net_FlagState.Holder.Login) {
-						QuadMarkerFlag.Size = <8., 8.>;
-						QuadMarkerFlag.RelativePosition_V3 = <0., 2.>;
-						LabelMarkerFlagDistance.Value = ML::NearestInteger(ML::Distance(<0., 0., 0.>, Distance)) ^ "m";
-						LabelMarkerFlagDistance.Show();
-					}
-				} else {
-					QuadFlagDown.Hide();
-					QuadFlagUp.Hide();
-				}
-
-				/* Gauge animation */
-				// Flag gauge end in future
-				if (FlagRush_Net_FlagState.CurrentStateEndDate > GameTime) {
-					declare Integer FlagStateDuration = FlagRush_Net_FlagState.CurrentStateEndDate - FlagRush_Net_FlagState.CurrentStateStartDate;
-					declare Integer FlagStateDurationRemaining = FlagRush_Net_FlagState.CurrentStateEndDate - GameTime;
-					declare Real Ratio;
-					if (FlagStateDuration != 0) {
-						Ratio = 1. * FlagStateDurationRemaining / FlagStateDuration;
-					} else {
-						Ratio = 0.;
-					}
-					declare Real Value = ML::Clamp(Ratio, 0.0, 1.0);
-					FrameGauge.Show();
-					RenderProgress(FrameMarkerFlag, Value);
-					QuadMarkerFlag.Opacity = 0.5;
-				} else {	// Flag gauge already finished or stopped
-					FrameGauge.Hide();
-					QuadMarkerFlag.Opacity = 1.;
-				}
+				UpdateBaseMarkers();
+				UpdateFlagMarker();
 			}
 		}
 	--></script>
@@ -307,9 +370,16 @@ Void CreateMapMarkers() {
 		Private_RemoveMarker(Id);
 	}
 	G_FlagSpawnMarkerIds = [];
-	foreach(I => FlagSpawn in FlagRush_Map::GetFlagSpawns()) {
+	declare Integer Index = 0;
+	foreach(FlagSpawn in FlagRush_Map::GetFlagSpawns()) {
 		declare CUIConfigMarker Marker = UIManager.UIAll.AddMarker(FlagSpawn);
-		Marker.ManialinkFrameId = C_FlagSpawnMarkerFrameIdPrefix ^ I;
+		if (FlagSpawn == FlagRush_Map::GetDefaultFlagSpawn()) {
+			Marker.ManialinkFrameId = C_FlagSpawnMarkerFrameDefault;
+		} else {
+			Marker.ManialinkFrameId = C_FlagSpawnMarkerFrameIdPrefix ^ Index;
+			Index += 1;
+		}
+
 		Marker.Box = C_FlagSpawnMarker_Box;
 		G_FlagSpawnMarkerIds.add(Marker.Id);
 	}

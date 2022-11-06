@@ -277,8 +277,8 @@ if (!MapValid) {
 FlagRush_XmlRpc::Send_MapStart();
 FlagRush_UI::StartMap();
 FlagRush_Teams::Init();
-MB_Synchro();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
+MB_Synchro();
 ***
 
 ***StartMap***

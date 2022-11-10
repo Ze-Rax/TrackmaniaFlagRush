@@ -56,9 +56,19 @@ When you placed all required landmarks, go back to the `Edit Block Properties`-t
 ### Podium
 The maptype requires you to place the official podium item somewhere on the map. The map will not be valid without the podium.
 
-## 4. Validating
+### Team colors (Optional)
+You can set custom colors for the teams on your map if you want them to be different from the default blue-vs-red FlagRush colors. To do so, click the Flag icon in the toolbar of the map editor. This opens a window in the center of your screen where you can select the hues for both teams individually. You can also reset the colors to the default FlagRush colors with the respective "Reset to default" buttons, which will make the mode use the default blue and red colors.
 
-When you have placed all the required landmarks and configured them appropriatly, then the map will automatically be validated; there is no need to drive the map and clicking the green validation flag won’t even have any function. If your map is still invalid and you don’t know why, then you can click on the red validation flag in the bottom right; an error message should pop up, telling you what requirements are not fullfilled.
+The car skins for the teams will be selected according to the hues of the teams automatically.
+
+Note:
+- Due to the usage of gradients in our UI, the ingame visuals of the selected colors could look slightly different than expected.
+- We only allow selecting the hue for teams to ensure good visibility of the colors and consistency in our UI.
+- It is possible to select the same color for both teams or choose a specific color for a team and leave the other team color as default. This is not recommended. In the end: Bad selection of team colors may impact the quality of a map and a bad map afterall is just a bad map.
+
+## 4. Validation
+
+When you have placed all the required landmarks and configured them appropriatly, then the map will automatically be validated; there is no need to drive the map and clicking the green validation flag won’t even have any effect. If your map is still invalid and you don’t know why, then you can click on the red validation flag in the bottom right; an error message should pop up, telling you what requirements are not fullfilled.
 
 
 ## 5. Optional FlagRush name tag

@@ -1,0 +1,25 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/player.schema.json",
+	"title": "Player",
+	"description": "Representation of a player.",
+	"type": "object",
+	"properties": {
+		"Login": {
+			"description": "The game login of the player.",
+			"type": "string"
+		},
+		"Name": {
+			"description": "The ingame name of the player.",
+			"type": "string"
+		},
+		"Position": {
+			"description": "The position of the player in world space.",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/position.schema.json"
+		},
+		"TeamNum": {
+			"description": "The team/clan number of the player. Not to be confused with the team index. Should be 1 or 2 for players, 0 for specatators.",
+			"type": "integer"
+		}
+	}
+}

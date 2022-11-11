@@ -1,0 +1,17 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/events/flow/overtime.schema.json",
+	"title": "Overtime",
+	"description": "Event data which is sent when the overtime started.",
+	"type": "object",
+	"properties": {
+		"Time": {
+			"description": "Servertime (in ms) when the overtime started.",
+			"type": "integer"
+		},
+		"TeamScores": {
+			"description": "The number of flags scored per team in the current round.",
+			"$ref": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/common/teamScores.schema.json"
+		}
+	}
+}

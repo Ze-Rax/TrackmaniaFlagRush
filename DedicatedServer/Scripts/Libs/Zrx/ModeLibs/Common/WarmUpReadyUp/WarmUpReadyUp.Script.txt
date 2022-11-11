@@ -57,6 +57,8 @@ declare Boolean G_WarmUpShouldStop;
 declare Boolean[Text] G_PlayersReady;
 
 declare K_TimeoutState G_TimeoutState;
+declare Boolean G_WaitForApproval;
+declare Boolean G_Approval;
 
 /**
  * Getter for if warmup should stop.
@@ -77,6 +79,10 @@ K_WarmUpReadyUpEvent[] GetPendingEvents() {
  */
 Boolean[Text] GetPlayersReadyStates() {
 	return G_PlayersReady;
+}
+
+Void SetWarmUpEndApproval(Boolean Approved) {
+	G_Approval = Approved;
 }
 
 /**
@@ -123,12 +129,8 @@ Void Private_AbortTimeout() {
  * 	then start it.
  * If the timeout was started when at least one player in each clan was ready but now all players are ready,
  * 	then reduce timer.
- * If the itmeout was started when all players where ready but now only one player in each team is ready,
+ * If the timeout was started when all players where ready but now only one player in each team is ready,
  * 	then extend the timer to the remaining time.
- * If the timeout was start but now not every clan has a player,
- * 	then abort the timeout.
- *
- * This was pain! Please fix this if someone know an easier solution!
  */
 Void Private_UpdateWarmUpEndTime(Boolean AllClansAtLeastOnePlayerReady, Boolean AllClansAllPlayersReady) {
 	if (AllClansAllPlayersReady) {
@@ -143,30 +145,48 @@ Void Private_UpdateWarmUpEndTime(Boolean AllClansAtLeastOnePlayerReady, Boolean 
 		} else if (G_TimeoutState.State == C_Timeout_State_AllPlayersReady) {
 			Private_UpdateTimeout(C_Timeout_State_OnePlayerReady, C_Timeout_AtLeastOnePlayerReady - (Now - G_TimeoutState.StartTime));
 		}
-	} else {
-		if (G_TimeoutState.State != C_Timeout_State_NotStarted) {
-			Private_AbortTimeout();
+	}
+}
+
+/**
+ * Determines the total amount of players and how many of them are ready.
+ * The key for the returned array is the Clan number
+ */
+K_ClanReadyState[Integer] Private_ComputeClanReadyStates() {
+	declare K_ClanReadyState[Integer] ClanReadyStates;
+	foreach (Player in Players) {
+		// Ignore players without clan in clan mode
+		declare Boolean HasNoClanInClanMode = (UseClans || UseMultiClans) && Player.CurrentClan == 0;
+		if (HasNoClanInClanMode) continue;
+
+		// Initalize array entry if not present
+		if (!ClanReadyStates.existskey(Player.CurrentClan)) {
+			ClanReadyStates[Player.CurrentClan] = K_ClanReadyState{};
+		}
+
+		ClanReadyStates[Player.CurrentClan].NbPlayers += 1;
+		if (G_PlayersReady.get(Player.User.Login, False)) {
+			ClanReadyStates[Player.CurrentClan].NbPlayersReady += 1;
 		}
 	}
+	return ClanReadyStates;
 }
 
 /**
  * Checks if the match can start: At least two clans and one ready player in each clan.
  */
 Boolean Private_MatchCanStart() {
-	// Check players and clans
-	declare K_ClanReadyState[Integer] ClanReadyStates;
-	foreach (Player in Players) {
-		if ((UseClans || UseMultiClans) && Player.CurrentClan == 0) continue;
-		declare K_ClanReadyState PlayerClanReadyState = ClanReadyStates.get(Player.CurrentClan, K_ClanReadyState{});
-		PlayerClanReadyState.NbPlayers += 1;
-		if(G_PlayersReady.get(Player.User.Login, False)) {
-			PlayerClanReadyState.NbPlayersReady += 1;
+	// Check if admin confirmation is needed and given
+	if (G_WaitForApproval && !G_Approval) {
+		if (G_TimeoutState.State != C_Timeout_State_NotStarted) {
+			Private_AbortTimeout();
 		}
-		ClanReadyStates[Player.CurrentClan] = PlayerClanReadyState;
+		return False;
 	}
 
-	// There have to be at least two clans
+	declare K_ClanReadyState[Integer] ClanReadyStates = Private_ComputeClanReadyStates();
+
+	// There have to be at least two clans with players if clan mode active
 	if ((UseClans || UseMultiClans) && ClanReadyStates.count < 2) {
 		if(G_TimeoutState.State != C_Timeout_State_NotStarted) {
 			Private_AbortTimeout();
@@ -179,7 +199,15 @@ Boolean Private_MatchCanStart() {
 	declare Boolean AllClansAllPlayersReady = True;
 	foreach (Clan => ReadyState in ClanReadyStates) {
 		AllClansAtLeastOnePlayerReady = AllClansAtLeastOnePlayerReady && (ReadyState.NbPlayersReady >= 1);
-		AllClansAllPlayersReady = AllClansAllPlayersReady && (ReadyState.NbPlayersReady == ReadyState.NbPlayers) && AllClansAtLeastOnePlayerReady;
+		AllClansAllPlayersReady = AllClansAllPlayersReady && (ReadyState.NbPlayersReady == ReadyState.NbPlayers);
+	}
+
+	// There needs to be at least one ready player in each clan
+	if (!AllClansAtLeastOnePlayerReady) {
+		if(G_TimeoutState.State != C_Timeout_State_NotStarted) {
+			Private_AbortTimeout();
+		}
+		return False;
 	}
 
 	// Update Warmup EndTime
@@ -194,18 +222,35 @@ Boolean Private_MatchCanStart() {
 }
 
 /**
- * Starts the warmup.
+ * Send the ready states of the players to the clients.
+ * This should already be called automatically when a player changes his state.
  */
-Void Start() {
+ Void Net_SendPlayerReadyStates() {
+	declare netwrite Boolean[Text] Net_WarmUpReadyUp_ReadyStates for Teams[0];
+	Net_WarmUpReadyUp_ReadyStates = G_PlayersReady;
+}
+
+/**
+ * Starts the warmup.
+ * @param WaitForConfirmation: If true, waits for the mode to confirm that the warmup can end, no matter how many players are ready.
+ */
+Void Start(Boolean WaitForApproval) {
 	G_WarmUpShouldStop = False;
 	PendingEvents = [];
 	G_PlayersReady = [];
 	G_TimeoutState = K_TimeoutState{};
+	G_Approval = False;
+	G_WaitForApproval = WaitForApproval;
+	Net_SendPlayerReadyStates();
 
 	Layers::Create(WarmUpReadyUp_UI::C_ManialinkName, WarmUpReadyUp_UI::GetManialink());
 	Layers::SetType(WarmUpReadyUp_UI::C_ManialinkName, CUILayer::EUILayerType::Normal);
 	Layers::Attach(WarmUpReadyUp_UI::C_ManialinkName);
-	UIManager.UIAll.SendChat("""$f90Warmup!$fff Ready up by clicking the "Ready"-Button or pressing F7 / """);
+	UIManager.UIAll.SendChat("""$<$f90Warmup!$> Ready up by clicking the "Ready"-Button or pressing F7 / """);
+}
+
+Void Start() {
+	Start(False);
 }
 
 /**
@@ -251,6 +296,7 @@ Void Private_HandleUIEvents() {
 			if(Player == Null) continue;
 			G_PlayersReady[Player.User.Login] = PlayerIsReady;
 			Private_AddEvent(C_Event_Type_PlayerReadyChanged, [Player.User.Login, TL::ToText(PlayerIsReady)]);
+			Net_SendPlayerReadyStates();
 		}
 	}
 }

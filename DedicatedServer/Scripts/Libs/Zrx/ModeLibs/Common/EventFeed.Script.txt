@@ -9,6 +9,11 @@
 	Integer Stamp;
 }
 
+#Const C_IconName_Info "info"
+#Const C_IconName_Chrono "chrono"
+#Const C_IconName_Flag "flag"
+#Const C_IconName_Base "base"
+
 #Const C_FeedMessageAmount 8
 
 declare K_FeedMessage[] G_FeedMessages;
@@ -61,10 +66,10 @@ Void SendMessage(Text String, Text Icon, Vec3 Color) {
 	if (color == <0., 0., 0.>) color = <1., 1., 1.>;
 
 	switch (Icon) {
-		case "base": SendMessage(String, "ManiaPlanetMainMenu", "IconHome", color);
-		case "flag": SendMessage(String, "UICommon64_1", "Flag_light", color);
-		case "info": SendMessage(String, "UICommon64_1", "Info_light", color);
-		case "chrono": SendMessage(String, "UICommon64_1", "Chrono_light", color);
+		case C_IconName_Base: SendMessage(String, "ManiaPlanetMainMenu", "IconHome", color);
+		case C_IconName_Flag: SendMessage(String, "UICommon64_1", "Flag_light", color);
+		case C_IconName_Info: SendMessage(String, "UICommon64_1", "Info_light", color);
+		case C_IconName_Chrono: SendMessage(String, "UICommon64_1", "Chrono_light", color);
 		default: SendMessage(String, "", "", color);
 	}
 }
@@ -87,7 +92,7 @@ Text GetManialink(Integer feedSize) {
 	<manialink version="3" name="EventFeed">
 	<framemodel id="message">
 		<quad size="3 3" pos="0 -1.5" halign="center" valign="center"/>
-		<label size="60 3" pos="1.5 -1.5" text="" textsize="1" textfont="GameFontSemiBold" halign="left" valign="center" opacity="0" textemboss="1" />
+		<label size="60 3" pos="1.5 -1.5" text="" textsize="1" textfont="GameFontSemiBold" halign="left" valign="center2" opacity="0" textemboss="1" />
 	</framemodel>
 	<frame id="Events" pos="-158 10" >
 		{{{ entries }}}
@@ -160,7 +165,7 @@ Text GetManialink(Integer feedSize) {
 
 		declare netread Integer Net_EventFeed_Update for UI;
 		declare CMlFrame frame = (Page.GetFirstChild("Events") as CMlFrame);
-		LastUpdate = 0;
+		LastUpdate = GameTime;
 		counter = 0;
 
 		while(True) {

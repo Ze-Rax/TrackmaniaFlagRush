@@ -1,0 +1,122 @@
+#Include	"Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
+
+#Const C_FlagMarkerHeightIndicatorThreshold	7.
+
+/**
+ *	Manialink script functions to get the actual (non-adjusted) color for a team or clan.
+ */
+Text GetTeamColorNetreadFunctions() {
+	return """
+		Vec3 GetTeamLightColor(CTeam Team) {
+			if (Team == Null) return {{{ Colors::C_NeutralLight }}};
+			declare netread Vec3 Net_FlagRush_LightColor for Team;
+			return Net_FlagRush_LightColor;
+		}
+
+		Vec3 GetTeamLightColor(Integer Clan) {
+			if (Clan <= 0 || Clan > Teams.count) return {{{ Colors::C_NeutralLight }}};
+			return GetTeamLightColor(Teams[Clan-1]);
+		}
+
+		Vec3 GetTeamMidColor(CTeam Team) {
+			if (Team == Null) return {{{ Colors::C_TeamNeutral }}};
+			declare netread Vec3 Net_FlagRush_MidColor for Team;
+			return Net_FlagRush_MidColor;
+		}
+
+		Vec3 GetTeamMidColor(Integer Clan) {
+			if (Clan <= 0 || Clan > Teams.count) return {{{ Colors::C_TeamNeutral }}};
+			return GetTeamMidColor(Teams[Clan-1]);
+		}
+
+		Vec3 GetTeamDarkColor(CTeam Team) {
+			if (Team == Null) return {{{ Colors::C_NeutralDark }}};
+			declare netread Vec3 Net_FlagRush_DarkColor for Team;
+			return Net_FlagRush_DarkColor;
+		}
+
+		Vec3 GetTeamDarkColor(Integer Clan) {
+			if (Clan <= 0 || Clan > Teams.count) return {{{ Colors::C_NeutralDark }}};
+			return GetTeamDarkColor(Teams[Clan-1]);
+		}
+
+""";
+}
+
+/**
+ * Manialink script functions to map a login to different objects.
+ */
+Text GetLoginMappingFunctions() {
+	return """
+		CSmPlayer GetPlayer(Text Login) {
+			foreach (Player in Players) if (Player.User.Login == Login) return Player;
+			return Null;
+		}
+	""";
+}
+
+/**
+ * Manialink script functions to get the position and rotation values for a player.
+ */
+Text GetPlayerPositionFunctions() {
+	return """
+		Vec3 GetPlayerPosition(CSmPlayer Player) {
+			if(Player == InputPlayer || !Player.UseCrudeExtrapolation) return Player.Position;
+			declare netread Vec3 Net_Position for Player;
+			return Net_Position;
+		}
+
+		Real GetPlayerYaw(CSmPlayer Player) {
+			if (Player == InputPlayer || !Player.UseCrudeExtrapolation) return Player.AimYaw;
+			declare netread Real Net_Yaw for Player;
+			return Net_Yaw;
+		}
+	""";
+}
+
+/**
+ * Manialink script functions to get the current.
+ * Correspond to Net Structs in FlagRush_FlagState.Script.txt.
+ */
+Text GetFlagStateStructs() {
+	return """
+		#Struct K_Net_FlagHolder {
+			Integer Clan;
+			Text Name;
+			Text Login;
+		}
+
+		#Struct K_Net_FlagState {
+			K_Net_FlagHolder Holder;
+			Vec3 Position;
+			Integer CurrentStateStartDate;
+			Integer CurrentStateEndDate;
+		}
+	""";
+}
+
+/**
+ * Returns the manialink framemodel with a transparent for the logo of FlagRush
+ */
+Text GetLogoTransparentFramemodel() {
+	return """
+	<framemodel id="flagrush-logo">
+		<label size="20 5" text="$i$sFlag" valign="center" halign="right" textfont="GameFontExtraBold" pos="-4 2"/>
+		<label size="10 10" text="$i$s" valign="center" halign="center" textfont="GameFontExtraBold" textsize="6"/>
+		<label size="20 5" text="$i$sRush" valign="center" halign="left" textfont="GameFontExtraBold" pos="4 -2"/>
+	</framemodel>
+	""";
+}
+
+/**
+ * Returns a framemodel for gradients with base size 100x100 and modelid "gradient"
+ */
+Text GetGradientFramemodel() {
+	return """
+	<framemodel id="gradient">
+		<quad pos="0 0" z-index="-1" size="100 100" bgcolor="c44" id="base" halign="center" valign="center"/>
+		<quad pos="-50 0" z-index="0" size="50 100" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b24" id="gradient-left" valign="center" halign="left"/>
+		<quad pos="50 0" z-index="0" size="50 100" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b42" id="gradient-right" valign="center" halign="left" rot="180"/>
+	</framemodel>
+	""";
+}

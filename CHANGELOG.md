@@ -1,3 +1,31 @@
+## 1.3.0
+
+### General
++ Added teleport detection: The flag will be dropped, if a player teleports too far (1 block) during one server frame
++ Added XML-RPC callbacks for mode related callsbacks, see [XmlRpcScriptedCallbacks.md](XmlRpc/XmlRpcScriptedCallbacks.md)
++ Match is reset automatically when all players leave the server or go to spec
++ Added support map specific team colors
+  + Requires the new maptype
++ Added maptype requirement for podiums
+* Bug fixes and optimizations
+
+### UI
++ Added a distance indicator to the flag marker
++ Added round number to the message at the start of a round
++ Added text for time spent in overtime in the scores header
++ Added callvotes page to pause menu
++ Added an indicator for the default FlagSpawn in warm up
+* Adjusted markers for bases
+	* The base you have to attack shows a crosshair icon in the color of the opposite team
+	* The base you have to defend shows a shield icon in the color of your team
+* Adjusted respawn timer UI to take spawn animation duration into account
+* MVP Screen has been replaced by a podium sequence
+
+### Balancing
+* Adjusted default flag carrier acceleration coef to 0.66 (from 0.7)
+* Adjusted default flag carrier adherence coef to 0.9 (from 1.0)
+* Adjusted respawn delay functionality: Respawn delay is now dependent on the amount of players in a team: `Respawn delay = Amount of player in the team * S_RespawnDelayPerPlayer (Setting) + 1.5 seconds Spawn animation`
+
 ## 1.2.1
 + New mode commands (Callvotes, ModeCommandsUI) for setting match/map/round points and auto team balance.
 * Fix scorestable player statistics

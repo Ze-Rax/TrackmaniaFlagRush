@@ -1,7 +1,7 @@
 //#RequireContext CSmMlScriptIngame
 
 #Include "ColorLib" as CL
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as UIShared
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 
 Text GetManialink() {
@@ -36,6 +36,8 @@ Text GetManialink() {
 		Boolean Hover;
 	}
 
+	{{{ UIShared::GetFlagStateStructs() }}}
+
 	declare K_SpectatorButton SpectatorButton;
 
 	/**
@@ -66,7 +68,7 @@ Text GetManialink() {
 	***UpdateSpectatorTarget***
 	***
 	if (FlagRush_AutoFollow) {
-		declare CSmPlayer CarrierPlayer <=> GetPlayer(Net_FlagRush_FlagCarrierLogin);
+		declare CSmPlayer CarrierPlayer <=> GetPlayer(FlagRush_Net_FlagState.Holder.Login);
 		if (CarrierPlayer != Null) {	// Spectator flag carrier
 			ClientUI.Spectator_SetForcedTarget_Entity(CarrierPlayer);
 			ClientUI.SpectatorForceCameraType = 1;
@@ -154,7 +156,7 @@ Text GetManialink() {
 	}
 
 	main() {
-		declare netread Text Net_FlagRush_FlagCarrierLogin for Teams[0];
+		declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
 		declare Boolean FlagRush_AutoFollow for LocalUser;
 		declare LastFollowedLogin = "";
 
@@ -175,8 +177,8 @@ Text GetManialink() {
 			+++HandleEvents+++
 
 			// Update target when carrier changed
-			if (FlagRush_AutoFollow && LastFollowedLogin != Net_FlagRush_FlagCarrierLogin) {
-				LastFollowedLogin = Net_FlagRush_FlagCarrierLogin;
+			if (FlagRush_AutoFollow && LastFollowedLogin != FlagRush_Net_FlagState.Holder.Login) {
+				LastFollowedLogin = FlagRush_Net_FlagState.Holder.Login;
 				+++UpdateSpectatorTarget+++
 			}
 		}

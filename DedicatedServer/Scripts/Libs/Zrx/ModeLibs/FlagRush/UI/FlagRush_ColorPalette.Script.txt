@@ -1,11 +1,7 @@
 // FlagRush team colors
-#Const C_RedBase <0.8, 0., 0.133>
-#Const C_RedLight <1., 0.376, 0.098>
-#Const C_RedDark <0.4, 0., 0.133>
-
-#Const C_BlueBase <0.09, 0.09, 0.898>
-#Const C_BlueLight <0.094, 0.698, 0.902>
-#Const C_BlueDark <0.102, 0.039, 0.4>
+#Const C_TeamRed <0.8, 0., 0.133>
+#Const C_TeamBlue <0.09, 0.09, 0.898>
+#Const C_TeamNeutral <1., 1., 1.>
 
 // Status colors
 #Const C_Error <1., 0., 0.>
@@ -18,6 +14,10 @@
 // Other colors
 #Const C_NeutralDark <0., 0., 0.>
 #Const C_NeutralLight <1., 1., 1.>
+
+#Const C_Gold <0.910, 0.757, 0.102>
+#Const C_Silver <0.710, 0.737, 0.776>
+#Const C_Bronze <0.647, 0.400, 0.235>
 
 // Opacities
 #Const C_TransparentBackgroundOpacity 0.7

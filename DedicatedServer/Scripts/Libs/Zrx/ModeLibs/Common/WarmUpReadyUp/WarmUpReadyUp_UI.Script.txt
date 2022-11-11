@@ -37,7 +37,7 @@ Text GetManialink() {
 		}
 
 		Vec3 GetFocusColor(Vec3 _Color) {
-			return TransformColor(_Color, <-.0194, 0., -.57>);
+			return TransformColor(_Color, <-.0194, 0., -.37>);
 		}
 
 		Void SetReady(Boolean IsReady) {

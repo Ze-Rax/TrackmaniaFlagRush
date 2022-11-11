@@ -1,0 +1,13 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "/TrackmaniaFlagRush/XmlRpc/JsonSchema/events/flow/roundStart.schema.json",
+	"title": "RoundStart",
+	"description": "Event data which is sent when the round started.",
+	"type": "object",
+	"properties": {
+		"Time": {
+			"description": "Servertime (in ms) when the round started.",
+			"type": "integer"
+		}
+	}
+}

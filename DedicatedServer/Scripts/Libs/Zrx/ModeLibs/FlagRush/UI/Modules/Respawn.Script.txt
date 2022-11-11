@@ -1,14 +1,15 @@
 //#RequireContext CSmMlScriptIngame
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/UIShared.Script.txt" as UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as UIShared
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
 
 Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-	<manialink version="3" name="FlagRush_RespawnUI">
+	<manialink version="3" name="FlagRush_RespawnCounter">
 		<frame pos="-40 -50" id="rs-frame" hidden="1">
 			<label pos="40 -5" z-index="2" size="80 6" text="" halign="center" style="TextCardSmall" textsize="3" valign="center2" id="rs-label" textcolor="fff"/>
-			<frame id="rs-gauge-frame" size="80 10">
-				<quad pos="0 0" z-index="1" size="80 10" id="rs-gauge" style="UICommon64_1" substyle="BgFrame1" colorize="004" opacity="0.7"/>
+			<frame id="rs-gauge-frame" z-index="1" size="80 10">
+				<quad pos="0 0" size="80 10" id="rs-gauge" style="UICommon64_1" substyle="BgFrame1" colorize="004" opacity="0.7"/>
 			</frame>
 		<quad pos="0 0" z-index="0" size="80 10" id="rs-gauge2" style="UICommon64_1" substyle="BgFrame1" colorize="000" opacity="0.7"/>
 		</frame>
@@ -17,6 +18,7 @@ Text GetManialink() {
 	#Include "MathLib" as ML
 
 	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+
 	main() {
 		declare CMlFrame RespawnFrame = (Page.GetFirstChild("rs-frame") as CMlFrame);
 		declare CMlFrame GaugeFrame = (Page.GetFirstChild("rs-gauge-frame") as CMlFrame);
@@ -29,27 +31,25 @@ Text GetManialink() {
 		declare Integer TotalRespawnTime = -1;
 		while (True) {
 			yield;
-			declare Integer MillisRemaining = Net_SpawnDate - GameTime;
+
+			declare Integer MillisRemaining = Net_SpawnDate - GameTime + {{{ FlagRush_Common::C_SpawnAnimDuration }}};
 			if (Net_SpawnDate <= 0 || MillisRemaining <= 0 || IsSpectator) {
-				RespawnFrame.Visible = False;
+				RespawnFrame.Hide();
+				TotalRespawnTime = -1;
 				continue;
 			}
-
-			declare Integer SecondsRemaining = MillisRemaining / 1000;
-			declare Real Ratio = ML::NearestReal(MillisRemaining) / TotalRespawnTime;
-			RespawnFrame.Visible = True;
 
 			if (TotalRespawnTime <= 0) {
 				TotalRespawnTime = MillisRemaining;
 			}
+			declare Real Ratio = ML::NearestReal(MillisRemaining) / TotalRespawnTime;
 
+			// Display
+			declare Integer SecondsRemaining = MillisRemaining / 1000 + 1;
 			GaugeFrame.Size.X = ML::Clamp(80. * Ratio, 0., 80.);
-			declare Integer teamId = InputPlayer.CurrentClan-1;
-			if (Teams.existskey(teamId)) {
-				RespawnQuad.Colorize = GetTeamPrimaryColor(Teams[teamId]) * 0.5;
-			}
-			RespawnLabel.SetText("Respawning in " ^ (SecondsRemaining + 1) ^ "...");
-
+			RespawnQuad.Colorize = GetTeamDarkColor(InputPlayer.CurrentClan);
+			RespawnLabel.SetText("Respawning in " ^ SecondsRemaining ^ "...");
+			RespawnFrame.Show();
 		}
 	}
 	--></script>

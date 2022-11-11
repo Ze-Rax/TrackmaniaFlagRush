@@ -52,6 +52,12 @@ Changes:
 	* Fixed Flag Spawn randomization
 """;
 		}
+		case "1.3.0-dev": {
+			Info = """
+Changes:
+	* Added XMLRPC flag and mapflow events
+			""";
+		}
 	}
 
 	return GetManialink("FlagRush Testing Server", """Script version: {{{ Version }}}""", Info);

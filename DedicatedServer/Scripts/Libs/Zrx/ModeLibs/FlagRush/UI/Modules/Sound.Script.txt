@@ -19,7 +19,7 @@ Void Play(Text[] SoundUrl) {
 Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-	<manialink version="3">
+	<manialink version="3" name="FlagRush_Sound">
 	<script><!--
 	main() {
 		declare netread Integer Net_FlagRush_AudioEventStamp for Teams[0];

@@ -10,36 +10,41 @@
 	</filter>
 
 	<mode_script_settings>
-		<setting name="S_ChatTime" type="integer" value="10"/>
-		<setting name="S_UseCrudeExtrapolation" type="boolean" value="1"/>
-		<setting name="S_UseWarmUp" type="boolean" value="1"/>
-		<setting name="S_UseCollisions" type="boolean" value="0"/>
-		<setting name="S_NbMapsToWinMatch" type="integer" value="1"/>
-		<setting name="S_NbRoundsToWinMap" type="integer" value="2"/>
-		<setting name="S_NbFlagsToWinRound" type="integer" value="3"/>
-		<setting name="S_RoundTimeLimitSeconds" type="integer" value="360"/>
-		<setting name="S_UseTurns" type="boolean" value="0"/>
-		<setting name="S_UseOvertime" type="boolean" value="1"/>
-		<setting name="S_UseReversedBases" type="boolean" value="0"/>
-		<setting name="S_RandomizeFlagSpawn" type="boolean" value="1"/>
-		<setting name="S_FlagInitialSpawnDelaySeconds" type="real" value="0"/>
-		<setting name="S_FlagRespawnDelaySeconds" type="real" value="0"/>
-		<setting name="S_FlagDropStateDurationSeconds" type="real" value="8"/>
-		<setting name="S_FlagStealResistDurationSeconds" type="real" value="1"/>
-		<setting name="S_FlagSameTeamSteal" type="boolean" value="1"/>
-		<setting name="S_FlagCarrierFragile" type="boolean" value="1"/>
-		<setting name="S_FlagCarrierAcceleration" type="real" value="0.7"/>
-		<setting name="S_FlagCarrierControl" type="real" value="1"/>
-		<setting name="S_FlagCarrierAdherence" type="real" value="1"/>
-		<setting name="S_RespawnWhenStill" type="boolean" value="1"/>
-		<setting name="S_RespawnDelay" type="real" value="4"/>
-		<setting name="S_DropFlagPickupPenalty" type="real" value="3"/>
-		<setting name="S_DropFlagOnTeleportDetection" type="boolean" value="1"/>
-		<setting name="S_Team1Name" type="text" value=""/>
-		<setting name="S_Team2Name" type="text" value=""/>
-		<setting name="S_UseClubTags" type="boolean" value="1"/>
-		<setting name="S_UseTeamSkins" type="boolean" value="1"/>
-		<setting name="S_ModeCommands_AdminLoginsCsv" type="text" value=""/>
+		<!-- Default : <setting name="S_ChatTime" type="integer" value="10"/> -->
+		<!-- Default : <setting name="S_TrustClientSimu" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_UseCrudeExtrapolation" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_NbMapsToWinMatch" type="integer" value="1"/> -->
+		<!-- Default : <setting name="S_NbRoundsToWinMap" type="integer" value="2"/> -->
+		<!-- Default : <setting name="S_NbFlagsToWinRound" type="integer" value="3"/> -->
+		<!-- Default : <setting name="S_RoundTimeLimitSeconds" type="integer" value="360"/> -->
+		<!-- Default : <setting name="S_UseTurns" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_UseOvertime" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_UseWarmUp" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_WarmUpWaitForApproval" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_Team1Name" type="text" value=""/> -->
+		<!-- Default : <setting name="S_Team1Hue" type="integer" value="-1"/> -->
+		<!-- Default : <setting name="S_Team2Name" type="text" value=""/> -->
+		<!-- Default : <setting name="S_Team2Hue" type="integer" value="-1"/> -->
+		<!-- Default : <setting name="S_UseClubTags" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_UseTeamSkins" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_SkipMatchOnLastPlayerLeave" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_ModeCommands_AdminLoginsCsv" type="text" value=""/> -->
+		<!-- Default : <setting name="S_UseReversedBases" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_RandomizeFlagSpawn" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_FlagInitialSpawnDelaySeconds" type="real" value="0"/> -->
+		<!-- Default : <setting name="S_FlagRespawnDelaySeconds" type="real" value="0"/> -->
+		<!-- Default : <setting name="S_FlagDropStateDurationSeconds" type="real" value="8"/> -->
+		<!-- Default : <setting name="S_FlagStealResistDurationSeconds" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_FlagSameTeamSteal" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_FlagCarrierFragile" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_FlagCarrierAcceleration" type="real" value="0.66"/> -->
+		<!-- Default : <setting name="S_FlagCarrierControl" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_FlagCarrierAdherence" type="real" value="0.9"/> -->
+		<!-- Default : <setting name="S_RespawnSpeedLimitKmh" type="real" value="30"/> -->
+		<!-- Default : <setting name="S_RespawnDelayPerPlayer" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_DropFlagPickupPenalty" type="real" value="3"/> -->
+		<!-- Default : <setting name="S_DropFlagOnTeleportDetection" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_UseCollisions" type="boolean" value="0"/> -->
 	</mode_script_settings>
 
 	<startindex>0</startindex>

@@ -12,7 +12,8 @@
 #Const C_IconName_Info "info"
 #Const C_IconName_Chrono "chrono"
 #Const C_IconName_Flag "flag"
-#Const C_IconName_Base "base"
+#Const C_IconName_Reload "reload"
+#Const C_IconName_Error "error"
 
 #Const C_FeedMessageAmount 8
 
@@ -66,10 +67,11 @@ Void SendMessage(Text String, Text Icon, Vec3 Color) {
 	if (color == <0., 0., 0.>) color = <1., 1., 1.>;
 
 	switch (Icon) {
-		case C_IconName_Base: SendMessage(String, "ManiaPlanetMainMenu", "IconHome", color);
 		case C_IconName_Flag: SendMessage(String, "UICommon64_1", "Flag_light", color);
 		case C_IconName_Info: SendMessage(String, "UICommon64_1", "Info_light", color);
 		case C_IconName_Chrono: SendMessage(String, "UICommon64_1", "Chrono_light", color);
+		case C_IconName_Reload: SendMessage(String, "UICommon64_1", "Reload_light", color);
+		case C_IconName_Error: SendMessage(String, "UICommon64_1", "Error_light", color);
 		default: SendMessage(String, "", "", color);
 	}
 }

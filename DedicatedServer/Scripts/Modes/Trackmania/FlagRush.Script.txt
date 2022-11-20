@@ -440,12 +440,17 @@ Void OnPlayerRequestsRespawn(CSmPlayer Player) {
 		return;
 	}
 
-	if (S_RespawnSpeedLimitKmh >= 0 && Player.Speed <= S_RespawnSpeedLimitKmh / 3.6) {
-		Player_Unspawn(Player);
+	if (Player.SpawnStatus != CSmPlayer::ESpawnStatus::Spawned) {
 		return;
 	}
 
-	FlagRush_Flash::FlashRespawn(Player);
+	if (S_RespawnSpeedLimitKmh >= 0 && Player.Speed > S_RespawnSpeedLimitKmh / 3.6) {
+		FlagRush_Flash::FlashRespawn(Player);
+		return;
+	}
+
+	Player_Unspawn(Player);
+	FlagRush_Messages::PlayerRespawn(Player);
 }
 
 Void OnPlayerDeath(CSmPlayer Player) {

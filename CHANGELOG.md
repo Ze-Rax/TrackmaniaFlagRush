@@ -1,3 +1,13 @@
+## 1.3.1
+
+### General
+* Fix multiple players being fragile after dropping the flag in a stack of players while the steal resistance is active.
+* If multiple players enter a dropped flag at the same time, the opponent team of the player that dropped the flag last will have priority.
+
+### UI
+* Fix wrong scores sometimes shown on podium screen.
+* Fix scoresboard to show map points in "Points" counter instead of match points.
+
 ## 1.3.0
 
 ### General

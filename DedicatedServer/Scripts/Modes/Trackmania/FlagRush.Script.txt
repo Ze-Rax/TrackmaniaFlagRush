@@ -6,7 +6,7 @@
 #Extends "Libs/Zrx/ModeLibs/BaseModes/FlagRushProgressionBase.Script.txt"
 
 #Const	CompatibleMapTypes	"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version							"1.3.0"
+#Const	Version							"1.3.1-dev"
 #Const	ScriptName					"Modes/TrackMania/FlagRush.Script.txt"
 
 // ========= //
@@ -49,7 +49,7 @@
 // Constants //
 // ========= //
 
-#Const C_Debug False
+#Const C_Debug True
 
 #Const C_AssistTimeThreshold 5000
 
@@ -152,14 +152,22 @@ if (S_DropFlagOnTeleportDetection && FlagRush_FlagState::CarrierTeleported()) {
 }
 
 if (FlagRush_FlagState::IsDropped()) {
-	if (Now > FlagRush_FlagState::Get().CurrentStateEndDate) {
+	if (Now > FlagRush_FlagState::Get().CurrentStateEndDate) { // Drop state duration ran out
 		Flag_Reset();
-	} else {
+	} else { // Check for pickups
+		declare CSmPlayer NewCarrier;
 		foreach (Player in Players) {
 			if (Player_CanPickUpDroppedFlag(Player)) {
-				PickUpFlag(Player);
+				if (Player.CurrentClan != FlagRush_FlagState::Get().LastDrop.OldCarrier.Clan) { // Opponent clan priority
+					NewCarrier = Player;
+					break;
+				} else if (NewCarrier == Null) {
+					NewCarrier = Player;
+				}
 			}
 		}
+
+		if (NewCarrier != Null) PickUpFlag(NewCarrier);
 	}
 }
 
@@ -341,7 +349,7 @@ Void Player_ResetHandicaps(CSmPlayer Player) {
 Boolean Player_CanPickUpDroppedFlag(CSmPlayer Player) {
 	if (Player.SpawnStatus != CSmPlayer::ESpawnStatus::Spawned || Player.Armor <= 0) return False;
 	declare Integer FlagRush_LastFlagDropDate for Player = -1;
-	declare Boolean DidNotDropFlag = FlagRush_LastFlagDropDate != FlagRush_FlagState::Get().LastDropDate;
+	declare Boolean DidNotDropFlag = FlagRush_LastFlagDropDate != FlagRush_FlagState::Get().LastDrop.Date;
 	declare Boolean DropPickupPenaltyExpired = Now - FlagRush_LastFlagDropDate > ML::NearestInteger(S_DropFlagPickupPenalty * 1000);
 	return (DidNotDropFlag || DropPickupPenaltyExpired) && Hitbox::AreColliding(Player, FlagRush_FlagState::Get().Position);
 }
@@ -382,7 +390,7 @@ Void DropFlag(Vec3 Position) {
 		Player_ResetHandicaps(OldCarrierPlayer);
 	}
 
-	declare CUser OldCarrierUser = FlagRush_FlagState::Get().Carrier;
+	declare CUser OldCarrierUser = ModeUtils::GetUser(FlagRush_FlagState::Get().Carrier.Login);
 	FlagRush_Messages::FlagDropped(OldCarrierUser, C_Duration_EventMessage);
 	declare DropStateEndDate = Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000);
 	FlagRush_FlagState::Drop(Position, DropStateEndDate);
@@ -403,10 +411,10 @@ Void ScoreFlag(CSmPlayer Player) {
 	// Check for assist
 	declare FlagRush_FlagState::K_FlagPass LastPass = FlagRush_FlagState::Get().LastFlagPass;
 	declare CUser Assist;
-	if (Now - LastPass.Date <= C_AssistTimeThreshold && LastPass.OldCarrier != Null) {
+	if (Now - LastPass.Date <= C_AssistTimeThreshold && LastPass.OldCarrier.PlayerId != NullId) {
 		declare CSmScore AssistScore <=> ModeUtils::GetScore(LastPass.OldCarrier.Login);
 		if (AssistScore.TeamNum == Player.Score.TeamNum) {
-			Assist = LastPass.OldCarrier;
+			Assist = AssistScore.User;
 			FlagRush_Scores::OnPlayerScoreFlagAssist(AssistScore);
 		}
 	}

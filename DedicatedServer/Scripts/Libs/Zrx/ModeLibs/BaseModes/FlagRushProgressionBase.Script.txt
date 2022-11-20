@@ -219,6 +219,7 @@ ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_li
 ***UnloadLibraries***
 ***
 FlagRush_XmlRpc::Unload();
+FlagRush_Scores::Unload();
 ***
 
 ***LoadHud***

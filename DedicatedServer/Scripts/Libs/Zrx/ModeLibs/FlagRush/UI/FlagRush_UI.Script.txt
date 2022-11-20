@@ -143,7 +143,7 @@ Void Private_AttachModules() {
 	Layers::Attach(C_LayerName_Flash);
 
 	// Podium background
-	Layers::Create(C_LayerName_Podium, ""); // Empty Manialink; Content set when set active
+	Layers::Create(C_LayerName_Podium, FlagRush_Podium::GetManialink()); // Empty Manialink; Content set when set active
 	Layers::SetType(C_LayerName_Podium, CUILayer::EUILayerType::ScreenIn3d);
 	Layers::Get(C_LayerName_Podium).AttachId = C_AttachId_Podium;
 	// Don't attach yet; only explicitly during podium
@@ -155,7 +155,7 @@ Void Private_AttachModules() {
 }
 
 Void AttachPodiumBackground(CSmScore[] PodiumPlayerScores) {
-	Layers::Update(C_LayerName_Podium, FlagRush_Podium::GetManialink(PodiumPlayerScores));
+	FlagRush_Podium::SetContent(PodiumPlayerScores);
 	Layers::Attach(C_LayerName_Podium);
 	Layers::Hide(C_LayerName_Markers);
 }

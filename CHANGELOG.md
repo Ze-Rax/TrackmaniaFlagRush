@@ -5,6 +5,7 @@
 * If multiple players enter a dropped flag at the same time, the opponent team of the player that dropped the flag last will have priority.
 
 ### UI
++ Added a message to the Event feed when a player respawns.
 * Fix wrong scores sometimes shown on podium screen.
 * Fix scoresboard to show map points in "Points" counter instead of match points.
 

@@ -262,3 +262,15 @@ Void EndRound() {
 	TeamPointsProgression::EndRound();
 	Net_SendScores();
 }
+
+Void Yield() {
+	Scores::Yield();
+}
+
+Void Unload() {
+	Scores::Unload();
+}
+
+Void Load() {
+	Scores::Load();
+}

@@ -193,6 +193,7 @@ FlagRush_UI::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRound
 ***LoadLibraries***
 ***
 FlagRush_XmlRpc::Load();
+FlagRush_Scores::Load();
 
 FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
 FlagRush_Teams::SetTeam1HueOverride(S_Team1Hue);
@@ -571,6 +572,7 @@ FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 ***
 ModeEvents::Yield(); // Keep as first in yield
 ModeCommands::Yield();
+FlagRush_Scores::Yield();
 FlagRush_UI::Yield();
 { +++Private_Yield_HandleProgressionsCommands+++ }
 { +++Private_Yield_HandleCriticalModeScriptSettingsUpdates+++ }

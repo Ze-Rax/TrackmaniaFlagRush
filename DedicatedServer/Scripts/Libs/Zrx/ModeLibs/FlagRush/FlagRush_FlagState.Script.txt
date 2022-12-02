@@ -8,19 +8,30 @@
 #Include "MathLib" as ML
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt" as FlagRush_Markers
 
+#Struct K_Player {
+	Ident PlayerId;
+	Text Login;
+	Integer Clan;
+}
+
 #Struct K_FlagPass {
-	CUser OldCarrier;
-	CUser NewCarrier;
+	K_Player OldCarrier;
+	K_Player NewCarrier;
+	Integer Date;
+}
+
+#Struct K_FlagDrop {
+	K_Player OldCarrier;
 	Integer Date;
 }
 
 #Struct K_FlagState {
 	CMapLandmark Landmark;
-	CUser Carrier;
+	K_Player Carrier;
 	Vec3 Position;
 	Vec3 PrevPosition;
 	Vec3 LastSafePosition;
-	Integer LastDropDate;
+	K_FlagDrop LastDrop;
 	Integer CurrentStateStartDate;
 	Integer CurrentStateEndDate;
 	K_FlagPass LastFlagPass;
@@ -49,6 +60,13 @@
 declare K_FlagState G_FlagState;
 
 /**
+ * Transforms a CSmPlayer into a K_Player struct.
+ */
+K_Player Private_PlayerToStruct(CSmPlayer Player) {
+	return K_Player { PlayerId = Player.Id, Login = Player.User.Login, Clan = Player.CurrentClan };
+}
+
+/**
  * Gets the current flag state.
  */
 K_FlagState Get() {
@@ -57,33 +75,55 @@ K_FlagState Get() {
 
 /**
  * Gets the current flag carrier CSmPlayer.
- * Null player not found.
+ * Null if player not found.
  */
  CSmPlayer GetFlagCarrierPlayer() {
-	if(G_FlagState.Carrier == Null) return Null;
-	return GetPlayer(G_FlagState.Carrier.Login);
+	if (Players.existskey(G_FlagState.Carrier.PlayerId)) {
+		return Players[G_FlagState.Carrier.PlayerId];
+	}
+	return Null;
 }
 
 /**
- * Flag is not carried, not at a landmark, but at a valid position (!= C_Position_Invalid).
+ * Returns true if the flag is carried by a player.
+ */
+Boolean IsOnPlayer() {
+	return G_FlagState.Carrier.PlayerId != NullId;
+}
+
+/**
+ * Returns true if the flag is set on a landmark.
+ */
+Boolean IsOnLandmark() {
+	return G_FlagState.Landmark != Null;
+}
+
+/**
+ * Returns true if the flag is at position C_Position_Invalid.
+ */
+Boolean IsUnspawned() {
+	return G_FlagState.Position == C_Position_Invalid;
+}
+
+/**
+ * Return true if the flag is not carried, not at a landmark, but at a valid position (!= C_Position_Invalid).
  */
 Boolean IsDropped() {
-	return G_FlagState.Carrier == Null && G_FlagState.Landmark == Null && G_FlagState.Position != C_Position_Invalid;
+	return !IsOnPlayer() && !IsOnLandmark() && !IsUnspawned();
 }
 
 /**
  * Flag is carried, but the player objects doesn't exist in the Players array.
  */
 Boolean CarrierDisconnected() {
-	declare CSmPlayer CarrierPlayer = GetFlagCarrierPlayer();
-	return G_FlagState.Carrier != Null && CarrierPlayer == Null;
+	return IsOnPlayer() && !Players.existskey(G_FlagState.Carrier.PlayerId);
 }
 
 /**
  * Flag is carried and distance between now and last yield is greater than C_TeleportThreshold.
  */
 Boolean CarrierTeleported() {
-	return G_FlagState.Carrier != Null && ML::Distance(G_FlagState.PrevPosition, G_FlagState.Position) > C_TeleportThreshold;
+	return IsOnPlayer() && ML::Distance(G_FlagState.PrevPosition, G_FlagState.Position) > C_TeleportThreshold;
 }
 
 /**
@@ -101,7 +141,7 @@ Boolean CarrierTeleported() {
 	} else {
 		FlagRush_Net_FlagState.Holder.Clan = 0; // Not carried => Neutral
 
-		if (G_FlagState.Landmark  != Null) {
+		if (IsOnLandmark()) {
 			FlagRush_Net_FlagState.Holder.Name = C_FlagCarrierName_Spawn;
 		} else if (IsDropped()) {
 			FlagRush_Net_FlagState.Holder.Name = C_FlagCarrierName_Dropped;
@@ -122,7 +162,7 @@ Boolean CarrierTeleported() {
 Void SetAtLandmark(CMapLandmark Landmark, Integer CurrentStateEndDate) {
 	G_FlagState.Landmark = Landmark;
 	G_FlagState.Position = Landmark.Position;
-	G_FlagState.Carrier = Null;
+	G_FlagState.Carrier = K_Player{};
 	G_FlagState.CurrentStateStartDate = Now;
 	G_FlagState.CurrentStateEndDate = CurrentStateEndDate;
 	Private_Net_SendFlagState();
@@ -139,7 +179,7 @@ Void SetAtLandmark(CMapLandmark Landmark) {
  * Also updates the position, the marker and unsets the landmark.
  */
 Void SetAtCarrier(CSmPlayer Carrier, Integer CurrentStateEndDate) {
-	G_FlagState.Carrier = Carrier.User;
+	G_FlagState.Carrier = Private_PlayerToStruct(Carrier);
 	G_FlagState.Landmark = Null;
 	G_FlagState.Position = Carrier.Position;
 	G_FlagState.CurrentStateStartDate = Now;
@@ -158,7 +198,7 @@ Void SetAtCarrier(CSmPlayer Carrier) {
  */
 Void SetAtPosition(Vec3 Position, Integer CurrentStateEndDate) {
 	 G_FlagState.Position = Position;
-	 G_FlagState.Carrier = Null;
+	 G_FlagState.Carrier = K_Player{};
 	 G_FlagState.Landmark = Null;
 	 G_FlagState.CurrentStateStartDate = Now;
 	 G_FlagState.CurrentStateEndDate = CurrentStateEndDate;
@@ -188,9 +228,12 @@ Void SetUnspawned() {
 Void Drop(Vec3 Position, Integer CurrentStateEndDate) {
 	declare Boolean FlagRush_Debug for This;
 	if (FlagRush_Debug) {
-		assert(G_FlagState.Carrier != Null, "Cannot drop a flag that is not being carried by anyone");
+		assert(IsOnPlayer(), "Cannot drop a flag that is not being carried by anyone");
+	} else if (!IsOnPlayer()) {
+		return;
 	}
-	G_FlagState.LastDropDate = Now;
+
+	G_FlagState.LastDrop = K_FlagDrop{ Date = Now, OldCarrier = G_FlagState.Carrier };
 	SetAtPosition(Position + <0., C_DropVerticalOffset, 0.>, CurrentStateEndDate);
 }
 
@@ -200,10 +243,17 @@ Void Drop(Vec3 Position, Integer CurrentStateEndDate) {
 Void Pass(CSmPlayer NewCarrier, Integer CurrentStateEndDate) {
 	declare Boolean FlagRush_Debug for This;
 	if (FlagRush_Debug) {
-		assert(G_FlagState.Carrier != Null, "Cannot pass a flag that is not being carried by anyone");
+		assert(IsOnPlayer(), "Cannot pass a flag that is not being carried by anyone");
 		assert(NewCarrier != GetFlagCarrierPlayer(), "Cannot pass the flag to the same player");
+	} else if (!IsOnPlayer() || NewCarrier == GetFlagCarrierPlayer()) {
+		return;
 	}
-	G_FlagState.LastFlagPass = K_FlagPass{OldCarrier = G_FlagState.Carrier, NewCarrier = NewCarrier.User, Date = Now};
+
+	G_FlagState.LastFlagPass = K_FlagPass{
+		OldCarrier = G_FlagState.Carrier,
+		NewCarrier = Private_PlayerToStruct(NewCarrier),
+		Date = Now
+	};
 	SetAtCarrier(NewCarrier, CurrentStateEndDate);
 }
 

@@ -17,8 +17,7 @@
 	Integer FlagsStolenPlacement;
 }
 
-Text GetManialink(CSmScore[] PodiumScores) {
-
+Void SetContent(CSmScore[] PodiumScores) {
 	declare CSmScore[] FlagsScoredMatchRanking = FlagRush_Scores::GetPlayerFlagsScoredMatchRanking();
 	declare CSmScore[] AssistsMatchRanking = FlagRush_Scores::GetPlayerAssistsMatchRanking();
 	declare CSmScore[] FlagsStolenMatchRanking = FlagRush_Scores::GetPlayerFlagsStealsMatchRanking();
@@ -45,7 +44,9 @@ Text GetManialink(CSmScore[] PodiumScores) {
 			FlagRush_Net_PodiumPlacementConfigs[Placement] = K_PodiumPlaceConfig{ Present = False };
 		}
 	}
+}
 
+Text GetManialink() {
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="FlagRush_PodiumBackground">
@@ -185,7 +186,7 @@ Text GetManialink(CSmScore[] PodiumScores) {
 		}
 	}
 
-	Void SetContent() {
+	Void UpdateContent() {
 		declare netread K_PodiumPlaceConfig[Integer] FlagRush_Net_PodiumPlacementConfigs for Teams[0];
 		foreach (Index => Player in G_Players) {
 			declare K_PodiumPlaceConfig Config = FlagRush_Net_PodiumPlacementConfigs.get(Index + 1, K_PodiumPlaceConfig{ Present = False });
@@ -216,7 +217,10 @@ Text GetManialink(CSmScore[] PodiumScores) {
 
 	main() {
 		InitMlControls();
-		SetContent();
+		while (True) {
+			yield;
+			UpdateContent();
+		}
 	}
 	--></script>
 </manialink>

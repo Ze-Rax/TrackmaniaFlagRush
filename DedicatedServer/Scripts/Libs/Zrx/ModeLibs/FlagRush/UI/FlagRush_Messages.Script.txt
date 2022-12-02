@@ -180,10 +180,15 @@ Void FlagCarrierTeleport() {
 
 Void PlayerOutOfBounds(CSmPlayer Player) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(Player) }}} went out of bounds""";
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Error);
 	// Play a Sound for the dead player
 	declare CUIConfig UI = UIManager.GetUI(Player);
-	if(UI != Null) UI.QueueMessage(2000, 1, CUIConfig::EMessageDisplay::Small, "", CUIConfig::EUISound::Capture, 1);
+	if (UI != Null) UI.QueueMessage(2000, 1, CUIConfig::EMessageDisplay::Small, "", CUIConfig::EUISound::Capture, 1);
+}
+
+Void PlayerRespawn(CSmPlayer Player) {
+	declare Text Message = """{{{ Private_GetColoredPlayerName(Player) }}} respawned""";
+	EventFeed::SendMessage(Message, EventFeed::C_IconName_Reload);
 }
 
 Void TimeLimitSecondsRemaining(Integer SecondsRemaining, Integer Duration) {

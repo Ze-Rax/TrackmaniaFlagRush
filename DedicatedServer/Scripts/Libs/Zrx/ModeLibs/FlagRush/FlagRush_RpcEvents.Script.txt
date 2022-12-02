@@ -220,8 +220,9 @@ K_Rpc_Landmark LandmarkToRpcLandmark(CMapLandmark Landmark) {
 K_Rpc_Flag CurrentFlagStateToRpcFlag() {
 	declare FlagRush_FlagState::K_FlagState FlagState = FlagRush_FlagState::Get();
 	declare K_Rpc_Player Carrier;
-	if(FlagState.Carrier != Null) {
-		Carrier = UserToRpcPlayer(FlagState.Carrier);
+	if(FlagState.Carrier.PlayerId != NullId) {
+		declare CUser CarrierUser <=> ModeUtils::GetUser(FlagState.Carrier.Login);
+		if (CarrierUser != Null) Carrier = UserToRpcPlayer(CarrierUser);
 	}
 
 	declare K_Rpc_Landmark FlagSpawn;

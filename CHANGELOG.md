@@ -1,3 +1,8 @@
+## 1.4.0
+
+### UI
++ Added a toggle button on the scoreboard to toggle between displaying map or match scores.
+
 ## 1.3.1
 
 ### General

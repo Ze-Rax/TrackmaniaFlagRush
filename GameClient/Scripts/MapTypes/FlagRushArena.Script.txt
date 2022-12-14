@@ -21,14 +21,8 @@
 
 #Include "Libs/Nadeo/TMNext/TrackMania/ColorPalette.Script.txt" as ColorPalette
 #Include "Libs/Nadeo/ModeLibs/Legacy/MapType.Script.txt" as MapType
-#Include "Libs/Nadeo/TMxSM/Race/Landmark.Script.txt" as Landmark
-#Include "Libs/Nadeo/TMxSM/Race/MapSet.Script.txt" as MapSet
-#Include "Libs/Nadeo/TMxSM/Race/MapGet.Script.txt" as MapGet
-#Include "Libs/Nadeo/TMNext/TrackMania/Stores/ClubStore.Script.txt" as ClubStore
-#Include "Libs/Nadeo/TMNext/TrackMania/Structures/ClubStruct.Script.txt" as ClubStruct
-#Include "Libs/Nadeo/CommonLibs/Common/ReportContext.Script.txt" as ReportContext
 #Include "Libs/Nadeo/TMNext/TrackMania/Editor/MapType.Script.txt" as TMMapType
-#Include "Modes/TrackMania/TM_RaceTest_Local.Script.txt" as RaceTest
+#Include "Libs/Nadeo/CommonLibs/Common/ReportContext.Script.txt" as ReportContext
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Constants

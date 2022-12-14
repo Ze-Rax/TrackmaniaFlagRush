@@ -112,10 +112,16 @@ Text GetManialink() {
 		<frameinstance modelid="scorestable-team" id="scorestable-team-0" pos="-52" />
 		<frameinstance modelid="scorestable-team" id="scorestable-team-1" pos="52" />
 
-		<frame id="pagecontrols" pos="0 -83">
+		<frame id="footer" pos="0 -83">
 			<quad pos="0" z-index="-1" size="206 5" bgcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralDark) }}}" opacity="{{{ FlagRush_Colors::C_TransparentBackgroundOpacity }}}" halign="center" valign="top"/>
-			<quad pos="-1 -2.5" size="5 5" halign="right" valign="center" style="UICommon64_2" substyle="ArrowUpSlim_light" scriptevents="1" id="page-previous"/>
-			<quad pos="1 -2.5" size="5 5" halign="left" valign="center" style="UICommon64_2" substyle="ArrowDownSlim_light" scriptevents="1" id="page-next"/>
+			<frame id="pagecontrols" pos="0 -2.5">
+				<quad pos="-1" size="5 5" halign="right" valign="center" style="UICommon64_2" substyle="ArrowUpSlim_light" scriptevents="1" id="page-previous"/>
+				<quad pos="1" size="5 5" halign="left" valign="center" style="UICommon64_2" substyle="ArrowDownSlim_light" scriptevents="1" id="page-next"/>
+			</frame>
+
+			<frame id="scorestoggle" pos="82 -2.5">
+				<label id="scorestogglelabel" halign="center" valign="center2" text="Map scores    Match scores" textcolor="{{{ CL::RgbToHex6(FlagRush_Colors::C_NeutralLight) }}}" textfont="GameFontRegular" textsize="1" scriptevents="1"/>
+			</frame>
 		</frame>
 	</frame>
 
@@ -125,6 +131,8 @@ Text GetManialink() {
 
 	#Const C_CounterGlyphFilled ""
 	#Const C_CounterGlyphEmpty ""
+
+	#Const C_ToggleLabelIcons [True => "", False => ""]
 
 	#Const C_PlayerStatus_Spectator ["style" => "UICommon64_1", "substyle" => "Camera_light"]
 	#Const C_PlayerStatus_Disconnected ["style" => "Icons64x64_2", "substyle" => "Disconnected"]
@@ -179,11 +187,23 @@ Text GetManialink() {
 		CMlQuad Previous;
 	}
 
+	#Struct K_ScoresToggle {
+		CMlFrame Frame;
+		CMlLabel Label;
+		Boolean State;
+	}
+
+	#Struct K_Footer {
+		CMlFrame Frame;
+		K_PageControls PageControls;
+		K_ScoresToggle ScoresToggle;
+	}
+
 	/**
 	 * Everything that needs to be access in the scorestable should be available in here.
 	 */
 	declare K_TeamScoreboard[] TeamScoreboards;
-	declare K_PageControls PageControls;
+	declare K_Footer Footer;
 
 	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
 
@@ -305,8 +325,17 @@ Text GetManialink() {
 				Playercards = Playercards
 			});
 
-			declare CMlFrame PageControlsFrame = (Page.GetFirstChild("pagecontrols") as CMlFrame);
-			PageControls = K_PageControls {
+			// Footer
+			Footer.Frame <=> (Page.GetFirstChild("footer") as CMlFrame);
+
+			declare CMlFrame ScoresToggleFrame <=> (Footer.Frame.GetFirstChild("scorestoggle") as CMlFrame);
+			Footer.ScoresToggle = K_ScoresToggle{
+				Frame = ScoresToggleFrame,
+				Label = (ScoresToggleFrame.GetFirstChild("scorestogglelabel") as CMlLabel)
+			};
+
+			declare CMlFrame PageControlsFrame <=> (Footer.Frame.GetFirstChild("pagecontrols") as CMlFrame);
+			Footer.PageControls = K_PageControls {
 				Frame = PageControlsFrame,
 				Next = (PageControlsFrame.GetFirstChild("page-next") as CMlQuad),
 				Previous = (PageControlsFrame.GetFirstChild("page-previous") as CMlQuad)
@@ -343,6 +372,7 @@ Text GetManialink() {
 			TeamScoreboards[TeamIndex].MapWins.Name.Value = "Map wins";
 			TeamScoreboards[TeamIndex].MapWins.Value.Value = C_CounterGlyphEmpty;
 		}
+		Footer.ScoresToggle.Label.Value = "Map scores  " ^ C_ToggleLabelIcons[Footer.ScoresToggle.State] ^ "  Match scores";
 		InitGradients();
 	}
 
@@ -427,23 +457,37 @@ Text GetManialink() {
 		}
 
 		// Statistics
-		Playercard.Points.Total.Value = TL::ToText(Score.Points);
-		Playercard.Points.Add.Value = TL::ToText(Score.RoundPoints);
-
-		declare netread Integer Net_FlagRush_FlagsScored_Map for Score;
-		declare netread Integer Net_FlagRush_FlagsScored_Round for Score;
-		Playercard.FlagsScored.Total.Value = TL::ToText(Net_FlagRush_FlagsScored_Map);
-		Playercard.FlagsScored.Add.Value = TL::ToText(Net_FlagRush_FlagsScored_Round);
-
-		declare netread Integer Net_FlagRush_FlagsStolen_Map for Score;
-		declare netread Integer Net_FlagRush_FlagsStolen_Round for Score;
-		Playercard.FlagsStolen.Total.Value = TL::ToText(Net_FlagRush_FlagsStolen_Map);
-		Playercard.FlagsStolen.Add.Value = TL::ToText(Net_FlagRush_FlagsStolen_Round);
-
-		declare netread Integer Net_FlagRush_FlagsAssists_Map for Score;
 		declare netread Integer Net_FlagRush_FlagsAssists_Round for Score;
-		Playercard.Assists.Total.Value = TL::ToText(Net_FlagRush_FlagsAssists_Map);
+		declare netread Integer Net_FlagRush_FlagsStolen_Round for Score;
+		declare netread Integer Net_FlagRush_FlagsScored_Round for Score;
+
+		Playercard.Points.Add.Value = TL::ToText(Score.RoundPoints);
+		Playercard.FlagsScored.Add.Value = TL::ToText(Net_FlagRush_FlagsScored_Round);
+		Playercard.FlagsStolen.Add.Value = TL::ToText(Net_FlagRush_FlagsStolen_Round);
 		Playercard.Assists.Add.Value = TL::ToText(Net_FlagRush_FlagsAssists_Round);
+
+		if (Footer.ScoresToggle.State) {
+			declare netread Integer Net_FlagRush_Points_Match for Score;
+			declare netread Integer Net_FlagRush_FlagsScored_Match for Score;
+			declare netread Integer Net_FlagRush_FlagsStolen_Match for Score;
+			declare netread Integer Net_FlagRush_FlagsAssists_Match for Score;
+
+			Playercard.Points.Total.Value = TL::ToText(Net_FlagRush_Points_Match);
+			Playercard.FlagsScored.Total.Value = TL::ToText(Net_FlagRush_FlagsScored_Match);
+			Playercard.FlagsStolen.Total.Value = TL::ToText(Net_FlagRush_FlagsStolen_Match);
+			Playercard.Assists.Total.Value = TL::ToText(Net_FlagRush_FlagsAssists_Match);
+		} else {
+			declare netread Integer Net_FlagRush_FlagsScored_Map for Score;
+			declare netread Integer Net_FlagRush_FlagsStolen_Map for Score;
+			declare netread Integer Net_FlagRush_FlagsAssists_Map for Score;
+
+			Playercard.Points.Total.Value = TL::ToText(Score.Points);
+			Playercard.FlagsScored.Total.Value = TL::ToText(Net_FlagRush_FlagsScored_Map);
+			Playercard.FlagsStolen.Total.Value = TL::ToText(Net_FlagRush_FlagsStolen_Map);
+			Playercard.Assists.Total.Value = TL::ToText(Net_FlagRush_FlagsAssists_Map);
+		}
+
+
 	}
 
 	/**
@@ -453,7 +497,7 @@ Text GetManialink() {
 		foreach (TeamIndex => TeamScoreboard in TeamScoreboards) {
 			declare CSmScore[] TeamScores = ScoresToDisplay[TeamIndex + 1];
 			foreach (PlayerIndex => Playercard in TeamScoreboard.Playercards)	 {
-				declare Integer ScoreIndex = PageControls.CurrentPageIndex * {{{ C_PlayersPerPage }}} + PlayerIndex;
+				declare Integer ScoreIndex = Footer.PageControls.CurrentPageIndex * {{{ C_PlayersPerPage }}} + PlayerIndex;
 				if(TeamScores.existskey(ScoreIndex)) {
 					Playercard.Frame.Show();
 					UpdatePlayercard(Playercard, TeamScores[ScoreIndex]);
@@ -493,27 +537,41 @@ Text GetManialink() {
 	 * Updates page count and page index and manages the page control visibility.
 	 */
 	Void UpdatePageState(CSmScore[][Integer] ScoresToDisplay) {
-		PageControls.PagesCount	= ((ML::Max(ScoresToDisplay[1].count, ScoresToDisplay[2].count) - 1) / {{{ C_PlayersPerPage }}}) + 1;
-		PageControls.CurrentPageIndex = ML::Clamp(PageControls.CurrentPageIndex, 0, PageControls.PagesCount - 1);
+		Footer.PageControls.PagesCount	= ((ML::Max(ScoresToDisplay[1].count, ScoresToDisplay[2].count) - 1) / {{{ C_PlayersPerPage }}}) + 1;
+		Footer.PageControls.CurrentPageIndex = ML::Clamp(Footer.PageControls.CurrentPageIndex, 0, Footer.PageControls.PagesCount - 1);
 
 		// Show page controls if there is more than one page
-		PageControls.Frame.Visible = PageControls.PagesCount >= 2;
-		PageControls.Previous.Visible = PageControls.CurrentPageIndex >= 1;
-		PageControls.Next.Visible = PageControls.CurrentPageIndex < PageControls.PagesCount - 1;
+		Footer.PageControls.Frame.Visible = Footer.PageControls.PagesCount >= 2;
+		Footer.PageControls.Previous.Visible = Footer.PageControls.CurrentPageIndex >= 1;
+		Footer.PageControls.Next.Visible = Footer.PageControls.CurrentPageIndex < Footer.PageControls.PagesCount - 1;
 	}
 
 	/**
 	 * Requests the next page to be displayed.
 	 */
 	Void NextPage() {
-		PageControls.CurrentPageIndex += 1;
+		Footer.PageControls.CurrentPageIndex += 1;
 	}
 
 	/**
 	 * Requests the previous page to be displayed.
 	 */
 	Void PreviousPage() {
-		PageControls.CurrentPageIndex -= 1;
+		Footer.PageControls.CurrentPageIndex -= 1;
+	}
+
+	/**
+	 * Toggles between displaying map and match scores.
+	 */
+	Void ToggleScores() {
+		Footer.ScoresToggle.State = !Footer.ScoresToggle.State;
+		Footer.ScoresToggle.Label.Value = "Map scores  " ^ C_ToggleLabelIcons[Footer.ScoresToggle.State] ^ "  Match scores";
+	}
+
+	Void UpdateFooter() {
+		declare netread Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
+		Footer.ScoresToggle.Frame.Visible = Net_FlagRush_NbMapsToWinMatch > 1;
+		Footer.Frame.Visible = Footer.PageControls.Frame.Visible || Footer.ScoresToggle.Frame.Visible;
 	}
 
 	/**
@@ -529,12 +587,11 @@ Text GetManialink() {
 					}
 				}
 				case CMlScriptEvent::Type::MouseClick: {
-					if (Event.ControlId == "boundingbox") {
-						SetSpectateTarget(Event.Control.Parent.DataAttributeGet("playerlogin"));
-					}
 					switch(Event.ControlId) {
+						case "boundingbox": SetSpectateTarget(Event.Control.Parent.DataAttributeGet("playerlogin"));
 						case "page-previous": PreviousPage();
 						case "page-next": NextPage();
+						case "scorestogglelabel": ToggleScores();
 					}
 				}
 			}
@@ -566,6 +623,7 @@ Text GetManialink() {
 			declare CSmScore[][Integer] ScoresToDisplay = FilterScoresToDisplay();
 			UpdatePageState(ScoresToDisplay);
 			UpdatePlayerCards(ScoresToDisplay);
+			UpdateFooter();
 		}
 	}
 	--></script>

@@ -43,7 +43,7 @@
 ///////////////
 
 // Duration / Timings for sequences and/or messages
-#Const C_Duration_Podium				10000
+#Const C_Duration_Podium				15000
 #Const C_Duration_MatchEnd			5000
 #Const C_Duration_MapStart			3000
 #Const C_Duration_MapEnd				5000
@@ -64,12 +64,12 @@
 //////////////
 
 #Setting S_NbMapsToWinMatch									1 			as "Number of maps to win a match"
-#Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"
-#Setting S_NbFlagsToWinRound								3				as "Number of flags scored to win a round"
+#Setting S_NbRoundsToWinMap									1 			as "Number of rounds to win a map"
+#Setting S_NbFlagsToWinRound								1				as "Number of flags scored to win a round"
 #Setting S_RoundTimeLimitSeconds						360 		as "Round Timelimit (seconds)"
 #Setting S_UseTurns													False 	as "<hidden>" // "Use turns (Reset after a player scores a flag)"
 #Setting S_UseOvertime											True 		as "Use overtime when round is tied"
-#Setting S_UseWarmUp												True		as "Use warm up"
+#Setting S_UseWarmUp												False		as "Use warm up"
 #Setting S_WarmUpWaitForApproval						False		as "<hidden>" // Wait for admin approval in warmup to continue (for competition situations)
 
 // Teams
@@ -483,18 +483,20 @@ MB_Sleep(C_Duration_MatchEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
 // Actual podium phase
-declare CSmScore[] PodiumPlayerScores;
-declare Text[] PodiumPlayerLogins;
-for (I, 0, 2) {
-	if (!Scores.existskey(I)) break;
-	PodiumPlayerScores.add(Scores[I]);
-	PodiumPlayerLogins.add(Scores[I].User.Login);
+if (HasPodium) {
+	declare CSmScore[] PodiumPlayerScores;
+	declare Text[] PodiumPlayerLogins;
+	for (I, 0, 2) {
+		if (!Scores.existskey(I)) break;
+		PodiumPlayerScores.add(Scores[I]);
+		PodiumPlayerLogins.add(Scores[I].User.Login);
+	}
+	FlagRush_UI::AttachPodiumBackground(PodiumPlayerScores);
+	UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
+	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
+	MB_Sleep(C_Duration_Podium);
+	FlagRush_UI::DetachPodiumBackground();
 }
-FlagRush_UI::AttachPodiumBackground(PodiumPlayerScores);
-UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
-UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
-MB_Sleep(C_Duration_Podium);
-FlagRush_UI::DetachPodiumBackground();
 ***
 
 // ~~~~~~~~~~ WarmUp / Pause ~~~~~~~~~~ //

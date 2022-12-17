@@ -1,3 +1,9 @@
+## 1.3.2
+
+### Maptype
+* Fix crash after Trackmania December update.
+
+
 ## 1.3.1
 
 ### General

@@ -1,8 +1,15 @@
+# Changelog
+
 ## 1.4.0
 
 ### UI
 + Added a toggle button on the scoreboard to toggle between displaying map or match scores.
 + Fixed podium screen after december Trackmania update.
+
+## 1.3.2
+
+### Maptype
+* Fix crash after Trackmania December update.
 
 ## 1.3.1
 

@@ -72,6 +72,7 @@
 #Setting S_FlagDropStateDurationSeconds			8. 			as "<hidden>" // Flag drop state duration (seconds)
 #Setting S_FlagStealResistDurationSeconds		1. 			as "<hidden>" // Flag steal resistance (seconds)
 #Setting S_FlagSameTeamSteal								True		as "<hidden>" // Team flag steal
+#Setting S_FlagStealResistanceOnTeamPass    False   as "<hidden>" // Flag steal resistance on passes between players in same team
 #Setting S_FlagCarrierFragile								True		as "Flag carrier becomes fragile"
 #Setting S_FlagCarrierAcceleration					0.66 		as "Flag carrier acceleration (0.0 - 1.0)"
 #Setting S_FlagCarrierControl								1.0 		as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
@@ -175,11 +176,15 @@ if (FlagRush_FlagState::IsDropped()) {
 
 // Try pass flag
 declare CSmPlayer FlagCarrier = FlagRush_FlagState::GetFlagCarrierPlayer();
-if (FlagCarrier != Null && Now > FlagRush_FlagState::Get().CurrentStateEndDate) {
+
+if (FlagCarrier != Null) {
 	declare CSmPlayer FlagReceiver = GetFirstCollidingPlayer_OpponentPriority(FlagCarrier);
 	if (FlagReceiver != Null) {
-		declare IsSameTeam = FlagCarrier.CurrentClan == FlagReceiver.CurrentClan;
-		if (S_FlagSameTeamSteal || !IsSameTeam) {
+		declare Boolean IsSameTeam = FlagCarrier.CurrentClan == FlagReceiver.CurrentClan;
+		declare Boolean TimerPassed = Now > FlagRush_FlagState::Get().CurrentStateEndDate;
+		declare Boolean SameTeamCanSteal = S_FlagSameTeamSteal && TimerPassed;
+		declare Boolean OpponentCanSteal = !FlagRush_FlagState::Get().HasStealResistance || TimerPassed;
+		if (IsSameTeam && SameTeamCanSteal || !IsSameTeam && OpponentCanSteal) {
 			FlagCarrier_PassFlag(FlagReceiver);
 		}
 	}
@@ -369,7 +374,7 @@ Boolean Player_CanPickUpDroppedFlag(CSmPlayer Player) {
 Void Player_PickUpFlag(CSmPlayer Player) {
 	FlagRush_Messages::FlagPickUp(Player, C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);
-	FlagRush_FlagState::SetAtCarrier(Player, StealResistanceEndDate);
+	FlagRush_FlagState::SetAtCarrier(Player, StealResistanceEndDate, True);
 	Player_ApplyHandicaps(Player);
 	FlagRush_XmlRpc::Send_FlagPickup();
 }
@@ -377,14 +382,15 @@ Void Player_PickUpFlag(CSmPlayer Player) {
 Void FlagCarrier_PassFlag(CSmPlayer Player) {
 	// Old Carrier
 	declare CSmPlayer OldCarrier = FlagRush_FlagState::GetFlagCarrierPlayer();
-	if (Player.CurrentClan != OldCarrier.CurrentClan) {
+	declare Boolean IsNotSameTeam = Player.CurrentClan != OldCarrier.CurrentClan;
+	if (IsNotSameTeam) {
 		FlagRush_Scores::OnPlayerStealFlag(Player);
 	}
 	Player_ResetHandicaps(OldCarrier);
 	// New Carrier
 	FlagRush_Messages::FlagPickUp(Player, C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);
-	FlagRush_FlagState::Pass(Player, StealResistanceEndDate);
+	FlagRush_FlagState::Pass(Player, StealResistanceEndDate, IsNotSameTeam || S_FlagStealResistanceOnTeamPass);
 	Player_ApplyHandicaps(Player);
 	FlagRush_XmlRpc::Send_FlagPass(OldCarrier);
 }

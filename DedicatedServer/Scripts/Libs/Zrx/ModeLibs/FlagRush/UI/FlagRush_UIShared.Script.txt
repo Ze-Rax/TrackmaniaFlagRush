@@ -91,6 +91,7 @@ Text GetFlagStateStructs() {
 			Vec3 Position;
 			Integer CurrentStateStartDate;
 			Integer CurrentStateEndDate;
+			Boolean HasStealResistance;
 		}
 	""";
 }

@@ -58,14 +58,21 @@ Text GetManialink() {
 	</framemodel>
 
 	<framemodel id="player">
-		<quad id="card-background" z-index="0" size="80 15" bgcolor="000" opacity="0.7" halign="center" valign="center"/>
-		<quad id="avatar" pos="-39" z-index="1" size="13 13" bgcolor="FFF" halign="left" valign="center" keepratio="Fit"/>
-		<label id="name" pos="7.5" z-index="1" size="60 15" text="Playername" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="8" textemboss="1"/>
-		<label id="points" text="0" textprefix="P$n $mo$n $mi$n $mn$n $mt$n $ms$n $m:$n  $m" valign="center2" halign="center" pos="0 -20" size="100" textfont="GameFontBlack" textsize="10" textemboss="1"/>
+		<quad z-index="0" pos="0 5" size="90 15" bgcolor="000" opacity="0.7" halign="center" valign="center"/>
+		<label id="points" text="0" textprefix="P$n $mo$n $mi$n $mn$n $mt$n $ms$n $m:$n  $m" valign="center2" halign="center" pos="0 5" size="100" textfont="GameFontBlack" textsize="10" textemboss="1"/>
 
-		<frameinstance modelid="statistic" id="flags-scored" data-name="Flags scored" pos="15 -35"/>
-		<frameinstance modelid="statistic" id="assists" data-name="Assists" pos="15 -45"/>
-		<frameinstance modelid="statistic" id="flags-stolen" data-name="Flags stolen" pos="15 -55"/>
+		<frame pos="0 -11">
+			<quad z-index="0" pos="0 -9" size="90 30" bgcolor="000" opacity="0.7" halign="center" valign="center"/>
+			<frameinstance modelid="statistic" id="flags-scored" data-name="Flags scored" pos="15 0"/>
+			<frameinstance modelid="statistic" id="assists" data-name="Assists" pos="15 -9"/>
+			<frameinstance modelid="statistic" id="flags-stolen" data-name="Flags stolen" pos="15 -18"/>
+		</frame>
+
+		<frame pos="0 -45">
+			<quad id="card-background" z-index="0" size="90 15" bgcolor="000" opacity="0.7" halign="center" valign="center"/>
+			<quad id="avatar" pos="-44" z-index="1" size="13 13" bgcolor="FFF" halign="left" valign="center" keepratio="Fit"/>
+			<label id="playername" pos="0" z-index="1" size="55 15" text="Playername" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="8" textemboss="1"/>
+		</frame>
 	</framemodel>
 
 	<frame id="background" z-index="-1">
@@ -170,7 +177,7 @@ Text GetManialink() {
 				BackgroundGradient = Gradient,
 				ContentFrame = PlayerFrame,
 				CardBackground = (ContentFrame.GetFirstChild("card-background") as CMlQuad),
-				Name = (PlayerFrame.GetFirstChild("name") as CMlLabel),
+				Name = (PlayerFrame.GetFirstChild("playername") as CMlLabel),
 				Avatar = (PlayerFrame.GetFirstChild("avatar") as CMlQuad),
 				Points = (PlayerFrame.GetFirstChild("points") as CMlLabel),
 				FlagsScored = (FlagsScoredFrame.GetFirstChild("value") as CMlLabel),

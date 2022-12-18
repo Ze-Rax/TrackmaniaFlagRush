@@ -43,7 +43,7 @@
 ///////////////
 
 // Duration / Timings for sequences and/or messages
-#Const C_Duration_Podium				10000
+#Const C_Duration_Podium				15000
 #Const C_Duration_MatchEnd			5000
 #Const C_Duration_MapStart			3000
 #Const C_Duration_MapEnd				5000
@@ -483,25 +483,20 @@ MB_Sleep(C_Duration_MatchEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
 // Actual podium phase
-declare CSmScore[] PodiumPlayerScores;
-declare Text[] PodiumPlayerLogins;
-for (I, 0, 2) {
-	if (!Scores.existskey(I)) break;
-	PodiumPlayerScores.add(Scores[I]);
-	PodiumPlayerLogins.add(Scores[I].User.Login);
+if (HasPodium) {
+	declare CSmScore[] PodiumPlayerScores;
+	declare Text[] PodiumPlayerLogins;
+	for (I, 0, 2) {
+		if (!Scores.existskey(I)) break;
+		PodiumPlayerScores.add(Scores[I]);
+		PodiumPlayerLogins.add(Scores[I].User.Login);
+	}
+	FlagRush_UI::AttachPodiumBackground(PodiumPlayerScores);
+	UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
+	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
+	MB_Sleep(C_Duration_Podium);
+	FlagRush_UI::DetachPodiumBackground();
 }
-FlagRush_UI::AttachPodiumBackground(PodiumPlayerScores);
-UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
-UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
-// TODO: Fix when CMode::HasPodium is available
-declare PodiumStartTime = Now;
-while ( Now < PodiumStartTime + C_Duration_Podium) {
-	MB_Yield();
-	// Sequence only completes if there is no podium, but also only after multiple yields
-	declare Boolean HasNoPodium = UIManager.UIAll.UISequenceIsCompleted;
-	if (HasNoPodium) break;
-}
-FlagRush_UI::DetachPodiumBackground();
 ***
 
 // ~~~~~~~~~~ WarmUp / Pause ~~~~~~~~~~ //

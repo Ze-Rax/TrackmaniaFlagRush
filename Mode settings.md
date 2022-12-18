@@ -35,6 +35,7 @@ These settings change how the gameplay in a round behaves.
 | S_FlagDropStateDurationSeconds   | Real    | 8.0           | Duration in seconds that a dropped flag will stay dropped before being reset to a flagspawn. |
 | S_FlagStealResistDurationSeconds | Real    | 1.0           | Duration in seconds in which the flag cannot be stolen after picking it up. |
 | S_FlagSameTeamSteal              | Boolean | True          | Whether or not teammates can steal the flag from the flag carrier. |
+| S_FlagStealResistanceOnTeamPass  | Boolean | False         | Whether or not to give flag steal resistance to the player when passing the flag between team members. |
 | S_FlagCarrierFragile             | Boolean | True          | Whether or not the flag carrier should become fragile. |
 | S_FlagCarrierAcceleration        | Real    | 0.66          | Acceleration coefficient for the flag carrier. |
 | S_FlagCarrierControl             | Real    | 1.0           | Control ("Steering") coefficient for the flag carrier. |

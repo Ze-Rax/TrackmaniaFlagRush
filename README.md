@@ -6,7 +6,7 @@
 
 ## Creating maps for the mode
 
-An explanation on how to create map for the FlagRush gamemode can be found in the [Mapping guide](./Mapping%20guide.md)
+An explanation on how to create map for the FlagRush gamemode can be found in the [Mapping guide](./Mapping%20guide.md).
 
 ## Download existing maps for the mode
 
@@ -27,7 +27,7 @@ You can find other compatible maps on Maniaexchange:
   	`git clone https://github.com/Ze-Rax/TrackmaniaFlagRush`
 3. Place the contents of `DedicatedServer` folder into your dedicated server's `UserData` folder.
 	- A minimal FlagRush matchsettings file is already included in `Map/MatchSettings/FlagRush.MatchSettings.txt` together with a map.
-	- The gamemode behaviour can be customized with settings that are applied through the match settings file, see [Mode settings documentation](./Mode%20settings.md)
+	- The gamemode behaviour can be customized with settings that are applied through the match settings file, see [Mode settings documentation](./Mode%20settings.md).
 4. Start the server:
 
 Linux:

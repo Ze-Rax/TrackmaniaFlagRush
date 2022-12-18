@@ -31,9 +31,10 @@
 	Vec3 Position;
 	Vec3 PrevPosition;
 	Vec3 LastSafePosition;
-	K_FlagDrop LastDrop;
 	Integer CurrentStateStartDate;
 	Integer CurrentStateEndDate;
+	Boolean HasStealResistance;
+	K_FlagDrop LastDrop;
 	K_FlagPass LastFlagPass;
 }
 
@@ -48,6 +49,7 @@
 	Vec3 Position;
 	Integer CurrentStateStartDate;
 	Integer CurrentStateEndDate;
+	Boolean HasStealResistance;
 }
 
 #Const C_TeleportThreshold 					32 // One block
@@ -153,6 +155,7 @@ Boolean CarrierTeleported() {
 	FlagRush_Net_FlagState.Position = G_FlagState.Position;
 	FlagRush_Net_FlagState.CurrentStateStartDate = G_FlagState.CurrentStateStartDate;
 	FlagRush_Net_FlagState.CurrentStateEndDate = G_FlagState.CurrentStateEndDate;
+	FlagRush_Net_FlagState.HasStealResistance = G_FlagState.HasStealResistance;
 }
 
 /**
@@ -165,6 +168,7 @@ Void SetAtLandmark(CMapLandmark Landmark, Integer CurrentStateEndDate) {
 	G_FlagState.Carrier = K_Player{};
 	G_FlagState.CurrentStateStartDate = Now;
 	G_FlagState.CurrentStateEndDate = CurrentStateEndDate;
+	G_FlagState.HasStealResistance = False;
 	Private_Net_SendFlagState();
 	FlagRush_Markers::FlagMarker_SetOnLandmark(Landmark);
 }
@@ -178,18 +182,19 @@ Void SetAtLandmark(CMapLandmark Landmark) {
  * Sets the flag state to be at a player.
  * Also updates the position, the marker and unsets the landmark.
  */
-Void SetAtCarrier(CSmPlayer Carrier, Integer CurrentStateEndDate) {
+Void SetAtCarrier(CSmPlayer Carrier, Integer CurrentStateEndDate, Boolean HasStealResistance) {
 	G_FlagState.Carrier = Private_PlayerToStruct(Carrier);
 	G_FlagState.Landmark = Null;
 	G_FlagState.Position = Carrier.Position;
 	G_FlagState.CurrentStateStartDate = Now;
 	G_FlagState.CurrentStateEndDate = CurrentStateEndDate;
+	G_FlagState.HasStealResistance = HasStealResistance;
 	Private_Net_SendFlagState();
 	FlagRush_Markers::FlagMarker_SetOnPlayer(Carrier);
 }
 
-Void SetAtCarrier(CSmPlayer Carrier) {
-	SetAtCarrier(Carrier, -1);
+Void SetAtCarrier(CSmPlayer Carrier, Boolean HasStealResistance) {
+	SetAtCarrier(Carrier, -1, HasStealResistance);
 }
 
 /**
@@ -202,6 +207,7 @@ Void SetAtPosition(Vec3 Position, Integer CurrentStateEndDate) {
 	 G_FlagState.Landmark = Null;
 	 G_FlagState.CurrentStateStartDate = Now;
 	 G_FlagState.CurrentStateEndDate = CurrentStateEndDate;
+	 G_FlagState.HasStealResistance = False;
 	 Private_Net_SendFlagState();
 	 if (Position == C_Position_Invalid) {
 		FlagRush_Markers::FlagMarker_Remove();
@@ -240,7 +246,7 @@ Void Drop(Vec3 Position, Integer CurrentStateEndDate) {
 /**
  * Sets the new flag carrier and also tracks the last pass.
  */
-Void Pass(CSmPlayer NewCarrier, Integer CurrentStateEndDate) {
+Void Pass(CSmPlayer NewCarrier, Integer CurrentStateEndDate, Boolean HasStealResistance) {
 	declare Boolean FlagRush_Debug for This;
 	if (FlagRush_Debug) {
 		assert(IsOnPlayer(), "Cannot pass a flag that is not being carried by anyone");
@@ -254,7 +260,7 @@ Void Pass(CSmPlayer NewCarrier, Integer CurrentStateEndDate) {
 		NewCarrier = Private_PlayerToStruct(NewCarrier),
 		Date = Now
 	};
-	SetAtCarrier(NewCarrier, CurrentStateEndDate);
+	SetAtCarrier(NewCarrier, CurrentStateEndDate, HasStealResistance);
 }
 
 /* Lifecycle */

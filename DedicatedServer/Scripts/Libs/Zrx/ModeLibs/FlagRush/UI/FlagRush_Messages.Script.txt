@@ -82,7 +82,7 @@ Void MapSkip(Integer Duration) {
 
 Void RoundStart(Integer NbRound, Integer Duration) {
 	declare Text Message = """Round {{{ NbRound }}} start""";
-	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
@@ -106,19 +106,19 @@ Void RoundSkip(Integer Duration) {
 
 Void OvertimeStart(Integer Duration) {
 	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}Overtime$>""";
-	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void WarmUpStart(Integer Duration) {
 	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}WarmUp$>""";
-	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void WarmUpEnd(Integer Duration) {
 	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}WarmUp end$>""";
-	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
@@ -134,13 +134,13 @@ Void WarmUpApproved() {
 
 Void PauseStart(Integer Duration) {
 	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}The round was paused$>""";
-	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void PauseEnd(Integer Duration) {
 	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}The round continues$>""";
-	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::Default);
+	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 

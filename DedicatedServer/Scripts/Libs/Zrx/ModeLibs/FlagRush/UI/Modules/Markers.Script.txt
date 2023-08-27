@@ -64,7 +64,7 @@ Text GetManialink() {
 
   <!-- Wrap in frames because C++ side z-index computation is broken -->
 	<frame z-index="2">
-		<frameinstance modelid="model-marker-flag" id="{{{ C_FlagMarkerFrameId }}}"/>
+		<frameinstance modelid="model-marker-flag" id="{{{ C_FlagMarkerFrameId }}}" hidden="1"/>
 	</frame>
 	<frame z-index="1">
 		<frameinstance modelid="model-marker-flagspawn" id="{{{ C_FlagSpawnMarkerFrameDefault }}}"/>

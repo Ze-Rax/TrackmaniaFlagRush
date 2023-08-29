@@ -24,29 +24,29 @@ Text GetManialink() {
 	declare Integer NbBasesPerTeam = FlagRush_Map::GetBases(1).count;
 	for(Clan, 1, 2) {
 		for(I, 0, NbBasesPerTeam-1) {
-			BasesFrameInstancesXml ^= """<frameinstance modelid="model-marker-base" id="marker-base-team{{{ Clan }}}-{{{ I }}}"/>""";
+			BasesFrameInstancesXml ^= """<frameinstance modelid="model-marker-base" id="marker-base-team{{{ Clan }}}-{{{ I }}}" hidden="1"/>""";
 		}
 	}
 
 	declare Text FlagSpawnMarkerFrameInstancesXml;
 	for(I, 0, FlagRush_Map::GetFlagSpawns().count - 2) {
-		FlagSpawnMarkerFrameInstancesXml ^= """<frameinstance modelid="model-marker-flagspawn" id="{{{ C_FlagSpawnMarkerFrameIdPrefix ^ I }}}"/>""";
+		FlagSpawnMarkerFrameInstancesXml ^= """<frameinstance modelid="model-marker-flagspawn" id="{{{ C_FlagSpawnMarkerFrameIdPrefix ^ I }}}" hidden="1"/>""";
 	}
 
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="FlagRush_Markers">
 
-	<framemodel id="model-marker-base" hidden="1">
+	<framemodel id="model-marker-base">
 		<label id="quad-icon" pos="0 0" z-index="1" size="10 10" text="" textsize="5" halign="center" valign="center2"/>
 	</framemodel>
 
-	<framemodel id="model-marker-flagspawn" hidden="1">
+	<framemodel id="model-marker-flagspawn">
 		<quad id="quad-flag" pos="0" size="8 8" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light"/>
 		<label id="label-order" pos="0 4" halign="center" valign="center2" text="0" textprefix="#" textsize="0.5" textfont="GameFontExtraBold" textemboss="1" hidden="1"/>
 	</framemodel>
 
-	<framemodel id="model-marker-flag" hidden="1">
+	<framemodel id="model-marker-flag">
 		<quad id="quad-flag" pos="0 1" z-index="2" size="10 10" halign="center" style="UICommon64_1" substyle="Flag_light"  valign="center"/>
 		<label id="distance" pos="0 -2" z-index="2" size="10 5" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="0.4" textemboss="1" hidden="1"/>
 		<quad id="up" pos="0 7.5" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" hidden="1" />
@@ -64,10 +64,10 @@ Text GetManialink() {
 
   <!-- Wrap in frames because C++ side z-index computation is broken -->
 	<frame z-index="2">
-		<frameinstance modelid="model-marker-flag" id="{{{ C_FlagMarkerFrameId }}}"/>
+		<frameinstance modelid="model-marker-flag" id="{{{ C_FlagMarkerFrameId }}}" hidden="1"/>
 	</frame>
 	<frame z-index="1">
-		<frameinstance modelid="model-marker-flagspawn" id="{{{ C_FlagSpawnMarkerFrameDefault }}}"/>
+		<frameinstance modelid="model-marker-flagspawn" id="{{{ C_FlagSpawnMarkerFrameDefault }}}" hidden="1"/>
 		{{{ FlagSpawnMarkerFrameInstancesXml }}}
 	</frame>
 	<frame z-index="0">

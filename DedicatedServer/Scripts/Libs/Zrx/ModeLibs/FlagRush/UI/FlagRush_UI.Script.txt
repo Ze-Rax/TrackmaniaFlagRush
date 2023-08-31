@@ -51,17 +51,8 @@ Void Private_LoadUIAll() {
 	UIManager.UIAll.OverlayHideConsumables = True;
 	UIManager.UIAll.OverlayHide321Go = True;
 	UIManager.UIAll.OverlayMute321Go = False;
-	UIManager.UIAll.OverlayHideBackground = True; // ?
-	UIManager.UIAll.OverlayHideChrono = True;
-	UIManager.UIAll.OverlayHideSpeedAndDist = True;
-	UIManager.UIAll.OverlayHidePersonnalBestAndRank = True;
-	UIManager.UIAll.OverlayHidePosition = True;
-	UIManager.UIAll.OverlayHideCheckPointTime = True;
 	UIManager.UIAll.OverlayHideEndMapLadderRecap = True;
-	UIManager.UIAll.OverlayHideMultilapInfos = True;
-	UIManager.UIAll.OverlayHideSpectatorControllers = True;
 	UIManager.UIAll.OverlayHideSpectatorInfos = True;
-	UIManager.UIAll.OverlayChatHideAvatar = True;
 
 	UIManager.UIAll.ScoreTableOnlyManialink = True; // Hide default simple score board
 

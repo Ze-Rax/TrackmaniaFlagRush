@@ -41,10 +41,7 @@ Void Private_LoadUIAll() {
 
 	UIManager.UIAll.OverlayHideNotices = True;
 	UIManager.UIAll.OverlayHideMapInfo = True;
-	UIManager.UIAll.OverlayHideOpponentsInfo = True; // ?
 	UIManager.UIAll.OverlayHideChat = False;
-	UIManager.UIAll.OverlayHideCheckPointList = True;
-	UIManager.UIAll.OverlayHideRoundScores = True;
 	UIManager.UIAll.OverlayHideCountdown = True;
 	UIManager.UIAll.OverlayHideCrosshair = True;
 	UIManager.UIAll.OverlayHideGauges = True;

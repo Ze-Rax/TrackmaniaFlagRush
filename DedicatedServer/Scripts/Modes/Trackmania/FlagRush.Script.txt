@@ -191,8 +191,14 @@ if (FlagCarrier != Null) {
 
 foreach (Event in PendingEvents) {
 	switch (Event.Type) {
-		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: OnPlayerTriggersWaypoint(Event.Player, Event.Landmark);
-		case CSmModeEvent::EType::OnPlayerRequestRespawn: OnPlayerRequestsRespawn(Event.Player);
+		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
+			// Player might have left in the same server frame, causing Player to be Null
+			if (Event.Player != Null) OnPlayerTriggersWaypoint(Event.Player, Event.Landmark);
+		}
+		case CSmModeEvent::EType::OnPlayerRequestRespawn: {
+			// Player might have left in the same server frame, causing Player to be Null
+			if (Event.Player != Null) OnPlayerRequestsRespawn(Event.Player);
+		}
 		case CSmModeEvent::EType::OnCommand: OnGameplayCommand(CommandUtils::FromEvent(Event)); // Commands from Mode (Settings or XmlRpc)
 	}
 }
@@ -230,10 +236,12 @@ foreach (Player in Players) {
 foreach (Event in PendingEvents) {
 	switch (Event.Type) {
 		case CSmModeEvent::EType::OnPlayerRequestRespawn: {
-			UnspawnPlayer(Event.Player);
+			// Player might have left in the same server frame, causing Player to be Null
+			if (Event.Player != Null) UnspawnPlayer(Event.Player);
 		}
 		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
-			if (FlagRush_Map::IsOutOfBoundsTrigger(Event.Landmark)) {
+			// Player might have left in the same server frame, causing Player to be Null
+			if (Event.Player != Null && FlagRush_Map::IsOutOfBoundsTrigger(Event.Landmark)) {
 				FlagRush_Messages::PlayerOutOfBounds(Event.Player);
 				UnspawnPlayer(Event.Player);
 			}

@@ -2,7 +2,7 @@
  * This library just manages all the layers and their lifecycle, including updating them when needed or requested.
  */
 
-#Include "Libs/Nadeo/ModeLibs/Legacy/Layers2.Script.txt" as Layers
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
 // Modules
 #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"											as EventFeed

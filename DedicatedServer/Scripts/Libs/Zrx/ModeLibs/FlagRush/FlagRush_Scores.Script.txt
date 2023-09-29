@@ -1,4 +1,4 @@
-#Include "Libs/Nadeo/TMxSM/Race/Scores.Script.txt" as Scores
+#Include "Libs/Nadeo/TMGame/Modes/Scores.Script.txt" as Scores
 #Include "Libs/Zrx/ModeLibs/Common/PlayerTelemetry.Script.txt" as Telemetry
 #Include "Libs/Zrx/ModeLibs/Common/TeamPointsProgression.Script.txt" as TeamPointsProgression
 

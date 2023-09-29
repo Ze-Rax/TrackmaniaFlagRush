@@ -6,8 +6,8 @@
 
 #RequireContext CSmMode
 
-#Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt" as XmlRpc
-#Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt" as XmlRpc_Base
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2.Script.txt" as XmlRpc
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2_Base.Script.txt" as XmlRpc_Base
 
 /**
  *	Base for a standard game mode

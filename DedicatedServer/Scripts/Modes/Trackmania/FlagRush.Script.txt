@@ -509,6 +509,10 @@ Void OnPlayerDeath(CSmPlayer Player) {
 }
 
 Void OnPlayerOutOfBound(CSmPlayer Player) {
+	if (Player.SpawnStatus != CSmPlayer::ESpawnStatus::Spawned) {
+		return;
+	}
+
 	FlagRush_Messages::PlayerOutOfBounds(Player);
 	if (Player == FlagRush_FlagState::GetFlagCarrierPlayer()) {
 		FlagCarrier_DropFlag(C_FlagDropPositionMode_LastSafePosition);

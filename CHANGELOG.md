@@ -16,6 +16,8 @@
 ### Bugs and crashes
 * Fixed a bug that causes a flag marker to be stuck in the center of the screen during initial warmup per map.
 * Fixed a crash that happened when a player leaves the server at the same server frame as crossing a waypoint.
+* Fixed "out of bounds" messages being spammed under certain conditions.
+* Compatibility with Trackmania Fall update.
 
 ---
 

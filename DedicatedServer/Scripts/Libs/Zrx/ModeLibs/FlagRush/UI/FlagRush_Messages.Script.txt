@@ -155,7 +155,7 @@ Void FlagScored(CSmPlayer Scorer, Integer Duration) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(Scorer) }}} scored for {{{ Private_GetColoredTeamName(Scorer.CurrentClan) }}}""";
 	declare Vec3 TeamColor = Private_GetTeamColor(Scorer.CurrentClan);
 	Private_QueueBigMessage(Message, Duration, C_MessagePriority_Event, CUIConfig::EUISound::Finish);
-	FlagRush_Sound::Play(["file://Media/Sounds/Nadeo/CommonLibs/Game/KnockOutPlayer_01.wav", "file://Media/Sounds/Nadeo/CommonLibs/Game/ShowWinners.wav"]);
+	FlagRush_Sound::Play(["file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/KnockOutPlayer_01.wav", "file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/ShowWinners.wav"]);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag, TeamColor);
 }
 

@@ -2,7 +2,7 @@
 
 #Include "TextLib" as TL
 
-#Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"							 	as XmlRpc
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2.Script.txt"						as XmlRpc
 #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"								as ModeUtils
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"			as FlagRush_FlagState
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"				as FlagRush_Scores
@@ -176,7 +176,7 @@ K_Rpc_Player PlayerToRpcPlayer(CSmPlayer Player) {
  */
 K_Rpc_Player ScoreToRpcPlayer(CSmScore Score) {
 	declare CSmPlayer Player <=> GetPlayer(Score.User.Login);
-	if(Player != Null) {
+	if (Player != Null) {
 		return PlayerToRpcPlayer(Player);
 	}
 

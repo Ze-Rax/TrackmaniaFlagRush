@@ -4,598 +4,598 @@
  * Mind the differences.
  */
 
-#RequireContext CSmMode
+ #RequireContext CSmMode
 
-#Include "Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2.Script.txt" as XmlRpc
-#Include "Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2_Base.Script.txt" as XmlRpc_Base
+ #Include "Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2.Script.txt" as XmlRpc
+ #Include "Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2_Base.Script.txt" as XmlRpc_Base
 
-/**
- *	Base for a standard game mode
- */
-#Const C_MB_Version			"2022-08-27"
-#Const C_MB_ScriptName	"Libs/Zrx/ModeLibs/BaseModes/ModeBase.Script.txt"
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Libraries
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Settings
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-#Setting S_ChatTime 10 as _("Chat time") ///< Chat time at the end of a map or match
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Constants
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-#Const C_LoopLevel_Server 0
-#Const C_LoopLevel_Match 1
-#Const C_LoopLevel_Map 2
-#Const C_LoopLevel_Round 3
-#Const C_LoopLevel_Turn 4
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Globales
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-declare Boolean MB_Private_RunSection_Script; ///< While this is true the script can't stop
-declare Boolean MB_Private_RunSection_Server; ///< Run the server section as long as this is true
-declare Boolean MB_Private_RunSection_Match; ///< Run the match section as long as this is true
-declare Boolean MB_Private_RunSection_Map; ///< Run the map section as long as this is true
-declare Boolean MB_Private_RunSection_Round; ///< Run the round section as long as this is true
-declare Boolean MB_Private_RunSection_Turn; ///< Run the turn section as long as this is true
-declare Boolean MB_Private_SkipIntroSequence; ///< Skip the intro sequence
-declare Boolean MB_Private_SkipPodiumSequence; ///< Skip the podium sequence
-declare Integer MB_Private_SectionCount_Match; ///< Number of matches played since the beginning of the script
-declare Integer MB_Private_SectionCount_Map; ///< Number of maps played since the beginning of the match
-declare Integer MB_Private_SectionCount_Round; ///< Number of rounds played since the beginning of the map
-declare Integer MB_Private_SectionCount_Turn; ///< Number of turns played since the beginning of the map
-declare Integer MB_Private_SectionCount_PlayLoop; ///< Number of playloops played since the beginning of the turn
-declare Integer MB_Private_CurrentNow; ///< Save the value of Now after the yield
-
-declare Boolean MB_Settings_UseDefaultIntroSequence; ///< Use the default introduction sequence at the beginning of the map
-declare Boolean MB_Settings_UseDefaultPodiumSequence; ///< Use the default podium sequence at the end of the map
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Extends
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-***Settings***
-***
-MB_Settings_UseDefaultIntroSequence = True;
-MB_Settings_UseDefaultPodiumSequence = True;
-***
-
-***LoadLibraries***
-***
-XmlRpc::Load();
-XmlRpc_Base::Load();
-***
-
-***UnloadLibraries***
-***
-XmlRpc::Unload();
-XmlRpc_Base::Unload();
-***
-
-***Yield***
-***
-XmlRpc_Base::Yield();
-***
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Functions
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/// Stop the server
-Void MB_StopServer() {
-	MB_Private_RunSection_Server = False;
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/// Restart the script
-Void MB_RestartScript() {
-	MB_Private_RunSection_Script = False;
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/// Stop the current match
-Void MB_StopMatch() {
-	MB_Private_RunSection_Match = False;
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/// Stop the current map
-Void MB_StopMap() {
-	MB_Private_RunSection_Map = False;
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/// Stop the current round
-Void MB_StopRound() {
-	MB_Private_RunSection_Round = False;
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/// Stop the current turn
-Void MB_StopTurn() {
-	MB_Private_RunSection_Turn = False;
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** Check if the server must be running
-	*
-	*	@return														True the server must run, False the server must stop
+ /**
+	*	Base for a standard game mode
 	*/
-Boolean MB_ServerIsRunning() {
-	return (
-		!ServerShutdownRequested &&
-		MB_Private_RunSection_Server
-	);
-}
+ #Const C_MB_Version			"2022-08-27"
+ #Const C_MB_ScriptName	"Libs/Zrx/ModeLibs/BaseModes/ModeBase.Script.txt"
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** Check if the script must be running
-	*
-	*	@return														True the script must run, False the script must stop
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Libraries
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Settings
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+ #Setting S_ChatTime 10 as _("Chat time") ///< Chat time at the end of a map or match
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Constants
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+ #Const C_LoopLevel_Server 0
+ #Const C_LoopLevel_Match 1
+ #Const C_LoopLevel_Map 2
+ #Const C_LoopLevel_Round 3
+ #Const C_LoopLevel_Turn 4
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Globales
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ declare Boolean MB_Private_RunSection_Script; ///< While this is true the script can't stop
+ declare Boolean MB_Private_RunSection_Server; ///< Run the server section as long as this is true
+ declare Boolean MB_Private_RunSection_Match; ///< Run the match section as long as this is true
+ declare Boolean MB_Private_RunSection_Map; ///< Run the map section as long as this is true
+ declare Boolean MB_Private_RunSection_Round; ///< Run the round section as long as this is true
+ declare Boolean MB_Private_RunSection_Turn; ///< Run the turn section as long as this is true
+ declare Boolean MB_Private_SkipIntroSequence; ///< Skip the intro sequence
+ declare Boolean MB_Private_SkipPodiumSequence; ///< Skip the podium sequence
+ declare Integer MB_Private_SectionCount_Match; ///< Number of matches played since the beginning of the script
+ declare Integer MB_Private_SectionCount_Map; ///< Number of maps played since the beginning of the match
+ declare Integer MB_Private_SectionCount_Round; ///< Number of rounds played since the beginning of the map
+ declare Integer MB_Private_SectionCount_Turn; ///< Number of turns played since the beginning of the map
+ declare Integer MB_Private_SectionCount_PlayLoop; ///< Number of playloops played since the beginning of the turn
+ declare Integer MB_Private_CurrentNow; ///< Save the value of Now after the yield
+
+ declare Boolean MB_Settings_UseDefaultIntroSequence; ///< Use the default introduction sequence at the beginning of the map
+ declare Boolean MB_Settings_UseDefaultPodiumSequence; ///< Use the default podium sequence at the end of the map
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Extends
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+ ***Settings***
+ ***
+ MB_Settings_UseDefaultIntroSequence = True;
+ MB_Settings_UseDefaultPodiumSequence = True;
+ ***
+
+ ***LoadLibraries***
+ ***
+ XmlRpc::Load();
+ XmlRpc_Base::Load();
+ ***
+
+ ***UnloadLibraries***
+ ***
+ XmlRpc::Unload();
+ XmlRpc_Base::Unload();
+ ***
+
+ ***Yield***
+ ***
+ XmlRpc_Base::Yield();
+ ***
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Functions
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Stop the server
+ Void MB_StopServer() {
+	 MB_Private_RunSection_Server = False;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Restart the script
+ Void MB_RestartScript() {
+	 MB_Private_RunSection_Script = False;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Stop the current match
+ Void MB_StopMatch() {
+	 MB_Private_RunSection_Match = False;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Stop the current map
+ Void MB_StopMap() {
+	 MB_Private_RunSection_Map = False;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Stop the current round
+ Void MB_StopRound() {
+	 MB_Private_RunSection_Round = False;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Stop the current turn
+ Void MB_StopTurn() {
+	 MB_Private_RunSection_Turn = False;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Check if the server must be running
+	 *
+	 *	@return														True the server must run, False the server must stop
+	 */
+ Boolean MB_ServerIsRunning() {
+	 return (
+		 !ServerShutdownRequested &&
+		 MB_Private_RunSection_Server
+	 );
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Check if the script must be running
+	 *
+	 *	@return														True the script must run, False the script must stop
+	 */
+ Boolean MB_ScriptIsRunning() {
+	 return (
+		 MB_ServerIsRunning() &&
+		 MB_Private_RunSection_Script
+	 );
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Check if the match must be running
+	 *
+	 *	@return														True the match must run, False the match must stop
+	 */
+ Boolean MB_MatchIsRunning() {
+	 return (
+		 MB_ScriptIsRunning() &&
+		 MB_Private_RunSection_Match
+	 );
+ }
+
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Check if the map must be running
+	 *
+	 *	@return														True the map must run, False the map must stop
+	 */
+ Boolean MB_MapIsRunning() {
+	 return (
+		 MB_MatchIsRunning() &&
+		 !MatchEndRequested &&
+		 MB_Private_RunSection_Map
+	 );
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Check if the round must be running
+	 *
+	 *	@return														True the round must run, False the round must stop
+	 */
+ Boolean MB_RoundIsRunning() {
+	 return (
+		 MB_MapIsRunning() &&
+		 MB_Private_RunSection_Round
+	 );
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Check if the turn must be running
+	 *
+	 *	@return														True the turn must run, False the turn must stop
+	 */
+ Boolean MB_TurnIsRunning() {
+	 return (
+		 MB_RoundIsRunning() &&
+		 MB_Private_RunSection_Turn
+	 );
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Get the number of matches played since the beginning of the script
+	 *
+	 *	@return														The number of match
+	 */
+ Integer MB_GetMatchCount() {
+	 return MB_Private_SectionCount_Match;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Get the number of maps played since the beginning of the match
+	 *
+	 *	@return														The number of maps
+	 */
+ Integer MB_GetMapCount() {
+	 return MB_Private_SectionCount_Map;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Get the number of rounds played since the beginning of the map
+	 *
+	 *	@return														The number of rounds
+	 */
+ Integer MB_GetRoundCount() {
+	 return MB_Private_SectionCount_Round;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Get the number of turns played since the beginning of the map
+	 *
+	 *	@return														The number of turns
+	 */
+ Integer MB_GetTurnCount() {
+	 return MB_Private_SectionCount_Turn;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Skip the intro sequence one time
+ Void MB_SkipIntroSequence() {
+	 MB_Private_SkipIntroSequence = True;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Skip the podium sequence one time
+ Void MB_SkipPodiumSequence() {
+	 MB_Private_SkipPodiumSequence = True;
+ }
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** yield; the script
+	*	This should be the only place in a game mode script
+	*	where a script yields
 	*/
-Boolean MB_ScriptIsRunning() {
-	return (
-		MB_ServerIsRunning() &&
-		MB_Private_RunSection_Script
-	);
-}
+	Void MB_Yield() {
+	 { +++BeforeYield+++ }
+	 if (MB_Private_CurrentNow > 0 && Now > MB_Private_CurrentNow) {
+		 log("WARNING: A frame was skipped with `yield`, `sleep()` or `wait()` ("^MB_Private_CurrentNow^" > "^Now^"). This is considered bad practice. Always use `MB_Yield()` or `MB_Sleep()` to advance to the next frame.");
+	 }
+	 yield;
+	 MB_Private_CurrentNow = Now;
+	 { +++Yield+++ }
+ }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** Check if the match must be running
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Sleep for the given duration
 	*
-	*	@return														True the match must run, False the match must stop
+	*	@param	_Time											The duration of the sleep
 	*/
-Boolean MB_MatchIsRunning() {
-	return (
-		MB_ScriptIsRunning() &&
-		MB_Private_RunSection_Match
-	);
-}
+ Void MB_Sleep(Integer _Duration) {
+	 declare End = Now + _Duration;
+	 while (Now < End && MB_ServerIsRunning()) MB_Yield();
+ }
 
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** Check if the map must be running
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Sleep for the given duration in a specific
+	*	game mode loop
 	*
-	*	@return														True the map must run, False the map must stop
+	*	@param	_Level										The game mode loop in which the sleep happens
+	*	@param	_Time											The duration of the sleep
 	*/
-Boolean MB_MapIsRunning() {
-	return (
-		MB_MatchIsRunning() &&
-		!MatchEndRequested &&
-		MB_Private_RunSection_Map
-	);
-}
+ Void MB_Sleep(Integer _Level, Integer _Duration) {
+	 declare End = Now + _Duration;
+	 switch (_Level) {
+		 case C_LoopLevel_Match: {
+			 while (Now < End && MB_MatchIsRunning()) MB_Yield();
+		 }
+		 case C_LoopLevel_Map: {
+			 while (Now < End && MB_MapIsRunning()) MB_Yield();
+		 }
+		 case C_LoopLevel_Round: {
+			 while (Now < End && MB_RoundIsRunning()) MB_Yield();
+		 }
+		 case C_LoopLevel_Turn: {
+			 while (Now < End && MB_TurnIsRunning()) MB_Yield();
+		 }
+		 default: { //< Server level
+			 while (Now < End && MB_ServerIsRunning()) MB_Yield();
+		 }
+	 }
+ }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** Check if the round must be running
-	*
-	*	@return														True the round must run, False the round must stop
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Load the next map
+ Void MB_Private_LoadMap() {
+	 if (!MapLoaded) RequestLoadMap();
+	 while (!MapLoaded) MB_Yield();
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Unload the current map
+ Void MB_Private_UnloadMap() {
+	 if (MapLoaded) RequestUnloadMap();
+	 while (MapLoaded) MB_Yield();
+ }
+
+ /// Do a synchronization
+ Void MB_Synchro() {
+	 declare Barrier = Synchro_AddBarrier();
+	 while (!Synchro_BarrierReached(Barrier) && !ServerShutdownRequested) MB_Yield();
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Play the intro sequence
+ Void MB_Private_IntroSequence() {
+	 declare PrevUISequence = UIManager.UIAll.UISequence;
+	 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Intro;
+	 while (MB_MapIsRunning() && !UIManager.UIAll.UISequenceIsCompleted) {
+		 MB_Yield();
+		 +++MB_Private_IntroSequenceYield+++
+	 }
+	 UIManager.UIAll.UISequence = PrevUISequence;
+ }
+
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /** Play the podium sequence :
+	*	Podium + Scores table
 	*/
-Boolean MB_RoundIsRunning() {
-	return (
-		MB_MapIsRunning() &&
-		MB_Private_RunSection_Round
-	);
-}
+ Void MB_Private_PodiumSequence() {
+	 declare PrevUISequence = UIManager.UIAll.UISequence;
+	 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
+	 MB_Sleep((S_ChatTime*1000)/2);
+	 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
+	 MB_Sleep((S_ChatTime*1000)/2);
+	 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
+	 UIManager.UIAll.UISequence = PrevUISequence;
+ }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** Check if the turn must be running
-	*
-	*	@return														True the turn must run, False the turn must stop
-	*/
-Boolean MB_TurnIsRunning() {
-	return (
-		MB_RoundIsRunning() &&
-		MB_Private_RunSection_Turn
-	);
-}
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ /// Clear all queued messages
+ Void MB_ClearAllMessages() {
+	 UIManager.UIAll.ClearMessages();
+	 foreach (Player in AllPlayers) {
+		 declare CUIConfig UI <=> UIManager.GetUI(Player);
+		 if (UI != Null) {
+			 UI.ClearMessages();
+		 }
+	 }
+ }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** Get the number of matches played since the beginning of the script
-	*
-	*	@return														The number of match
-	*/
-Integer MB_GetMatchCount() {
-	return MB_Private_SectionCount_Match;
-}
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Script start
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ main() {
+	 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+	 MB_Private_RunSection_Server = True;
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** Get the number of maps played since the beginning of the match
-	*
-	*	@return														The number of maps
-	*/
-Integer MB_GetMapCount() {
-	return MB_Private_SectionCount_Map;
-}
+	 declare MB_Private_ServerModeName for This = "";
+	 declare MB_Private_ServerModeUpdated = False;
+	 if (MB_Private_ServerModeName != "" && MB_Private_ServerModeName != ServerModeName) {
+		 MB_Private_ServerModeUpdated = True;
+	 }
+	 MB_Private_ServerModeName = ServerModeName;
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** Get the number of rounds played since the beginning of the map
-	*
-	*	@return														The number of rounds
-	*/
-Integer MB_GetRoundCount() {
-	return MB_Private_SectionCount_Round;
-}
+	 while (MB_ServerIsRunning()) {
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Server section start
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+		 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+		 // Initialize section
+		 MB_Private_SectionCount_Match = 0;
+		 MB_Private_SectionCount_Map = 0;
+		 MB_Private_SectionCount_Round = 0;
+		 MB_Private_SectionCount_Turn = 0;
+		 MB_Private_RunSection_Script = True;
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** Get the number of turns played since the beginning of the map
-	*
-	*	@return														The number of turns
-	*/
-Integer MB_GetTurnCount() {
-	return MB_Private_SectionCount_Turn;
-}
+		 declare persistent MB_Private_PersistentServerRestarted = False;
+		 declare MB_Private_ServerRestarted = MB_Private_PersistentServerRestarted;
+		 MB_Private_PersistentServerRestarted = True;
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/// Skip the intro sequence one time
-Void MB_SkipIntroSequence() {
-	MB_Private_SkipIntroSequence = True;
-}
+		 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+		 { +++Settings+++ }
+		 ItemList_Begin();
+		 { +++LoadItems+++ }
+		 ItemList_End();
+		 { +++LoadLibraries+++ }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/// Skip the podium sequence one time
-Void MB_SkipPodiumSequence() {
-	MB_Private_SkipPodiumSequence = True;
-}
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** yield; the script
- *	This should be the only place in a game mode script
- *	where a script yields
- */
- Void MB_Yield() {
-	{ +++BeforeYield+++ }
-	if (MB_Private_CurrentNow > 0 && Now > MB_Private_CurrentNow) {
-		log("WARNING: A frame was skipped with `yield`, `sleep()` or `wait()` ("^MB_Private_CurrentNow^" > "^Now^"). This is considered bad practice. Always use `MB_Yield()` or `MB_Sleep()` to advance to the next frame.");
-	}
-	yield;
-	MB_Private_CurrentNow = Now;
-	{ +++Yield+++ }
-}
+		 XmlRpc_Base::SendStartServer_Start(MB_Private_ServerRestarted, MB_Private_ServerModeUpdated, MB_Private_ServerModeName);
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** Sleep for the given duration
- *
- *	@param	_Time											The duration of the sleep
- */
-Void MB_Sleep(Integer _Duration) {
-	declare End = Now + _Duration;
-	while (Now < End && MB_ServerIsRunning()) MB_Yield();
-}
+		 { +++LoadHud+++ }
+		 { +++Rules+++ }
+		 { +++StartServer+++ }
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** Sleep for the given duration in a specific
- *	game mode loop
- *
- *	@param	_Level										The game mode loop in which the sleep happens
- *	@param	_Time											The duration of the sleep
- */
-Void MB_Sleep(Integer _Level, Integer _Duration) {
-	declare End = Now + _Duration;
-	switch (_Level) {
-		case C_LoopLevel_Match: {
-			while (Now < End && MB_MatchIsRunning()) MB_Yield();
-		}
-		case C_LoopLevel_Map: {
-			while (Now < End && MB_MapIsRunning()) MB_Yield();
-		}
-		case C_LoopLevel_Round: {
-			while (Now < End && MB_RoundIsRunning()) MB_Yield();
-		}
-		case C_LoopLevel_Turn: {
-			while (Now < End && MB_TurnIsRunning()) MB_Yield();
-		}
-		default: { //< Server level
-			while (Now < End && MB_ServerIsRunning()) MB_Yield();
-		}
-	}
-}
+		 XmlRpc_Base::SendStartServer_End(MB_Private_ServerRestarted, MB_Private_ServerModeUpdated, MB_Private_ServerModeName);
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/// Load the next map
-Void MB_Private_LoadMap() {
-	if (!MapLoaded) RequestLoadMap();
-	while (!MapLoaded) MB_Yield();
-}
+		 while (MB_ScriptIsRunning()) {
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Match section start
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+			 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+			 // Initialize section
+			 MB_Private_RunSection_Match = True;
+			 MB_Private_SectionCount_Match += 1;
+			 MB_Private_SectionCount_Map = 0;
+			 MB_Private_SectionCount_Round = 0;
+			 MB_Private_SectionCount_Turn = 0;
+			 MB_Private_SectionCount_PlayLoop = 0;
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/// Unload the current map
-Void MB_Private_UnloadMap() {
-	if (MapLoaded) RequestUnloadMap();
-	while (MapLoaded) MB_Yield();
-}
+			 XmlRpc_Base::SendStartMatch_Start(<MB_Private_SectionCount_Match, MB_Private_SectionCount_Match>);
+			 { +++InitMatch+++ }
+			 { +++StartMatch+++ }
+			 XmlRpc_Base::SendStartMatch_End(<MB_Private_SectionCount_Match, MB_Private_SectionCount_Match>);
 
-/// Do a synchronization
-Void MB_Synchro() {
-	declare Barrier = Synchro_AddBarrier();
-	while (!Synchro_BarrierReached(Barrier) && !ServerShutdownRequested) MB_Yield();
-}
+			 while (MB_MatchIsRunning()) {
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Map section start
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+				 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+				 // Initialize section
+				 MatchEndRequested = False; //< (True when a vote for next map pass)
+				 MB_Private_RunSection_Map = True;
+				 MB_Private_SectionCount_Map += 1;
+				 MB_Private_SectionCount_Round = 0;
+				 MB_Private_SectionCount_Turn = 0;
+				 MB_Private_SectionCount_PlayLoop = 0;
+				 MB_Private_SkipIntroSequence = False;
+				 MB_Private_SkipPodiumSequence = False;
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/// Play the intro sequence
-Void MB_Private_IntroSequence() {
-	declare PrevUISequence = UIManager.UIAll.UISequence;
-	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Intro;
-	while (MB_MapIsRunning() && !UIManager.UIAll.UISequenceIsCompleted) {
-		MB_Yield();
-		+++MB_Private_IntroSequenceYield+++
-	}
-	UIManager.UIAll.UISequence = PrevUISequence;
-}
+				 declare persistent MB_Private_PersistentMapRestarted = False;
+				 declare MB_Private_MapRestarted = MB_Private_PersistentMapRestarted;
+				 MB_Private_PersistentMapRestarted = True;
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/** Play the podium sequence :
- *	Podium + Scores table
- */
-Void MB_Private_PodiumSequence() {
-	declare PrevUISequence = UIManager.UIAll.UISequence;
-	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
-	MB_Sleep((S_ChatTime*1000)/2);
-	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-	MB_Sleep((S_ChatTime*1000)/2);
-	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
-	UIManager.UIAll.UISequence = PrevUISequence;
-}
+				 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+				 // Load a map
+				 XmlRpc_Base::SendLoadingMap_Start(MB_Private_MapRestarted);
+				 { +++BeforeLoadMap+++ }
+				 MB_Private_LoadMap();
+				 { +++AfterLoadMap+++ }
+				 XmlRpc_Base::SendLoadingMap_End(Map, MB_Private_MapRestarted);
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-/// Clear all queued messages
-Void MB_ClearAllMessages() {
-	UIManager.UIAll.ClearMessages();
-	foreach (Player in AllPlayers) {
-		declare CUIConfig UI <=> UIManager.GetUI(Player);
-		if (UI != Null) {
-			UI.ClearMessages();
-		}
-	}
-}
+				 XmlRpc_Base::SendStartMap_Start(<MB_Private_SectionCount_Map, MB_Private_SectionCount_Map>, Map, MB_Private_MapRestarted);
 
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Script start
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-main() {
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-	MB_Private_RunSection_Server = True;
+				 { +++InitMap+++ }
 
-	declare MB_Private_ServerModeName for This = "";
-	declare MB_Private_ServerModeUpdated = False;
-	if (MB_Private_ServerModeName != "" && MB_Private_ServerModeName != ServerModeName) {
-		MB_Private_ServerModeUpdated = True;
-	}
-	MB_Private_ServerModeName = ServerModeName;
+				 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+				 // Play intro sequence
+				 if (!MB_Private_SkipIntroSequence) {
+					 { +++BeforeIntroSequence+++ }
+					 if (MB_Settings_UseDefaultIntroSequence) {
+						 MB_Private_IntroSequence();
+					 } else {
+						 { +++IntroSequence+++ }
+					 }
+					 { +++AfterIntroSequence+++ }
+				 }
 
-	while (MB_ServerIsRunning()) {
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Server section start
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-		// Initialize section
-		MB_Private_SectionCount_Match = 0;
-		MB_Private_SectionCount_Map = 0;
-		MB_Private_SectionCount_Round = 0;
-		MB_Private_SectionCount_Turn = 0;
-		MB_Private_RunSection_Script = True;
+				 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+				 { +++StartMap+++ }
 
-		declare persistent MB_Private_PersistentServerRestarted = False;
-		declare MB_Private_ServerRestarted = MB_Private_PersistentServerRestarted;
-		MB_Private_PersistentServerRestarted = True;
+				 XmlRpc_Base::SendStartMap_End(<MB_Private_SectionCount_Map, MB_Private_SectionCount_Map>, Map, MB_Private_MapRestarted);
 
-		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-		{ +++Settings+++ }
-		ItemList_Begin();
-		{ +++LoadItems+++ }
-		ItemList_End();
-		{ +++LoadLibraries+++ }
+				 while (MB_MapIsRunning()) {
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Round section start
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+					 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+					 // Initialize section
+					 MB_Private_RunSection_Round = True;
+					 MB_Private_SectionCount_Round += 1;
+					 MB_Private_SectionCount_Turn = 0;
+					 MB_Private_SectionCount_PlayLoop = 0;
 
-		XmlRpc_Base::SendStartServer_Start(MB_Private_ServerRestarted, MB_Private_ServerModeUpdated, MB_Private_ServerModeName);
+					 XmlRpc_Base::SendStartRound_Start(<MB_Private_SectionCount_Round, MB_Private_SectionCount_Round>);
+					 { +++InitRound+++ }
+					 { +++StartRound+++ }
+					 XmlRpc_Base::SendStartRound_End(<MB_Private_SectionCount_Round, MB_Private_SectionCount_Round>);
 
-		{ +++LoadHud+++ }
-		{ +++Rules+++ }
-		{ +++StartServer+++ }
+					 while (MB_RoundIsRunning()) {
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Turn section start
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+						 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+						 // Initialize section
+						 MB_Private_RunSection_Turn = True;
+						 MB_Private_SectionCount_Turn += 1;
+						 MB_Private_SectionCount_PlayLoop = 0;
 
-		XmlRpc_Base::SendStartServer_End(MB_Private_ServerRestarted, MB_Private_ServerModeUpdated, MB_Private_ServerModeName);
+						 XmlRpc_Base::SendStartTurn_Start(<MB_Private_SectionCount_Turn, MB_Private_SectionCount_Turn>);
+						 { +++InitTurn+++ }
+						 { +++StartTurn+++ }
+						 XmlRpc_Base::SendStartTurn_End(<MB_Private_SectionCount_Turn, MB_Private_SectionCount_Turn>);
 
-		while (MB_ScriptIsRunning()) {
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Match section start
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-			// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-			// Initialize section
-			MB_Private_RunSection_Match = True;
-			MB_Private_SectionCount_Match += 1;
-			MB_Private_SectionCount_Map = 0;
-			MB_Private_SectionCount_Round = 0;
-			MB_Private_SectionCount_Turn = 0;
-			MB_Private_SectionCount_PlayLoop = 0;
+						 MB_Private_SectionCount_PlayLoop += 1;
 
-			XmlRpc_Base::SendStartMatch_Start(MB_Private_SectionCount_Match);
-			{ +++InitMatch+++ }
-			{ +++StartMatch+++ }
-			XmlRpc_Base::SendStartMatch_End(MB_Private_SectionCount_Match);
+						 XmlRpc_Base::SendStartPlayLoop(<MB_Private_SectionCount_PlayLoop, MB_Private_SectionCount_PlayLoop>);
+						 { +++InitPlayLoop+++ }
+						 { +++StartPlayLoop+++ }
 
-			while (MB_MatchIsRunning()) {
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Map section start
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-				// Initialize section
-				MatchEndRequested = False; //< (True when a vote for next map pass)
-				MB_Private_RunSection_Map = True;
-				MB_Private_SectionCount_Map += 1;
-				MB_Private_SectionCount_Round = 0;
-				MB_Private_SectionCount_Turn = 0;
-				MB_Private_SectionCount_PlayLoop = 0;
-				MB_Private_SkipIntroSequence = False;
-				MB_Private_SkipPodiumSequence = False;
+						 while (MB_TurnIsRunning()) {
+	 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+	 // Play loop section
+	 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+							 MB_Yield();
+							 { +++PlayLoop+++ }
+						 }
 
-				declare persistent MB_Private_PersistentMapRestarted = False;
-				declare MB_Private_MapRestarted = MB_Private_PersistentMapRestarted;
-				MB_Private_PersistentMapRestarted = True;
+						 { +++EndPlayLoop+++ }
 
-				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-				// Load a map
-				XmlRpc_Base::SendLoadingMap_Start(MB_Private_MapRestarted);
-				{ +++BeforeLoadMap+++ }
-				MB_Private_LoadMap();
-				{ +++AfterLoadMap+++ }
-				XmlRpc_Base::SendLoadingMap_End(Map, MB_Private_MapRestarted);
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Turn section end
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-				XmlRpc_Base::SendStartMap_Start(MB_Private_SectionCount_Map, Map, MB_Private_MapRestarted);
+						 XmlRpc_Base::SendEndPlayLoop(<MB_Private_SectionCount_PlayLoop, MB_Private_SectionCount_PlayLoop>);
+						 XmlRpc_Base::SendEndTurn_Start(<MB_Private_SectionCount_Turn, MB_Private_SectionCount_Turn>);
+						 { +++EndTurn+++ }
+						 { +++AfterEndTurn+++ }
+						 XmlRpc_Base::SendEndTurn_End(<MB_Private_SectionCount_Turn, MB_Private_SectionCount_Turn>);
+					 }
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Round section end
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-				{ +++InitMap+++ }
+					 XmlRpc_Base::SendEndRound_Start(<MB_Private_SectionCount_Round, MB_Private_SectionCount_Round>);
+					 { +++EndRound+++ }
+					 { +++AfterEndRound+++ }
+					 XmlRpc_Base::SendEndRound_End(<MB_Private_SectionCount_Round, MB_Private_SectionCount_Round>);
+				 }
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Map section end
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-				// Play intro sequence
-				if (!MB_Private_SkipIntroSequence) {
-					{ +++BeforeIntroSequence+++ }
-					if (MB_Settings_UseDefaultIntroSequence) {
-						MB_Private_IntroSequence();
-					} else {
-						{ +++IntroSequence+++ }
-					}
-					{ +++AfterIntroSequence+++ }
-				}
+				 XmlRpc_Base::SendEndMap_Start(<MB_Private_SectionCount_Map, MB_Private_SectionCount_Map>, Map);
 
-				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-				{ +++StartMap+++ }
+				 { +++EndMap+++ }
+				 { +++AfterEndMap+++ }
 
-				XmlRpc_Base::SendStartMap_End(MB_Private_SectionCount_Map, Map, MB_Private_MapRestarted);
+				 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+				 // Podium sequence
+				 XmlRpc_Base::SendPodium_Start();
+				 if(!MB_Private_SkipPodiumSequence) {
+					 { +++BeforePodiumSequence+++ }
+					 if (MB_Settings_UseDefaultPodiumSequence) {
+						 MB_Private_PodiumSequence();
+					 } else {
+						 +++PodiumSequence+++
+					 }
+					 { +++AfterPodiumSequence+++ }
+				 }
+				 XmlRpc_Base::SendPodium_End();
 
-				while (MB_MapIsRunning()) {
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Round section start
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-					// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-					// Initialize section
-					MB_Private_RunSection_Round = True;
-					MB_Private_SectionCount_Round += 1;
-					MB_Private_SectionCount_Turn = 0;
-					MB_Private_SectionCount_PlayLoop = 0;
+				 XmlRpc_Base::SendEndMap_End(<MB_Private_SectionCount_Map, MB_Private_SectionCount_Map>, Map);
 
-					XmlRpc_Base::SendStartRound_Start(MB_Private_SectionCount_Round);
-					{ +++InitRound+++ }
-					{ +++StartRound+++ }
-					XmlRpc_Base::SendStartRound_End(MB_Private_SectionCount_Round);
+				 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+				 // Unload the current map
+				 XmlRpc_Base::SendUnloadingMap_Start(Map);
+				 { +++BeforeUnloadMap+++ }
+				 // Yield to process and remove every events before unloading the map
+				 // This is necessary to avoid getting errors in the events about variables that does not exist anymore
+				 // because they were deleted by the C++ cleaning at the map unload
+				 MB_Yield();
+				 MB_Private_UnloadMap();
+				 { +++AfterUnloadMap+++ }
+				 XmlRpc_Base::SendUnloadingMap_End();
 
-					while (MB_RoundIsRunning()) {
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Turn section start
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-						// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-						// Initialize section
-						MB_Private_RunSection_Turn = True;
-						MB_Private_SectionCount_Turn += 1;
-						MB_Private_SectionCount_PlayLoop = 0;
+				 MB_Private_PersistentMapRestarted = False;
+				 MB_Yield(); //< Needed to properly save persistent variable
+			 }
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Match section end
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-						XmlRpc_Base::SendStartTurn_Start(MB_Private_SectionCount_Turn);
-						{ +++InitTurn+++ }
-						{ +++StartTurn+++ }
-						XmlRpc_Base::SendStartTurn_End(MB_Private_SectionCount_Turn);
+			 XmlRpc_Base::SendEndMatch_Start(<MB_Private_SectionCount_Match, MB_Private_SectionCount_Match>);
+			 { +++EndMatch+++ }
+			 { +++AfterEndMatch+++ }
+			 XmlRpc_Base::SendEndMatch_End(<MB_Private_SectionCount_Match, MB_Private_SectionCount_Match>);
+		 }
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+ // Main/Server end
+ // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-						MB_Private_SectionCount_PlayLoop += 1;
+		 XmlRpc_Base::SendEndServer_Start();
+		 { +++EndServer+++ }
+		 XmlRpc_Base::SendEndServer_End();
 
-						XmlRpc_Base::SendStartPlayLoop(MB_Private_SectionCount_PlayLoop);
-						{ +++InitPlayLoop+++ }
-						{ +++StartPlayLoop+++ }
+		 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+		 // Unload libraries
+		 { +++UnloadLibraries+++ }
 
-						while (MB_TurnIsRunning()) {
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-	// Play loop section
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-							MB_Yield();
-							{ +++PlayLoop+++ }
-						}
+		 MB_Private_PersistentServerRestarted = False;
+	 }
 
-						{ +++EndPlayLoop+++ }
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Turn section end
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-						XmlRpc_Base::SendEndPlayLoop(MB_Private_SectionCount_PlayLoop);
-						XmlRpc_Base::SendEndTurn_Start(MB_Private_SectionCount_Turn);
-						{ +++EndTurn+++ }
-						{ +++AfterEndTurn+++ }
-						XmlRpc_Base::SendEndTurn_End(MB_Private_SectionCount_Turn);
-					}
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Round section end
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-					XmlRpc_Base::SendEndRound_Start(MB_Private_SectionCount_Round);
-					{ +++EndRound+++ }
-					{ +++AfterEndRound+++ }
-					XmlRpc_Base::SendEndRound_End(MB_Private_SectionCount_Round);
-				}
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Map section end
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-				XmlRpc_Base::SendEndMap_Start(MB_Private_SectionCount_Map, Map);
-
-				{ +++EndMap+++ }
-				{ +++AfterEndMap+++ }
-
-				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-				// Podium sequence
-				XmlRpc_Base::SendPodium_Start();
-				if(!MB_Private_SkipPodiumSequence) {
-					{ +++BeforePodiumSequence+++ }
-					if (MB_Settings_UseDefaultPodiumSequence) {
-						MB_Private_PodiumSequence();
-					} else {
-						+++PodiumSequence+++
-					}
-					{ +++AfterPodiumSequence+++ }
-				}
-				XmlRpc_Base::SendPodium_End();
-
-				XmlRpc_Base::SendEndMap_End(MB_Private_SectionCount_Map, Map);
-
-				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-				// Unload the current map
-				XmlRpc_Base::SendUnloadingMap_Start(Map);
-				{ +++BeforeUnloadMap+++ }
-				// Yield to process and remove every events before unloading the map
-				// This is necessary to avoid getting errors in the events about variables that does not exist anymore
-				// because they were deleted by the C++ cleaning at the map unload
-				MB_Yield();
-				MB_Private_UnloadMap();
-				{ +++AfterUnloadMap+++ }
-				XmlRpc_Base::SendUnloadingMap_End();
-
-				MB_Private_PersistentMapRestarted = False;
-				MB_Yield(); //< Needed to properly save persistent variable
-			}
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Match section end
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-			XmlRpc_Base::SendEndMatch_Start(MB_Private_SectionCount_Match);
-			{ +++EndMatch+++ }
-			{ +++AfterEndMatch+++ }
-			XmlRpc_Base::SendEndMatch_End(MB_Private_SectionCount_Match);
-		}
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-// Main/Server end
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-		XmlRpc_Base::SendEndServer_Start();
-		{ +++EndServer+++ }
-		XmlRpc_Base::SendEndServer_End();
-
-		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-		// Unload libraries
-		{ +++UnloadLibraries+++ }
-
-		MB_Private_PersistentServerRestarted = False;
-	}
-
-	// Last yield for logging
-	yield;
-}
+	 // Last yield for logging
+	 yield;
+ }

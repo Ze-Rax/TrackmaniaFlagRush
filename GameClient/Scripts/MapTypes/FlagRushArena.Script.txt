@@ -35,7 +35,8 @@
 #Const C_AnchorTag_Base_Prefix					"BaseTeam"
 #Const C_AnchorTag_FlagSpawn						"FlagSpawn"
 #Const C_AnchorTag_DefaultFlagSpawn			"DefaultFlagSpawn"
-#Const C_AnchorTag_OutOfBoundsTrigger 	"FlagResetTrigger"
+#Const C_AnchorTag_OutOfBoundsTrigger 	"OutOfBoundsTrigger"
+#Const C_AnchorTag_OutOfBoundsTrigger_Deprecated 	"FlagResetTrigger"
 
 #Const C_AnchorTag_UnusedStart					"Unused Start"
 #Const C_AnchorTag_UnusedFinish					"Unused Finish"
@@ -284,7 +285,7 @@ Text GetEditAnchorManialink() {
 					<quad pos="16.5 0" z-index="3" size="10 8" id="button-cpfunctionflagdefault-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
 				</frame>
 
-				<label id="button-cpfunctionreset" pos="0 -42.5" z-index="2" size="45 6" text="Flag Reset Trigger" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
+				<label id="button-cpfunctionreset" pos="0 -42.5" z-index="2" size="45 6" text="Out of Bounds Trigger" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
 
 				<label id="button-cpfunctionnone" pos="0 -52.5" z-index="2" size="45 6" text="None" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
 			</frame>
@@ -754,7 +755,11 @@ Void Anchor_SetUnused(CAnchorData Anchor) {
 				if (!TL::StartsWith(C_AnchorTag_Base_Prefix, Anchor.Tag)) Anchor_SetUnused(Anchor);
 			}
 			case CAnchorData::EWaypointType::Checkpoint: {
-				if (!( Anchor.Tag == C_AnchorTag_FlagSpawn || Anchor.Tag == C_AnchorTag_DefaultFlagSpawn || Anchor.Tag == C_AnchorTag_OutOfBoundsTrigger)) Anchor_SetUnused(Anchor);
+				if (Anchor.Tag == C_AnchorTag_OutOfBoundsTrigger_Deprecated) {
+					Anchor.Tag = C_AnchorTag_OutOfBoundsTrigger;
+				} else if (!( Anchor.Tag == C_AnchorTag_FlagSpawn || Anchor.Tag == C_AnchorTag_DefaultFlagSpawn || Anchor.Tag == C_AnchorTag_OutOfBoundsTrigger)) {
+					Anchor_SetUnused(Anchor);
+				}
 			}
 			default: {
 				Anchor_SetUnused(Anchor);

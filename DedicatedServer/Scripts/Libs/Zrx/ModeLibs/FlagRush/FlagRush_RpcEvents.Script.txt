@@ -175,8 +175,12 @@ K_Rpc_Player PlayerToRpcPlayer(CSmPlayer Player) {
  * If no player is found, then position is default <0., 0., 0.>.
  */
 K_Rpc_Player ScoreToRpcPlayer(CSmScore Score) {
+	/*
+	 * NOTE: As of 2023-09-29, GetPlayer returns CSmMode (`This`) for logins of players that are not fully initialized yet (joining) or already left.
+	 * Do an instance check (`Object is Class`) as temporary fix.
+	 */
 	declare CSmPlayer Player <=> GetPlayer(Score.User.Login);
-	if (Player != Null) {
+	if (Player != Null && (Player is CSmPlayer)) {
 		return PlayerToRpcPlayer(Player);
 	}
 
@@ -194,13 +198,17 @@ K_Rpc_Player ScoreToRpcPlayer(CSmScore Score) {
  * If also no score is found, then Team is default 0.
  */
 K_Rpc_Player UserToRpcPlayer(CUser User) {
+	/*
+	 * NOTE: As of 2023-09-29, GetPlayer returns CSmMode (`This`) for logins of players that are not fully initialized yet (joining) or already left.
+	 * Do an instance check (`Object is Class`) as temporary fix.
+	 */
 	declare CSmPlayer Player <=> GetPlayer(User.Login);
-	if(Player != Null) {
+	if (Player != Null && (Player is CSmPlayer)) {
 		return PlayerToRpcPlayer(Player);
 	}
 
 	declare CSmScore Score <=> ModeUtils::GetScore(User.Login);
-	if(Score != Null) {
+	if (Score != Null) {
 		return ScoreToRpcPlayer(Score);
 	}
 

@@ -1,7 +1,33 @@
+# Changelog
+
+## 1.4.0
+
+### General
+* Manually dropping the flag in a stack of players is now considered a pass/steal instead of a drop.
+- Flag steal resistance on passes between team members has been removed.
+	* Picking up a dropped flag or stealing it from your opponent still gives steal resistance.
+	* Steal resistance can still be achieved by dropping the flag in front of your teammates for them to pick it up.
+	* A setting has been added to turn this new behaviour on or off: `S_FlagStealResistanceOnTeamPass` (Boolean)
+
+### UI
++ Added a toggle button on the scoreboard to toggle between displaying map or match scores.
++ Fixed podium screen after december Trackmania update.
+* The "Out of Bounds Trigger" is now correctly called like that in the maptype, instead of the old "Flag Reset Trigger" naming.
+
+### Bugs and crashes
+* Fixed a bug that causes a flag marker to be stuck in the center of the screen during initial warmup per map.
+* Fixed a crash that happened when a player leaves the server at the same server frame as crossing a waypoint.
+* Fixed "out of bounds" messages being spammed under certain conditions.
+* Compatibility with Trackmania Fall update.
+
+---
+
 ## 1.3.2
 
 ### Maptype
 * Fix crash after Trackmania December update.
+
+---
 
 ## 1.3.1
 
@@ -13,6 +39,8 @@
 + Added a message to the Event feed when a player respawns.
 * Fix wrong scores sometimes shown on podium screen.
 * Fix scoresboard to show map points in "Points" counter instead of match points.
+
+---
 
 ## 1.3.0
 
@@ -42,10 +70,14 @@
 * Adjusted default flag carrier adherence coef to 0.9 (from 1.0)
 * Adjusted respawn delay functionality: Respawn delay is now dependent on the amount of players in a team: `Respawn delay = Amount of player in the team * S_RespawnDelayPerPlayer (Setting) + 1.5 seconds Spawn animation`
 
+---
+
 ## 1.2.1
 + New mode commands (Callvotes, ModeCommandsUI) for setting match/map/round points and auto team balance.
 * Fix scorestable player statistics
 * Bug fixes and optimizations
+
+---
 
 ## 1.2.0
 + New Hitboxes! Completely new and very precise player hit detection.
@@ -64,11 +96,17 @@
 	* Fine extrapolation can still be reenabled by serveradmins using the setting `S_UseCrudeExtrapolation` (Set to `False`). It will also automatically be enabled when playing with collisions, as it's needed for collisions to work.
 * Some bug and crash fixes and general optimizations
 
+---
+
 ## 1.1.2
 * Fixed an issue with the respawn timer constantly resetting when falling into offzone
 
+---
+
 ## 1.1.1
 * Fixed an small issue with the radar not displaying some players correctly when in spectator
+
+---
 
 ## 1.1.0
 + Added a radar ("minimap") on screen, which shows the location of nearby players and the flag

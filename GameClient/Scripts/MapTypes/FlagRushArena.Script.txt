@@ -19,10 +19,9 @@
 #Include "TextLib" as TL
 #Include "ColorLib" as CL
 
-#Include "Libs/Nadeo/TMNext/TrackMania/ColorPalette.Script.txt" as ColorPalette
-#Include "Libs/Nadeo/ModeLibs/Legacy/MapType.Script.txt" as MapType
-#Include "Libs/Nadeo/TMNext/TrackMania/Editor/MapType.Script.txt" as TMMapType
-#Include "Libs/Nadeo/CommonLibs/Common/ReportContext.Script.txt" as ReportContext
+#Include "Libs/Nadeo/CMGame/Utils/Stylesheet.Script.txt" as Stylesheet
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/MapType.Script.txt" as MapType
+#Include "Libs/Nadeo/Trackmania/MapEditor/MapType.Script.txt" as TMMapType
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Constants
@@ -36,7 +35,8 @@
 #Const C_AnchorTag_Base_Prefix					"BaseTeam"
 #Const C_AnchorTag_FlagSpawn						"FlagSpawn"
 #Const C_AnchorTag_DefaultFlagSpawn			"DefaultFlagSpawn"
-#Const C_AnchorTag_OutOfBoundsTrigger 	"FlagResetTrigger"
+#Const C_AnchorTag_OutOfBoundsTrigger 	"OutOfBoundsTrigger"
+#Const C_AnchorTag_OutOfBoundsTrigger_Deprecated 	"FlagResetTrigger"
 
 #Const C_AnchorTag_UnusedStart					"Unused Start"
 #Const C_AnchorTag_UnusedFinish					"Unused Finish"
@@ -121,8 +121,8 @@ Text GetTeamColorWindowManialink() {
 	</framemodel>
 
 	<frame pos="0 28.75">
-		<quad pos="0 0" z-index="-2" size="100 57.5" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenThree }}}" halign="center" valign="top" />
-		<quad pos="0 0" z-index="-1" size="100 10" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" halign="center" valign="top" />
+		<quad pos="0 0" z-index="-2" size="100 57.5" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ Stylesheet::C_ColorHex6_GreenThree }}}" halign="center" valign="top" />
+		<quad pos="0 0" z-index="-1" size="100 10" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ Stylesheet::C_ColorHex6_GreenTwo }}}" halign="center" valign="top" />
 		<label pos="0 -5.25" z-index="0" size="90 8" text="$iFlagRush Team Colors" halign="center" valign="center2" textfont="GameFontBlack" textsize="3" />
 
 		<frameinstance modelid="teamcolorselector" id="team-1-color" pos="-25 -15"/>
@@ -248,13 +248,13 @@ Text GetEditAnchorManialink() {
 <manialink version="3" name="FlagRushArena_AnchorEdit">
 	<frame id="anchor-window" pos="132.5 50">
 		<frame id="header" z-index="1">
-			<quad pos="0 0" z-index="0" size="50 10" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" halign="center" valign="top"/>
+			<quad pos="0 0" z-index="0" size="50 10" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ Stylesheet::C_ColorHex6_GreenTwo }}}" halign="center" valign="top"/>
 			<label pos="0 -5.25" z-index="1" size="45 8" textprefix="$i" text="LandmarkType" halign="center" valign="center2" textsize="3" textfont="GameFontBlack" id="label-header"/>
 		</frame>
 
 		<frame id="body" pos="0 0" z-index="0">
 			<frame id="body-teamselection" z-index="1" hidden="1">
-				<quad pos="0 0" z-index="0" size="50 40" halign="center" valign="top" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
+				<quad pos="0 0" z-index="0" size="50 40" halign="center" valign="top" colorize="{{{ Stylesheet::C_ColorHex6_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
 				<label pos="0 -15" size="45 5" text="$iTeam:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="FFF"/>
 
 				<frame id="button-team1" pos="-11.5 -22.5">
@@ -273,32 +273,32 @@ Text GetEditAnchorManialink() {
 			</frame>
 
 			<frame id="body-cpfunction" z-index="1" hidden="1">
-				<quad pos="0 0" z-index="0" size="50 60" halign="center" valign="top" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
+				<quad pos="0 0" z-index="0" size="50 60" halign="center" valign="top" colorize="{{{ Stylesheet::C_ColorHex6_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
 				<label pos="0 -15" size="45 5" text="$iFunction:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="FFF"/>
 
 				<label id="button-cpfunctionflag" pos="0 -22.5" z-index="2" size="45 6" text="Flag spawn" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
 
 				<frame id="button-cpfunctionflagdefault" pos="0 -32.5" >
-					<quad pos="16.5 0" z-index="1" size="10 8" id="button-cpfunctionflagdefault-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ ColorPalette::C_Color_GreenTwo }}}" opacity="{{{ C_UI_ButtonOpacity }}}"/>
+					<quad pos="16.5 0" z-index="1" size="10 8" id="button-cpfunctionflagdefault-bg" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ Stylesheet::C_ColorHex6_GreenTwo }}}" opacity="{{{ C_UI_ButtonOpacity }}}"/>
 					<label pos="-5 0" z-index="2" size="30 6" id="button-cpfunctionflagdefault-label" text="Default flag spawn:" halign="center" valign="center" style="TextButtonMedium" />
 					<label pos="16.5 0.25" z-index="2" size="10 6" id="button-cpfunctionflagdefault-icon" text="" halign="center" valign="center" textfont="GameFontBlack" textsize="3" />
 					<quad pos="16.5 0" z-index="3" size="10 8" id="button-cpfunctionflagdefault-activator" halign="center" valign="center" opacity="{{{ C_Debug_ButtonActivatorOpacity }}}" bgcolor="{{{ C_Debug_ButtonActivatorColor }}}" scriptevents="1"/>
 				</frame>
 
-				<label id="button-cpfunctionreset" pos="0 -42.5" z-index="2" size="45 6" text="Flag Reset Trigger" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
+				<label id="button-cpfunctionreset" pos="0 -42.5" z-index="2" size="45 6" text="Out of Bounds Trigger" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
 
 				<label id="button-cpfunctionnone" pos="0 -52.5" z-index="2" size="45 6" text="None" halign="center" valign="center" style="CardButtonMediumL" scriptevents="1"/>
 			</frame>
 
 			<frame id="body-noedit" z-index="1" hidden="1">
-				<quad pos="0 0" z-index="0" size="50 45" halign="center" valign="top" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
-				<label pos="0 -15" size="45 5" text="$iUnsupported:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="{{{ ColorPalette::C_Color_Bad }}}"/>
+				<quad pos="0 0" z-index="0" size="50 45" halign="center" valign="top" colorize="{{{ Stylesheet::C_ColorHex6_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
+				<label pos="0 -15" size="45 5" text="$iUnsupported:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="{{{ Stylesheet::C_ColorHex6_Red }}}"/>
 				<label pos="0 -20" size="45 18" text="This landmark is not supported by FlagRush and can therefore not be edited." halign="center" valign="top" textfont="GameFontRegular" textsize="2.5" z-index="1" autonewline="1" textcolor="FFF"/>
 			</frame>
 		</frame>
 
 		<frame id="order" pos="-35 -17.5" hidden="1">
-			<quad pos="0 0" z-index="0" size="15 15" halign="center" valign="center" colorize="{{{ ColorPalette::C_Color_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
+			<quad pos="0 0" z-index="0" size="15 15" halign="center" valign="center" colorize="{{{ Stylesheet::C_ColorHex6_GreenThree }}}" style="UICommon64_1" substyle="BgFrame1" opacity="{{{ C_UI_BackgroundOpacity }}}"/>
 			<label pos="0 3.5" z-index="1" size="10 5" text="Order" halign="center" valign="center" textfont="GameFontRegular" textsize="2" textcolor="FFF"/>
 			<label pos="0 -1.5" z-index="1" size="10 8" text="0" halign="center" valign="center" textfont="GameFontBlack" textsize="5" textcolor="FFF" id="label-ordervalue"/>
 
@@ -600,13 +600,13 @@ Text GetEditAnchorManialink() {
 		// Default to unfocused color
 		G_TeamSelection.TeamButtons[1].Background.Colorize = G_TeamSelection.TeamButtonColors[1][False];
 		G_TeamSelection.TeamButtons[2].Background.Colorize = G_TeamSelection.TeamButtonColors[2][False];
-		G_CPFunction.ToggleButtonDefaultSpawn.Background.Colorize = {{{ ColorPalette::C_Color_Vec3_GreenTwo }}};
+		G_CPFunction.ToggleButtonDefaultSpawn.Background.Colorize = {{{ CL::Hex6ToRgb(Stylesheet::C_ColorHex6_GreenTwo) }}};
 
 		// Selected the selected button to focused color
 		switch (Page.FocusedControl) {
 			case G_TeamSelection.TeamButtons[1].Activator: G_TeamSelection.TeamButtons[1].Background.Colorize = G_TeamSelection.TeamButtonColors[1][True];
 			case G_TeamSelection.TeamButtons[2].Activator: G_TeamSelection.TeamButtons[2].Background.Colorize = G_TeamSelection.TeamButtonColors[2][True];
-			case G_CPFunction.ToggleButtonDefaultSpawn.Activator: G_CPFunction.ToggleButtonDefaultSpawn.Background.Colorize = {{{ ColorPalette::C_Color_Vec3_GreenFour }}};
+			case G_CPFunction.ToggleButtonDefaultSpawn.Activator: G_CPFunction.ToggleButtonDefaultSpawn.Background.Colorize = {{{ CL::Hex6ToRgb(Stylesheet::C_ColorHex6_GreenFour) }}};
 		}
 	}
 
@@ -755,7 +755,11 @@ Void Anchor_SetUnused(CAnchorData Anchor) {
 				if (!TL::StartsWith(C_AnchorTag_Base_Prefix, Anchor.Tag)) Anchor_SetUnused(Anchor);
 			}
 			case CAnchorData::EWaypointType::Checkpoint: {
-				if (!( Anchor.Tag == C_AnchorTag_FlagSpawn || Anchor.Tag == C_AnchorTag_DefaultFlagSpawn || Anchor.Tag == C_AnchorTag_OutOfBoundsTrigger)) Anchor_SetUnused(Anchor);
+				if (Anchor.Tag == C_AnchorTag_OutOfBoundsTrigger_Deprecated) {
+					Anchor.Tag = C_AnchorTag_OutOfBoundsTrigger;
+				} else if (!( Anchor.Tag == C_AnchorTag_FlagSpawn || Anchor.Tag == C_AnchorTag_DefaultFlagSpawn || Anchor.Tag == C_AnchorTag_OutOfBoundsTrigger)) {
+					Anchor_SetUnused(Anchor);
+				}
 			}
 			default: {
 				Anchor_SetUnused(Anchor);
@@ -784,7 +788,6 @@ Void Team_SetHue(Integer Clan, Real Hue) {
 
 Void PlayTestRun() {
 	TMMapType::PlayTestRun_Yield();
-	ReportContext::SetContext(System, ReportContext::C_Context_MapEditor);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -794,7 +797,6 @@ main() {
 	HoldLoadingScreen = True;
 
 	// Settings
-	ReportContext::SetContext(System, ReportContext::C_Context_MapEditor);
 	TMMapType::ApplyDecoImages();
 	EnableMapTypeStartTest = True; // The maptype will handle the 'StartTest' event
 	CustomEditAnchorData = True;

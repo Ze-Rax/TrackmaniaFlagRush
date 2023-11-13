@@ -7,7 +7,7 @@ Rounds, etc. There are specific requirements that have to be met for the map to 
 
 ## 1. Preparations
 
-Download the mapping resources and place the contents of the "GameClient" folder into your gamedata folder usually located at `My Documents/Trackmania` or `My Documents/Trackmania2020`. This installs the required MapType-script and items you need to create maps for FlagRush.
+Download the mapping resources and place the contents of the "GameClient" folder into your gamedata folder usually located at `My Documents/Trackmania` or `My Documents/Trackmania2020`. This installs the required MapType-script and items you need to create maps for FlagRush. The items are also available ingame in the [official FlagRush club](https://www.trackmania.com/clubs/42/items/329884).
 
 
 
@@ -32,13 +32,13 @@ Each team tries to score the flag at the base of the opponent team while defendi
 
 Each team needs exactly one spawn (any "Start" block) and one or more nases (any "Finish" block). There have to be the same amounce of bases for both teams.
 
-You need to assign each team to the spawns and bases by using the "Edit Block Properties"-tool (See [Configuring the landmarks](#configuring-the-landmarks)).
+You need to assign each team to the spawns and bases by using the "Edit Block Properties"-tool (See [Configuring landmarks](#4-configuring-landmarks)).
 
 ### Flag Spawns (Required)
 
 Flag spawns are designated checkpoints that represent potential flag spawns. Any checkpoint in the game can be used as a flag spawn, but we generally recommend using the provided FlagRush flag spawn items (small, flag, circular, glowing items). There needs to be at least one flag spawn, but you can add as many additional flag spawns to your map as you like. It is recommended to keep it somewhere in the range of 3-5 flag spawns.
 
-The order at which flags are spawned is random. Only the initial flag spawn that is used to spawn the first flag of a round is explicitly set in the map as the "Default Flag Spawn". Flag spawns are configured by using the "Edit Block Properties"-tool (See [Configuring the landmarks](#configuring-the-landmarks)).
+The order at which flags are spawned is random. Only the initial flag spawn that is used to spawn the first flag of a round is explicitly set in the map as the "Default Flag Spawn". Flag spawns are configured by using the "Edit Block Properties"-tool (See [Configuring landmarks](#4-configuring-landmarks)).
 
 ### Global Reset Trigger (Required)
 
@@ -54,7 +54,7 @@ You can set "Out of Bounds"-triggers in the map to automatically unspawns player
 
 Any checkpoint, including custom created ones can be used for "Out of Bounds"-triggers. We also include a 1x1 block sized horizontal plane with the other FlagRush items that can be used as such. For more complex shapes or bigger areas it might be more benefitial to create your own custom trigger using the ingame mesh modeler.
 
-"Out of Bounds"-triggers are configured by using the "Edit Block Properties"-tool (See [Configuring the landmarks](#configuring-the-landmarks)).
+"Out of Bounds"-triggers are configured by using the "Edit Block Properties"-tool (See [Configuring landmarks](#4-configuring-landmarks)).
 
 
 
@@ -66,7 +66,7 @@ Every landmark is initialized in an "Unused"-state which makes the gamemode igno
 
 Select the checkpoint that should be used as a flag spawn. In the context menu on the right side click the "Flag Spawn" button. The checkpoint is now already registered as a flag spawn. Repeat this for every flag spawn on the map.
 
-Additionally, exactly one flag spawn on the map has to be configured as the "Default Flag Spawn" (See [Required Landmarks / Flag Spawns](#flag-spawns)). To do so, enable the "Default Flag Spawn" toggle button for one of the configured flag spawns.
+Additionally, exactly one flag spawn on the map has to be configured as the "Default Flag Spawn" (See [Landmarks / Flag Spawns](#flag-spawns-required)). To do so, enable the "Default Flag Spawn" toggle button for one of the configured flag spawns.
 
 ### Configuring Spawns
 

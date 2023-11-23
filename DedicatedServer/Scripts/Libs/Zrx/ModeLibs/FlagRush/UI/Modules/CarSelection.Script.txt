@@ -101,6 +101,12 @@ Text GetManialink() {
 		return -1;
 	}
 
+	Boolean IsModelForced() {
+		declare netread Text FlagRush_Net_ForceModel for Teams[0] = "";
+		declare CarIds = ["{{{ C_CarId_Stadium }}}", "{{{ C_CarId_Snow }}}"];
+		return CarIds.exists(FlagRush_Net_ForceModel);
+	}
+
 	main() {
 		AssignMlControlReferences();
 		InitMlControls();
@@ -110,7 +116,7 @@ Text GetManialink() {
 				continue;
 			}
 
-			if (IsSpectator) {
+			if (IsSpectator || IsModelForced()) {
 				G_CarSelectionFrame.Hide();
 				continue;
 			}

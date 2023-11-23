@@ -82,7 +82,7 @@
 #Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
 #Setting S_DropFlagOnTeleportDetection			True		as "<hidden>"
 #Setting S_UseCollisions										False		as "Use collisions (experimental)"
-#Setting S_ForceModel 										  ""			as "Force vehicle model (stadium, snow, \"\" = not forced)"
+#Setting S_ForceModel 										  ""			as "Force vehicle model (\"stadium\", \"snow\", else: not forced)"
 
 // ======== //
 // Commands //
@@ -108,7 +108,7 @@ FlagRush_Debug = C_Debug;
 
 UsePvPCollisions = S_UseCollisions;
 
-FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases);
+FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases, S_ForceModel);
 ***
 
 ***LoadLibraries***
@@ -280,18 +280,21 @@ declare Boolean FlagRush_PreviousSettings_TrustClientSimu for This;
 declare Boolean FlagRush_PreviousSettings_UseCrudeExtrapolation for This;
 declare Boolean FlagRush_PreviousSettings_UseReversedBases for This;
 declare Boolean FlagRush_PreviousSettings_UseCollisions for This;
+declare Text FlagRush_PreviousSettings_ForceModel for This;
 if (
 	FlagRush_PreviousSettings_TrustClientSimu != S_TrustClientSimu
 	|| FlagRush_PreviousSettings_UseCrudeExtrapolation != S_UseCrudeExtrapolation
 	|| FlagRush_PreviousSettings_UseReversedBases != S_UseReversedBases
 	|| FlagRush_PreviousSettings_UseCollisions != S_UseCollisions
+	|| FlagRush_PreviousSettings_ForceModel != S_ForceModel
 ) {
 	FlagRush_PreviousSettings_TrustClientSimu = S_TrustClientSimu;
 	FlagRush_PreviousSettings_UseCrudeExtrapolation = S_UseCrudeExtrapolation;
 	FlagRush_PreviousSettings_UseReversedBases = S_UseReversedBases;
 	FlagRush_PreviousSettings_UseCollisions = S_UseCollisions;
+	FlagRush_PreviousSettings_ForceModel = S_ForceModel;
 
-	FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases);
+	FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases, S_ForceModel);
 	UsePvPCollisions = S_UseCollisions;
 	if (MB_TurnIsRunning()) {
 		FlagRush_Messages::CriticalSettingUpdate_RestartTurn();
@@ -350,9 +353,20 @@ Void Player_Initialize(CSmPlayer Player) {
 	Player.UseCrudeExtrapolation = !UsePvPCollisions && S_UseCrudeExtrapolation;
 	Player.Dossard_Number = "  ";
 	Player.Dossard_Color = <1., 1., 1.>;
-	declare netwrite Text Net_SelectedCarId for UIManager.GetUI(Player) = "";
-	Player.ForceModelId = G_CarIds.get(Net_SelectedCarId, NullId);
-	if (Player.ForceModelId == NullId && S_UseTeamSkins) Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
+	switch (S_ForceModel) {
+		case FlagRush_CarSelection::C_CarId_Snow: {
+			Player.ForceModelId = G_CarIds[FlagRush_CarSelection::C_CarId_Snow];
+		}
+		case FlagRush_CarSelection::C_CarId_Stadium: {
+			Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
+		}
+		default: {
+			declare netwrite Text Net_SelectedCarId for UIManager.GetUI(Player) = "";
+			Player.ForceModelId = G_CarIds.get(Net_SelectedCarId, NullId);
+			if (Player.ForceModelId == NullId && S_UseTeamSkins) Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
+		}
+	}
+
 }
 
 Boolean Player_CanSpawn(CSmPlayer Player) {

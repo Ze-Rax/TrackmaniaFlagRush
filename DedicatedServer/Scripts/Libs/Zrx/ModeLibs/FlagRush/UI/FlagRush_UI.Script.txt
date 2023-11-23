@@ -182,9 +182,11 @@ Void Net_SendModeScriptProgressionSettings(Integer NbMapsToWinMatch, Integer NbR
 /**
  * Sends relevant round logic mode settings values to the clients via netwrite.
  */
-Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases) {
+Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases, Text ForcedModel) {
 	declare netwrite Boolean FlagRush_Net_UseReversedBases for Teams[0];
 	FlagRush_Net_UseReversedBases = UseReversedBases;
+	declare netwrite Text FlagRush_Net_ForceModel for Teams[0] = "";
+	FlagRush_Net_ForceModel = ForcedModel;
 }
 
 /* Lifecycle */

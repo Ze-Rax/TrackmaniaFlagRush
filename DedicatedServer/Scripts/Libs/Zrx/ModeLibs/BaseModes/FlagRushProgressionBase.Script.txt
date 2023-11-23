@@ -62,7 +62,7 @@
 // Settings //
 //////////////
 
-#Setting S_NbMapsToWinMatch									1 			as "Number of maps to win a match"
+#Setting S_NbMapsToWinMatch									2 			as "Number of maps to win a match"
 #Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"
 #Setting S_NbFlagsToWinRound								3				as "Number of flags scored to win a round"
 #Setting S_RoundTimeLimitSeconds						360 		as "Round Timelimit (seconds)"

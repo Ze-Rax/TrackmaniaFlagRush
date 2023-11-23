@@ -1,0 +1,146 @@
+#Include "ColorLib" as CL
+
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
+
+#Const C_CustomEventType_CarSelected "CarSelected"
+
+#Const C_CarId_Stadium "stadium"
+#Const C_CarId_Snow "snow"
+
+Text GetManialink() {
+	return """
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="FlagRush_CarSelection">
+	<framemodel id="car-option">
+		<quad id="background" size="12 12" halign="center" valign="center" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" bgcolor="{{{ CL::RgbToHex3(Colors::C_NeutralDark) }}}"/>
+		<label id="icon" size="8 8" pos="0 2" halign="center" valign="center" text="?" textfont="GameFontSemiBold" textsize="7" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}"/>
+		<label id="name" size="13 4" pos="0 -4" halign="center" valign="center" text="<CAR NAME>" textfont="GameFontSemiBold" textsize="1" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}"/>
+		<quad id="activator" size="15 15" halign="center" valign="center" opacity="0" scriptevents="1"/>
+	</framemodel>
+
+	<frame pos="-103 -47.5" id="car-selection">
+		<frame id="car-options" pos="0 -3.5">
+			<frameinstance modelid="car-option" id="car-option-stadium" pos="6 0" data-name="Stadium" data-icon="" data-id="{{{ C_CarId_Stadium }}}" />
+			<frameinstance modelid="car-option" id="car-option-snow" pos="19 0" data-name="Snow" data-icon="❄" data-id="{{{ C_CarId_Snow }}}" />
+		</frame>
+	</frame>
+
+	<script><!--
+	#Include "MathLib" as ML
+
+	#Struct K_CarOptionControls {
+		CMlFrame Frame;
+		CMlQuad Background;
+		CMlQuad Activator;
+		CMlLabel Name;
+		CMlLabel Icon;
+	}
+
+	#Struct K_CarOption {
+		K_CarOptionControls Controls;
+		Text Name;
+		Text Icon;
+		Text Id;
+	}
+
+	declare CMlFrame G_CarSelectionFrame;
+	declare K_CarOption[] G_CarOptions;
+
+	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
+
+	Void AssignMlControlReferences() {
+		G_CarSelectionFrame = (Page.GetFirstChild("car-selection") as CMlFrame);
+
+		declare CarOptionsFrame = (Page.GetFirstChild("car-options") as CMlFrame);
+		foreach (OptionFrameControl in CarOptionsFrame.Controls) {
+			declare OptionFrame = (OptionFrameControl as CMlFrame);
+			declare OptionControls = K_CarOptionControls{
+				Frame = OptionFrame,
+				Background = (OptionFrame.GetFirstChild("background") as CMlQuad),
+				Activator = (OptionFrame.GetFirstChild("activator") as CMlQuad),
+				Name = (OptionFrame.GetFirstChild("name") as CMlLabel),
+				Icon = (OptionFrame.GetFirstChild("icon") as CMlLabel)
+			};
+			G_CarOptions.add(K_CarOption{
+				Controls = OptionControls,
+				Name = OptionFrame.DataAttributeGet("name"),
+				Icon = OptionFrame.DataAttributeGet("icon"),
+				Id = OptionFrame.DataAttributeGet("id")
+			});
+		}
+	}
+
+	Void InitMlControls() {
+		foreach (CarOption in G_CarOptions) {
+			CarOption.Controls.Name.Value = CarOption.Name;
+			CarOption.Controls.Icon.Value = CarOption.Icon;
+			declare Text CarId for CarOption.Controls.Activator = "";
+			CarId = CarOption.Id;
+		}
+	}
+
+	Void UpdateHighlight() {
+		declare netread Text Net_SelectedCarId for UI = "";
+		foreach (Option in G_CarOptions) {
+			if (Option.Id == Net_SelectedCarId || Net_SelectedCarId == "" && Option.Id == "{{{ C_CarId_Stadium }}}") {
+				Option.Controls.Background.BgColor = GetTeamDarkColor(InputPlayer.RequestedClan);
+			} else {
+				Option.Controls.Background.BgColor = {{{ Colors::C_NeutralDark }}};
+			}
+		}
+	}
+
+	Integer GetSelectedCarIndex() {
+		declare netread Text Net_SelectedCarId for UI = "";
+		foreach (Index => Option in G_CarOptions) {
+			if (Option.Id == Net_SelectedCarId || Net_SelectedCarId == "" && Option.Id == "{{{ C_CarId_Stadium }}}") {
+				return Index;
+			}
+		}
+		return -1;
+	}
+
+	main() {
+		AssignMlControlReferences();
+		InitMlControls();
+		while (True) {
+			yield;
+			if (!PageIsVisible) {
+				continue;
+			}
+
+			if (IsSpectator) {
+				G_CarSelectionFrame.Hide();
+				continue;
+			}
+
+			G_CarSelectionFrame.Show();
+			UpdateHighlight();
+
+			foreach(Event in PendingEvents) {
+				if (Event.Type == CMlScriptEvent::Type::MouseClick) {
+					declare Text CarId for Event.Control = "";
+					if (CarId != "") {
+						SendCustomEvent("{{{ C_CustomEventType_CarSelected }}}", [CarId]);
+					}
+				}
+			}
+
+			foreach (Event in Input.PendingEvents) {
+				if (Event.Type == CInputEvent::EType::PadButtonPress) {
+					if (Event.Button == CInputEvent::EButton::RightStick_Right) {
+						declare SelectedCarIndex = ML::Clamp(GetSelectedCarIndex() + 1, 0, G_CarOptions.count - 1);
+						SendCustomEvent("{{{ C_CustomEventType_CarSelected }}}", [G_CarOptions[SelectedCarIndex].Id]);
+					} else if (Event.Button == CInputEvent::EButton::RightStick_Left) {
+						declare SelectedCarIndex = ML::Clamp(GetSelectedCarIndex() - 1, 0, G_CarOptions.count - 1);
+						SendCustomEvent("{{{ C_CustomEventType_CarSelected }}}", [G_CarOptions[SelectedCarIndex].Id]);
+					}
+				}
+			}
+		}
+	}
+	--></script>
+</manialink>
+	""";
+}

@@ -13,19 +13,19 @@
 }
 
 #Const C_TeamColorLut [
-	K_TeamColor{ TeamName = "Red", SkinName = "Skins/Models/CarSport/Stadium_Clan_ladybug.zip" },
-	K_TeamColor{ TeamName = "Orange", SkinName = "Skins/Models/CarSport/Stadium_Clan_fox.zip" },
-	K_TeamColor{ TeamName = "Yellow", SkinName = "Skins/Models/CarSport/Stadium_Clan_bee.zip" },
-	K_TeamColor{ TeamName = "Lime", SkinName = "Skins/Models/CarSport/Stadium_Clan_grasshopper.zip" },
-	K_TeamColor{ TeamName = "Green", SkinName = "Skins/Models/CarSport/Stadium_Clan_crocodile.zip" },
-	K_TeamColor{ TeamName = "Teal", SkinName = "Skins/Models/CarSport/Stadium_Clan_peafowl.zip" },
-	K_TeamColor{ TeamName = "Cyan", SkinName = "Skins/Models/CarSport/Stadium_Clan_rabbit.zip" },
-	K_TeamColor{ TeamName = "Azure", SkinName = "Skins/Models/CarSport/Stadium_Clan_polar_bear.zip" },
-	K_TeamColor{ TeamName = "Blue", SkinName = "Skins/Models/CarSport/Stadium_Clan_dolphin.zip" },
-	K_TeamColor{ TeamName = "Purple", SkinName = "Skins/Models/CarSport/Stadium_Clan_butterfly.zip" },
-	K_TeamColor{ TeamName = "Magenta", SkinName = "Skins/Models/CarSport/Stadium_Clan_octopus.zip" },
-	K_TeamColor{ TeamName = "Rose", SkinName = "Skins/Models/CarSport/Stadium_Clan_pig.zip" },
-	K_TeamColor{ TeamName = "Red", SkinName = "Skins/Models/CarSport/Stadium_Clan_ladybug.zip" }
+	K_TeamColor{ TeamName = "Red", SkinName = "https://core.trackmania.nadeo.live/storageObjects/8252a0b9-eb53-4199-9a3a-294dfccc0542" },
+	K_TeamColor{ TeamName = "Orange", SkinName = "https://core.trackmania.nadeo.live/storageObjects/2eaa38d5-340b-4643-8c4f-883a502d36e1" },
+	K_TeamColor{ TeamName = "Yellow", SkinName = "https://core.trackmania.nadeo.live/storageObjects/60e399eb-329e-4909-a4c6-de548202b9e0" },
+	K_TeamColor{ TeamName = "Lime", SkinName = "https://core.trackmania.nadeo.live/storageObjects/1ca61c60-0bf7-4ff8-89a5-708e02df86a2" },
+	K_TeamColor{ TeamName = "Green", SkinName = "https://core.trackmania.nadeo.live/storageObjects/3fd7ee79-2965-4464-b977-50e00be62f2e" },
+	K_TeamColor{ TeamName = "Teal", SkinName = "https://core.trackmania.nadeo.live/storageObjects/f8afc830-ca4e-429d-beff-10ff80eefcef" },
+	K_TeamColor{ TeamName = "Cyan", SkinName = "https://core.trackmania.nadeo.live/storageObjects/49037180-9fc8-49e2-813f-e01df9f211d7" },
+	K_TeamColor{ TeamName = "Azure", SkinName = "https://core.trackmania.nadeo.live/storageObjects/906838e4-b67d-41c7-af50-95440fa933f0" },
+	K_TeamColor{ TeamName = "Blue", SkinName = "https://core.trackmania.nadeo.live/storageObjects/c73f304e-b1f0-42d2-a1b7-3127af3a5909" },
+	K_TeamColor{ TeamName = "Purple", SkinName = "https://core.trackmania.nadeo.live/storageObjects/62dc8d08-caad-43d8-841d-d207a5caf433" },
+	K_TeamColor{ TeamName = "Magenta", SkinName = "https://core.trackmania.nadeo.live/storageObjects/1fa01644-0bad-40fb-adc9-c6c0bd9c7a64" },
+	K_TeamColor{ TeamName = "Rose", SkinName = "https://core.trackmania.nadeo.live/storageObjects/57699aa7-fbf1-481b-9d22-a5eb4cbe0734" },
+	K_TeamColor{ TeamName = "Red", SkinName = "https://core.trackmania.nadeo.live/storageObjects/8252a0b9-eb53-4199-9a3a-294dfccc0542" }
 ]
 
 #Struct K_TeamConfig {

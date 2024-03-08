@@ -43,6 +43,7 @@
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"						as FlagRush_Flash
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/CarSelection.Script.txt"		as FlagRush_CarSelection
 
 // ========= //
 // Constants //
@@ -81,6 +82,7 @@
 #Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
 #Setting S_DropFlagOnTeleportDetection			True		as "<hidden>"
 #Setting S_UseCollisions										False		as "Use collisions (experimental)"
+#Setting S_ForceModel 										  ""			as "Force vehicle model (\"stadium\", \"snow\", \"rally\", else: not forced)"
 
 // ======== //
 // Commands //
@@ -93,6 +95,8 @@
 #Command	Command_ResetFlag								(Boolean) as		"Reset flag"
 #Const		C_Command_ResetFlag															"ResetFlag"
 
+declare Ident[Text] G_CarIds;
+
 // ============== //
 // Plugs / Labels //
 // ============== //
@@ -104,13 +108,19 @@ FlagRush_Debug = C_Debug;
 
 UsePvPCollisions = S_UseCollisions;
 
-FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases);
+FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases, S_ForceModel);
 ***
 
 ***LoadLibraries***
 ***
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light");
 FlagRush_FlagState::Load();
+***
+
+***LoadItems***
+***
+G_CarIds[FlagRush_CarSelection::C_CarId_Snow] = ItemList_Add("CarSnow");
+G_CarIds[FlagRush_CarSelection::C_CarId_Rally] = ItemList_Add("CarRally");
 ***
 
 // ~~~~~~~~~~ Turn ~~~~~~~~~~ //
@@ -220,14 +230,12 @@ foreach (Player in Players) {
 ***
 foreach (Player in Players) {
 	if (Player_RequestsClanChange(Player) || Player_IsDead(Player)) {
-		UnspawnPlayer(Player);
+		Player_Unspawn(Player);
 		SetPlayerClan(Player, Player.RequestedClan);
 	}
 
-	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
-		Player_Initialize(Player);
-		declare CMapSpawn Spawn = FlagRush_Map::GetSpawn(Player).PlayerSpawn;
-		SpawnPlayer(Player, Player.CurrentClan, 100, Spawn, Now + FlagRush_Common::C_SpawnAnimDuration);
+	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && Player_CanSpawn(Player)) {
+		Player_Spawn(Player);
 	}
 
 	Player_Net_SendPosition(Player);
@@ -237,13 +245,13 @@ foreach (Event in PendingEvents) {
 	switch (Event.Type) {
 		case CSmModeEvent::EType::OnPlayerRequestRespawn: {
 			// Player might have left in the same server frame, causing Player to be Null
-			if (Event.Player != Null) UnspawnPlayer(Event.Player);
+			if (Event.Player != Null) Player_Unspawn(Event.Player);
 		}
 		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 			// Player might have left in the same server frame, causing Player to be Null
 			if (Event.Player != Null && FlagRush_Map::IsOutOfBoundsTrigger(Event.Landmark)) {
 				FlagRush_Messages::PlayerOutOfBounds(Event.Player);
-				UnspawnPlayer(Event.Player);
+				Player_Unspawn(Event.Player);
 			}
 		}
 	}
@@ -259,23 +267,33 @@ foreach (Player in Players) {
 
 ***Yield***
 ***
+foreach (Event in UIManager.PendingEvents) {
+	if (Event.CustomEventType == FlagRush_CarSelection::C_CustomEventType_CarSelected) {
+		declare netwrite Text Net_SelectedCarId for Event.UI = "";
+		Net_SelectedCarId = Event.CustomEventData[0];
+	}
+}
+
 // Handle mode script updates
 declare Boolean FlagRush_PreviousSettings_TrustClientSimu for This;
 declare Boolean FlagRush_PreviousSettings_UseCrudeExtrapolation for This;
 declare Boolean FlagRush_PreviousSettings_UseReversedBases for This;
 declare Boolean FlagRush_PreviousSettings_UseCollisions for This;
+declare Text FlagRush_PreviousSettings_ForceModel for This;
 if (
 	FlagRush_PreviousSettings_TrustClientSimu != S_TrustClientSimu
 	|| FlagRush_PreviousSettings_UseCrudeExtrapolation != S_UseCrudeExtrapolation
 	|| FlagRush_PreviousSettings_UseReversedBases != S_UseReversedBases
 	|| FlagRush_PreviousSettings_UseCollisions != S_UseCollisions
+	|| FlagRush_PreviousSettings_ForceModel != S_ForceModel
 ) {
 	FlagRush_PreviousSettings_TrustClientSimu = S_TrustClientSimu;
 	FlagRush_PreviousSettings_UseCrudeExtrapolation = S_UseCrudeExtrapolation;
 	FlagRush_PreviousSettings_UseReversedBases = S_UseReversedBases;
 	FlagRush_PreviousSettings_UseCollisions = S_UseCollisions;
+	FlagRush_PreviousSettings_ForceModel = S_ForceModel;
 
-	FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases);
+	FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases, S_ForceModel);
 	UsePvPCollisions = S_UseCollisions;
 	if (MB_TurnIsRunning()) {
 		FlagRush_Messages::CriticalSettingUpdate_RestartTurn();
@@ -334,8 +352,15 @@ Void Player_Initialize(CSmPlayer Player) {
 	Player.UseCrudeExtrapolation = !UsePvPCollisions && S_UseCrudeExtrapolation;
 	Player.Dossard_Number = "  ";
 	Player.Dossard_Color = <1., 1., 1.>;
-	if (S_UseTeamSkins) Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
-	else Player.ForceModelId = NullId;
+	if (S_ForceModel == FlagRush_CarSelection::C_CarId_Stadium) {
+		Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
+	} else if (G_CarIds.existskey(S_ForceModel)) {
+		Player.ForceModelId = G_CarIds.get(S_ForceModel);
+	} else {
+		declare netwrite Text Net_SelectedCarId for UIManager.GetUI(Player) = "";
+		Player.ForceModelId = G_CarIds.get(Net_SelectedCarId, NullId);
+		if (Player.ForceModelId == NullId && S_UseTeamSkins) Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
+	}
 }
 
 Boolean Player_CanSpawn(CSmPlayer Player) {

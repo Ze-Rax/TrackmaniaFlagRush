@@ -7,6 +7,7 @@
 
 #Const C_CarId_Stadium "stadium"
 #Const C_CarId_Snow "snow"
+#Const C_CarId_Rally "rally"
 
 Text GetManialink() {
 	return """
@@ -23,6 +24,7 @@ Text GetManialink() {
 		<frame id="car-options" pos="0 -3.5">
 			<frameinstance modelid="car-option" id="car-option-stadium" pos="6 0" data-name="Stadium" data-icon="" data-id="{{{ C_CarId_Stadium }}}" />
 			<frameinstance modelid="car-option" id="car-option-snow" pos="19 0" data-name="Snow" data-icon="❄" data-id="{{{ C_CarId_Snow }}}" />
+			<frameinstance modelid="car-option" id="car-option-snow" pos="32 0" data-name="Rally" data-icon="" data-id="{{{ C_CarId_Rally }}}" />
 		</frame>
 	</frame>
 

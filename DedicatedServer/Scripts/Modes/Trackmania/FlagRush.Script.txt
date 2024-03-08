@@ -82,7 +82,7 @@
 #Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
 #Setting S_DropFlagOnTeleportDetection			True		as "<hidden>"
 #Setting S_UseCollisions										False		as "Use collisions (experimental)"
-#Setting S_ForceModel 										  ""			as "Force vehicle model (\"stadium\", \"snow\", else: not forced)"
+#Setting S_ForceModel 										  ""			as "Force vehicle model (\"stadium\", \"snow\", \"rally\", else: not forced)"
 
 // ======== //
 // Commands //
@@ -120,6 +120,7 @@ FlagRush_FlagState::Load();
 ***LoadItems***
 ***
 G_CarIds[FlagRush_CarSelection::C_CarId_Snow] = ItemList_Add("CarSnow");
+G_CarIds[FlagRush_CarSelection::C_CarId_Rally] = ItemList_Add("CarRally");
 ***
 
 // ~~~~~~~~~~ Turn ~~~~~~~~~~ //

@@ -230,14 +230,12 @@ foreach (Player in Players) {
 ***
 foreach (Player in Players) {
 	if (Player_RequestsClanChange(Player) || Player_IsDead(Player)) {
-		UnspawnPlayer(Player);
+		Player_Unspawn(Player);
 		SetPlayerClan(Player, Player.RequestedClan);
 	}
 
-	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
-		Player_Initialize(Player);
-		declare CMapSpawn Spawn = FlagRush_Map::GetSpawn(Player).PlayerSpawn;
-		SpawnPlayer(Player, Player.CurrentClan, 100, Spawn, Now + FlagRush_Common::C_SpawnAnimDuration);
+	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && Player_CanSpawn(Player)) {
+		Player_Spawn(Player);
 	}
 
 	Player_Net_SendPosition(Player);
@@ -247,13 +245,13 @@ foreach (Event in PendingEvents) {
 	switch (Event.Type) {
 		case CSmModeEvent::EType::OnPlayerRequestRespawn: {
 			// Player might have left in the same server frame, causing Player to be Null
-			if (Event.Player != Null) UnspawnPlayer(Event.Player);
+			if (Event.Player != Null) Player_Unspawn(Event.Player);
 		}
 		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 			// Player might have left in the same server frame, causing Player to be Null
 			if (Event.Player != Null && FlagRush_Map::IsOutOfBoundsTrigger(Event.Landmark)) {
 				FlagRush_Messages::PlayerOutOfBounds(Event.Player);
-				UnspawnPlayer(Event.Player);
+				Player_Unspawn(Event.Player);
 			}
 		}
 	}

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.1
+
+### Bugs and crashes
+
+* Fix players spawning in black stadium car
+	* Since Nando removed the Royal-Animal-Skins from the gamefile, skins have been replaced with solid colored skins that are retrieved from the ingame club.
+
 ## 1.4.0
 
 ### General

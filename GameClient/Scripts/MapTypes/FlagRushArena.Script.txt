@@ -50,15 +50,22 @@
 #Const C_DefaultTeamHues 								[1 => 0.666, 2 => 0.]
 #Const C_TeamHue_Default 								-1.
 
+// Needs to be the same as in mode
+#Const C_CarId_Stadium	"stadium"
+#Const C_CarId_Snow			"snow"
+#Const C_CarId_Rally		"rally"
+#Const C_CarId_Desert		"desert"
+
 #Const C_UIEventType_ToggleTeamColorsWindow	"ToggleTeamColorsWindow"
 #Const C_UIEventType_SetTeamHue							"SetTeamHue"
+#Const C_UIEventType_ToggleVehicle					"ToggleVehicle"
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Globables
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
 declare CUILayer G_Toolbar;
-declare CUILayer G_TeamColorsWindow;
+declare CUILayer G_MapConfigWindow;
 declare CUILayer G_AnchorPropertiesWindow;
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -75,7 +82,7 @@ Text GetToolbarManialink() {
 <manialink version="3" name="FlagRushArena_Toolbar">
 	<frame id="teamcolor" pos="42 -84.5">
 		<quad id="background" z-index="-1" size="12 10" halign="center" valign="center" style="UICommon128_1" substyle="BgFrameTilted2" opacity="{{{ C_UI_BackgroundOpacity }}}" />
-		<quad id="button" size="7 7" z-index="1" halign="center" valign="center" style="UICommon64_1" substyle="Flag_dark" scriptevents="1" tooltip="FlagRush Teams" />
+		<quad id="button" size="7 7" z-index="1" halign="center" valign="center" style="UICommon64_1" substyle="Flag_dark" scriptevents="1" tooltip="FlagRush" />
 	</frame>
 
 	<script><!--
@@ -107,10 +114,10 @@ Text GetToolbarManialink() {
  * Manialink page to adjust the color of the teams.
  * Sends layer custom events when colors are reset or adjusted.
  */
-Text GetTeamColorWindowManialink() {
+Text GetMapConfigWindowManialink() {
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<manialink version="3" name="FlagRushArena_TeamColorsWindow">
+<manialink version="3" name="FlagRushArena_SettingWindow">
 	<framemodel id="teamcolorselector">
 		<label id="header" pos="0 0" z-index="0" size="20 5" textprefix="$i" text="Team X" halign="center" valign="center2" textfont="GameFontSemiBold"/>
 		<frame pos="0 -8" size="45 6" halign="center" valign="center">
@@ -120,15 +127,32 @@ Text GetTeamColorWindowManialink() {
 		<label id="reset" pos="0 -24" z-index="0" size="30 5" text="Reset to default" halign="center" valign="center2" style="CardButtonMedium" scriptevents="1" />
 	</framemodel>
 
-	<frame pos="0 28.75">
-		<quad pos="0 0" z-index="-2" size="100 57.5" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ Stylesheet::C_ColorHex6_GreenThree }}}" halign="center" valign="top" />
+	<framemodel id="vehiclebutton" class="vehiclebutton">
+		<label id="button" pos="0 0" size="20 5" text="Car___" style="CardButtonMediumS" valign="center" halign="center" scriptevents="1"/>
+		<quad id="checkbox" pos="10 0" size="5 5" valign="center" halign="center" style="UICommon64_1" substyle="CheckboxCircle_light"/>
+	</framemodel>
+
+	<frame pos="0 45">
+		<quad pos="0 0" z-index="-2" size="100 90" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ Stylesheet::C_ColorHex6_GreenThree }}}" halign="center" valign="top" />
 		<quad pos="0 0" z-index="-1" size="100 10" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ Stylesheet::C_ColorHex6_GreenTwo }}}" halign="center" valign="top" />
-		<label pos="0 -5.25" z-index="0" size="90 8" text="$iFlagRush Team Colors" halign="center" valign="center2" textfont="GameFontBlack" textsize="3" />
+		<label pos="0 -5.25" z-index="0" size="90 8" text="$iFlagRush Settings" halign="center" valign="center2" textfont="GameFontBlack" textsize="3" />
 
-		<frameinstance modelid="teamcolorselector" id="team-1-color" pos="-25 -15"/>
-		<frameinstance modelid="teamcolorselector" id="team-2-color" pos="25 -15"/>
+		<frame id="team colors" pos="0 -15">
+			<label size="45 5" text="$iTeam Colors:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="FFF"/>
+			<frameinstance modelid="teamcolorselector" id="team-1-color" pos="-25 -7.5"/>
+			<frameinstance modelid="teamcolorselector" id="team-2-color" pos="25 -7.5"/>
+			<label size="70 5" pos="0 -38" text=" $iThe color representation in game might vary slightly due to gradients being applied." halign="center" valign="center2" textfont="GameFontRegular" textsize="0.5" z-index="1" textcolor="FFF"/>
+		</frame>
 
-		<label id="close" pos="0 -50" z-index="0" size="20 5" text="Close" style="CardButtonMediumL" valign="center" halign="center" scriptevents="1"/>
+		<frame id="cars" pos="0 -60">
+			<label size="45 5" text="$iVehicles:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="FFF"/>
+			<frameinstance modelid="vehiclebutton" pos="-30 -7.5" id="{{{ C_CarId_Stadium }}}" data-label="Stadium"/>
+			<frameinstance modelid="vehiclebutton" pos="0 -7.5" id="{{{ C_CarId_Snow }}}" data-label="Snow"/>
+			<frameinstance modelid="vehiclebutton" pos="30 -7.5" id="{{{ C_CarId_Rally }}}" data-label="Rally"/>
+			<label size="70 5" pos="0 -14" text=" $iThe gamemode defaults to all cars being enabled if no selection is made here." halign="center" valign="center2" textfont="GameFontRegular" textsize="0.5" z-index="1" textcolor="FFF"/>
+		</frame>
+
+		<label id="close" pos="0 -82.5" z-index="0" size="20 5" text="Close" style="CardButtonMediumL" valign="center" halign="center" scriptevents="1"/>
 	</frame>
 
 
@@ -147,7 +171,14 @@ Text GetTeamColorWindowManialink() {
 		CMlLabel ResetButton;
 	}
 
+	#Struct K_VehicleButton {
+		CMlFrame Frame;
+		CMlLabel Button;
+		CMlQuad Checkbox;
+	}
+
 	declare K_TeamColorPicker[Integer] G_TeamColorPickers;
+	declare K_VehicleButton[] G_VehicleButtons;
 	declare CMlLabel G_CloseButton;
 
 	/**
@@ -161,6 +192,18 @@ Text GetTeamColorWindowManialink() {
 			HueLabel.Value = "Default";
 		} else {
 			HueLabel.Value = TL::FormatReal(Hue * 360, 0, False, True);
+		}
+	}
+
+	Void UpdateVehicleCheckboxes() {
+		declare metadata Text[] FlagRush_Meta_Vehicles for Editor.Map = [];
+		foreach (VehicleButton in G_VehicleButtons) {
+			declare Boolean Enabled = FlagRush_Meta_Vehicles.exists(VehicleButton.Frame.ControlId);
+			if (Enabled) {
+				VehicleButton.Checkbox.Substyle = "CheckedCircle_light";
+			} else {
+				VehicleButton.Checkbox.Substyle = "CheckboxCircle_light";
+			}
 		}
 	}
 
@@ -192,6 +235,17 @@ Text GetTeamColorWindowManialink() {
 			}
 			TeamColorPicker.ColorPicker.Color = CL::HsvToRgb(<ColorPickerHue, 1., 1.>);
 		}
+
+		declare metadata Text[] FlagRush_Meta_Vehicles for Editor.Map = [];
+		Page.GetClassChildren("vehiclebutton", Page.MainFrame, True);
+		for (ButtonFrame in Page.GetClassChildren_Result) {
+			declare K_VehicleButton VehicleButton;
+			VehicleButton.Frame = ButtonFrame as CMlFrame;
+			VehicleButton.Button = (VehicleButton.Frame.GetFirstChild("button") as CMlLabel);
+			VehicleButton.Button.Value = VehicleButton.Frame.DataAttributeGet("label") ^ "     "; // Spacing for checkbox
+			VehicleButton.Checkbox = (VehicleButton.Frame.GetFirstChild("checkbox") as CMlQuad);
+			G_VehicleButtons.add(VehicleButton);
+		}
 	}
 
 	main() {
@@ -205,11 +259,14 @@ Text GetTeamColorWindowManialink() {
 				UpdateHueLabel(Clan);
 			}
 
+			UpdateVehicleCheckboxes();
+
 			foreach (Event in PendingEvents) {
 				switch (Event.Type) {
 					case CMlScriptEvent::Type::MouseClick: {
-						if (Event.Control == G_CloseButton) SendCustomEvent("{{{ C_UIEventType_ToggleTeamColorsWindow }}}", []);
-						else {
+						if (Event.Control == G_CloseButton) {
+							SendCustomEvent("{{{ C_UIEventType_ToggleTeamColorsWindow }}}", []);
+						} else {
 							for (Clan, 1, 2) {
 								switch (Event.Control) {
 									case G_TeamColorPickers[Clan].ColorPicker: {
@@ -225,6 +282,11 @@ Text GetTeamColorWindowManialink() {
 										SendCustomEvent("{{{ C_UIEventType_SetTeamHue }}}", [TL::ToText(Clan), TL::ToText({{{ C_TeamHue_Default }}})]);
 										G_TeamColorPickers[Clan].ColorPicker.Color = CL::HsvToRgb(<C_DefaultTeamHues[Clan], 1., 1.>);
 									}
+								}
+							}
+							for (VehicleButton in G_VehicleButtons) {
+								if (Event.Control == VehicleButton.Button) {
+									SendCustomEvent("{{{ C_UIEventType_ToggleVehicle }}}", [VehicleButton.Frame.ControlId]);
 								}
 							}
 						}
@@ -783,7 +845,17 @@ Void Team_SetHue(Integer Clan, Real Hue) {
 
 	declare metadata Real[Integer] FlagRush_Meta_TeamHues for Map;
 	FlagRush_Meta_TeamHues[Clan] = Hue;
+}
 
+Void Vehicle_Toggle(Text Id) {
+	declare metadata Text[] FlagRush_Meta_Vehicles for Map = [];
+	log("Toggle " ^ Id ^ " in " ^ FlagRush_Meta_Vehicles);
+	if (FlagRush_Meta_Vehicles.exists(Id)) {
+		FlagRush_Meta_Vehicles.remove(Id);
+	} else {
+		FlagRush_Meta_Vehicles.add(Id);
+	}
+	log("Result: " ^ FlagRush_Meta_Vehicles);
 }
 
 Void PlayTestRun() {
@@ -809,9 +881,9 @@ main() {
 	// Initialize layers
 	G_Toolbar = UILayerCreate();
 	G_Toolbar.ManialinkPage = GetToolbarManialink();
-	G_TeamColorsWindow = UILayerCreate();
-	G_TeamColorsWindow.ManialinkPage = GetTeamColorWindowManialink();
-	G_TeamColorsWindow.IsVisible = False;
+	G_MapConfigWindow = UILayerCreate();
+	G_MapConfigWindow.ManialinkPage = GetMapConfigWindowManialink();
+	G_MapConfigWindow.IsVisible = False;
 	G_AnchorPropertiesWindow = UILayerCreate();
 	G_AnchorPropertiesWindow.ManialinkPage = GetEditAnchorManialink();
 	G_AnchorPropertiesWindow.IsVisible = False;
@@ -841,12 +913,16 @@ main() {
 				case CMapEditorPluginEvent::Type::LayerCustomEvent: {
 					switch (Event.CustomEventType) {
 						case C_UIEventType_ToggleTeamColorsWindow: {
-							G_TeamColorsWindow.IsVisible = !G_TeamColorsWindow.IsVisible;
+							G_MapConfigWindow.IsVisible = !G_MapConfigWindow.IsVisible;
 						}
 						case C_UIEventType_SetTeamHue: {
 							declare Integer Clan = TL::ToInteger(Event.CustomEventData[0]);
 							declare Real Hue = TL::ToReal(Event.CustomEventData[1]);
 							Team_SetHue(Clan, Hue);
+						}
+						case C_UIEventType_ToggleVehicle: {
+							declare Text VehicleId = Event.CustomEventData[0];
+							Vehicle_Toggle(VehicleId);
 						}
 					}
 				}

@@ -5,8 +5,6 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt" as FlagRush_Map
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt" as FlagRush_Vehicle
 
-#Const C_CustomEventType_CarSelected "CarSelected"
-
 #Struct K_UICarButtonParameter {
 	Text Label;
 	Text Icon;
@@ -19,6 +17,11 @@
 	"rally" => K_UICarButtonParameter{Label = "Rally", Icon = ""}
 ]
 
+Text GetSlectedVehicleId(CSmPlayer Player) {
+	declare CUIConfig UI = UIManager.GetUI(Player);
+	declare netread Text Net_FlagRush_SelectedVehicleId for UI = "";
+	return Net_FlagRush_SelectedVehicleId;
+}
 
 Text GetManialink() {
 	declare FlagRush_Vehicle::K_Vehicle[] EnabledVehicles = FlagRush_Map::GetEnabledVehicles();
@@ -30,7 +33,7 @@ Text GetManialink() {
 
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<manialink version="3" name="FlagRush_CarSelection">
+<manialink version="3" name="FlagRush_VehicleSelection">
 	<framemodel id="car-option">
 		<quad id="background" size="12 12" halign="center" valign="center" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" bgcolor="{{{ CL::RgbToHex3(Colors::C_NeutralDark) }}}"/>
 		<label id="icon" size="8 8" pos="0 2" halign="center" valign="center" text="?" textfont="GameFontSemiBold" textsize="7" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}"/>
@@ -67,51 +70,51 @@ Text GetManialink() {
 
 	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
 
-	Void AssignMlControlReferences() {
+	Void Init() {
 		G_CarSelectionFrame = (Page.GetFirstChild("car-selection") as CMlFrame);
-
-		declare CarOptionsFrame = (Page.GetFirstChild("car-options") as CMlFrame);
+		declare CMlFrame CarOptionsFrame = (Page.GetFirstChild("car-options") as CMlFrame);
 		foreach (OptionFrameControl in CarOptionsFrame.Controls) {
-			declare OptionFrame = (OptionFrameControl as CMlFrame);
-			declare OptionControls = K_CarOptionControls{
+			declare CMlFrame OptionFrame = (OptionFrameControl as CMlFrame);
+			declare K_CarOptionControls OptionControls = K_CarOptionControls{
 				Frame = OptionFrame,
 				Background = (OptionFrame.GetFirstChild("background") as CMlQuad),
 				Activator = (OptionFrame.GetFirstChild("activator") as CMlQuad),
 				Name = (OptionFrame.GetFirstChild("name") as CMlLabel),
 				Icon = (OptionFrame.GetFirstChild("icon") as CMlLabel)
 			};
-			G_CarOptions.add(K_CarOption{
+			declare K_CarOption VehicleOption = K_CarOption{
 				Controls = OptionControls,
 				Name = OptionFrame.DataAttributeGet("name"),
 				Icon = OptionFrame.DataAttributeGet("icon"),
 				Id = OptionFrame.DataAttributeGet("id")
-			});
+			};
+
+			VehicleOption.Controls.Name.Value = VehicleOption.Name;
+			VehicleOption.Controls.Icon.Value = VehicleOption.Icon;
+			G_CarOptions.add(VehicleOption);
 		}
 	}
 
-	Void InitMlControls() {
-		foreach (CarOption in G_CarOptions) {
-			CarOption.Controls.Name.Value = CarOption.Name;
-			CarOption.Controls.Icon.Value = CarOption.Icon;
-			declare Text CarId for CarOption.Controls.Activator = "";
-			CarId = CarOption.Id;
-		}
+	Void SetSelectedVehicleIndex(Integer VehicleIndex) {
+		declare netwrite Text Net_FlagRush_SelectedVehicleId for UI = "";
+		Net_FlagRush_SelectedVehicleId = G_CarOptions.get(VehicleIndex, K_CarOption{}).Id;
 	}
 
-	Integer GetSelectedCarIndex() {
-		declare netread Text Net_SelectedCarId for UI = "";
+	Integer GetSelectedVehicleIndex() {
+		declare netwrite Text Net_FlagRush_SelectedVehicleId for UI = "";
 		foreach (Index => Option in G_CarOptions) {
-			if (Option.Id == Net_SelectedCarId) {
+			if (Option.Id == Net_FlagRush_SelectedVehicleId) {
 				return Index;
 			}
 		}
+		SetSelectedVehicleIndex(0);
 		return 0;
 	}
 
-	Void UpdateHighlight() {
-		declare Integer SelectedCarIndex = GetSelectedCarIndex();
+	Void UpdateSelection() {
+		declare Integer SelectedVehicleIndex = GetSelectedVehicleIndex();
 		foreach (Index => Option in G_CarOptions) {
-			if (Index == SelectedCarIndex && InputPlayer != Null) {
+			if (Index == SelectedVehicleIndex && InputPlayer != Null) {
 				Option.Controls.Background.BgColor = GetTeamDarkColor(InputPlayer.RequestedClan);
 			} else {
 				Option.Controls.Background.BgColor = {{{ Colors::C_NeutralDark }}};
@@ -119,9 +122,36 @@ Text GetManialink() {
 		}
 	}
 
+	Void HandleInput() {
+		// Mouse selection
+		foreach(Event in PendingEvents) {
+			if (Event.Type == CMlScriptEvent::Type::MouseClick) {
+				foreach (Index => Option in G_CarOptions) {
+					if (Event.Control == Option.Controls.Activator) {
+						SetSelectedVehicleIndex(Index);
+						break;
+					}
+				}
+			}
+		}
+
+		// Controller selection
+		foreach (Event in Input.PendingEvents) {
+			if (Event.Type == CInputEvent::EType::PadButtonPress) {
+				if (Event.Button == CInputEvent::EButton::RightStick_Right) {
+					declare SelectedVehicleIndex = ML::Clamp(GetSelectedVehicleIndex() + 1, 0, G_CarOptions.count - 1);
+					SetSelectedVehicleIndex(SelectedVehicleIndex);
+				} else if (Event.Button == CInputEvent::EButton::RightStick_Left) {
+					declare SelectedVehicleIndex = ML::Clamp(GetSelectedVehicleIndex() - 1, 0, G_CarOptions.count - 1);
+					SetSelectedVehicleIndex(SelectedVehicleIndex);
+				}
+			}
+		}
+	}
+
 	main() {
-		AssignMlControlReferences();
-		InitMlControls();
+		Init();
+
 		while (True) {
 			yield;
 			if (!PageIsVisible) {
@@ -134,28 +164,8 @@ Text GetManialink() {
 			}
 
 			G_CarSelectionFrame.Show();
-			UpdateHighlight();
-
-			foreach(Event in PendingEvents) {
-				if (Event.Type == CMlScriptEvent::Type::MouseClick) {
-					declare Text CarId for Event.Control = "";
-					if (CarId != "") {
-						SendCustomEvent("{{{ C_CustomEventType_CarSelected }}}", [CarId]);
-					}
-				}
-			}
-
-			foreach (Event in Input.PendingEvents) {
-				if (Event.Type == CInputEvent::EType::PadButtonPress) {
-					if (Event.Button == CInputEvent::EButton::RightStick_Right) {
-						declare SelectedCarIndex = ML::Clamp(GetSelectedCarIndex() + 1, 0, G_CarOptions.count - 1);
-						SendCustomEvent("{{{ C_CustomEventType_CarSelected }}}", [G_CarOptions[SelectedCarIndex].Id]);
-					} else if (Event.Button == CInputEvent::EButton::RightStick_Left) {
-						declare SelectedCarIndex = ML::Clamp(GetSelectedCarIndex() - 1, 0, G_CarOptions.count - 1);
-						SendCustomEvent("{{{ C_CustomEventType_CarSelected }}}", [G_CarOptions[SelectedCarIndex].Id]);
-					}
-				}
-			}
+			UpdateSelection();
+			HandleInput();
 		}
 	}
 	--></script>

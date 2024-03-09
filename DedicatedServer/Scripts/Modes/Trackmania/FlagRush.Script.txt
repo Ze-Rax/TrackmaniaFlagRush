@@ -265,13 +265,6 @@ foreach (Player in Players) {
 
 ***Yield***
 ***
-foreach (Event in UIManager.PendingEvents) {
-	if (Event.CustomEventType == FlagRush_CarSelection::C_CustomEventType_CarSelected) {
-		declare netwrite Text Net_SelectedCarId for Event.UI = "";
-		Net_SelectedCarId = Event.CustomEventData[0];
-	}
-}
-
 // Handle mode script updates
 declare Boolean FlagRush_PreviousSettings_TrustClientSimu for This;
 declare Boolean FlagRush_PreviousSettings_UseCrudeExtrapolation for This;
@@ -359,12 +352,12 @@ Void Player_Initialize(CSmPlayer Player) {
 	} else { // Empty or invalid ForceModel
 		// Check map config
 		declare FlagRush_Vehicle::K_Vehicle[] EnabledVehicles = FlagRush_Map::GetEnabledVehicles();
-		declare netwrite Text Net_SelectedCarId for UIManager.GetUI(Player) = "";
+		declare Text SelectedVehicleId = FlagRush_CarSelection::GetSlectedVehicleId(Player);
 		declare FlagRush_Vehicle::K_Vehicle Vehicle;
 
 		// Check if player selection is valid, else take first entry
-		if (FlagRush_Map::IsVehicleEnabled(Net_SelectedCarId)) {
-			Vehicle = FlagRush_Vehicle::Get(Net_SelectedCarId);
+		if (FlagRush_Map::IsVehicleEnabled(SelectedVehicleId)) {
+			Vehicle = FlagRush_Vehicle::Get(SelectedVehicleId);
 		} else {
 			Vehicle = EnabledVehicles[0];
 		}

@@ -53,6 +53,7 @@
 #Const C_Debug False
 
 #Const C_AssistTimeThreshold 5000
+#Const C_RespawnDelayMin 500 // Player needs to be unspawned for a few (?) yields before respawning, else physics with different vehicles do not apply correctly
 
 #Const C_FlagDropPositionMode_CurrentPosition		"FlagDropPositionMode_CurrentPosition"
 #Const C_FlagDropPositionMode_PreviousPosition	"FlagDropPositionMode_PreviousPosition"
@@ -229,13 +230,17 @@ foreach (Player in Players) {
 ***WarmUpLoop***
 ***
 foreach (Player in Players) {
+	declare Integer FlagRush_Warmup_UnspawnDate for Player = Now;
 	if (Player_RequestsClanChange(Player) || Player_IsDead(Player)) {
-		Player_Unspawn(Player);
+		UnspawnPlayer(Player);
+		FlagRush_Warmup_UnspawnDate = Now;
 		SetPlayerClan(Player, Player.RequestedClan);
 	}
 
-	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && Player_CanSpawn(Player)) {
-		Player_Spawn(Player);
+	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && Now - FlagRush_Warmup_UnspawnDate > C_RespawnDelayMin) {
+		Player_Initialize(Player);
+		declare CMapSpawn Spawn = FlagRush_Map::GetSpawn(Player).PlayerSpawn;
+		SpawnPlayer(Player, Player.CurrentClan, 100, Spawn, Now + FlagRush_Common::C_SpawnAnimDuration);
 	}
 
 	Player_Net_SendPosition(Player);
@@ -245,13 +250,19 @@ foreach (Event in PendingEvents) {
 	switch (Event.Type) {
 		case CSmModeEvent::EType::OnPlayerRequestRespawn: {
 			// Player might have left in the same server frame, causing Player to be Null
-			if (Event.Player != Null) Player_Unspawn(Event.Player);
+			if (Event.Player != Null) {
+				UnspawnPlayer(Event.Player);
+				declare Integer FlagRush_Warmup_UnspawnDate for Event.Player = Now;
+				FlagRush_Warmup_UnspawnDate = Now;
+			}
 		}
 		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 			// Player might have left in the same server frame, causing Player to be Null
 			if (Event.Player != Null && FlagRush_Map::IsOutOfBoundsTrigger(Event.Landmark)) {
 				FlagRush_Messages::PlayerOutOfBounds(Event.Player);
-				Player_Unspawn(Event.Player);
+				UnspawnPlayer(Event.Player);
+				declare Integer FlagRush_Warmup_UnspawnDate for Event.Player = Now;
+				FlagRush_Warmup_UnspawnDate = Now;
 			}
 		}
 	}
@@ -385,9 +396,9 @@ Void Player_Spawn(CSmPlayer Player) {
 
 Void Player_Unspawn(CSmPlayer Player) {
 	UnspawnPlayer(Player);
-	declare netwrite Integer Net_SpawnDate for Player;
+	declare netwrite Integer Net_SpawnDate for Player = Now;
 	declare Integer SpawnDelay = ML::NearestInteger(S_RespawnDelayPerPlayer * ClansNbPlayers[Player.RequestedClan] * 1000);
-	Net_SpawnDate = Now + SpawnDelay;
+	Net_SpawnDate = Now + ML::Min(SpawnDelay, C_RespawnDelayMin);
 }
 
 Void Player_ApplyHandicaps(CSmPlayer Player) {

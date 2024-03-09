@@ -88,7 +88,7 @@ Void Private_AttachModules() {
 	Layers::Attach(C_LayerName_ScoresTable);
 
 	// Car selection
-	Layers::Create (C_LayerName_CarSelection, FlagRush_CarSelection::GetManialink());
+	Layers::Create (C_LayerName_CarSelection, ""); // Will be updated on map start
 	Layers::SetType(C_LayerName_CarSelection, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_CarSelection);
 
@@ -133,7 +133,7 @@ Void Private_AttachModules() {
 	Layers::Attach(C_LayerName_Flash);
 
 	// Podium background
-	Layers::Create(C_LayerName_Podium, FlagRush_Podium::GetManialink()); // Empty Manialink; Content set when set active
+	Layers::Create(C_LayerName_Podium, FlagRush_Podium::GetManialink());
 	Layers::SetType(C_LayerName_Podium, CUILayer::EUILayerType::ScreenIn3d);
 	Layers::Get(C_LayerName_Podium).AttachId = C_AttachId_Podium;
 	// Don't attach yet; only explicitly during podium
@@ -194,6 +194,7 @@ Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases, Text ForcedM
 Void StartMap() {
 	FlagRush_UIMarkers::CreateMapMarkers();
 	Layers::Update(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
+	Layers::Update(C_LayerName_CarSelection, FlagRush_CarSelection::GetManialink());
 }
 
 Void Yield() {

@@ -352,14 +352,27 @@ Void Player_Initialize(CSmPlayer Player) {
 	Player.UseCrudeExtrapolation = !UsePvPCollisions && S_UseCrudeExtrapolation;
 	Player.Dossard_Number = "  ";
 	Player.Dossard_Color = <1., 1., 1.>;
+	// Forcing model overrides map config
 	if (S_ForceModel == FlagRush_CarSelection::C_CarId_Stadium) {
 		Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
 	} else if (G_CarIds.existskey(S_ForceModel)) {
 		Player.ForceModelId = G_CarIds.get(S_ForceModel);
 	} else {
+		// Check map config
+		declare Text[] EnabledCarIds = FlagRush_Map::GetEnabledCarIds();
 		declare netwrite Text Net_SelectedCarId for UIManager.GetUI(Player) = "";
-		Player.ForceModelId = G_CarIds.get(Net_SelectedCarId, NullId);
-		if (Player.ForceModelId == NullId && S_UseTeamSkins) Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
+		declare Text CarId;
+		// Check if player selection is valid, else take first entry
+		if (EnabledCarIds.exists(Net_SelectedCarId)) {
+			CarId = Net_SelectedCarId;
+		} else {
+			CarId = EnabledCarIds[0];
+		}
+
+		Player.ForceModelId = G_CarIds.get(CarId, NullId); // Doesn't contain stadium as it's team dependent
+		if (Player.ForceModelId == NullId && S_UseTeamSkins) {
+			Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
+		}
 	}
 }
 

@@ -10,6 +10,10 @@
 #Const C_LandmarkTag_OutOfBoundsTrigger	"OutOfBoundsTrigger"
 #Const C_LandmarkTag_OutOfBoundsTrigger_Deprecated	"FlagResetTrigger"
 
+#Const C_CarId_Stadium "stadium"
+#Const C_CarId_Snow "snow"
+#Const C_CarId_Rally "rally"
+
 declare CMapLandmark						G_DefaultFlagSpawn;
 declare CMapLandmark[]					G_FlagSpawns;
 declare CMapLandmark[Integer]		G_Spawns;
@@ -56,6 +60,14 @@ CMapLandmark[] GetBases(Integer Clan) {
 CMapLandmark GetRandomFlagSpawn() {
 	declare Integer RandomIndex = ML::Rand(0, G_FlagSpawns.count - 1, Now);
 	return G_FlagSpawns[RandomIndex];
+}
+
+Text[] GetEnabledCarIds() {
+	declare metadata Text[] FlagRush_Meta_Vehicles for Map = [];
+	if (FlagRush_Meta_Vehicles.count > 0) {
+		return FlagRush_Meta_Vehicles;
+	}
+	return [C_CarId_Stadium, C_CarId_Snow, C_CarId_Rally];
 }
 
 /**

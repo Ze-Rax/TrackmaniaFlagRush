@@ -4,6 +4,8 @@
 
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"									as FlagRush_Map
+
 // Modules
 #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"											as EventFeed
 #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"					as ModeCommands
@@ -17,7 +19,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/PodiumBackground.Script.txt"	as FlagRush_Podium
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/CarSelection.Script.txt"	as FlagRush_CarSelection
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/CarSelection.Script.txt"			as FlagRush_CarSelection
 
 
 #Const C_AttachId_Podium							"16x9_StadiumSmall"
@@ -187,6 +189,12 @@ Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases, Text ForcedM
 	FlagRush_Net_UseReversedBases = UseReversedBases;
 	declare netwrite Text FlagRush_Net_ForceModel for Teams[0] = "";
 	FlagRush_Net_ForceModel = ForcedModel;
+
+	if (FlagRush_Map::IsValidCarId(ForcedModel)) {
+		Layers::Hide(C_LayerName_CarSelection);
+	} else {
+		Layers::Show(C_LayerName_CarSelection);
+	}
 }
 
 /* Lifecycle */

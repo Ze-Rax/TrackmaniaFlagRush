@@ -123,19 +123,12 @@ Text GetManialink() {
 	Void UpdateHighlight() {
 		declare Integer SelectedCarIndex = GetSelectedCarIndex();
 		foreach (Index => Option in G_CarOptions) {
-			if (Index == SelectedCarIndex) {
+			if (Index == SelectedCarIndex && InputPlayer != Null) {
 				Option.Controls.Background.BgColor = GetTeamDarkColor(InputPlayer.RequestedClan);
 			} else {
 				Option.Controls.Background.BgColor = {{{ Colors::C_NeutralDark }}};
 			}
 		}
-	}
-
-	Boolean IsModelForced() {
-		// TODO: This must be fixed to be more flexible
-		declare netread Text FlagRush_Net_ForceModel for Teams[0] = "";
-		declare CarIds = ["{{{ C_CarId_Stadium }}}", "{{{ C_CarId_Snow }}}", "{{{ C_CarId_Rally }}}"];
-		return CarIds.exists(FlagRush_Net_ForceModel);
 	}
 
 	main() {
@@ -147,7 +140,7 @@ Text GetManialink() {
 				continue;
 			}
 
-			if (IsSpectator || IsModelForced()) {
+			if (IsSpectator || InputPlayer == Null) {
 				G_CarSelectionFrame.Hide();
 				continue;
 			}

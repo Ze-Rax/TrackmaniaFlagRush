@@ -62,12 +62,28 @@ CMapLandmark GetRandomFlagSpawn() {
 	return G_FlagSpawns[RandomIndex];
 }
 
+Text[] GetAllCarIds() {
+	return [C_CarId_Stadium, C_CarId_Snow, C_CarId_Rally];
+}
+
+Boolean IsValidCarId(Text CarId) {
+	return GetAllCarIds().exists(CarId);
+}
+
 Text[] GetEnabledCarIds() {
 	declare metadata Text[] FlagRush_Meta_Vehicles for Map = [];
-	if (FlagRush_Meta_Vehicles.count > 0) {
-		return FlagRush_Meta_Vehicles;
+	declare Text[] EnabledCars;
+
+	for (CarId in FlagRush_Meta_Vehicles) {
+		if (IsValidCarId(CarId)) {
+			EnabledCars.add(CarId);
+		}
 	}
-	return [C_CarId_Stadium, C_CarId_Snow, C_CarId_Rally];
+
+	if (EnabledCars.count > 0) {
+		return EnabledCars;
+	}
+	return GetAllCarIds();
 }
 
 /**

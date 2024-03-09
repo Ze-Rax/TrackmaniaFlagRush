@@ -53,7 +53,7 @@
 #Const C_Debug False
 
 #Const C_AssistTimeThreshold 5000
-#Const C_RespawnDelayMin 500 // Player needs to be unspawned for a few (?) yields before respawning, else physics with different vehicles do not apply correctly
+#Const C_RespawnDelayMin 1000 // Player needs to be unspawned for a few (?) yields before respawning, else physics with different vehicles do not apply correctly
 
 #Const C_FlagDropPositionMode_CurrentPosition		"FlagDropPositionMode_CurrentPosition"
 #Const C_FlagDropPositionMode_PreviousPosition	"FlagDropPositionMode_PreviousPosition"

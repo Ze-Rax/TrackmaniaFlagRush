@@ -19,7 +19,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/PodiumBackground.Script.txt"	as FlagRush_Podium
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/CarSelection.Script.txt"			as FlagRush_CarSelection
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/VehicleSelection.Script.txt"	as FlagRush_VehicleSelection
 
 
 #Const C_AttachId_Podium							"16x9_StadiumSmall"
@@ -36,7 +36,7 @@
 #Const C_LayerName_ModeCommands				"Layer_ModeCommands"
 #Const C_LayerName_Radar							"Layer_FlagRush_Radar"
 #Const C_LayerName_Podium							"Layer_FlagRush_Podium"
-#Const C_LayerName_CarSelection				"Layer_CarSelection"
+#Const C_LayerName_VehicleSelection		"Layer_VehicleSelection"
 
 declare Integer G_PreviousPlayersCount;
 
@@ -90,9 +90,9 @@ Void Private_AttachModules() {
 	Layers::Attach(C_LayerName_ScoresTable);
 
 	// Car selection
-	Layers::Create (C_LayerName_CarSelection, ""); // Will be updated on map start
-	Layers::SetType(C_LayerName_CarSelection, CUILayer::EUILayerType::ScoresTable);
-	Layers::Attach(C_LayerName_CarSelection);
+	Layers::Create (C_LayerName_VehicleSelection, ""); // Will be updated on map start
+	Layers::SetType(C_LayerName_VehicleSelection, CUILayer::EUILayerType::ScoresTable);
+	Layers::Attach(C_LayerName_VehicleSelection);
 
 	// ModeCommands
 	Layers::Create(C_LayerName_ModeCommands, ModeCommands::GetManialink());
@@ -191,9 +191,9 @@ Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases, Text ForcedM
 	FlagRush_Net_ForceModel = ForcedModel;
 
 	if (FlagRush_Vehicle::IsValid(ForcedModel)) {
-		Layers::Hide(C_LayerName_CarSelection);
+		Layers::Hide(C_LayerName_VehicleSelection);
 	} else {
-		Layers::Show(C_LayerName_CarSelection);
+		Layers::Show(C_LayerName_VehicleSelection);
 	}
 }
 
@@ -202,7 +202,7 @@ Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases, Text ForcedM
 Void StartMap() {
 	FlagRush_UIMarkers::CreateMapMarkers();
 	Layers::Update(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
-	Layers::Update(C_LayerName_CarSelection, FlagRush_CarSelection::GetManialink());
+	Layers::Update(C_LayerName_VehicleSelection, FlagRush_VehicleSelection::GetManialink());
 }
 
 Void Yield() {

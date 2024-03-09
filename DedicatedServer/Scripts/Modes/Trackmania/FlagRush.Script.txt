@@ -42,9 +42,9 @@
 
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"						as FlagRush_Flash
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/CarSelection.Script.txt"		as FlagRush_CarSelection
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt"						as FlagRush_Vehicle
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_Flash
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/VehicleSelection.Script.txt"	as FlagRush_VehicleSelection
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt"							as FlagRush_Vehicle
 
 // ========= //
 // Constants //
@@ -351,7 +351,7 @@ Void Player_Initialize(CSmPlayer Player) {
 	} else if (FlagRush_Vehicle::IsValid(S_ForceModel)) {
 		Player.ForceModelId = FlagRush_Vehicle::GetItemId(S_ForceModel);
 	} else { // Empty or invalid ForceModel
-		declare Text SelectedVehicleId = FlagRush_CarSelection::GetSlectedVehicleId(Player);
+		declare Text SelectedVehicleId = FlagRush_VehicleSelection::GetSlectedVehicleId(Player);
 		// Check if player selection is valid, else take first entry of map enabled vehicles
 		declare FlagRush_Vehicle::K_Vehicle Vehicle;
 		if (FlagRush_Map::IsVehicleEnabled(SelectedVehicleId)) {

@@ -849,13 +849,11 @@ Void Team_SetHue(Integer Clan, Real Hue) {
 
 Void Vehicle_Toggle(Text Id) {
 	declare metadata Text[] FlagRush_Meta_Vehicles for Map = [];
-	log("Toggle " ^ Id ^ " in " ^ FlagRush_Meta_Vehicles);
 	if (FlagRush_Meta_Vehicles.exists(Id)) {
 		FlagRush_Meta_Vehicles.remove(Id);
 	} else {
 		FlagRush_Meta_Vehicles.add(Id);
 	}
-	log("Result: " ^ FlagRush_Meta_Vehicles);
 }
 
 Void PlayTestRun() {

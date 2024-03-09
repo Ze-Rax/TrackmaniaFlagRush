@@ -4,7 +4,7 @@
 
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"									as FlagRush_Map
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt"							as FlagRush_Vehicle
 
 // Modules
 #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"											as EventFeed
@@ -190,7 +190,7 @@ Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases, Text ForcedM
 	declare netwrite Text FlagRush_Net_ForceModel for Teams[0] = "";
 	FlagRush_Net_ForceModel = ForcedModel;
 
-	if (FlagRush_Map::IsValidCarId(ForcedModel)) {
+	if (FlagRush_Vehicle::IsValid(ForcedModel)) {
 		Layers::Hide(C_LayerName_CarSelection);
 	} else {
 		Layers::Show(C_LayerName_CarSelection);

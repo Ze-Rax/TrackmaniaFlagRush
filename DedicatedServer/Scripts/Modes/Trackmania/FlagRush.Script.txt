@@ -44,6 +44,7 @@
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"						as FlagRush_Flash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/CarSelection.Script.txt"		as FlagRush_CarSelection
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt"						as FlagRush_Vehicle
 
 // ========= //
 // Constants //
@@ -95,8 +96,6 @@
 #Command	Command_ResetFlag								(Boolean) as		"Reset flag"
 #Const		C_Command_ResetFlag															"ResetFlag"
 
-declare Ident[Text] G_CarIds;
-
 // ============== //
 // Plugs / Labels //
 // ============== //
@@ -119,8 +118,7 @@ FlagRush_FlagState::Load();
 
 ***LoadItems***
 ***
-G_CarIds[FlagRush_CarSelection::C_CarId_Snow] = ItemList_Add("CarSnow");
-G_CarIds[FlagRush_CarSelection::C_CarId_Rally] = ItemList_Add("CarRally");
+FlagRush_Vehicle::LoadItems();
 ***
 
 // ~~~~~~~~~~ Turn ~~~~~~~~~~ //
@@ -353,25 +351,29 @@ Void Player_Initialize(CSmPlayer Player) {
 	Player.Dossard_Number = "  ";
 	Player.Dossard_Color = <1., 1., 1.>;
 	// Forcing model overrides map config
-	if (S_ForceModel == FlagRush_CarSelection::C_CarId_Stadium) {
+	declare FlagRush_Vehicle::K_Vehicle StadiumVehicle = FlagRush_Vehicle::C_Vehicle_Stadium;
+	if (S_ForceModel == StadiumVehicle.Id) {
 		Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
-	} else if (G_CarIds.existskey(S_ForceModel)) {
-		Player.ForceModelId = G_CarIds.get(S_ForceModel);
-	} else {
+	} else if (FlagRush_Vehicle::IsValid(S_ForceModel)) {
+		Player.ForceModelId = FlagRush_Vehicle::GetItemId(S_ForceModel);
+	} else { // Empty or invalid ForceModel
 		// Check map config
-		declare Text[] EnabledCarIds = FlagRush_Map::GetEnabledCarIds();
+		declare FlagRush_Vehicle::K_Vehicle[] EnabledVehicles = FlagRush_Map::GetEnabledVehicles();
 		declare netwrite Text Net_SelectedCarId for UIManager.GetUI(Player) = "";
-		declare Text CarId;
+		declare FlagRush_Vehicle::K_Vehicle Vehicle;
+
 		// Check if player selection is valid, else take first entry
-		if (EnabledCarIds.exists(Net_SelectedCarId)) {
-			CarId = Net_SelectedCarId;
+		if (FlagRush_Map::IsVehicleEnabled(Net_SelectedCarId)) {
+			Vehicle = FlagRush_Vehicle::Get(Net_SelectedCarId);
 		} else {
-			CarId = EnabledCarIds[0];
+			Vehicle = EnabledVehicles[0];
 		}
 
-		Player.ForceModelId = G_CarIds.get(CarId, NullId); // Doesn't contain stadium as it's team dependent
-		if (Player.ForceModelId == NullId && S_UseTeamSkins) {
+		// Use Team skin if stadium car
+		if (Vehicle.Id == StadiumVehicle.Id) {
 			Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
+		} else {
+			Player.ForceModelId = FlagRush_Vehicle::GetItemId(Vehicle.Id);
 		}
 	}
 }

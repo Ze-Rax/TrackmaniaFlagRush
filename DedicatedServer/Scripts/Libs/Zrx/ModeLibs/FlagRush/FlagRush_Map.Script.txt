@@ -1,5 +1,6 @@
 #Include "MathLib" as ML
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt" as FlagRush_Common
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt" as FlagRush_Vehicle
 
 #Const C_LandmarkTag_SpawnTeam1					"SpawnTeam1"
 #Const C_LandmarkTag_SpawnTeam2					"SpawnTeam2"
@@ -9,10 +10,6 @@
 #Const C_LandmarkTag_DefaultFlagSpawn		"DefaultFlagSpawn"
 #Const C_LandmarkTag_OutOfBoundsTrigger	"OutOfBoundsTrigger"
 #Const C_LandmarkTag_OutOfBoundsTrigger_Deprecated	"FlagResetTrigger"
-
-#Const C_CarId_Stadium "stadium"
-#Const C_CarId_Snow "snow"
-#Const C_CarId_Rally "rally"
 
 declare CMapLandmark						G_DefaultFlagSpawn;
 declare CMapLandmark[]					G_FlagSpawns;
@@ -62,28 +59,37 @@ CMapLandmark GetRandomFlagSpawn() {
 	return G_FlagSpawns[RandomIndex];
 }
 
-Text[] GetAllCarIds() {
-	return [C_CarId_Stadium, C_CarId_Snow, C_CarId_Rally];
-}
-
-Boolean IsValidCarId(Text CarId) {
-	return GetAllCarIds().exists(CarId);
-}
-
-Text[] GetEnabledCarIds() {
+/**
+ * Returns a sorted list of all vehicles that have been enabled by the mapper.
+ * If the mapper did not explciitly enable any vehicles, all vehicles will be considered enabled.
+ */
+FlagRush_Vehicle::K_Vehicle[] GetEnabledVehicles() {
 	declare metadata Text[] FlagRush_Meta_Vehicles for Map = [];
-	declare Text[] EnabledCars;
+	declare FlagRush_Vehicle::K_Vehicle[] EnabledVehicles;
 
-	for (CarId in FlagRush_Meta_Vehicles) {
-		if (IsValidCarId(CarId)) {
-			EnabledCars.add(CarId);
+	for (VehicleId in FlagRush_Meta_Vehicles) {
+		if (FlagRush_Vehicle::IsValid(VehicleId)) {
+			EnabledVehicles.add(FlagRush_Vehicle::Get(VehicleId));
 		}
 	}
 
-	if (EnabledCars.count > 0) {
-		return EnabledCars;
+	if (EnabledVehicles.count > 0) {
+		return FlagRush_Vehicle::Sort(EnabledVehicles);
 	}
-	return GetAllCarIds();
+	return FlagRush_Vehicle::GetAll();
+}
+
+/**
+ * Checks if the vehicle with the given id is enabled by the mapper
+ * @see GetEnabledVehiclew
+ */
+Boolean IsVehicleEnabled(Text VehicleId) {
+	for (Vehicle in GetEnabledVehicles()) {
+		if (Vehicle.Id == VehicleId) {
+			return True;
+		}
+	}
+	return False;
 }
 
 /**

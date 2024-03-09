@@ -1,0 +1,76 @@
+#Struct K_Vehicle {
+	Text Id;
+	Integer Order;
+}
+
+#Const C_Vehicle_Stadium K_Vehicle{ Id = "stadium", Order = 0}
+#Const C_Vehicle_Snow K_Vehicle{ Id = "snow", Order = 1}
+#Const C_Vehicle_Rally K_Vehicle{ Id = "rally", Order = 2}
+
+declare Ident[Text] G_VehicleItems;
+
+/**
+ * Returns a a sorted version of the input array. Elements are sorted using Vehicle.Order.
+ */
+K_Vehicle[] Sort(K_Vehicle[] Vehicles) {
+	declare K_Vehicle[Integer] VehicleMap;
+	for (Vehicle in Vehicles) {
+		VehicleMap[Vehicle.Order] = Vehicle;
+	}
+	VehicleMap = VehicleMap.sortkey();
+	declare K_Vehicle[] SortedVehicles;
+	for (Order => Vehicle in VehicleMap) {
+		SortedVehicles.add(Vehicle);
+	}
+	return SortedVehicles;
+}
+
+/**
+ * Returns a sorted array of all vehicles that are known to the mode.
+ */
+K_Vehicle[] GetAll() {
+	return Sort([C_Vehicle_Stadium, C_Vehicle_Snow, C_Vehicle_Rally]);
+}
+
+/**
+ * Gets the Vehicle struct for a given VehicleId.
+ */
+K_Vehicle Get(Text VehicleId) {
+	for (Vehicle in GetAll()) {
+		if (Vehicle.Id == VehicleId) {
+			return Vehicle;
+		}
+	}
+	return K_Vehicle{};
+}
+
+/**
+ * Check if a the given VehicleId is valid (known).
+ */
+Boolean IsValid(Text VehicleId) {
+	for (Vehicle in GetAll()) {
+		if (Vehicle.Id == VehicleId) {
+			return True;
+		}
+	}
+	return False;
+}
+
+/**
+ * Gets the item id for a given vehicle id.
+ * Returns NullId for invalid or unloaded items, as well as for the stadium car.
+ */
+Ident GetItemId(Text VehicleId) {
+	return G_VehicleItems.get(VehicleId, NullId);
+}
+
+/**
+ * Loads the car items in the item list.
+ * Does not load a model for the stadium car, as it's the default.
+ * Call after ItemList_Begin and before ItemList_End.
+ */
+Void LoadItems() {
+	// Don't laod stadium, as it's default
+	G_VehicleItems[C_Vehicle_Snow.Id] = ItemList_Add("CarSnow");
+	G_VehicleItems[C_Vehicle_Rally.Id] = ItemList_Add("CarRally");
+}

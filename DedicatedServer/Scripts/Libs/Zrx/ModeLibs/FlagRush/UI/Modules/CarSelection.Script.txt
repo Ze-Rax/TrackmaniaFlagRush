@@ -3,19 +3,16 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt" as FlagRush_Map
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt" as FlagRush_Vehicle
 
 #Const C_CustomEventType_CarSelected "CarSelected"
-
-#Const FlagRush_Map::C_CarId_Stadium as C_CarId_Stadium
-#Const FlagRush_Map::C_CarId_Snow as C_CarId_Snow
-#Const FlagRush_Map::C_CarId_Rally as C_CarId_Rally
 
 #Struct K_UICarButtonParameter {
 	Text Label;
 	Text Icon;
 }
 
-// Keys should be same a C_CarId_*
+// Keys should be same a FlagRush_Vehicle::C_Vehicle_*.Id
 #Const C_UICarButtonParameters [
 	"stadium" => K_UICarButtonParameter{Label = "Stadium", Icon = ""},
 	"snow" => K_UICarButtonParameter{Label = "Snow", Icon = "❄"},
@@ -24,20 +21,11 @@
 
 
 Text GetManialink() {
-	declare Text[] EnabledCars = FlagRush_Map::GetEnabledCarIds();
-
-	// Reset player selection if previous seleciton is not valid anymore
-	foreach (Player in Players) {
-		declare netwrite Text Net_SelectedCarId for Player = "";
-		if (!EnabledCars.exists(Net_SelectedCarId)) {
-			Net_SelectedCarId = "";
-		}
-	}
-
+	declare FlagRush_Vehicle::K_Vehicle[] EnabledVehicles = FlagRush_Map::GetEnabledVehicles();
 	declare Text CarFrameInstances;
-	for (Index => CarId in EnabledCars) {
-		declare K_UICarButtonParameter Parameters = C_UICarButtonParameters.get(CarId, K_UICarButtonParameter{});
-		CarFrameInstances ^= """<frameinstance modelid="car-option" id="car-option-{{{ CarId }}}" pos="{{{ 6 + Index * 13 }}} 0" data-name="{{{ Parameters.Label }}}" data-icon="{{{ Parameters.Icon }}}" data-id="{{{ CarId }}}" />""";
+	for (Index => Vehicle in EnabledVehicles) {
+		declare K_UICarButtonParameter Parameters = C_UICarButtonParameters.get(Vehicle.Id, K_UICarButtonParameter{});
+		CarFrameInstances ^= """<frameinstance modelid="car-option" id="car-option-{{{ Vehicle.Id }}}" pos="{{{ 6 + Index * 13 }}} 0" data-name="{{{ Parameters.Label }}}" data-icon="{{{ Parameters.Icon }}}" data-id="{{{ Vehicle.Id }}}" />""";
 	}
 
 	return """

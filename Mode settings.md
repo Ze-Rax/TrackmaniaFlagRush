@@ -45,6 +45,7 @@ These settings change how the gameplay in a round behaves.
 | S_DropFlagPickupPenalty          | Real    | 3.0           | Duration in seconds in which a player cannot pick up the flag after dropping it. (Other players can instantly pick it up.) |
 | S_DropFlagOnTeleportDetection    | Boolean | True          | Whether or not to check for teleports of the flag carrier. If the flag carrier teleports more than 32 meter (one horizontal block length) during one yield (server frame), the flag will be dropped at the position he was at before the teleport happened. |
 | S_UseCollisions                  | Boolean | False         | Whether or not to use physics based collisions between players. This setting is EXPERIMENTAL: Player collisions can feel and be weird and inconsistent. If enabled, server will also switch to server side simulation (See S_TrustClientSimu) and disable crude extrapolation (See S_UseCrudeExtrapolation). |
+| S_ForceEnabledVehiclesCsv        | Text    | "" (blank)    | Forces the given list of vehicles to be enabled. Overrides the vehicle configuration of the map. Invalid values are ignored. Comma separated values, case insensitive and will be trimmed. Examples: `stadium,rally`, `Stadium, snow   , RaLlY` |
 
 ## Team settings
 

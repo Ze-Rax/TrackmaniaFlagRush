@@ -149,7 +149,7 @@ Text GetMapConfigWindowManialink() {
 			<frameinstance modelid="vehiclebutton" pos="-30 -7.5" id="{{{ C_CarId_Stadium }}}" data-label="Stadium"/>
 			<frameinstance modelid="vehiclebutton" pos="0 -7.5" id="{{{ C_CarId_Snow }}}" data-label="Snow"/>
 			<frameinstance modelid="vehiclebutton" pos="30 -7.5" id="{{{ C_CarId_Rally }}}" data-label="Rally"/>
-			<label size="70 5" pos="0 -14" text=" $iThe gamemode defaults to all cars being enabled if no selection is made here." halign="center" valign="center2" textfont="GameFontRegular" textsize="0.5" z-index="1" textcolor="FFF"/>
+			<label size="70 5" pos="0 -14" text=" $iThe gamemode defaults to all vehicles being enabled if no selection is made here." halign="center" valign="center2" textfont="GameFontRegular" textsize="0.5" z-index="1" textcolor="FFF"/>
 		</frame>
 
 		<label id="close" pos="0 -82.5" z-index="0" size="20 5" text="Close" style="CardButtonMediumL" valign="center" halign="center" scriptevents="1"/>

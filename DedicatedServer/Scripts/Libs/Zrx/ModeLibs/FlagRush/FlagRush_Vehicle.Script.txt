@@ -1,16 +1,18 @@
 #Struct K_Vehicle {
 	Text Id;
 	Integer Order;
+	Text ModelName;
 }
 
-#Const C_Vehicle_Stadium K_Vehicle{ Id = "stadium", Order = 0}
-#Const C_Vehicle_Snow K_Vehicle{ Id = "snow", Order = 1}
-#Const C_Vehicle_Rally K_Vehicle{ Id = "rally", Order = 2}
+// When adding vehicles, also add them to GetAll()
+#Const C_Vehicle_Stadium K_Vehicle{ Id = "stadium", Order = 0, ModelName = "CarSport"}
+#Const C_Vehicle_Snow K_Vehicle{ Id = "snow", Order = 1, ModelName = "CarSnow"}
+#Const C_Vehicle_Rally K_Vehicle{ Id = "rally", Order = 2, ModelName = "CarRally"}
 
 declare Ident[Text] G_VehicleItems;
 
 /**
- * Returns a a sorted version of the input array. Elements are sorted using Vehicle.Order.
+ * Returns a sorted version of the input array. Elements are sorted using Vehicle.Order.
  */
 K_Vehicle[] Sort(K_Vehicle[] Vehicles) {
 	declare K_Vehicle[Integer] VehicleMap;
@@ -26,10 +28,10 @@ K_Vehicle[] Sort(K_Vehicle[] Vehicles) {
 }
 
 /**
- * Returns a sorted array of all vehicles that are known to the mode.
+ * Returns a array of all vehicles that are known to the mode.
  */
 K_Vehicle[] GetAll() {
-	return Sort([C_Vehicle_Stadium, C_Vehicle_Snow, C_Vehicle_Rally]);
+	return [C_Vehicle_Stadium, C_Vehicle_Snow, C_Vehicle_Rally];
 }
 
 /**
@@ -70,7 +72,8 @@ Ident GetItemId(Text VehicleId) {
  * Call after ItemList_Begin and before ItemList_End.
  */
 Void LoadItems() {
-	// Don't laod stadium, as it's default
-	G_VehicleItems[C_Vehicle_Snow.Id] = ItemList_Add("CarSnow");
-	G_VehicleItems[C_Vehicle_Rally.Id] = ItemList_Add("CarRally");
+	G_VehicleItems.clear();
+	for (Vehicle in GetAll()) {
+		G_VehicleItems[Vehicle.Id] = ItemList_Add(Vehicle.ModelName);
+	}
 }

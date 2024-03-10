@@ -2,7 +2,6 @@
 
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt" as FlagRush_Map
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt" as FlagRush_Vehicle
 
 #Struct K_UIVehicleButtonParameter {
@@ -17,16 +16,21 @@
 	"rally" => K_UIVehicleButtonParameter{Label = "Rally", Icon = ""}
 ]
 
+declare FlagRush_Vehicle::K_Vehicle[] G_EnabledVehicles;
+
 Text GetSlectedVehicleId(CSmPlayer Player) {
 	declare CUIConfig UI = UIManager.GetUI(Player);
 	declare netread Text Net_FlagRush_SelectedVehicleId for UI = "";
 	return Net_FlagRush_SelectedVehicleId;
 }
 
+Void SetEnabledVehicles(FlagRush_Vehicle::K_Vehicle[] Vehicles) {
+	G_EnabledVehicles = Vehicles;
+}
+
 Text GetManialink() {
-	declare FlagRush_Vehicle::K_Vehicle[] EnabledVehicles = FlagRush_Map::GetEnabledVehicles();
 	declare Text VehicleFrameInstances;
-	for (Index => Vehicle in EnabledVehicles) {
+	for (Index => Vehicle in G_EnabledVehicles) {
 		declare K_UIVehicleButtonParameter Parameters = C_UIVehicleButtonParameters.get(Vehicle.Id, K_UIVehicleButtonParameter{});
 		VehicleFrameInstances ^= """<frameinstance modelid="vehicle-option" id="vehicle-option-{{{ Vehicle.Id }}}" pos="{{{ 6 + Index * 13 }}} 0" data-name="{{{ Parameters.Label }}}" data-icon="{{{ Parameters.Icon }}}" data-id="{{{ Vehicle.Id }}}" />""";
 	}

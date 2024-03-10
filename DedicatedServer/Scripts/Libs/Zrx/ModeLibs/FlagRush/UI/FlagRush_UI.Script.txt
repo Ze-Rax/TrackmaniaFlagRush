@@ -146,6 +146,11 @@ Void Private_AttachModules() {
 	Layers::Attach(C_LayerName_Spectator);
 }
 
+// TODO: Really should get rid of this FlagRush_UI Library and instead have the module manage their own layer with calls from main game mode
+Void UpdateVehicleSelection() {
+	Layers::Update(C_LayerName_VehicleSelection, FlagRush_VehicleSelection::GetManialink());
+}
+
 Void AttachPodiumBackground(CSmScore[] PodiumPlayerScores) {
 	FlagRush_Podium::SetContent(PodiumPlayerScores);
 	Layers::Attach(C_LayerName_Podium);
@@ -184,17 +189,9 @@ Void Net_SendModeScriptProgressionSettings(Integer NbMapsToWinMatch, Integer NbR
 /**
  * Sends relevant round logic mode settings values to the clients via netwrite.
  */
-Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases, Text ForcedModel) {
+Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases) {
 	declare netwrite Boolean FlagRush_Net_UseReversedBases for Teams[0];
 	FlagRush_Net_UseReversedBases = UseReversedBases;
-	declare netwrite Text FlagRush_Net_ForceModel for Teams[0] = "";
-	FlagRush_Net_ForceModel = ForcedModel;
-
-	if (FlagRush_Vehicle::IsValid(ForcedModel)) {
-		Layers::Hide(C_LayerName_VehicleSelection);
-	} else {
-		Layers::Show(C_LayerName_VehicleSelection);
-	}
 }
 
 /* Lifecycle */
@@ -202,7 +199,6 @@ Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases, Text ForcedM
 Void StartMap() {
 	FlagRush_UIMarkers::CreateMapMarkers();
 	Layers::Update(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
-	Layers::Update(C_LayerName_VehicleSelection, FlagRush_VehicleSelection::GetManialink());
 }
 
 Void Yield() {

@@ -86,7 +86,7 @@
 #Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
 #Setting S_DropFlagOnTeleportDetection			True		as "<hidden>"
 #Setting S_UseCollisions										False		as "Use collisions (experimental)"
-#Setting S_ForceModel 										  ""			as "Force vehicle model (\"stadium\", \"snow\", \"rally\", else: not forced)"
+#Setting S_ForceEnabledVehiclesCsv					""			as "Force enabled vehicles (Comma separated; Options: \"stadium\", \"snow\", \"rally\")"
 
 // ======== //
 // Commands //
@@ -110,7 +110,7 @@ FlagRush_Debug = C_Debug;
 
 UsePvPCollisions = S_UseCollisions;
 
-FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases, S_ForceModel);
+FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases);
 ***
 
 ***LoadLibraries***
@@ -122,6 +122,14 @@ FlagRush_FlagState::Load();
 ***LoadItems***
 ***
 FlagRush_Vehicle::LoadItems();
+***
+
+// ~~~~~~~~~~ Map ~~~~~~~~~~ //
+
+***InitMap***
+***
+FlagRush_VehicleSelection::SetEnabledVehicles(Vehicle_GetEnabled());
+FlagRush_UI::UpdateVehicleSelection();
 ***
 
 // ~~~~~~~~~~ Turn ~~~~~~~~~~ //
@@ -279,36 +287,109 @@ foreach (Player in Players) {
 ***Yield***
 ***
 // Handle mode script updates
-declare Boolean FlagRush_PreviousSettings_TrustClientSimu for This;
-declare Boolean FlagRush_PreviousSettings_UseCrudeExtrapolation for This;
-declare Boolean FlagRush_PreviousSettings_UseReversedBases for This;
-declare Boolean FlagRush_PreviousSettings_UseCollisions for This;
-declare Text FlagRush_PreviousSettings_ForceModel for This;
-if (
-	FlagRush_PreviousSettings_TrustClientSimu != S_TrustClientSimu
-	|| FlagRush_PreviousSettings_UseCrudeExtrapolation != S_UseCrudeExtrapolation
-	|| FlagRush_PreviousSettings_UseReversedBases != S_UseReversedBases
-	|| FlagRush_PreviousSettings_UseCollisions != S_UseCollisions
-	|| FlagRush_PreviousSettings_ForceModel != S_ForceModel
-) {
-	FlagRush_PreviousSettings_TrustClientSimu = S_TrustClientSimu;
-	FlagRush_PreviousSettings_UseCrudeExtrapolation = S_UseCrudeExtrapolation;
-	FlagRush_PreviousSettings_UseReversedBases = S_UseReversedBases;
-	FlagRush_PreviousSettings_UseCollisions = S_UseCollisions;
-	FlagRush_PreviousSettings_ForceModel = S_ForceModel;
+declare Boolean RestartTurn = False;
 
-	FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases, S_ForceModel);
-	UsePvPCollisions = S_UseCollisions;
-	if (MB_TurnIsRunning()) {
-		FlagRush_Messages::CriticalSettingUpdate_RestartTurn();
-		MB_StopTurn();
+declare Text FlagRush_PreviousSettings_ForceEnabledVehiclesCsv for This = "";
+if (FlagRush_PreviousSettings_ForceEnabledVehiclesCsv != S_ForceEnabledVehiclesCsv) {
+	FlagRush_PreviousSettings_ForceEnabledVehiclesCsv = S_ForceEnabledVehiclesCsv;
+
+	// Note: Cannot use functions like Vehicle_GetEnabled or globals in Yield due to ordering after compilation
+	declare FlagRush_Vehicle::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
+	FlagRush_ForceEnabledVehicles.clear();
+	for (CsvEntry in TL::Split(",", S_ForceEnabledVehiclesCsv)) {
+		declare Text VehicleId = TL::ToLowerCase(TL::Trim(CsvEntry));
+		if (FlagRush_Vehicle::IsValid(VehicleId)) {
+			FlagRush_ForceEnabledVehicles.add(FlagRush_Vehicle::Get(VehicleId));
+		}
 	}
+
+	declare FlagRush_Vehicle::K_Vehicle[] EnabledVehicles;
+	if (FlagRush_ForceEnabledVehicles.count > 0) {
+		EnabledVehicles = FlagRush_ForceEnabledVehicles;
+	} else {
+		EnabledVehicles = FlagRush_Map::GetEnabledVehicles();
+	}
+	EnabledVehicles = FlagRush_Vehicle::Sort(EnabledVehicles);
+	FlagRush_VehicleSelection::SetEnabledVehicles(EnabledVehicles);
+	FlagRush_UI::UpdateVehicleSelection();
+	RestartTurn = True;
+}
+
+declare Boolean FlagRush_PreviousSettings_UseReversedBases for This = False;
+if (FlagRush_PreviousSettings_UseReversedBases != S_UseReversedBases) {
+	FlagRush_PreviousSettings_UseReversedBases = S_UseReversedBases;
+	FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases);
+	RestartTurn = True;
+}
+
+declare Boolean FlagRush_PreviousSettings_TrustClientSimu for This = False;
+if (FlagRush_PreviousSettings_TrustClientSimu != S_TrustClientSimu) {
+	FlagRush_PreviousSettings_TrustClientSimu = S_TrustClientSimu;
+	RestartTurn = True;
+}
+
+declare Boolean FlagRush_PreviousSettings_UseCrudeExtrapolation for This = False;
+if (FlagRush_PreviousSettings_UseCrudeExtrapolation != S_UseCrudeExtrapolation) {
+	FlagRush_PreviousSettings_UseCrudeExtrapolation = S_UseCrudeExtrapolation;
+	RestartTurn = True;
+}
+
+declare Boolean FlagRush_PreviousSettings_UseCollisions for This = False;
+if (FlagRush_PreviousSettings_UseCollisions != S_UseCollisions) {
+	FlagRush_PreviousSettings_UseCollisions = S_UseCollisions;
+	UsePvPCollisions = S_UseCollisions;
+	RestartTurn = True;
+}
+
+if (RestartTurn && MB_TurnIsRunning()) {
+	FlagRush_Messages::CriticalSettingUpdate_RestartTurn();
+	MB_StopTurn();
 }
 ***
 
 // ========= //
 // Functions //
 // ========= //
+
+FlagRush_Vehicle::K_Vehicle[] Vehicle_GetEnabled() {
+	declare FlagRush_Vehicle::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
+	declare FlagRush_Vehicle::K_Vehicle[] EnabledVehicles;
+	if (FlagRush_ForceEnabledVehicles.count > 0) {
+		EnabledVehicles = FlagRush_ForceEnabledVehicles;
+	} else {
+		EnabledVehicles = FlagRush_Map::GetEnabledVehicles();
+	}
+	return FlagRush_Vehicle::Sort(EnabledVehicles);
+}
+
+Boolean Vehicle_IsEnabled(Text VehicleId) {
+	declare FlagRush_Vehicle::K_Vehicle[] Vehicles = Vehicle_GetEnabled();
+	for (Vehicle in Vehicles) {
+		if (Vehicle.Id == VehicleId) {
+			return True;
+		}
+	}
+	return False;
+}
+
+FlagRush_Vehicle::K_Vehicle Vehicle_GetSelected(CSmPlayer Player) {
+	declare Text SelectedVehicleId = FlagRush_VehicleSelection::GetSlectedVehicleId(Player);
+	declare FlagRush_Vehicle::K_Vehicle Vehicle;
+	if (Vehicle_IsEnabled(SelectedVehicleId)) {
+		Vehicle = FlagRush_Vehicle::Get(SelectedVehicleId);
+	} else {
+		Vehicle = Vehicle_GetEnabled()[0];
+	}
+	return Vehicle;
+}
+
+Ident Vehicle_GetModelId(CSmPlayer Player) {
+	declare FlagRush_Vehicle::K_Vehicle Vehicle = Vehicle_GetSelected(Player);
+	if (Vehicle.Id == C_Vehicle_Stadium.Id) {
+		return FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
+	}
+	return FlagRush_Vehicle::GetItemId(Vehicle.Id);
+}
 
 CSmPlayer GetFirstCollidingPlayer_OpponentPriority(CSmPlayer ReferencePlayer) {
 	declare CSmPlayer FirstCollidingPlayer;
@@ -356,28 +437,7 @@ Void Player_Initialize(CSmPlayer Player) {
 	Player.UseCrudeExtrapolation = !UsePvPCollisions && S_UseCrudeExtrapolation;
 	Player.Dossard_Number = "  ";
 	Player.Dossard_Color = <1., 1., 1.>;
-	// Forcing model overrides map config
-	if (S_ForceModel == C_Vehicle_Stadium.Id) {
-		Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
-	} else if (FlagRush_Vehicle::IsValid(S_ForceModel)) {
-		Player.ForceModelId = FlagRush_Vehicle::GetItemId(S_ForceModel);
-	} else { // Empty or invalid ForceModel
-		declare Text SelectedVehicleId = FlagRush_VehicleSelection::GetSlectedVehicleId(Player);
-		// Check if player selection is valid, else take first entry of map enabled vehicles
-		declare FlagRush_Vehicle::K_Vehicle Vehicle;
-		if (FlagRush_Map::IsVehicleEnabled(SelectedVehicleId)) {
-			Vehicle = FlagRush_Vehicle::Get(SelectedVehicleId);
-		} else {
-			Vehicle = FlagRush_Map::GetEnabledVehicles()[0];
-		}
-
-		// Use Team skin if stadium car
-		if (Vehicle.Id == C_Vehicle_Stadium.Id) {
-			Player.ForceModelId = FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
-		} else {
-			Player.ForceModelId = FlagRush_Vehicle::GetItemId(Vehicle.Id);
-		}
-	}
+	Player.ForceModelId = Vehicle_GetModelId(Player);
 }
 
 Boolean Player_CanSpawn(CSmPlayer Player) {

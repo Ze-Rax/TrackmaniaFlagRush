@@ -60,7 +60,7 @@ CMapLandmark GetRandomFlagSpawn() {
 }
 
 /**
- * Returns a sorted list of all vehicles that have been enabled by the mapper.
+ * Returns a list of all vehicles that have been enabled by the mapper.
  * If the mapper did not explciitly enable any vehicles, all vehicles will be considered enabled.
  */
 FlagRush_Vehicle::K_Vehicle[] GetEnabledVehicles() {
@@ -74,7 +74,7 @@ FlagRush_Vehicle::K_Vehicle[] GetEnabledVehicles() {
 	}
 
 	if (EnabledVehicles.count > 0) {
-		return FlagRush_Vehicle::Sort(EnabledVehicles);
+		return EnabledVehicles;
 	}
 	return FlagRush_Vehicle::GetAll();
 }

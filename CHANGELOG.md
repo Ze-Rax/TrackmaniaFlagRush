@@ -1,11 +1,29 @@
 # Changelog
 
+## 1.5.0
+
+### General
++ Added support for new cars (Snow, Rally).
++ Added a server setting `S_ForceEnabledVehiclesCsv` to override the enabled cars.
+
+### MapType
++ Added the ability to select the available cars on a given map using the FlagRush settings dialog
+
+### UI
++ Added a car selection to the scoreboard
+	* Mouse users can click the respective buttons on the bottom right below the scoreboard.
+	* Gamepad user can use the right stick to select the previous or car respectively.
+	* Car changes are applied on spawn. If a player wants to change their car mid round, they have to respawn.
+
+---
+
 ## 1.4.1
 
 ### Bugs and crashes
-
-* Fix players spawning in black stadium car
+* Fix players spawning in black stadium car.
 	* Since Nando removed the Royal-Animal-Skins from the gamefile, skins have been replaced with solid colored skins that are retrieved from the ingame club.
+
+---
 
 ## 1.4.0
 

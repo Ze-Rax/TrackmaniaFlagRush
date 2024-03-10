@@ -89,7 +89,7 @@ Void Private_AttachModules() {
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
 
-	// Car selection
+	// Vehicle selection
 	Layers::Create (C_LayerName_VehicleSelection, ""); // Will be updated on map start
 	Layers::SetType(C_LayerName_VehicleSelection, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_VehicleSelection);

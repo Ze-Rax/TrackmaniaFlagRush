@@ -50,11 +50,11 @@
 #Const C_DefaultTeamHues 								[1 => 0.666, 2 => 0.]
 #Const C_TeamHue_Default 								-1.
 
-// Needs to be the same as in mode
-#Const C_CarId_Stadium	"stadium"
-#Const C_CarId_Snow			"snow"
-#Const C_CarId_Rally		"rally"
-#Const C_CarId_Desert		"desert"
+// Needs to be the same as in FlagRush_Vehicles.Script.txt
+#Const C_VehicleId_Stadium	"stadium"
+#Const C_VehicleId_Snow			"snow"
+#Const C_VehicleId_Rally		"rally"
+#Const C_VehicleId_Desert		"desert"
 
 #Const C_UIEventType_ToggleTeamColorsWindow	"ToggleTeamColorsWindow"
 #Const C_UIEventType_SetTeamHue							"SetTeamHue"
@@ -128,7 +128,7 @@ Text GetMapConfigWindowManialink() {
 	</framemodel>
 
 	<framemodel id="vehiclebutton" class="vehiclebutton">
-		<label id="button" pos="0 0" size="20 5" text="Car___" style="CardButtonMediumS" valign="center" halign="center" scriptevents="1"/>
+		<label id="button" pos="0 0" size="20 5" text="Vehicle___" style="CardButtonMediumS" valign="center" halign="center" scriptevents="1"/>
 		<quad id="checkbox" pos="10 0" size="5 5" valign="center" halign="center" style="UICommon64_1" substyle="CheckboxCircle_light"/>
 	</framemodel>
 
@@ -144,11 +144,11 @@ Text GetMapConfigWindowManialink() {
 			<label size="70 5" pos="0 -38" text=" $iThe color representation in game might vary slightly due to gradients being applied." halign="center" valign="center2" textfont="GameFontRegular" textsize="0.5" z-index="1" textcolor="FFF"/>
 		</frame>
 
-		<frame id="cars" pos="0 -60">
+		<frame id="vehicles" pos="0 -60">
 			<label size="45 5" text="$iVehicles:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="FFF"/>
-			<frameinstance modelid="vehiclebutton" pos="-30 -7.5" id="{{{ C_CarId_Stadium }}}" data-label="Stadium"/>
-			<frameinstance modelid="vehiclebutton" pos="0 -7.5" id="{{{ C_CarId_Snow }}}" data-label="Snow"/>
-			<frameinstance modelid="vehiclebutton" pos="30 -7.5" id="{{{ C_CarId_Rally }}}" data-label="Rally"/>
+			<frameinstance modelid="vehiclebutton" pos="-30 -7.5" id="{{{ C_VehicleId_Stadium }}}" data-label="Stadium"/>
+			<frameinstance modelid="vehiclebutton" pos="0 -7.5" id="{{{ C_VehicleId_Snow }}}" data-label="Snow"/>
+			<frameinstance modelid="vehiclebutton" pos="30 -7.5" id="{{{ C_VehicleId_Rally }}}" data-label="Rally"/>
 			<label size="70 5" pos="0 -14" text=" $iThe gamemode defaults to all vehicles being enabled if no selection is made here." halign="center" valign="center2" textfont="GameFontRegular" textsize="0.5" z-index="1" textcolor="FFF"/>
 		</frame>
 

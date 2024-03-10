@@ -67,7 +67,7 @@ Ident GetItemId(Text VehicleId) {
 }
 
 /**
- * Loads the car items in the item list.
+ * Loads the vehicle items in the item list.
  * Does not load a model for the stadium car, as it's the default.
  * Call after ItemList_Begin and before ItemList_End.
  */

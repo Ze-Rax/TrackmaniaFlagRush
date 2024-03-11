@@ -52,7 +52,6 @@
 	Boolean HasStealResistance;
 }
 
-#Const C_TeleportThreshold 					32 // One block
 #Const C_FlagCarrierName_Dropped 		"Dropped"
 #Const C_FlagCarrierName_Spawn			"Spawn"
 #Const C_FlagCarrierName_Unspawned	"Unspawned"
@@ -122,10 +121,10 @@ Boolean CarrierDisconnected() {
 }
 
 /**
- * Flag is carried and distance between now and last yield is greater than C_TeleportThreshold.
+ * Flag is carried and distance between now and last yield is greater than the provided Threshold.
  */
-Boolean CarrierTeleported() {
-	return IsOnPlayer() && ML::Distance(G_FlagState.PrevPosition, G_FlagState.Position) > C_TeleportThreshold;
+Boolean CarrierTeleported(Real Threshold) {
+	return IsOnPlayer() && ML::Distance(G_FlagState.PrevPosition, G_FlagState.Position) > Threshold;
 }
 
 /**

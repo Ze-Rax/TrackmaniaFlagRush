@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0
+
+* Replace setting `S_DropFlagOnTeleportDetection` with `S_TeleportDetectionThreshold` that takes a value to specify the maximum allowed teleport (lag) distance.
+* Reduced the default teleport detection threshold to 8 meters (quarter of a block).
+
 ## 1.4.1
 
 ### Bugs and crashes

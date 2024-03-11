@@ -43,7 +43,7 @@ These settings change how the gameplay in a round behaves.
 | S_RespawnSpeedLimitKmh           | Real    | 30.0          | Maximum speed allowed for respawning. No limitation if <= 0.0. |
 | S_RespawnDelayPerPlayer          | Real    | 1.0           | Respawn delay in seconds per player in a team: `Total respawn delay = S_RespawnDelayPerPlayer * Number of players in the team + 1.5 (spawn animation)`|
 | S_DropFlagPickupPenalty          | Real    | 3.0           | Duration in seconds in which a player cannot pick up the flag after dropping it. (Other players can instantly pick it up.) |
-| S_DropFlagOnTeleportDetection    | Boolean | True          | Whether or not to check for teleports of the flag carrier. If the flag carrier teleports more than 32 meter (one horizontal block length) during one yield (server frame), the flag will be dropped at the position he was at before the teleport happened. |
+| S_TeleportDetectionThreshold     | Real    | 8.0           | Maximum distance in meters that a player is allowed to teleport (lag) during one server frame before the flag is automatically dropped. Teleport detection is disabled for values <= 0 |
 | S_UseCollisions                  | Boolean | False         | Whether or not to use physics based collisions between players. This setting is EXPERIMENTAL: Player collisions can feel and be weird and inconsistent. If enabled, server will also switch to server side simulation (See S_TrustClientSimu) and disable crude extrapolation (See S_UseCrudeExtrapolation). |
 
 ## Team settings

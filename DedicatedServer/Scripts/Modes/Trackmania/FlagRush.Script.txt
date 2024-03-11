@@ -84,7 +84,7 @@
 #Setting S_RespawnSpeedLimitKmh							30.			as "<hidden>" // Speed limit for player to respawn
 #Setting S_RespawnDelayPerPlayer						1.0 		as "Respawn delay (seconds) per player in a team"
 #Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
-#Setting S_DropFlagOnTeleportDetection			True		as "<hidden>"
+#Setting S_TeleportDetectionThreshold				8.			as "<hidden>" // Maximum allowed distance (meters) to teleport (lag) before dropping the flag
 #Setting S_UseCollisions										False		as "Use collisions (experimental)"
 #Setting S_ForceEnabledVehiclesCsv					""			as "Force enabled vehicles (Comma separated; Options: \"stadium\", \"snow\", \"rally\")"
 
@@ -170,7 +170,7 @@ FlagRush_FlagState::Yield();
 // Update Flag
 if (FlagRush_FlagState::CarrierDisconnected()) FlagCarrier_DropFlag();
 
-if (S_DropFlagOnTeleportDetection && FlagRush_FlagState::CarrierTeleported()) {
+if (S_TeleportDetectionThreshold > 0 && FlagRush_FlagState::CarrierTeleported(S_TeleportDetectionThreshold)) {
 	FlagRush_Messages::FlagCarrierTeleport();
 	FlagCarrier_DropFlag(C_FlagDropPositionMode_PreviousPosition);
 }

@@ -5,6 +5,8 @@
 ### General
 + Added support for new cars (Snow, Rally).
 + Added a server setting `S_ForceEnabledVehiclesCsv` to override the enabled cars.
+* Replace setting `S_DropFlagOnTeleportDetection` with `S_TeleportDetectionThreshold` that takes a value to specify the maximum allowed teleport (lag) distance.
+* Reduced the default teleport detection threshold to 8 meters (quarter of a block).
 
 ### MapType
 + Added the ability to select the available cars on a given map using the FlagRush settings dialog

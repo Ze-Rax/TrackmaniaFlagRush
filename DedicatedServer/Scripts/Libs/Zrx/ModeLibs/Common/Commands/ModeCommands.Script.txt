@@ -238,16 +238,13 @@ K_Command[] GetPendingCommands() {
 }
 
 Void Private_HandleInternalCommand_SetPermissionLevel(K_Command Command) {
-	log("""Set permission level: {{{Command.Params}}} ({{{Command.Params.count}}})""");
 	if (Command.Params.count < 2) {
-		log("Not enough params");
 		return;
 	}
 
 	declare Text TargetLogin = Command.Params[0];
 	declare Integer TargetPermissionLevel = TL::ToInteger(Command.Params[1]);
 	if (Command.Source.Type == CommandUtils::C_SourceType_Player && !HasPermissionLevel(Command.Source.Login, TargetPermissionLevel + 1)) {
-		log("No permissions");
 		return;
 	}
 	SetUserPermissionLevel(TargetLogin, TargetPermissionLevel);

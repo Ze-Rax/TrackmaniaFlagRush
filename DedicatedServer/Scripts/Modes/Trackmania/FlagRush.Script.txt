@@ -642,7 +642,6 @@ Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {
 }
 
 Void OnGameplayCommand(CommandUtils::K_Command Command) {
-	declare Text CommandSource = CommandUtils::ResolveSource(Command);
 	declare Text CommandText;
 	switch (Command.Name) {
 		case C_Command_ResetFlag: {
@@ -651,7 +650,7 @@ Void OnGameplayCommand(CommandUtils::K_Command Command) {
 		}
 		default: return;
 	}
-	declare Text Message = """{{{ FlagRush_Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ CommandSource }}}.""";
+	declare Text Message = """{{{ FlagRush_Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ Command.Source.Name }}}.""";
 	if (CommandText != "") Message ^= " " ^ CommandText;
 	UIManager.UIAll.SendChat(Message);
 }

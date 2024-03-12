@@ -201,24 +201,18 @@ FlagRush_Teams::SetTeam2HueOverride(S_Team2Hue);
 FlagRush_Teams::UseClubTags(S_UseClubTags);
 FlagRush_Teams::Init();
 
-declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
-foreach(Login in ModeCommandsAdminLogins) {
-	ModeCommands::AddAdmin(Login);
-}
-ModeCommands::AddAdmin("W2ZNWNzVQV6z3hXuNgRMRg");	// Ze-Rax
-ModeCommands::AddAdmin("EdbzfLXMS_aI_PjZCVaygQ");	// Reaby
-ModeCommands::AddAdmin("BiC3-GdBTzaUQxlcSw-qbQ"); // Geekid
-ModeCommands::AddAdmin("pTuyJG9STcCN_11BiU3t0Q"); // Rxelux
 ModeCommands::AddQuickCommand(C_Command_EndWarmup, "UICommon64_1", "Play_light");
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipRound, "UICommon64_1", "FastForward_light");
 ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
+ModeCommands::Load();
 ***
 
 ***UnloadLibraries***
 ***
 FlagRush_XmlRpc::Unload();
 FlagRush_Scores::Unload();
+ModeCommands::Unload();
 ***
 
 ***LoadHud***
@@ -659,6 +653,17 @@ if (
 	FlagRush_Teams::SetTeam2HueOverride(S_Team2Hue);
 	FlagRush_Teams::Init();
 }
+
+// Mode commands
+declare Text FlagRush_PreviousSetting_ModeCommands_AdminLoginsCsv for This = "";
+if (FlagRush_PreviousSetting_ModeCommands_AdminLoginsCsv != S_ModeCommands_AdminLoginsCsv) {
+	FlagRush_PreviousSetting_ModeCommands_AdminLoginsCsv = S_ModeCommands_AdminLoginsCsv;
+	ModeCommands::RemoveAllUserPermissions();
+	declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
+	foreach(Login in ModeCommandsAdminLogins) {
+		ModeCommands::SetSuperAdmin(Login);
+	}
+}
 ***
 
 ***Private_Yield_HandleProgressionsCommands***
@@ -671,7 +676,8 @@ foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
 		case CXmlRpcEvent::EType::CallbackArray: {
 			switch (XmlRpcEvent.ParamArray1) {
 				case "Trackmania.ForceEndRound": {
-					PendingCommands.add(CommandUtils::FromNameAndParams(C_Command_SkipRound, [], "XmlRpc"));
+					declare CommandUtils::K_Source Source = CommandUtils::K_Source{ Type = CommandUtils::C_SourceType_XmlRpc, Name = CommandUtils::C_SourceType_XmlRpc };
+					PendingCommands.add(CommandUtils::FromNameAndParams(C_Command_SkipRound, [], Source));
 				}
 			}
 		}
@@ -692,7 +698,6 @@ foreach (Command in ModeCommands::GetPendingCommands()) {
 
 foreach (Command in PendingCommands) {
 	// Display a message in chat
-	declare Text CommandSource = CommandUtils::ResolveSource(Command);
 	declare Text CommandText;
 
 	// Handle the command
@@ -785,7 +790,7 @@ foreach (Command in PendingCommands) {
 		default: return;
 	}
 
-	declare Text Message = """{{{ FlagRush_Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ CommandSource }}}.""";
+	declare Text Message = """{{{ FlagRush_Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ Command.Source.Name }}}.""";
 	if (CommandText != "") Message ^= " " ^ CommandText;
 	UIManager.UIAll.SendChat(Message);
 }

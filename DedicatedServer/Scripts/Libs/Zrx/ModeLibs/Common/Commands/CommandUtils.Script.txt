@@ -1,27 +1,34 @@
 #Include "TextLib" as TL
-#Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt" as ModeUtils
 
-#Const 	C_CommandPrefix		"Command_"
-#Const	C_Source_Mode			"CSmModeEvent"
+#Const C_CommandPrefix			"Command_"
+#Const C_SourceType_Mode		"CSmModeEvent"
+#Const C_SourceType_Player	"Player"
+#Const C_SourceType_XmlRpc	"XmlRpc"
+
+#Struct K_Source {
+	Text Type;
+	Text Name;
+	Text Login;
+}
 
 #Struct K_Command {
-	Text		Name;
-	Text[]	Params;
-	Boolean	ValueBoolean;
-	Integer	ValueInteger;
-	Real		ValueReal;
-	Text		ValueText;
-	Vec2		ValueVec2;
-	Vec3		ValueVec3;
-	Int2		ValueInt2;
-	Int3		ValueInt3;
-	Text		Source;
+	Text			Name;
+	Text[]		Params;
+	Boolean		ValueBoolean;
+	Integer		ValueInteger;
+	Real			ValueReal;
+	Text			ValueText;
+	Vec2			ValueVec2;
+	Vec3			ValueVec3;
+	Int2			ValueInt2;
+	Int3			ValueInt3;
+	K_Source	Source;
 }
 
 /**
  * Transfroms a Text and Params into a Command
  */
-K_Command FromNameAndParams(Text Name, Text[] Params, Text Source) {
+K_Command FromNameAndParams(Text Name, Text[] Params, K_Source Source) {
 	declare K_Command Command = K_Command {
 		Name = Name,
 		Params = Params,
@@ -57,7 +64,7 @@ K_Command FromNameAndParams(Text Name, Text[] Params, Text Source) {
 /**
  * Transforms a Text into a Command
  */
-K_Command FromText(Text CommandText, Text Source) {
+K_Command FromText(Text CommandText, K_Source Source) {
 	declare K_Command Command;
 	declare Text[] CommandSplit = TL::Split(" ", CommandText);
 	if(CommandSplit.count >= 1) {
@@ -81,7 +88,7 @@ K_Command FromEvent(CSmModeEvent Event) {
 		ValueVec3			= Event.CommandValueVec3,
 		ValueInt2			= Event.CommandValueInt2,
 		ValueInt3			= Event.CommandValueInt3,
-		Source				= C_Source_Mode
+		Source				= K_Source{ Type = C_SourceType_Mode, Name = C_SourceType_Mode }
 	};
 }
 
@@ -89,26 +96,15 @@ K_Command FromEvent(CSmModeEvent Event) {
  * Transforms a CUIConfigEvent into a Command struct. Command_ prefix is removed if present.
  */
 K_Command FromEvent(CUIConfigEvent Event) {
-	declare Text Source;
-	if(Event.UI != Null && GetPlayer(Event.UI) != Null) {
-		Source = GetPlayer(Event.UI).User.Login;
+	declare K_Source Source;
+	Source.Type = C_SourceType_Player;
+	if(Event.UI != Null) {
+		declare CSmPlayer Player = GetPlayer(Event.UI);
+		if (Player != Null) {
+			Source.Login = Player.User.Login;
+			Source.Name = Player.User.Name;
+		}
 	}
 	declare Text UnprefixedName = TL::RegexReplace("""^{{{ C_CommandPrefix }}}""", Event.CustomEventType, "", "");
 	return FromNameAndParams(UnprefixedName, Event.CustomEventData, Source);
-}
-
-/**
- * Resolves the source of a command to a displayable name.
- */
-Text ResolveSource(K_Command Command) {
-	if (Command.Source == "") {
-		return "Unknown Source";
-	}
-
-	declare CUser User = ModeUtils::GetUser(Command.Source);
-	if (User != Null) {
-		return User.Name;
-	}
-
-	return Command.Source;
 }

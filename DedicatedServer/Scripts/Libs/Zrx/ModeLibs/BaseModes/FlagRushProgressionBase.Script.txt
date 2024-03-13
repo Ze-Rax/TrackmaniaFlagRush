@@ -28,6 +28,7 @@
 
 // FlagRush Libs
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"						as FlagRush_Common
+#Include "Libs/Zrx/ModeLibs/FlagRush/SettingTracker.Script.txt"							as SettingTracker
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"								as FlagRush_Map
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"						as FlagRush_Scores
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
@@ -201,23 +202,24 @@ FlagRush_Teams::SetTeam2HueOverride(S_Team2Hue);
 FlagRush_Teams::UseClubTags(S_UseClubTags);
 FlagRush_Teams::Init();
 
-ModeCommands::AddQuickCommand(C_Command_EndWarmup, "UICommon64_1", "Play_light");
-ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
-ModeCommands::AddQuickCommand(C_Command_SkipRound, "UICommon64_1", "FastForward_light");
-ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
-ModeCommands::Load();
+SettingTracker::Load();
 ***
 
 ***UnloadLibraries***
 ***
 FlagRush_XmlRpc::Unload();
 FlagRush_Scores::Unload();
-ModeCommands::Unload();
+SettingTracker::Unload();
 ***
 
 ***LoadHud***
 ***
 FlagRush_UI::Load();
+ModeCommands::AddQuickCommand(C_Command_EndWarmup, "UICommon64_1", "Play_light");
+ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
+ModeCommands::AddQuickCommand(C_Command_SkipRound, "UICommon64_1", "FastForward_light");
+ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
+ModeCommands::Load();
 ***
 
 ***LoadItems***
@@ -614,50 +616,31 @@ if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted && Map != 
 ***Private_Yield_HandleCriticalModeScriptSettingsUpdates***
 ***
 // Point limit settings
-declare Integer FlagRush_PreviousSettings_NbMapsToWinMatch for This;
-declare Integer FlagRush_PreviousSettings_NbRoundsToWinMap for This;
-declare Integer FlagRush_PreviousSettings_NbFlagsToWinRound for This;
-if (
-	FlagRush_PreviousSettings_NbMapsToWinMatch  != S_NbMapsToWinMatch
-	|| FlagRush_PreviousSettings_NbRoundsToWinMap  != S_NbRoundsToWinMap
-	|| FlagRush_PreviousSettings_NbFlagsToWinRound != S_NbFlagsToWinRound
-) {
-	FlagRush_PreviousSettings_NbMapsToWinMatch = S_NbMapsToWinMatch;
-	FlagRush_PreviousSettings_NbRoundsToWinMap = S_NbRoundsToWinMap;
-	FlagRush_PreviousSettings_NbFlagsToWinRound = S_NbFlagsToWinRound;
+declare Boolean NbMapsToWinMatchChanged = SettingTracker::HasChanged(S_NbMapsToWinMatch, "S_NbMapsToWinMatch");
+declare Boolean NbRoundsToWinMapChanged = SettingTracker::HasChanged(S_NbRoundsToWinMap, "S_NbRoundsToWinMap");
+declare Boolean NbFlagsToWinRoundChanged = SettingTracker::HasChanged(S_NbFlagsToWinRound, "S_NbFlagsToWinRound");
+if (NbMapsToWinMatchChanged || NbRoundsToWinMapChanged || NbFlagsToWinRoundChanged) {
 	FlagRush_UI::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
 }
 
 // Team configs
-declare Boolean FlagRush_PreviousSettings_UseClubTags for This;
-declare Text FlagRush_PreviousSetting_Team1Name for This;
-declare Text FlagRush_PreviousSetting_Team2Name for This;
-declare Integer FlagRush_PreviousSetting_Team1Hue for This;
-declare Integer FlagRush_PreviousSetting_Team2Hue for This;
-if (
-	FlagRush_PreviousSettings_UseClubTags != S_UseClubTags
-	|| FlagRush_PreviousSetting_Team1Name != S_Team1Name
-	|| FlagRush_PreviousSetting_Team2Name != S_Team2Name
-	|| FlagRush_PreviousSetting_Team1Hue != S_Team1Hue
-	|| FlagRush_PreviousSetting_Team2Hue != S_Team2Hue
-) {
-	FlagRush_PreviousSettings_UseClubTags = S_UseClubTags;
+declare Boolean UseClubTagsChanged = SettingTracker::HasChanged(S_UseClubTags, "S_UseClubTags");
+declare Boolean Team1NameChanged = SettingTracker::HasChanged(S_Team1Name, "S_Team1Name");
+declare Boolean Team1HueChanged = SettingTracker::HasChanged(S_Team1Hue, "S_Team1Hue");
+declare Boolean Team2NameChanged = SettingTracker::HasChanged(S_Team2Name, "S_Team2Name");
+declare Boolean Team2HueChanged = SettingTracker::HasChanged(S_Team2Hue, "S_Team2Hue");
+if (UseClubTagsChanged || Team1NameChanged || Team1HueChanged || Team2NameChanged || Team2HueChanged) {
 	FlagRush_Teams::UseClubTags(S_UseClubTags);
-	FlagRush_PreviousSetting_Team1Name = S_Team1Name;
 	FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
-	FlagRush_PreviousSetting_Team2Name = S_Team2Name;
 	FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
-	FlagRush_PreviousSetting_Team1Hue = S_Team1Hue;
 	FlagRush_Teams::SetTeam1HueOverride(S_Team1Hue);
-	FlagRush_PreviousSetting_Team2Hue = S_Team2Hue;
 	FlagRush_Teams::SetTeam2HueOverride(S_Team2Hue);
 	FlagRush_Teams::Init();
 }
 
 // Mode commands
-declare Text FlagRush_PreviousSetting_ModeCommands_AdminLoginsCsv for This = "";
-if (FlagRush_PreviousSetting_ModeCommands_AdminLoginsCsv != S_ModeCommands_AdminLoginsCsv) {
-	FlagRush_PreviousSetting_ModeCommands_AdminLoginsCsv = S_ModeCommands_AdminLoginsCsv;
+declare Boolean ModeCommandsAdminLoginsCsvChanged = SettingTracker::HasChanged(S_ModeCommands_AdminLoginsCsv, "S_ModeCommands_AdminLoginsCsv");
+if (ModeCommandsAdminLoginsCsvChanged) {
 	ModeCommands::RemoveAllUserPermissions();
 	declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
 	foreach(Login in ModeCommandsAdminLogins) {

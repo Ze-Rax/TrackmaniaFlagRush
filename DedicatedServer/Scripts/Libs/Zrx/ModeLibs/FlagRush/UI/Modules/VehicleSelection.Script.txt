@@ -1,8 +1,12 @@
 #Include "ColorLib" as CL
 
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
+
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt" as FlagRush_Vehicle
+
+#Const C_LayerName "FlagRush_VehicleSelection"
 
 #Struct K_UIVehicleButtonParameter {
 	Text Label;
@@ -18,16 +22,6 @@
 
 declare FlagRush_Vehicle::K_Vehicle[] G_EnabledVehicles;
 
-Text GetSlectedVehicleId(CSmPlayer Player) {
-	declare CUIConfig UI = UIManager.GetUI(Player);
-	declare netread Text Net_FlagRush_SelectedVehicleId for UI = "";
-	return Net_FlagRush_SelectedVehicleId;
-}
-
-Void SetEnabledVehicles(FlagRush_Vehicle::K_Vehicle[] Vehicles) {
-	G_EnabledVehicles = Vehicles;
-}
-
 Text GetManialink() {
 	declare Text VehicleFrameInstances;
 	for (Index => Vehicle in G_EnabledVehicles) {
@@ -37,7 +31,7 @@ Text GetManialink() {
 
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<manialink version="3" name="FlagRush_VehicleSelection">
+<manialink version="3" name="{{{ C_LayerName }}}">
 	<framemodel id="vehicle-option">
 		<quad id="background" size="12 12" halign="center" valign="center" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" bgcolor="{{{ CL::RgbToHex3(Colors::C_NeutralDark) }}}"/>
 		<label id="icon" size="8 8" pos="0 2" halign="center" valign="center" text="?" textfont="GameFontSemiBold" textsize="7" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}"/>
@@ -175,4 +169,30 @@ Text GetManialink() {
 	--></script>
 </manialink>
 	""";
+}
+
+FlagRush_Vehicle::K_Vehicle GetSlectedVehicle(CSmPlayer Player) {
+	declare CUIConfig UI = UIManager.GetUI(Player);
+	declare netread Text Net_FlagRush_SelectedVehicleId for UI = "";
+	for (Vehicle in G_EnabledVehicles) {
+		if (Vehicle.Id == Net_FlagRush_SelectedVehicleId) {
+			return Vehicle;
+		}
+	}
+	return FlagRush_Vehicle::C_Vehicle_Invalid;
+}
+
+Void SetEnabledVehicles(FlagRush_Vehicle::K_Vehicle[] Vehicles) {
+	G_EnabledVehicles = FlagRush_Vehicle::Sort(Vehicles);
+	Layers::Update(C_LayerName, GetManialink());
+}
+
+Void Unload() {
+	Layers::Destroy(C_LayerName);
+}
+
+Void Load() {
+	Layers::Create(C_LayerName, GetManialink());
+	Layers::SetType(C_LayerName, CUILayer::EUILayerType::ScoresTable);
+	Layers::Attach(C_LayerName);
 }

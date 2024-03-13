@@ -39,12 +39,12 @@
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_RpcEvents.Script.txt"					as FlagRush_XmlRpc
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"					as FlagRush_FlagState
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Handicaps.Script.txt"					as FlagRush_Handicaps
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt"							as FlagRush_Vehicle
 
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_Flash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/VehicleSelection.Script.txt"	as FlagRush_VehicleSelection
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt"							as FlagRush_Vehicle
 
 // ========= //
 // Constants //
@@ -119,6 +119,11 @@ ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light")
 FlagRush_FlagState::Load();
 ***
 
+***LoadHud***
+***
+FlagRush_VehicleSelection::Load();
+***
+
 ***LoadItems***
 ***
 FlagRush_Vehicle::LoadItems();
@@ -129,7 +134,6 @@ FlagRush_Vehicle::LoadItems();
 ***InitMap***
 ***
 FlagRush_VehicleSelection::SetEnabledVehicles(Vehicle_GetEnabled());
-FlagRush_UI::UpdateVehicleSelection();
 ***
 
 // ~~~~~~~~~~ Turn ~~~~~~~~~~ //
@@ -309,9 +313,7 @@ if (FlagRush_PreviousSettings_ForceEnabledVehiclesCsv != S_ForceEnabledVehiclesC
 	} else {
 		EnabledVehicles = FlagRush_Map::GetEnabledVehicles();
 	}
-	EnabledVehicles = FlagRush_Vehicle::Sort(EnabledVehicles);
 	FlagRush_VehicleSelection::SetEnabledVehicles(EnabledVehicles);
-	FlagRush_UI::UpdateVehicleSelection();
 	RestartTurn = True;
 }
 
@@ -353,19 +355,16 @@ if (RestartTurn && MB_TurnIsRunning()) {
 
 FlagRush_Vehicle::K_Vehicle[] Vehicle_GetEnabled() {
 	declare FlagRush_Vehicle::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
-	declare FlagRush_Vehicle::K_Vehicle[] EnabledVehicles;
 	if (FlagRush_ForceEnabledVehicles.count > 0) {
-		EnabledVehicles = FlagRush_ForceEnabledVehicles;
-	} else {
-		EnabledVehicles = FlagRush_Map::GetEnabledVehicles();
+		return FlagRush_ForceEnabledVehicles;
 	}
-	return FlagRush_Vehicle::Sort(EnabledVehicles);
+	return FlagRush_Map::GetEnabledVehicles();
 }
 
-Boolean Vehicle_IsEnabled(Text VehicleId) {
+Boolean Vehicle_IsEnabled(FlagRush_Vehicle::K_Vehicle Vehicle) {
 	declare FlagRush_Vehicle::K_Vehicle[] Vehicles = Vehicle_GetEnabled();
-	for (Vehicle in Vehicles) {
-		if (Vehicle.Id == VehicleId) {
+	for (EnabledVehicle in Vehicles) {
+		if (Vehicle.Id == EnabledVehicle.Id) {
 			return True;
 		}
 	}
@@ -373,14 +372,11 @@ Boolean Vehicle_IsEnabled(Text VehicleId) {
 }
 
 FlagRush_Vehicle::K_Vehicle Vehicle_GetSelected(CSmPlayer Player) {
-	declare Text SelectedVehicleId = FlagRush_VehicleSelection::GetSlectedVehicleId(Player);
-	declare FlagRush_Vehicle::K_Vehicle Vehicle;
-	if (Vehicle_IsEnabled(SelectedVehicleId)) {
-		Vehicle = FlagRush_Vehicle::Get(SelectedVehicleId);
-	} else {
-		Vehicle = Vehicle_GetEnabled()[0];
+	declare FlagRush_Vehicle::K_Vehicle SelectedVehicle = FlagRush_VehicleSelection::GetSlectedVehicle(Player);
+	if (Vehicle_IsEnabled(SelectedVehicle)) {
+		return SelectedVehicle;
 	}
-	return Vehicle;
+	return Vehicle_GetEnabled()[0];
 }
 
 Ident Vehicle_GetModelId(CSmPlayer Player) {

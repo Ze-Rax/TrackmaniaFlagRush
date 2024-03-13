@@ -4,8 +4,6 @@
 
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt"							as FlagRush_Vehicle
-
 // Modules
 #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"											as EventFeed
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt"						as FlagRush_UIScoresHeader
@@ -18,7 +16,6 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/PodiumBackground.Script.txt"	as FlagRush_Podium
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/VehicleSelection.Script.txt"	as FlagRush_VehicleSelection
 
 
 #Const C_AttachId_Podium							"16x9_StadiumSmall"
@@ -34,7 +31,6 @@
 #Const C_LayerName_Respawn						"Layer_FlagRush_Respawn"
 #Const C_LayerName_Radar							"Layer_FlagRush_Radar"
 #Const C_LayerName_Podium							"Layer_FlagRush_Podium"
-#Const C_LayerName_VehicleSelection		"Layer_VehicleSelection"
 
 declare Integer G_PreviousPlayersCount;
 
@@ -87,11 +83,6 @@ Void Private_AttachModules() {
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
 
-	// Vehicle selection
-	Layers::Create (C_LayerName_VehicleSelection, ""); // Will be updated on map start
-	Layers::SetType(C_LayerName_VehicleSelection, CUILayer::EUILayerType::ScoresTable);
-	Layers::Attach(C_LayerName_VehicleSelection);
-
 	// Sound
 	Layers::Create(C_LayerName_Sound, FlagRush_UISound::GetManialink());
 	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
@@ -137,11 +128,6 @@ Void Private_AttachModules() {
 	Layers::Create(C_LayerName_Spectator, FlagRush_UISpectator::GetManialink());
 	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Spectator);
-}
-
-// TODO: Really should get rid of this FlagRush_UI Library and instead have the module manage their own layer with calls from main game mode
-Void UpdateVehicleSelection() {
-	Layers::Update(C_LayerName_VehicleSelection, FlagRush_VehicleSelection::GetManialink());
 }
 
 Void AttachPodiumBackground(CSmScore[] PodiumPlayerScores) {

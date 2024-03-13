@@ -17,6 +17,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/PodiumBackground.Script.txt"	as FlagRush_Podium
 
+
 #Const C_AttachId_Podium							"16x9_StadiumSmall"
 
 #Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
@@ -107,11 +108,6 @@ Void Private_AttachModules() {
 	Layers::SetType(C_LayerName_Respawn, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Respawn);
 
-	// Spectator controls
-	Layers::Create(C_LayerName_Spectator, FlagRush_UISpectator::GetManialink());
-	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName_Spectator);
-
 	// Radar
 	Layers::Create(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());
 	Layers::SetType(C_LayerName_Radar, CUILayer::EUILayerType::Normal);
@@ -123,7 +119,7 @@ Void Private_AttachModules() {
 	Layers::Attach(C_LayerName_Flash);
 
 	// Podium background
-	Layers::Create(C_LayerName_Podium, FlagRush_Podium::GetManialink()); // Empty Manialink; Content set when set active
+	Layers::Create(C_LayerName_Podium, FlagRush_Podium::GetManialink());
 	Layers::SetType(C_LayerName_Podium, CUILayer::EUILayerType::ScreenIn3d);
 	Layers::Get(C_LayerName_Podium).AttachId = C_AttachId_Podium;
 	// Don't attach yet; only explicitly during podium

@@ -98,19 +98,29 @@ You can customize the team colors if you want them to be different from the defa
 
 To ensure good visibility of the colors and consistency in our UI, we only allow changing the hue. This means grayscale and shaded team colors are not possible.
 
-The change the colors, click the Flag icon in the toolbar of the map editor. This opens a window in the center of your screen where you can select the hues for both teams individually. You can also reset the colors to the default FlagRush colors with the respective "Reset to Default" buttons, which will make the mode use the default blue and red colors.
+To change the colors, open the FlagRush settings dialog by clicking the flag icon in the toolbar of the map editor. This opens a window in the center of your screen where you can select the hues for both teams individually in the "Team Colors" section. You can also reset the colors to the default FlagRush colors with the respective "Reset to Default" buttons, which will make the mode use the default blue and red colors.
 
 Note that due to the usage of gradients in our UI, the ingame visuals of the selected colors could look slightly different than expected. The car skins for the teams will be selected according to the hues of the teams automatically.
 
 
 
-## 6. Validation
+## 6. Vehicles
+
+You can define what vehicles (eg. Stadium, Snow, Rally) should be available to players on the map.
+
+To change the available vehicles, open the FlagRush settings dialog by clicking the flag icon in the toolbar of the map editor. This opens a window in the center of your screen where you can select individual vehicles by clicking their respective buttons in the "Vehicles" section. If no vehicle is selected here, all vehicles will be available by default. If you plan on not restricting the available vehicles, leave all vehicles unchecked to ensure compatibility with vehicles that may be added in the future.
+
+Note that your vehicle selection can be overriden by the mode (see Setting `S_ForceEnabledVehiclesCsv` in the [Mode Settings Documentation](./Mode%20settings.md#gameplay-settings)).
+
+
+
+## 7. Validation
 
 When you have placed all the required landmarks and configured them appropriatly, then the map will automatically be valid; there is no need to drive the map and clicking the green validation flag won’t even have any effect. If your map is still invalid and you don’t know why, then you can click on the red validation flag in the bottom right to get an error message telling you what requirements are not fullfilled.
 
 
 
-## 7. Optional FlagRush name tag
+## 8. Optional FlagRush name tag
 
 By convention we use the following tag to prefix our FlagRush maps to make visually appear as such:
 

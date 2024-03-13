@@ -325,7 +325,7 @@ Void Yield() {
 	G_PendingCommands.clear();
 
 	// Check if ModeCommands users are missing the layer or if Non-Users have the layer
-	foreach(Player in Players) {
+	foreach(Player in AllPlayers) {
 		declare Boolean IsMissingLayer = Layers::IsMissing(C_LayerName, Player);
 		declare Boolean HasPermissions = HasPermissionLevel(Player.User.Login, C_PermissionLevel_User);
 		if (HasPermissions && IsMissingLayer) {

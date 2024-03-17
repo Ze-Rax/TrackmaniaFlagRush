@@ -177,11 +177,11 @@ main() {
  * Adds a new quick command button with given icon style and substyle.
  * Command Name should be without the "Command_" prefix.
  */
-Void AddQuickCommand(Text Name, Text IconStyle, Text IconSubstyle) {
+Void AddQuickCommand(Text _Name, Text _IconStyle, Text _IconSubstyle) {
 	declare K_QuickCommand Command;
-	Command.Command = Name;
-	Command.IconStyle = IconStyle;
-	Command.IconSubstyle = IconSubstyle;
+	Command.Command = _Name;
+	Command.IconStyle = _IconStyle;
+	Command.IconSubstyle = _IconSubstyle;
 	G_QuickCommands.add(Command);
 	Layers::Update(C_LayerName, GetManialink());
 }
@@ -194,40 +194,40 @@ Void ClearQuickCommands() {
 	Layers::Update(C_LayerName, GetManialink());
 }
 
-Boolean HasPermissionLevel(Text Login, Integer PermissionLevel) {
-	return G_Users.get(Login, C_PermissionLevel_None) >= PermissionLevel;
+Boolean HasPermissionLevel(Text _Login, Integer _PermissionLevel) {
+	return G_Users.get(_Login, C_PermissionLevel_None) >= _PermissionLevel;
 }
 
-Integer GetUserPermissionLevel(Text Login) {
-	return G_Users.get(Login, C_PermissionLevel_None);
+Integer GetUserPermissionLevel(Text _Login) {
+	return G_Users.get(_Login, C_PermissionLevel_None);
 }
 
-Void SetUserPermissionLevel(Text Login, Integer PermissionLevel) {
-	if (PermissionLevel <= C_PermissionLevel_None) {
-		G_Users.removekey(Login);
+Void SetUserPermissionLevel(Text _Login, Integer _PermissionLevel) {
+	if (_PermissionLevel <= C_PermissionLevel_None) {
+		G_Users.removekey(_Login);
 		return;
 	}
-	G_Users[Login] = PermissionLevel;
+	G_Users[_Login] = _PermissionLevel;
 }
 
-Void RemoveUserPermissions(Text Login) {
-	G_Users.removekey(Login);
+Void RemoveUserPermissions(Text _Login) {
+	G_Users.removekey(_Login);
 }
 
 Void RemoveAllUserPermissions() {
 	G_Users.clear();
 }
 
-Void SetUser(Text Login) {
-	SetUserPermissionLevel(Login, C_PermissionLevel_User);
+Void SetUser(Text _Login) {
+	SetUserPermissionLevel(_Login, C_PermissionLevel_User);
 }
 
-Void SetAdmin(Text Login) {
-	SetUserPermissionLevel(Login, C_PermissionLevel_Admin);
+Void SetAdmin(Text _Login) {
+	SetUserPermissionLevel(_Login, C_PermissionLevel_Admin);
 }
 
-Void SetSuperAdmin(Text Login) {
-	SetUserPermissionLevel(Login, C_PermissionLevel_SuperAdmin);
+Void SetSuperAdmin(Text _Login) {
+	SetUserPermissionLevel(_Login, C_PermissionLevel_SuperAdmin);
 }
 
 /**
@@ -237,36 +237,36 @@ K_Command[] GetPendingCommands() {
 	return G_PendingCommands;
 }
 
-Void Private_HandleInternalCommand_SetPermissionLevel(K_Command Command) {
-	if (Command.Params.count < 2) {
+Void Private_HandleInternalCommand_SetPermissionLevel(K_Command _Command) {
+	if (_Command.Params.count < 2) {
 		return;
 	}
 
-	declare Text TargetLogin = Command.Params[0];
-	declare Integer TargetPermissionLevel = TL::ToInteger(Command.Params[1]);
-	if (Command.Source.Type == CommandUtils::C_SourceType_Player && !HasPermissionLevel(Command.Source.Login, TargetPermissionLevel + 1)) {
+	declare Text TargetLogin = _Command.Params[0];
+	declare Integer TargetPermissionLevel = TL::ToInteger(_Command.Params[1]);
+	if (_Command.Source.Type == CommandUtils::C_SourceType_Player && !HasPermissionLevel(_Command.Source.Login, TargetPermissionLevel + 1)) {
 		return;
 	}
 	SetUserPermissionLevel(TargetLogin, TargetPermissionLevel);
 }
 
-Void Private_HandleInternalCommand_RemoveUser(K_Command Command) {
-	declare Text TargetLogin = Command.ValueText;
-	if (Command.Source.Type == CommandUtils::C_SourceType_Player) {
+Void Private_HandleInternalCommand_RemoveUser(K_Command _Command) {
+	declare Text TargetLogin = _Command.ValueText;
+	if (_Command.Source.Type == CommandUtils::C_SourceType_Player) {
 		declare Integer TargetPermissionLevel = GetUserPermissionLevel(TargetLogin);
-		if (!HasPermissionLevel(Command.Source.Login, TargetPermissionLevel + 1)) {
+		if (!HasPermissionLevel(_Command.Source.Login, TargetPermissionLevel + 1)) {
 			return;
 		}
 	}
 	RemoveUserPermissions(TargetLogin);
 }
 
-Void Private_HandleInternalCommand_ListUsers(K_Command Command) {
-	if (Command.Source.Type != CommandUtils::C_SourceType_Player) {
+Void Private_HandleInternalCommand_ListUsers(K_Command _Command) {
+	if (_Command.Source.Type != CommandUtils::C_SourceType_Player) {
 		return;
 	}
 
-	declare CSmPlayer SourcePlayer = GetPlayer(Command.Source.Login);
+	declare CSmPlayer SourcePlayer = GetPlayer(_Command.Source.Login);
 	if (SourcePlayer == Null) {
 		return;
 	}
@@ -295,16 +295,16 @@ Void Private_HandleInternalCommand_ListUsers(K_Command Command) {
 /**
  * Handles commands that manage the lib itself.
  */
-Void Private_HandleInternalCommand(K_Command Command) {
-	switch (Command.Name) {
+Void Private_HandleInternalCommand(K_Command _Command) {
+	switch (_Command.Name) {
 		case C_InternalCommandPrefix ^ C_InternalCommand_SetPermissionLevel: {
-			Private_HandleInternalCommand_SetPermissionLevel(Command);
+			Private_HandleInternalCommand_SetPermissionLevel(_Command);
 		}
 		case C_InternalCommandPrefix ^ C_InternalCommand_RemoveUser: {
-			Private_HandleInternalCommand_RemoveUser(Command);
+			Private_HandleInternalCommand_RemoveUser(_Command);
 		}
 		case C_InternalCommandPrefix ^ C_InternalCommand_ListUsers: {
-			Private_HandleInternalCommand_ListUsers(Command);
+			Private_HandleInternalCommand_ListUsers(_Command);
 		}
 	}
 }
@@ -325,7 +325,7 @@ Void Yield() {
 	G_PendingCommands.clear();
 
 	// Check if ModeCommands users are missing the layer or if Non-Users have the layer
-	foreach(Player in AllPlayers) {
+	foreach (Player in AllPlayers) {
 		declare Boolean IsMissingLayer = Layers::IsMissing(C_LayerName, Player);
 		declare Boolean HasPermissions = HasPermissionLevel(Player.User.Login, C_PermissionLevel_User);
 		if (HasPermissions && IsMissingLayer) {

@@ -1,0 +1,320 @@
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
+
+#Include "Libs/Zrx/ModeLibs/FlagRush/Flag.Script.txt" as Flag
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as Shared
+
+#Const C_LayerName "FlagRush_FlagMarker"
+
+#Const C_FrameId "FlagRush_Marker_Flag"
+
+#Const C_Box_Player		<0., 1., 0.>
+#Const C_Box_Landmark	<0., 2., 0.>
+#Const C_Box_Position	<0., 0., 0.>
+
+declare Ident G_MarkerId;
+declare Flag::K_Flag G_Flag;
+
+Text GetManialink() {
+	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="{{{ C_LayerName }}}">
+	<frame id="{{{ C_FrameId }}}" hidden="1"> <!-- Initialize as hidden; Markers will show it automatically -->
+		<frame id="flag">
+			<quad id="icon" pos="0 0" size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light"/>
+			<quad id="icon-dropshadow" pos="0.25 -0.25" z-index="-1" size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="Flag_dark"/>
+		</frame>
+
+		<label id="distance" pos="0 -3.5" size="10 5" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="0.4" textemboss="1" text="2500m"/>
+
+		<frame id="height-indicator">
+			<quad id="up" pos="0 8" size="6 6" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" />
+			<quad id="down" pos="0 -8" size="6 6" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center"/>
+		</frame>
+
+		<frame id="lock">
+			<label id="status" pos="6 0" z-index="1" halign="center" valign="center2" text="" textemboss="1" textsize="2.5" size="8 8"/>
+			<frame id="gauge">
+				<frame size="80 160" pos="0 0" halign="right" valign="center">
+					<quad id="left" pos="0 0" valign="center" halign="right" size="8 16" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds"/>
+				</frame>
+				<frame size="80 160" pos="0 0" halign="right" valign="center" rot="180">
+					<quad id="right" pos="0 0" valign="center" halign="right" size="8 16" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds"/>
+				</frame>
+			</frame>
+		</frame>
+
+		<frame id="drop-gauge" valign="bottom" halign="center" size="12 12" pos="0 -6" z-index="-1">
+				<quad id="background" pos="0 0" valign="bottom" halign="center" size="12 12" modulatecolor="fff" opacity="0.66" image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga"/>
+		</frame>
+
+		<!--
+			Changing visibility or ratation of elements causes the bounding box size of the marker to vary.
+			When at the border of the screen as the game tries to move it as close to the border as possible, which can cause jumping (when chaging element visibility) or bouncing (when rotating/moving elements).
+			This quad is slightly bigger than the bounding box of all other elements combined, therefore preventing the bouncing. Cannot be hidden, but opacity 0.
+		-->
+		<quad id="nobounce" size="22.75 22.75" opacity="0" halign="center" valign="center"/>
+	</frame>
+
+	<script><!--
+#Include "MathLib" as ML
+#Include "TextLib" as TL
+
+#Const C_HeightIndicatorThreshold 7. // Less than one block (8m) to prevent potential flickering on one block height differences
+#Const C_FlagIconOffset 1.5
+#Const C_DropGaugeSize 12.
+
+{{{ Flag::DumpNetFlagStructs() }}}
+
+#Struct K_DropGauge {
+	CMlFrame Frame;
+	CMlQuad Background;
+}
+
+#Struct K_FlagIcon {
+	CMlFrame Frame;
+	CMlQuad IconQuad;
+	CMlQuad IconDropshadowQuad;
+}
+
+#Struct K_HeightIndicator {
+	CMlFrame Frame;
+	CMlQuad UpQuad;
+	CMlQuad DownQuad;
+}
+
+#Struct K_CircularGauge {
+	CMlFrame Frame;
+	CMlQuad LeftQuad;
+	CMlQuad RightQuad;
+}
+
+#Struct K_Lock {
+	CMlFrame Frame;
+	CMlLabel StatusLabel;
+	K_CircularGauge Gauge;
+}
+
+#Struct K_FlagMarker {
+	CMlFrame Frame;
+	K_FlagIcon FlagIcon;
+	CMlLabel DistanceLabel;
+	K_HeightIndicator HeightIndicator;
+	K_Lock Lock;
+	K_DropGauge DropGauge;
+}
+
+declare K_FlagMarker G_FlagMarker;
+
+{{{ Shared::GetTeamColorNetreadFunctions() }}}
+
+Real Progress(Integer _From, Integer _To, Integer _Current) {
+	declare Real Progress = 1.0 * (_Current - _From) / (_To - _From);
+	return ML::Clamp(Progress, 0.0, 1.0);
+}
+
+Void Init() {
+	G_FlagMarker.Frame = (Page.GetFirstChild("{{{ C_FrameId }}}") as CMlFrame);
+	G_FlagMarker.DistanceLabel = (G_FlagMarker.Frame.GetFirstChild("distance") as CMlLabel);
+
+	declare K_FlagIcon FlagIcon;
+	FlagIcon.Frame = (G_FlagMarker.Frame.GetFirstChild("flag") as CMlFrame);
+	FlagIcon.IconQuad = (FlagIcon.Frame.GetFirstChild("icon") as CMlQuad);
+	FlagIcon.IconDropshadowQuad = (FlagIcon.Frame.GetFirstChild("icon-dropshadow") as CMlQuad);
+	G_FlagMarker.FlagIcon = FlagIcon;
+
+	declare K_HeightIndicator HeightIndicator;
+	HeightIndicator.Frame = (G_FlagMarker.Frame.GetFirstChild("height-indicator") as CMlFrame);
+	HeightIndicator.UpQuad = (HeightIndicator.Frame.GetFirstChild("up") as CMlQuad);
+	HeightIndicator.DownQuad = (HeightIndicator.Frame.GetFirstChild("down") as CMlQuad);
+	G_FlagMarker.HeightIndicator = HeightIndicator;
+
+	declare K_Lock Lock;
+	Lock.Frame = (G_FlagMarker.Frame.GetFirstChild("lock") as CMlFrame);
+	Lock.StatusLabel = (Lock.Frame.GetFirstChild("status") as CMlLabel);
+	declare K_CircularGauge LockGauge;
+	LockGauge.Frame = (Lock.Frame.GetFirstChild("gauge") as CMlFrame);
+	LockGauge.LeftQuad = (LockGauge.Frame.GetFirstChild("left") as CMlQuad);
+	LockGauge.RightQuad = (LockGauge.Frame.GetFirstChild("right") as CMlQuad);
+	Lock.Gauge = LockGauge;
+	G_FlagMarker.Lock = Lock;
+
+	declare K_DropGauge DropGauge;
+	DropGauge.Frame = (G_FlagMarker.Frame.GetFirstChild("drop-gauge") as CMlFrame);
+	DropGauge.Background = (DropGauge.Frame.GetFirstChild("background") as CMlQuad);
+	G_FlagMarker.DropGauge = DropGauge;
+}
+
+Void Update() {
+	declare netread K_Net_Flag Net_FlagRush_FlagMarker_Flag for Teams[0] = K_Net_Flag{};
+
+	// Color
+	G_FlagMarker.FlagIcon.IconQuad.Colorize = GetTeamMidColor(Net_FlagRush_FlagMarker_Flag.Location.Player.Clan); // Clan will be 0 (neutral) if not carried
+
+	// Distance and Height indicators
+	if (GUIPlayer == Null || Net_FlagRush_FlagMarker_Flag.Location.Player.Login == GUIPlayer.User.Login) { // Not on a player
+		G_FlagMarker.DistanceLabel.Hide();
+		G_FlagMarker.HeightIndicator.UpQuad.Hide();
+		G_FlagMarker.HeightIndicator.DownQuad.Hide();
+		G_FlagMarker.FlagIcon.Frame.RelativePosition_V3.Y = 0.;
+	} else { // Playing or spectating a player
+		declare Vec3 Displacement = Net_FlagRush_FlagMarker_Flag.Location.Position - GUIPlayer.Position;
+		G_FlagMarker.DistanceLabel.Value = ML::TruncInteger(ML::Length(Displacement)) ^ "m";
+		G_FlagMarker.FlagIcon.Frame.RelativePosition_V3.Y = C_FlagIconOffset;
+		G_FlagMarker.DistanceLabel.Show();
+
+		G_FlagMarker.HeightIndicator.UpQuad.Visible = Displacement.Y > C_HeightIndicatorThreshold;
+		G_FlagMarker.HeightIndicator.DownQuad.Visible = Displacement.Y < -C_HeightIndicatorThreshold;
+	}
+
+	// Lock
+	declare Boolean DisplayLock = False;
+	if (Net_FlagRush_FlagMarker_Flag.Lock.Timer.Until > ArenaNow) {
+		declare Boolean LockedForAll = Net_FlagRush_FlagMarker_Flag.Lock.Clan == 0 && Net_FlagRush_FlagMarker_Flag.Lock.Player.Login == "";
+		if (GUIPlayer != Null) { // Playing or spectating a player: Only display if locked for current player or if player is carrier
+			declare Boolean IsCarrier = GUIPlayer.User.Login == Net_FlagRush_FlagMarker_Flag.Location.Player.Login;
+			declare Boolean LockedForGUIPlayer = GUIPlayer.User.Login == Net_FlagRush_FlagMarker_Flag.Lock.Player.Login;
+			declare Boolean LockedForGUIClan = GUIPlayer.CurrentClan == Net_FlagRush_FlagMarker_Flag.Lock.Clan;
+			declare Boolean LockedForGUIOpponentClan = GUIPlayer.CurrentClan != Net_FlagRush_FlagMarker_Flag.Lock.Clan;
+			declare Boolean LockedForOtherPlayer = Net_FlagRush_FlagMarker_Flag.Lock.Player.Login != "";
+			if (IsCarrier) {
+				DisplayLock = LockedForGUIClan || LockedForGUIOpponentClan || LockedForAll;
+				G_FlagMarker.Lock.StatusLabel.TextColor = GetTeamMidColor(Net_FlagRush_FlagMarker_Flag.Lock.Clan);
+			} else {
+				DisplayLock = LockedForGUIPlayer || LockedForGUIClan;
+				G_FlagMarker.Lock.StatusLabel.TextColor = GetTeamMidColor(GUIPlayer.CurrentClan);
+			}
+
+		} else { // Spectating in overview: Only display if locked for a clan or everyone
+			declare Boolean LockedForClan = Net_FlagRush_FlagMarker_Flag.Lock.Clan > 0;
+			DisplayLock = LockedForClan || LockedForAll;
+			G_FlagMarker.Lock.StatusLabel.TextColor = GetTeamMidColor(Net_FlagRush_FlagMarker_Flag.Lock.Clan);
+		}
+	}
+
+	if (DisplayLock) {
+		declare Real GaugeProgress = Progress(Net_FlagRush_FlagMarker_Flag.Lock.Timer.Since, Net_FlagRush_FlagMarker_Flag.Lock.Timer.Until, ArenaNow);
+		declare Real LeftProgress = ML::Min(GaugeProgress * 2, 1.0);
+		declare Real RightProgress = ML::Max((GaugeProgress - 0.5) * 2, 0.0);
+		G_FlagMarker.Lock.Gauge.LeftQuad.RelativeRotation = LeftProgress * -180;
+		G_FlagMarker.Lock.Gauge.RightQuad.RelativeRotation = RightProgress * -180;
+		G_FlagMarker.Lock.Gauge.LeftQuad.Visible = GaugeProgress < 0.5;
+	}
+	G_FlagMarker.Lock.Frame.Visible = DisplayLock;
+
+	// Drop gauge
+	declare Boolean DisplayDropGauge = Net_FlagRush_FlagMarker_Flag.Drop.Timer.Until > ArenaNow;
+	if (DisplayDropGauge) {
+		declare Real GaugeProgress = Progress(Net_FlagRush_FlagMarker_Flag.Drop.Timer.Since, Net_FlagRush_FlagMarker_Flag.Drop.Timer.Until, ArenaNow);
+		G_FlagMarker.DropGauge.Frame.Size.Y = (1 - GaugeProgress) * C_DropGaugeSize;
+	}
+	G_FlagMarker.DropGauge.Frame.Visible = DisplayDropGauge;
+}
+
+main() {
+
+	Init();
+	while(True) {
+		yield;
+		if (!G_FlagMarker.Frame.Visible || !Page.MainFrame.Visible) {
+			continue;
+		}
+		Update();
+	}
+}
+	--></script>
+</manialink>""";
+}
+
+// Helpers
+
+CUIConfigMarker GetMarker() {
+	return UIManager.UIAll.Markers.get(G_MarkerId, Null);
+}
+
+Boolean Remove() {
+	declare CUIConfigMarker Marker = GetMarker();
+	G_MarkerId = NullId;
+	if (Marker == Null) {
+		return False;
+	}
+	UIManager.UIAll.RemoveMarker(Marker);
+	return True;
+}
+
+Void Private_SetAtPosition(Vec3 _Position) {
+	Remove();
+	declare CUIConfigMarker Marker = UIManager.UIAll.AddMarker(_Position);
+	G_MarkerId = Marker.Id;
+	Marker.Box = C_Box_Position;
+	Marker.ManialinkFrameId = C_FrameId;
+	Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+}
+
+Void Private_SetAtLandmark(CSmMapLandmark _Landmark) {
+	assert(_Landmark != Null);
+	Remove();
+	declare CUIConfigMarker Marker = UIManager.UIAll.AddMarker(_Landmark);
+	G_MarkerId = Marker.Id;
+	Marker.Box = C_Box_Landmark;
+	Marker.ManialinkFrameId = C_FrameId;
+	Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+}
+
+Void Private_SetAtPlayer(CSmPlayer _Player) {
+	assert (_Player != Null);
+	Remove();
+	declare CUIConfigMarker Marker = UIManager.UIAll.AddMarker(_Player);
+	G_MarkerId = Marker.Id;
+	Marker.Box = C_Box_Player;
+	Marker.ManialinkFrameId = C_FrameId;
+	Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+}
+
+Void Hide() {
+	declare CUIConfigMarker Marker = GetMarker();
+	if (Marker == Null) {
+		return;
+	}
+	Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
+}
+
+Void Show() {
+	declare CUIConfigMarker Marker = GetMarker();
+	if (Marker == Null) {
+		return;
+	}
+	Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+}
+
+// Lifecycle
+
+Void Unload() {
+	Remove();
+	Layers::Destroy(C_LayerName);
+}
+
+Void Load() {
+	Unload();
+	Layers::Create(C_LayerName, GetManialink());
+	Layers::SetType(C_LayerName, CUILayer::EUILayerType::Markers);
+	Layers::Attach(C_LayerName);
+}
+
+Void Update(Flag::K_Flag _Flag) {
+	declare netwrite Flag::K_Net_Flag Net_FlagRush_FlagMarker_Flag for Teams[0] = Flag::K_Net_Flag{};
+	Net_FlagRush_FlagMarker_Flag = Flag::ToNetFlag(_Flag);
+
+	if (Flag::IsOnPlayer(_Flag) && _Flag.Location.Player.Id != G_Flag.Location.Player.Id && Flag::IsPlayerConnected(_Flag)) {
+		Private_SetAtPlayer(Flag::GetPlayer(_Flag));
+	} else if (Flag::IsOnLandmark(_Flag) && _Flag.Location.LandmarkId != G_Flag.Location.LandmarkId) {
+		Private_SetAtLandmark(MapLandmarks[_Flag.Location.LandmarkId]);
+	} else { // Is on Position
+		declare Boolean WasOnPlayer = Flag::IsOnPlayer(G_Flag);
+		declare Boolean WasOnLandmark = Flag::IsOnLandmark(G_Flag);
+		declare Boolean PositionChanged = G_Flag.Location.Position != _Flag.Location.Position;
+		if (WasOnPlayer || WasOnLandmark || PositionChanged) {
+			Private_SetAtPosition(_Flag.Location.Position);
+		}
+	}
+
+	G_Flag = _Flag;
+}

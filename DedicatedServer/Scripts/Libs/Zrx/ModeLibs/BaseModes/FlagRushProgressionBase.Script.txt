@@ -38,6 +38,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
 
+
 ///////////////
 // Constants //
 ///////////////
@@ -81,7 +82,7 @@
 #Setting S_UseTeamSkins											True		as "Use colored skins for teams"
 
 #Setting S_SkipMatchOnLastPlayerLeave				True		as "<hidden>" // Skip the running match if the last player leaves or goes to spectator
-#Setting S_ModeCommands_AdminLoginsCsv 			"" 			as "<hidden>" // Admin logins for the mode commands ui
+#Setting S_ModeCommands_AdminLoginsCsv 			"W2ZNWNzVQV6z3hXuNgRMRg" 			as "<hidden>" // Admin logins for the mode commands ui
 
 //////////////
 // Commands //
@@ -215,6 +216,7 @@ SettingTracker::Unload();
 ***LoadHud***
 ***
 FlagRush_UI::Load();
+FlagMarker::Load();
 ModeCommands::AddQuickCommand(C_Command_EndWarmup, "UICommon64_1", "Play_light");
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipRound, "UICommon64_1", "FastForward_light");

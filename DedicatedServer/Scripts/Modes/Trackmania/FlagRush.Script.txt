@@ -37,7 +37,7 @@
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_RpcEvents.Script.txt"					as FlagRush_XmlRpc
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"					as FlagRush_FlagState
+#Include "Libs/Zrx/ModeLibs/FlagRush/Flag.Script.txt"												as Flag
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Handicaps.Script.txt"					as FlagRush_Handicaps
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt"							as FlagRush_Vehicle
 
@@ -45,6 +45,7 @@
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_Flash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/VehicleSelection.Script.txt"	as FlagRush_VehicleSelection
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/FlagMarker.Script.txt"				as FlagMarker
 
 // ========= //
 // Constants //
@@ -99,6 +100,12 @@
 #Command	Command_ResetFlag								(Boolean) as		"Reset flag"
 #Const		C_Command_ResetFlag															"ResetFlag"
 
+// ======= //
+// Globals //
+// ======= //
+
+declare Flag::K_Flag G_Flag;
+
 // ============== //
 // Plugs / Labels //
 // ============== //
@@ -116,7 +123,13 @@ FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases);
 ***LoadLibraries***
 ***
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light");
-FlagRush_FlagState::Load();
+ModeCommands::AddQuickCommand("mr", "", "");
+ModeCommands::AddQuickCommand("mpos", "", "");
+ModeCommands::AddQuickCommand("ml", "", "");
+ModeCommands::AddQuickCommand("mp", "", "");
+ModeCommands::AddQuickCommand("lock", "", "");
+ModeCommands::AddQuickCommand("timer", "", "");
+Flag::Load();
 ***
 
 ***LoadHud***
@@ -142,7 +155,10 @@ FlagRush_VehicleSelection::SetEnabledVehicles(Vehicle_GetEnabled());
 ***
 declare CMapLandmark FlagSpawn = FlagRush_Map::GetDefaultFlagSpawn();
 declare Integer FlagSpawnDate = Now + ML::NearestInteger(S_FlagInitialSpawnDelaySeconds * 1000);
-FlagRush_FlagState::SetAtLandmark(FlagSpawn, FlagSpawnDate);
+G_Flag = Flag::K_Flag{};
+G_Flag = Flag::SetAtLandmark(G_Flag, FlagSpawn);
+G_Flag = Flag::Lock(G_Flag, FlagSpawnDate);
+FlagMarker::Update(G_Flag);
 
 foreach (Player in Players) {
 	declare netwrite Integer Net_SpawnDate for Player;
@@ -153,7 +169,7 @@ foreach (Player in Players) {
 
 ***EndTurn***
 ***
-FlagRush_FlagState::SetUnspawned();
+FlagMarker::Remove();
 FlagRush_Handicaps::ClearQueue();
 ***
 
@@ -169,24 +185,30 @@ foreach (Player in Players) {
 ***PlayLoop***
 ***
 FlagRush_Handicaps::Yield();
-FlagRush_FlagState::Yield();
+declare Flag::K_Flag PreviousFlag = G_Flag;
+G_Flag = Flag::Update(G_Flag);
 
 // Update Flag
-if (FlagRush_FlagState::CarrierDisconnected()) FlagCarrier_DropFlag();
-
-if (S_TeleportDetectionThreshold > 0 && FlagRush_FlagState::CarrierTeleported(S_TeleportDetectionThreshold)) {
-	FlagRush_Messages::FlagCarrierTeleport();
-	FlagCarrier_DropFlag(C_FlagDropPositionMode_PreviousPosition);
+// Check if carrier is still connected
+if (Flag::IsOnPlayer(G_Flag) && !Flag::IsPlayerConnected(G_Flag)) {
+	FlagCarrier_DropFlag();
 }
 
-if (FlagRush_FlagState::IsDropped()) {
-	if (Now > FlagRush_FlagState::Get().CurrentStateEndDate) { // Drop state duration ran out
+// Check if Carrier teleported
+if (Flag::IsOnPlayer(G_Flag) && ML::Length(G_Flag.Location.Position - PreviousFlag.Location.Position) > S_TeleportDetectionThreshold) {
+	FlagRush_Messages::FlagCarrierTeleport();
+	FlagCarrier_DropFlag(PreviousFlag.Location.Position);
+}
+
+if (Flag::IsAtPosition(G_Flag)) {
+	// Check if respawn timer ended
+	if (Now > G_Flag.Drop.Timer.Until) {
 		Flag_Reset();
 	} else { // Check for pickups
 		declare CSmPlayer NewCarrier;
 		foreach (Player in Players) {
 			if (!Player_CanPickUpDroppedFlag(Player)) continue;
-			declare Boolean IsSameTeam = Player.CurrentClan == FlagRush_FlagState::Get().LastDrop.OldCarrier.Clan;
+			declare Boolean IsSameTeam = Player.CurrentClan == G_Flag.Drop.Player.Clan;
 			if (NewCarrier != Null && IsSameTeam) continue;
 			NewCarrier = Player;
 			if (!IsSameTeam) break;
@@ -197,16 +219,13 @@ if (FlagRush_FlagState::IsDropped()) {
 }
 
 // Try pass flag
-declare CSmPlayer FlagCarrier = FlagRush_FlagState::GetFlagCarrierPlayer();
-
+declare CSmPlayer FlagCarrier = Flag::GetPlayer(G_Flag);
 if (FlagCarrier != Null) {
 	declare CSmPlayer FlagReceiver = GetFirstCollidingPlayer_OpponentPriority(FlagCarrier);
 	if (FlagReceiver != Null) {
-		declare Boolean IsSameTeam = FlagCarrier.CurrentClan == FlagReceiver.CurrentClan;
-		declare Boolean TimerPassed = Now > FlagRush_FlagState::Get().CurrentStateEndDate;
-		declare Boolean SameTeamCanSteal = S_FlagSameTeamSteal && TimerPassed;
-		declare Boolean OpponentCanSteal = !FlagRush_FlagState::Get().HasStealResistance || TimerPassed;
-		if (IsSameTeam && SameTeamCanSteal || !IsSameTeam && OpponentCanSteal) {
+		declare Boolean IsLocked = Flag::IsLockedForPlayer(G_Flag, FlagReceiver);
+		declare Boolean IsOpponent = FlagCarrier.CurrentClan != FlagReceiver.CurrentClan;
+		if (!IsLocked && (IsOpponent || S_FlagSameTeamSteal)) {
 			FlagCarrier_PassFlag(FlagReceiver);
 		}
 	}
@@ -397,7 +416,9 @@ Void Flag_Reset(Boolean Silent) {
 	declare CMapLandmark FlagSpawn;
 	if (!S_RandomizeFlagSpawn) FlagSpawn = FlagRush_Map::GetDefaultFlagSpawn();
 	else FlagSpawn = FlagRush_Map::GetRandomFlagSpawn();
-	FlagRush_FlagState::SetAtLandmark(FlagSpawn, Now + ML::NearestInteger(S_FlagRespawnDelaySeconds * 1000));
+	G_Flag = Flag::SetAtLandmark(G_Flag, FlagSpawn);
+	G_Flag = Flag::Lock(G_Flag, Now + ML::NearestInteger(S_FlagRespawnDelaySeconds * 1000));
+	FlagMarker::Update(G_Flag);
 	FlagRush_XmlRpc::Send_FlagReset();
 }
 
@@ -462,23 +483,23 @@ Void Player_ResetHandicaps(CSmPlayer Player) {
 
 Boolean Player_CanPickUpDroppedFlag(CSmPlayer Player) {
 	if (Player.SpawnStatus != CSmPlayer::ESpawnStatus::Spawned || Player.Armor <= 0) return False;
-	declare Integer FlagRush_LastFlagDropDate for Player = -1;
-	declare Boolean DidNotDropFlag = FlagRush_LastFlagDropDate != FlagRush_FlagState::Get().LastDrop.Date;
-	declare Boolean DropPickupPenaltyExpired = Now - FlagRush_LastFlagDropDate > ML::NearestInteger(S_DropFlagPickupPenalty * 1000);
-	return (DidNotDropFlag || DropPickupPenaltyExpired) && Hitbox::AreColliding(Player, FlagRush_FlagState::Get().Position);
+	declare Boolean IsLocked = Flag::IsLockedForPlayer(G_Flag, Player);
+	return Flag::IsAtPosition(G_Flag) && !IsLocked && Hitbox::AreColliding(Player, G_Flag.Location.Position);
 }
 
 Void Player_PickUpFlag(CSmPlayer Player) {
 	FlagRush_Messages::FlagPickUp(Player, C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);
-	FlagRush_FlagState::SetAtCarrier(Player, StealResistanceEndDate, True);
+	G_Flag = Flag::SetAtPlayer(G_Flag, Player);
+	G_Flag = Flag::Lock(G_Flag, StealResistanceEndDate);
+	FlagMarker::Update(G_Flag);
 	Player_ApplyHandicaps(Player);
 	FlagRush_XmlRpc::Send_FlagPickup();
 }
 
 Void FlagCarrier_PassFlag(CSmPlayer Player) {
 	// Old Carrier
-	declare CSmPlayer OldCarrier = FlagRush_FlagState::GetFlagCarrierPlayer();
+	declare CSmPlayer OldCarrier = Flag::GetPlayer(G_Flag);
 	declare Boolean IsNotSameTeam = Player.CurrentClan != OldCarrier.CurrentClan;
 	if (IsNotSameTeam) {
 		FlagRush_Scores::OnPlayerStealFlag(Player);
@@ -487,16 +508,22 @@ Void FlagCarrier_PassFlag(CSmPlayer Player) {
 	// New Carrier
 	FlagRush_Messages::FlagPickUp(Player, C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);
-	FlagRush_FlagState::Pass(Player, StealResistanceEndDate, IsNotSameTeam || S_FlagStealResistanceOnTeamPass);
+	G_Flag = Flag::Pass(G_Flag, Player);
+	if (IsNotSameTeam || S_FlagStealResistanceOnTeamPass) {
+		G_Flag = Flag::Lock(G_Flag, StealResistanceEndDate);
+	} else {
+		G_Flag = Flag::LockForClan(G_Flag, StealResistanceEndDate, Player.CurrentClan);
+	}
+	FlagMarker::Update(G_Flag);
 	Player_ApplyHandicaps(Player);
 	FlagRush_XmlRpc::Send_FlagPass(OldCarrier);
 }
 
-Void FlagCarrier_DropFlag(Text FlagDropPositionMode) {
-	declare CSmPlayer CarrierPlayer = FlagRush_FlagState::GetFlagCarrierPlayer();
+Void FlagCarrier_DropFlag(Vec3 _Position) {
+	declare CSmPlayer CarrierPlayer = Flag::GetPlayer(G_Flag);
 
-	// If manual dropping in player stack, do a pass instead
-	if (CarrierPlayer != Null && FlagDropPositionMode == C_FlagDropPositionMode_CurrentPosition) {
+	// If dropping in player stack, do a pass instead
+	if (CarrierPlayer != Null) {
 		declare CSmPlayer ReceiverPlayer = GetFirstCollidingPlayer_OpponentPriority(CarrierPlayer);
 		if (ReceiverPlayer != Null) {
 			FlagCarrier_PassFlag(ReceiverPlayer);
@@ -504,52 +531,35 @@ Void FlagCarrier_DropFlag(Text FlagDropPositionMode) {
 		}
 	}
 
-	// Determine Position
-	declare Vec3 Position;
-	switch (FlagDropPositionMode) {
-		case C_FlagDropPositionMode_PreviousPosition: {
-			Position = FlagRush_FlagState::Get().PrevPosition;
-		}
-		case C_FlagDropPositionMode_LastSafePosition: {
-			Position = FlagRush_FlagState::Get().LastSafePosition;
-		}
-		default: {
-			if (CarrierPlayer != Null) {
-				Position = CarrierPlayer.Position;
-			} else {
-				Position = FlagRush_FlagState::Get().Position;
-			}
-		}
-	}
-
 	// Reset player
 	if (CarrierPlayer != Null) {
 		Player_ResetHandicaps(CarrierPlayer);
-		declare Integer FlagRush_LastFlagDropDate for CarrierPlayer;
-		FlagRush_LastFlagDropDate = Now;
+		G_Flag = Flag::LockForPlayer(G_Flag, Now + ML::NearestInteger(S_DropFlagPickupPenalty * 1000), CarrierPlayer);
 	}
 
-	declare CUser CarrierUser = ModeUtils::GetUser(FlagRush_FlagState::Get().Carrier.Login);
-	declare DropStateEndDate = Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000);
-	FlagRush_FlagState::Drop(Position, DropStateEndDate);
+	declare CUser CarrierUser = Users.get(G_Flag.Location.Player.UserId, Null);
+	declare Integer DropStateEndDate = Now + ML::NearestInteger(S_FlagDropStateDurationSeconds * 1000);
+	G_Flag = Flag::Drop(G_Flag, DropStateEndDate);
+	G_Flag = Flag::SetAtPosition(G_Flag, _Position);
+	FlagMarker::Update(G_Flag);
 	FlagRush_Messages::FlagDropped(CarrierUser, C_Duration_EventMessage);
 	FlagRush_XmlRpc::Send_FlagDrop(CarrierUser);
 }
 
 Void FlagCarrier_DropFlag() {
-	FlagCarrier_DropFlag(C_FlagDropPositionMode_CurrentPosition);
+	log("""[{{{Now}}}] {{{G_Flag}}}""");
+	FlagCarrier_DropFlag(G_Flag.Location.Position);
 }
 
 Void FlagCarrier_ScoreFlag() {
-	declare CSmPlayer CarrierPlayer = FlagRush_FlagState::GetFlagCarrierPlayer();
+	declare CSmPlayer CarrierPlayer = Flag::GetPlayer(G_Flag);
 	FlagRush_Messages::FlagScored(CarrierPlayer, C_Duration_EventMessage);
 	FlagRush_Scores::OnPlayerScoreFlag(CarrierPlayer.Score);
 
 	// Check for assist
-	declare FlagRush_FlagState::K_FlagPass LastPass = FlagRush_FlagState::Get().LastFlagPass;
 	declare CUser Assist;
-	if (Now - LastPass.Date <= C_AssistTimeThreshold && LastPass.OldCarrier.PlayerId != NullId) {
-		declare CSmScore AssistScore <=> ModeUtils::GetScore(LastPass.OldCarrier.Login);
+	if (Now - G_Flag.LastPass.Date <= C_AssistTimeThreshold && G_Flag.LastPass.From.Id != NullId) {
+		declare CSmScore AssistScore <=> Scores[G_Flag.LastPass.From.ScoreId];
 		if (AssistScore.TeamNum == CarrierPlayer.Score.TeamNum) {
 			Assist = AssistScore.User;
 			FlagRush_Scores::OnPlayerScoreFlagAssist(AssistScore);
@@ -566,13 +576,15 @@ Void FlagCarrier_ScoreFlag() {
 // =========================================================== //
 
 Void OnPlayerRequestsClanChange(CSmPlayer Player) {
-	if (Player == FlagRush_FlagState::GetFlagCarrierPlayer()) FlagCarrier_DropFlag();
+	if (Player == Flag::GetPlayer(G_Flag)) {
+		FlagCarrier_DropFlag();
+	}
 	Player_Unspawn(Player);
 	SetPlayerClan(Player, Player.RequestedClan);
 }
 
 Void OnPlayerRequestsRespawn(CSmPlayer Player) {
-	if (Player == FlagRush_FlagState::GetFlagCarrierPlayer()) {
+	if (Player == Flag::GetPlayer(G_Flag)) {
 		FlagCarrier_DropFlag();
 		return;
 	}
@@ -591,8 +603,8 @@ Void OnPlayerRequestsRespawn(CSmPlayer Player) {
 }
 
 Void OnPlayerDeath(CSmPlayer Player) {
-	if (Player == FlagRush_FlagState::GetFlagCarrierPlayer()) {
-		FlagCarrier_DropFlag();
+	if (Player == Flag::GetPlayer(G_Flag)) {
+		FlagCarrier_DropFlag(G_Flag.Location.LastSafePosition);
 	}
 	FlagRush_XmlRpc::Send_PlayerDeath(Player);
 	Player_Unspawn(Player);
@@ -604,8 +616,8 @@ Void OnPlayerOutOfBound(CSmPlayer Player) {
 	}
 
 	FlagRush_Messages::PlayerOutOfBounds(Player);
-	if (Player == FlagRush_FlagState::GetFlagCarrierPlayer()) {
-		FlagCarrier_DropFlag(C_FlagDropPositionMode_LastSafePosition);
+	if (Player == Flag::GetPlayer(G_Flag)) {
+		FlagCarrier_DropFlag(G_Flag.Location.LastSafePosition);
 	}
 	FlagRush_XmlRpc::Send_PlayerDeath(Player);
 	Player_Unspawn(Player);
@@ -614,9 +626,9 @@ Void OnPlayerOutOfBound(CSmPlayer Player) {
 Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {
 	if (FlagRush_Map::IsOutOfBoundsTrigger(Landmark)) {
 		OnPlayerOutOfBound(Player);
-	} else if (FlagRush_FlagState::Get().Landmark == Landmark && Now > FlagRush_FlagState::Get().CurrentStateEndDate) {
+	} else if (G_Flag.Location.LandmarkId == Landmark.Id && !Flag::IsLockedForPlayer(G_Flag, Player)) {
 		Player_PickUpFlag(Player);
-	} else if (Player == FlagRush_FlagState::GetFlagCarrierPlayer()){
+	} else if (Player == Flag::GetPlayer(G_Flag)){
 		declare Integer TargetBaseClan;
 		if (S_UseReversedBases) {
 			TargetBaseClan = Player.CurrentClan;
@@ -635,6 +647,25 @@ Void OnGameplayCommand(CommandUtils::K_Command Command) {
 		case C_Command_ResetFlag: {
 			Flag_Reset(Command.ValueBoolean);
 			CommandText = "The flag was reset.";
+		}
+		case "mr": {
+			FlagMarker::Hide();
+		}
+		case "mpos": {
+			G_Flag = Flag::SetAtPosition(G_Flag, <50., 50., 50.>);
+			FlagMarker::Update(G_Flag);
+		}
+		case "mp": {
+			G_Flag = Flag::SetAtPlayer(G_Flag, Players[0]);
+			FlagMarker::Update(G_Flag);
+		}
+		case "ml": {
+			G_Flag = Flag::SetAtLandmark(G_Flag, MapLandmarks[0]);
+			FlagMarker::Update(G_Flag);
+		}
+		case "lock": {
+			G_Flag = Flag::LockForClan(G_Flag, Now + 3000, 1);
+			FlagMarker::Update(G_Flag);
 		}
 		default: return;
 	}

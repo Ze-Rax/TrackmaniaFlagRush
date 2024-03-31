@@ -1,4 +1,5 @@
 #Include "ColorLib" as CL
+#Include "Libs/Zrx/ModeLibs/FlagRush/Flag.Script.txt" as Flag
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
 
@@ -75,7 +76,7 @@ Text GetManialink() {
 		CMlLabel CarrierLabel;
 	}
 
-	{{{ FlagRush_UIShared::GetFlagStateStructs() }}}
+	{{{ Flag::DumpNetFlagStructs() }}}
 
 	declare K_TeamArea[] TeamAreas;
 	declare K_Timer Timer;
@@ -180,11 +181,26 @@ Text GetManialink() {
 			Timer.TimerLabel.Value = "Overtime" ^ "\n" ^ "+" ^ TL::TimeToText(-RoundTimeLeft);
 			Timer.TimerLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
 		} else {
-			declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
-			Timer.Icon.Colorize = GetTeamMidColor(FlagRush_Net_FlagState.Holder.Clan);
+			declare netread K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
+			Timer.Icon.Colorize = GetTeamMidColor(FlagRush_Net_Flag.Location.Player.Clan);
 			Timer.Icon.Show();
 			Timer.TimerLabel.Hide();
 		}
+	}
+
+	Text ResolveFlagLocationName() {
+		declare netread K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
+		if (FlagRush_Net_Flag.Location.Player.Login != "") {
+			foreach (Player in Players) {
+				if (Player.User.Login == FlagRush_Net_Flag.Location.Player.Login) {
+					return Player.User.Name;
+				}
+			}
+			return FlagRush_Net_Flag.Location.Player.Login; // Disconnected?
+		} else if (FlagRush_Net_Flag.Location.IsAtLandmark) {
+			return "Flagspawn";
+		}
+		return "Dropped";
 	}
 
 	/**
@@ -196,9 +212,9 @@ Text GetManialink() {
 			Carrier.CarrierLabel.Value = "WarmUp";
 			Carrier.CarrierLabel.TextColor = {{{ FlagRush_Colors::C_Warning }}};
 		} else {
-			declare netread K_Net_FlagState FlagRush_Net_FlagState for Teams[0];
-			Carrier.CarrierLabel.Value = FlagRush_Net_FlagState.Holder.Name;
-			Carrier.CarrierLabel.TextColor = GetTeamMidColor(FlagRush_Net_FlagState.Holder.Clan);
+			declare netread K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
+			Carrier.CarrierLabel.Value = ResolveFlagLocationName();
+			Carrier.CarrierLabel.TextColor = GetTeamMidColor(FlagRush_Net_Flag.Location.Player.Clan);
 		}
 	}
 

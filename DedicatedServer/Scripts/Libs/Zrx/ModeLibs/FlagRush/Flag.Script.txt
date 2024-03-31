@@ -51,6 +51,7 @@
 
 #Struct K_Net_Flag_Location {
 	K_Net_Flag_Player Player;
+	Boolean IsAtLandmark;
 	Vec3 Position;
 }
 
@@ -103,6 +104,7 @@ K_Net_Flag_Player Private_ToNetFlagPlayer(K_Player _Player) {
 K_Net_Flag_Location Private_ToNetFlagLocation(K_Location _Location) {
 	return K_Net_Flag_Location{
 		Player = Private_ToNetFlagPlayer(_Location.Player),
+		IsAtLandmark = _Location.LandmarkId != NullId,
 		Position = _Location.Position
 	};
 }

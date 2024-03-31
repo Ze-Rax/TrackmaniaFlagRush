@@ -6,11 +6,10 @@
 #Const C_FlagSpawnMarkerFrameIdPrefix	"marker-flag-spawn-"
 #Const C_FlagSpawnMarkerFrameDefault	"marker-flag-defaultspawn"
 
-#Const C_TeamBaseMarker_Box		<0., 8., 0.>
+#Const C_TeamBaseMarker_Box		<0., 2., 0.>
 #Const C_FlagSpawnMarker_Box	<0., 2., 0.>
 
 // Markers are automatically removed on map switch. Use IDs to prevent reference errors.
-declare Ident G_FlagMarkerId;
 declare Ident[] G_FlagSpawnMarkerIds;
 declare Ident[] G_BaseMarkerIds;
 

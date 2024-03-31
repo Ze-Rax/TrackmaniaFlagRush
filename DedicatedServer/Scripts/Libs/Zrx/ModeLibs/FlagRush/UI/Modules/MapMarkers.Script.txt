@@ -1,8 +1,13 @@
 //#RequireContext CSmMlScriptIngame
 
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
+
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt" as FlagRush_Map
 
+#Const C_LayerName "FlagRush_MapMarkers"
+
+#Const C_BaseMarkerFrameIdPrefix			"marker-base-team"
 #Const C_FlagSpawnMarkerFrameIdPrefix	"marker-flag-spawn-"
 #Const C_FlagSpawnMarkerFrameDefault	"marker-flag-defaultspawn"
 
@@ -13,12 +18,17 @@
 declare Ident[] G_FlagSpawnMarkerIds;
 declare Ident[] G_BaseMarkerIds;
 
+Text Private_GenerateBaseId(Integer _Clan, Integer _BaseIndex) {
+	return """{{{ C_BaseMarkerFrameIdPrefix}}}{{{ _Clan }}}-{{{ _BaseIndex }}}""";
+}
+
 Text GetManialink() {
 	declare Text BasesFrameInstancesXml;
 	declare Integer NbBasesPerTeam = FlagRush_Map::GetBases(1).count;
 	for(Clan, 1, 2) {
 		for(I, 0, NbBasesPerTeam-1) {
-			BasesFrameInstancesXml ^= """<frameinstance modelid="model-marker-base" id="marker-base-team{{{ Clan }}}-{{{ I }}}" hidden="1"/>""";
+			declare Text BaseId = Private_GenerateBaseId(Clan, I);
+			BasesFrameInstancesXml ^= """<frameinstance modelid="model-marker-base" id="{{{ BaseId }}}" hidden="1"/>""";
 		}
 	}
 
@@ -29,14 +39,15 @@ Text GetManialink() {
 
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<manialink version="3" name="FlagRush_Markers">
+<manialink version="3" name="{{{ C_LayerName }}}">
 
 	<framemodel id="model-marker-base">
-		<label id="quad-icon" pos="0 0" z-index="1" size="10 10" text="" textsize="5" halign="center" valign="center2"/>
+		<label id="quad-icon" pos="0 0" z-index="1" size="10 10" text="" textsize="4.5" textemboss="1" halign="center" valign="center2"/>
 	</framemodel>
 
 	<framemodel id="model-marker-flagspawn">
 		<quad id="quad-flag" pos="0" size="8 8" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light"/>
+		<quad id="quad-flag-dropshadow" pos="0.25 -0.25" z-index="-1" size="8 8" halign="center" valign="center" style="UICommon64_1" substyle="Flag_dark"/>
 		<label id="label-order" pos="0 4" halign="center" valign="center2" text="0" textprefix="#" textsize="0.5" textfont="GameFontExtraBold" textemboss="1" hidden="1"/>
 	</framemodel>
 
@@ -71,12 +82,12 @@ Text GetManialink() {
 
 		{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
 
-		Void AssignMlControlReferences() {
+		Void Init() {
 			// Team bases
 			for (Clan, 1, 2) {
 				G_TeamBaseMarkers[Clan] = [];
 				for (I, 0, {{{NbBasesPerTeam-1}}}) {
-					declare CMlFrame FrameMarkerBase = (Page.GetFirstChild("marker-base-team" ^ Clan ^ "-" ^ I) as CMlFrame);
+					declare CMlFrame FrameMarkerBase = (Page.GetFirstChild("{{{ C_BaseMarkerFrameIdPrefix }}}" ^ Clan ^ "-" ^ I) as CMlFrame);
 					declare CMlLabel Icon = (FrameMarkerBase.GetFirstChild("quad-icon") as CMlLabel);
 					G_TeamBaseMarkers[Clan].add(K_BaseMarker{ Frame = FrameMarkerBase, Icon = Icon });
 				}
@@ -95,24 +106,23 @@ Text GetManialink() {
 			declare CMlLabel FlagSpawnOrder = (FlagSpawnFrame.GetFirstChild("label-order") as CMlLabel);
 			G_DefaultFlagSpawnMarker = K_FlagSpawnMarker{ Frame = FlagSpawnFrame, Icon = FlagSpawnIcon, Order = FlagSpawnOrder};
 			G_FlagSpawnMarkers.add(G_DefaultFlagSpawnMarker);
-		}
 
-		Void InitMlControls() {
 			G_DefaultFlagSpawnMarker.Order.Value = "1";
 			G_DefaultFlagSpawnMarker.Order.Show();
 		}
 
-		Void UpdateBaseMarkers() {
-			declare netread Boolean FlagRush_Net_UseReversedBases for Teams[0];
-
+		Void UpdateBaseMarkers(Boolean Reversed) {
 			declare Integer UIClan = 0;
-			if (GUIPlayer != Null) UIClan = GUIPlayer.CurrentClan;
-			else if (InputPlayer != Null) UIClan = InputPlayer.CurrentClan;
+			if (GUIPlayer != Null) {
+				UIClan = GUIPlayer.CurrentClan;
+			} else if (InputPlayer != Null) {
+				UIClan = InputPlayer.CurrentClan;
+			}
 
 			foreach (Clan => BaseMarkers in G_TeamBaseMarkers) {
 				declare Boolean ShowDefenseIcon;
 				declare Vec3 Color;
-				if (FlagRush_Net_UseReversedBases) {
+				if (Reversed) {
 					Color = GetTeamMidColor(3 - Clan); // Color of opponent clan
 					ShowDefenseIcon = UIClan == 0 || Clan != UIClan;
 				} else {
@@ -132,11 +142,11 @@ Text GetManialink() {
 		}
 
 		main() {
-			AssignMlControlReferences();
-			InitMlControls();
+			Init();
+			declare netread Boolean FlagRush_Net_UseReversedBases for Teams[0] = False;
 			while(True) {
 				yield;
-				UpdateBaseMarkers();
+				UpdateBaseMarkers(FlagRush_Net_UseReversedBases);
 			}
 		}
 	--></script>
@@ -144,29 +154,35 @@ Text GetManialink() {
 	""";
 }
 
-CUIConfigMarker Private_GetMarker(Ident Id) {
-	if (!UIManager.UIAll.Markers.existskey(Id)) {
-		return Null;
-	}
-	return UIManager.UIAll.Markers[Id];
+CUIConfigMarker Private_GetMarker(Ident _Id) {
+	return UIManager.UIAll.Markers.get(_Id, Null);
 }
 
-Void Private_RemoveMarker(Ident Id) {
-	declare CUIConfigMarker Marker = Private_GetMarker(Id);
-	if (Marker == Null) {
-		return;
+Void Private_RemoveMarker(Ident _Id) {
+	declare CUIConfigMarker Marker = Private_GetMarker(_Id);
+	if (Marker != Null) {
+		UIManager.UIAll.RemoveMarker(Marker);
 	}
-	UIManager.UIAll.RemoveMarker(Marker);
 }
 
-Void FlagSpawnMarkers_SetVisible(Boolean Visible) {
+Void Private_RemoveAllMarkers() {
+	foreach (Id in G_BaseMarkerIds) {
+		Private_RemoveMarker(Id);
+	}
+
+	foreach (Id in G_FlagSpawnMarkerIds) {
+		Private_RemoveMarker(Id);
+	}
+}
+
+Void SetFlagSpawnMarkerVisibility(Boolean _Visible) {
 	foreach (FlagSpawnMarkerId in G_FlagSpawnMarkerIds) {
 		declare CUIConfigMarker FlagSpawnMarker = Private_GetMarker(FlagSpawnMarkerId);
 		if (FlagSpawnMarker == Null) {
 			continue;
 		}
 
-		if (Visible) {
+		if (_Visible) {
 			FlagSpawnMarker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
 		} else {
 			FlagSpawnMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
@@ -174,26 +190,39 @@ Void FlagSpawnMarkers_SetVisible(Boolean Visible) {
 	}
 }
 
-Void CreateMapMarkers() {
-	// Create Markers for the Bases
-	foreach (Id in G_BaseMarkerIds) {
-		Private_RemoveMarker(Id);
-	}
+Void ShowFlagSpawnMarkers() {
+	SetFlagSpawnMarkerVisibility(True);
+}
+
+Void HideFlagSpawnMarkers() {
+	SetFlagSpawnMarkerVisibility(False);
+}
+
+Void Show() {
+	Layers::Show(C_LayerName);
+}
+
+Void Hide() {
+	Layers::Hide(C_LayerName);
+}
+
+Void Update() {
+	Private_RemoveAllMarkers();
+	Layers::Update(C_LayerName, GetManialink());
+
+	// Bases
 	G_BaseMarkerIds = [];
 	for(Clan, 1, 2) {
 		for(BaseIndex, 0, FlagRush_Map::GetBases(Clan).count -1) {
 			declare CUIConfigMarker MarkerBase = UIManager.UIAll.AddMarker(FlagRush_Map::GetBases(Clan)[BaseIndex]);
 			MarkerBase.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
-			MarkerBase.ManialinkFrameId = """marker-base-team{{{Clan}}}-{{{BaseIndex}}}""";
+			MarkerBase.ManialinkFrameId = Private_GenerateBaseId(Clan, BaseIndex);
 			MarkerBase.Box = C_TeamBaseMarker_Box;
 			G_BaseMarkerIds.add(MarkerBase.Id);
 		}
 	}
 
-	// Create a marker for each flag spawn
-	foreach (Id in G_FlagSpawnMarkerIds) {
-		Private_RemoveMarker(Id);
-	}
+	// Flag spawn
 	G_FlagSpawnMarkerIds = [];
 	declare Integer Index = 0;
 	foreach(FlagSpawn in FlagRush_Map::GetFlagSpawns()) {
@@ -204,8 +233,19 @@ Void CreateMapMarkers() {
 			Marker.ManialinkFrameId = C_FlagSpawnMarkerFrameIdPrefix ^ Index;
 			Index += 1;
 		}
-
 		Marker.Box = C_FlagSpawnMarker_Box;
 		G_FlagSpawnMarkerIds.add(Marker.Id);
 	}
+}
+
+Void Unload() {
+	Private_RemoveAllMarkers();
+	Layers::Destroy(C_LayerName);
+}
+
+Void Load() {
+	Unload();
+	Layers::Create(C_LayerName, GetManialink());
+	Layers::SetType(C_LayerName, CUILayer::EUILayerType::Markers);
+	Layers::Attach(C_LayerName);
 }

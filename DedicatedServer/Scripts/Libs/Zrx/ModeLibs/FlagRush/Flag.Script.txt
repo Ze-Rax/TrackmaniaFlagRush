@@ -295,6 +295,7 @@ Void Yield() {
 
 Void Unload() {
 	G_Flag = K_Flag{};
+	Net_Update();
 }
 
 Void Load() {

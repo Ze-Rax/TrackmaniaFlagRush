@@ -9,7 +9,7 @@
 
 #Const C_Box_Player		<0., 1., 0.>
 #Const C_Box_Landmark	<0., 2., 0.>
-#Const C_Box_Position	<0., 0., 0.>
+#Const C_Box_Position	<0., 0.25, 0.>
 
 declare Ident G_MarkerId;
 declare Flag::K_Flag G_Flag;
@@ -307,8 +307,8 @@ Void Update() {
 	} else if (Flag::IsOnLandmark() && Flag.Location.LandmarkId != G_Flag.Location.LandmarkId) {
 		Private_SetAtLandmark(MapLandmarks[Flag.Location.LandmarkId]);
 	} else { // Is on Position
-		declare Boolean WasOnPlayer = Flag::IsOnPlayer();
-		declare Boolean WasOnLandmark = Flag::IsOnLandmark();
+		declare Boolean WasOnPlayer = G_Flag.Location.Player.Id != NullId;
+		declare Boolean WasOnLandmark = G_Flag.Location.LandmarkId != NullId;
 		declare Boolean PositionChanged = Flag.Location.Position != G_Flag.Location.Position;
 		if (WasOnPlayer || WasOnLandmark || PositionChanged) {
 			Private_SetAtPosition(Flag.Location.Position);

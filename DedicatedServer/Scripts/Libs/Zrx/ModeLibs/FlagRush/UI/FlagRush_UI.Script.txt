@@ -10,7 +10,6 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Menu.Script.txt"							as FlagRush_UIMenu
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt"							as FlagRush_UISound
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_UIMarkers
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Respawn.Script.txt"						as FlagRush_UIRespawn
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Spectator.Script.txt"					as FlagRush_UISpectator
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
@@ -22,7 +21,6 @@
 
 #Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
 #Const C_LayerName_ScoresHeader				"Layer_FlagRush_ScoresHeader"
-#Const C_LayerName_Markers						"Layer_FlagRush_Markers"
 #Const C_LayerName_Menu								"Layer_FlagRush_Menu"
 #Const C_LayerName_Feed								"Layer_FlagRush_Feed"
 #Const C_LayerName_Flash							"Layer_FlagRush_Flash"
@@ -98,11 +96,6 @@ Void Private_AttachModules() {
 	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Feed);
 
-	// Markers
-	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
-	Layers::SetType(C_LayerName_Markers, CUILayer::EUILayerType::Markers);
-	Layers::Attach(C_LayerName_Markers);
-
 	// Respawn Bar
 	Layers::Create(C_LayerName_Respawn, FlagRush_UIRespawn::GetManialink());
 	Layers::SetType(C_LayerName_Respawn, CUILayer::EUILayerType::Normal);
@@ -133,12 +126,10 @@ Void Private_AttachModules() {
 Void AttachPodiumBackground(CSmScore[] PodiumPlayerScores) {
 	FlagRush_Podium::SetContent(PodiumPlayerScores);
 	Layers::Attach(C_LayerName_Podium);
-	Layers::Hide(C_LayerName_Markers);
 }
 
 Void DetachPodiumBackground() {
 	Layers::Detach(C_LayerName_Podium);
-	Layers::Show(C_LayerName_Markers);
 }
 
 Void Private_DetachModules() {
@@ -147,7 +138,6 @@ Void Private_DetachModules() {
 	Layers::Detach(C_LayerName_Sound);
 	Layers::Detach(C_LayerName_Menu);
 	Layers::Detach(C_LayerName_Feed);
-	Layers::Detach(C_LayerName_Markers);
 }
 
 /**
@@ -174,15 +164,7 @@ Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases) {
 
 /* Lifecycle */
 
-Void StartMap() {
-	FlagRush_UIMarkers::CreateMapMarkers();
-	Layers::Update(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
-}
-
 Void Yield() {
-	declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
-	FlagRush_UIMarkers::FlagSpawnMarkers_SetVisible(FlagRush_Net_WarmUpIsRunning);
-
 	if (G_PreviousPlayersCount != Players.count) {
 		G_PreviousPlayersCount = Players.count;
 		Layers::Update(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());

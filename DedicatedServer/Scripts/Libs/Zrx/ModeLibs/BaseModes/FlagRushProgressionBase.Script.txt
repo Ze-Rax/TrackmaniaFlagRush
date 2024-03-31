@@ -37,6 +37,7 @@
 
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MapMarkers.Script.txt"			as MapMarkers
 
 ///////////////
 // Constants //
@@ -216,6 +217,7 @@ SettingTracker::Unload();
 ***
 FlagRush_UI::Load();
 FlagMarker::Load();
+MapMarkers::Load();
 ModeCommands::AddQuickCommand(C_Command_EndWarmup, "UICommon64_1", "Play_light");
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipRound, "UICommon64_1", "FastForward_light");
@@ -273,7 +275,7 @@ if (!MapValid) {
 	FlagRush_Messages::InvalidMap();
 }
 FlagRush_XmlRpc::Send_MapStart();
-FlagRush_UI::StartMap();
+MapMarkers::Update();
 FlagRush_Teams::Init();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 MB_Synchro();
@@ -487,11 +489,13 @@ if (HasPodium) {
 		PodiumPlayerScores.add(Scores[I]);
 		PodiumPlayerLogins.add(Scores[I].User.Login);
 	}
+	MapMarkers::Hide();
 	FlagRush_UI::AttachPodiumBackground(PodiumPlayerScores);
 	UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
 	MB_Sleep(C_Duration_Podium);
 	FlagRush_UI::DetachPodiumBackground();
+	MapMarkers::Show();
 }
 ***
 
@@ -504,6 +508,7 @@ Private_WarmUpIsRunning = True;
 declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
 FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
 FlagRush_Messages::WarmUpStart(C_Duration_WarmUpStart);
+MapMarkers::ShowFlagSpawnMarkers();
 WarmUpReadyUp::Start(S_WarmUpWaitForApproval);
 if (S_WarmUpWaitForApproval) FlagRush_Messages::WarmUpWaitForApproval();
 MB_Sleep(C_Duration_WarmUpStart);
@@ -534,6 +539,7 @@ UIManager.UIAll.UISequence = PreviousSequence;
 MB_Sleep(C_Duration_WarmUpEnd);
 Private_WarmUpIsRunning = False;
 FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
+MapMarkers::HideFlagSpawnMarkers();
 FlagRush_XmlRpc::Send_WarmUpEnd();
 ***
 

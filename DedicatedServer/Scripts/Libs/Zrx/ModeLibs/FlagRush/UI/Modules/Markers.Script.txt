@@ -3,13 +3,8 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt" as FlagRush_Map
 
-#Const C_FlagMarkerFrameId						"marker-flag"
 #Const C_FlagSpawnMarkerFrameIdPrefix	"marker-flag-spawn-"
 #Const C_FlagSpawnMarkerFrameDefault	"marker-flag-defaultspawn"
-
-#Const C_FlagMarker_Box_Player		<0., 1., 0.>
-#Const C_FlagMarker_Box_Landmark	<0., 2., 0.>
-#Const C_FlagMarker_Box_Position	<0., 0., 0.>
 
 #Const C_TeamBaseMarker_Box		<0., 8., 0.>
 #Const C_FlagSpawnMarker_Box	<0., 2., 0.>
@@ -46,26 +41,6 @@ Text GetManialink() {
 		<label id="label-order" pos="0 4" halign="center" valign="center2" text="0" textprefix="#" textsize="0.5" textfont="GameFontExtraBold" textemboss="1" hidden="1"/>
 	</framemodel>
 
-	<framemodel id="model-marker-flag">
-		<quad id="quad-flag" pos="0 1" z-index="2" size="10 10" halign="center" style="UICommon64_1" substyle="Flag_light"  valign="center"/>
-		<label id="distance" pos="0 -2" z-index="2" size="10 5" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="0.4" textemboss="1" hidden="1"/>
-		<quad id="up" pos="0 7.5" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" hidden="1" />
-		<quad id="down" pos="0 -6" z-index="0" size="6 6" opacity="1" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center" hidden="1"/>
-
-		<frame id="gauge-frame" pos="0 7" scale="0.65">
-			<frame size="10 20" pos="0 0">
-				<quad id="gauge-left" pos="0 -10" z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" rot="0" hidden="1" />
-			</frame>
-			<frame size="10 20" pos="-10 0">
-				<quad id="gauge-right" pos="10 -10" z-index="0" size="10 20" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds" valign="center" halign="right" rot="180" hidden="1"/>
-			</frame>
-		</frame>
-	</framemodel>
-
-  <!-- Wrap in frames because C++ side z-index computation is broken -->
-	<frame z-index="2">
-		<frameinstance modelid="model-marker-flag" id="{{{ C_FlagMarkerFrameId }}}" hidden="1"/>
-	</frame>
 	<frame z-index="1">
 		<frameinstance modelid="model-marker-flagspawn" id="{{{ C_FlagSpawnMarkerFrameDefault }}}" hidden="1"/>
 		{{{ FlagSpawnMarkerFrameInstancesXml }}}
@@ -77,7 +52,6 @@ Text GetManialink() {
 	<script><!--
 		#Include "MathLib" as ML
 
-		#Const C_Flag_NoStealOpacity 0.5
 		#Const C_BaseIcon_Attack ""
 		#Const C_BaseIcon_Defend ""
 
@@ -92,47 +66,11 @@ Text GetManialink() {
 			CMlLabel Order;
 		}
 
-		#Struct K_CircularGauge {
-			CMlFrame Frame;
-			CMlQuad Left;
-			CMlQuad Right;
-		}
-
-		#Struct K_FlagMarker {
-			CMlFrame Frame;
-			CMlQuad Icon;
-			CMlLabel Distance;
-			CMlQuad Up;
-			CMlQuad Down;
-			K_CircularGauge Gauge;
-		}
-
 		declare K_BaseMarker[][Integer] G_TeamBaseMarkers;
 		declare K_FlagSpawnMarker[] G_FlagSpawnMarkers;
 		declare K_FlagSpawnMarker G_DefaultFlagSpawnMarker;
-		declare K_FlagMarker G_FlagMarker;
 
 		{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
-		{{{ FlagRush_UIShared::GetLoginMappingFunctions() }}}
-		{{{ FlagRush_UIShared::GetPlayerPositionFunctions() }}}
-
-		Void RenderGauge(K_CircularGauge Gauge, Real Value) {
-			if (Value <= 0.01) {
-				Gauge.Right.Hide();
-				Gauge.Left.Hide();
-				return;
-			} else if (Value <= 0.5) {
-				Gauge.Right.Show();
-				Gauge.Left.Hide();
-				Gauge.Right.RelativeRotation = -180. + Value * 360;
-				Gauge.Left.RelativeRotation = 0.;
-			} else {
-				Gauge.Right.Show();
-				Gauge.Left.Show();
-				Gauge.Right.RelativeRotation = 0.;
-				Gauge.Left.RelativeRotation = 180. + Value * 360;
-			}
-		}
 
 		Void AssignMlControlReferences() {
 			// Team bases
@@ -158,18 +96,6 @@ Text GetManialink() {
 			declare CMlLabel FlagSpawnOrder = (FlagSpawnFrame.GetFirstChild("label-order") as CMlLabel);
 			G_DefaultFlagSpawnMarker = K_FlagSpawnMarker{ Frame = FlagSpawnFrame, Icon = FlagSpawnIcon, Order = FlagSpawnOrder};
 			G_FlagSpawnMarkers.add(G_DefaultFlagSpawnMarker);
-
-			// Flag marker
-			declare CMlFrame FlagFrame <=> (Page.GetFirstChild("{{{ C_FlagMarkerFrameId }}}") as CMlFrame);
-			declare CMlQuad FlagIcon <=> (FlagFrame.GetFirstChild("quad-flag") as CMlQuad);
-			declare CMlLabel FlagDistance <=> (Page.GetFirstChild("distance") as CMlLabel);
-			declare CMlQuad FlagUp <=> (FlagFrame.GetFirstChild("up") as CMlQuad);
-			declare CMlQuad FlagDown <=> (FlagFrame.GetFirstChild("down") as CMlQuad);
-			declare CMlFrame FlagGaugeFrame <=> (FlagFrame.GetFirstChild("gauge-frame") as CMlFrame);
-			declare CMlQuad FlagGaugeLeft <=> (FlagGaugeFrame.GetFirstChild("gauge-left") as CMlQuad);
-			declare CMlQuad FlagGaugeRight <=> (FlagGaugeFrame.GetFirstChild("gauge-right") as CMlQuad);
-			declare K_CircularGauge FlagGauge = K_CircularGauge{ Frame = FlagGaugeFrame, Left = FlagGaugeLeft, Right = FlagGaugeRight };
-			G_FlagMarker = K_FlagMarker{ Frame = FlagFrame, Icon = FlagIcon, Distance = FlagDistance, Up = FlagUp, Down = FlagDown, Gauge = FlagGauge };
 		}
 
 		Void InitMlControls() {
@@ -232,51 +158,6 @@ Void Private_RemoveMarker(Ident Id) {
 		return;
 	}
 	UIManager.UIAll.RemoveMarker(Marker);
-}
-
-Void FlagMarker_Remove() {
-	declare CUIConfigMarker Marker = Private_GetMarker(G_FlagMarkerId);
-	if(Marker != Null) {
-		UIManager.UIAll.RemoveMarker(Marker);
-	}
-	G_FlagMarkerId = NullId;
-}
-
-Void FlagMarker_SetOnLandmark(CMapLandmark Landmark) {
-	FlagMarker_Remove();
-	declare FlagMarker = UIManager.UIAll.AddMarker(Landmark);
-	FlagMarker.Box = C_FlagMarker_Box_Landmark;
-	FlagMarker.ManialinkFrameId = C_FlagMarkerFrameId;
-	G_FlagMarkerId = FlagMarker.Id;
-}
-
-Void FlagMarker_SetOnPlayer(CSmPlayer Player) {
-	FlagMarker_Remove();
-	declare FlagMarker = UIManager.UIAll.AddMarker(Player);
-	FlagMarker.Box = C_FlagMarker_Box_Player;
-	FlagMarker.ManialinkFrameId = C_FlagMarkerFrameId;
-	G_FlagMarkerId = FlagMarker.Id;
-}
-
-Void FlagMarker_SetOnPosition(Vec3 Position) {
-	FlagMarker_Remove();
-	declare FlagMarker = UIManager.UIAll.AddMarker(Position);
-	FlagMarker.Box = C_FlagMarker_Box_Position;
-	FlagMarker.ManialinkFrameId = C_FlagMarkerFrameId;
-	G_FlagMarkerId = FlagMarker.Id;
-}
-
-Void FlagMarker_SetVisible(Boolean Visible) {
-	declare CUIConfigMarker FlagMarker = Private_GetMarker(G_FlagMarkerId);
-	if (FlagMarker == Null) {
-		return;
-	}
-
-	if (Visible) {
-		FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
-	} else {
-		FlagMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
-	}
 }
 
 Void FlagSpawnMarkers_SetVisible(Boolean Visible) {

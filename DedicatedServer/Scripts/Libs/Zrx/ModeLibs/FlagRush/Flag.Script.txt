@@ -1,3 +1,5 @@
+#Const C_Position_Invalid <-1., -1., -1.>
+
 #Struct K_Player {
 	Ident Id;
 	// Additional data for when player disconnects
@@ -174,7 +176,11 @@ Boolean IsOnLandmark() {
 }
 
 Boolean IsAtPosition() {
-	return G_Flag.Location.Player.Id == NullId && G_Flag.Location.LandmarkId == NullId;
+	return !IsOnPlayer() && !IsOnLandmark() && G_Flag.Location.Position != C_Position_Invalid;
+}
+
+Boolean IsUnspawned() {
+	return !IsOnPlayer() && !IsOnLandmark() && G_Flag.Location.Position == C_Position_Invalid;
 }
 
 Boolean HasActiveLock() {
@@ -215,6 +221,11 @@ CMapLandmark GetLandmark() {
 
 K_Flag Get() {
 	return G_Flag;
+}
+
+Void SetUnspawned() {
+	G_Flag.Location = K_Location{ Position = C_Position_Invalid };
+	Net_Update();
 }
 
 Void SetAtPosition(Vec3 _Position) {
@@ -294,10 +305,10 @@ Void Yield() {
 }
 
 Void Unload() {
-	G_Flag = K_Flag{};
-	Net_Update();
 }
 
 Void Load() {
-	Unload();
+	G_Flag = K_Flag{};
+	SetUnspawned();
+	Net_Update();
 }

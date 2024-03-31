@@ -199,6 +199,8 @@ Text GetManialink() {
 			return FlagRush_Net_Flag.Location.Player.Login; // Disconnected?
 		} else if (FlagRush_Net_Flag.Location.IsAtLandmark) {
 			return "Flagspawn";
+		} else if (FlagRush_Net_Flag.Location.Position == {{{ Flag::C_Position_Invalid }}}) {
+			return "Unspawned";
 		}
 		return "Dropped";
 	}

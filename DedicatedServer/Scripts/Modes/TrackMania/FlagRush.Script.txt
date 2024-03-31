@@ -157,7 +157,8 @@ foreach (Player in Players) {
 
 ***EndTurn***
 ***
-FlagMarker::Remove();
+Flag::SetUnspawned();
+FlagMarker::Update();
 FlagRush_Handicaps::ClearQueue();
 ***
 

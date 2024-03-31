@@ -12,7 +12,6 @@
 #Const C_Box_Position	<0., 0.25, 0.>
 
 declare Ident G_MarkerId;
-declare Flag::K_Flag G_Flag;
 
 Text GetManialink() {
 	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
@@ -225,22 +224,20 @@ main() {
 
 // Helpers
 
-CUIConfigMarker GetMarker() {
+CUIConfigMarker Private_GetMarker() {
 	return UIManager.UIAll.Markers.get(G_MarkerId, Null);
 }
 
-Boolean Remove() {
-	declare CUIConfigMarker Marker = GetMarker();
+Void Private_Remove() {
+	declare CUIConfigMarker Marker = Private_GetMarker();
 	G_MarkerId = NullId;
-	if (Marker == Null) {
-		return False;
+	if (Marker != Null) {
+		UIManager.UIAll.RemoveMarker(Marker);
 	}
-	UIManager.UIAll.RemoveMarker(Marker);
-	return True;
 }
 
 Void Private_SetAtPosition(Vec3 _Position) {
-	Remove();
+	Private_Remove();
 	declare CUIConfigMarker Marker = UIManager.UIAll.AddMarker(_Position);
 	G_MarkerId = Marker.Id;
 	Marker.Box = C_Box_Position;
@@ -248,9 +245,9 @@ Void Private_SetAtPosition(Vec3 _Position) {
 	Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
 }
 
-Void Private_SetAtLandmark(CSmMapLandmark _Landmark) {
+Void Private_SetAtLandmark(CMapLandmark _Landmark) {
 	assert(_Landmark != Null);
-	Remove();
+	Private_Remove();
 	declare CUIConfigMarker Marker = UIManager.UIAll.AddMarker(_Landmark);
 	G_MarkerId = Marker.Id;
 	Marker.Box = C_Box_Landmark;
@@ -260,7 +257,7 @@ Void Private_SetAtLandmark(CSmMapLandmark _Landmark) {
 
 Void Private_SetAtPlayer(CSmPlayer _Player) {
 	assert (_Player != Null);
-	Remove();
+	Private_Remove();
 	declare CUIConfigMarker Marker = UIManager.UIAll.AddMarker(_Player);
 	G_MarkerId = Marker.Id;
 	Marker.Box = C_Box_Player;
@@ -269,7 +266,7 @@ Void Private_SetAtPlayer(CSmPlayer _Player) {
 }
 
 Void Hide() {
-	declare CUIConfigMarker Marker = GetMarker();
+	declare CUIConfigMarker Marker = Private_GetMarker();
 	if (Marker == Null) {
 		return;
 	}
@@ -277,7 +274,7 @@ Void Hide() {
 }
 
 Void Show() {
-	declare CUIConfigMarker Marker = GetMarker();
+	declare CUIConfigMarker Marker = Private_GetMarker();
 	if (Marker == Null) {
 		return;
 	}
@@ -287,7 +284,7 @@ Void Show() {
 // Lifecycle
 
 Void Unload() {
-	Remove();
+	Private_Remove();
 	Layers::Destroy(C_LayerName);
 }
 
@@ -299,20 +296,13 @@ Void Load() {
 }
 
 Void Update() {
-	declare Flag::K_Flag Flag = Flag::Get();
-
-	if (Flag::IsOnPlayer() && Flag.Location.Player.Id != G_Flag.Location.Player.Id && Flag::IsPlayerConnected()) {
+	if (Flag::IsPlayerConnected()) {
 		Private_SetAtPlayer(Flag::GetPlayer());
-	} else if (Flag::IsOnLandmark() && Flag.Location.LandmarkId != G_Flag.Location.LandmarkId) {
-		Private_SetAtLandmark(MapLandmarks[Flag.Location.LandmarkId]);
-	} else { // Is on Position
-		declare Boolean WasOnPlayer = G_Flag.Location.Player.Id != NullId;
-		declare Boolean WasOnLandmark = G_Flag.Location.LandmarkId != NullId;
-		declare Boolean PositionChanged = Flag.Location.Position != G_Flag.Location.Position;
-		if (WasOnPlayer || WasOnLandmark || PositionChanged) {
-			Private_SetAtPosition(Flag.Location.Position);
-		}
+	} else if (Flag::IsOnLandmark()) {
+		Private_SetAtLandmark(Flag::GetLandmark());
+	} else if (Flag::IsAtPosition()) {
+		Private_SetAtPosition(Flag::Get().Location.Position);
+	} else {
+		Private_Remove();
 	}
-
-	G_Flag = Flag;
 }

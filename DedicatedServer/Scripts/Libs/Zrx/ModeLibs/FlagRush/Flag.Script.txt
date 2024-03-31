@@ -83,6 +83,8 @@
 	K_Net_Flag_Pass LastPass;
 }
 
+declare K_Flag G_Flag;
+
 // Transformation
 
 K_Player Private_ToPlayerStruct(CSmPlayer _Player) {
@@ -135,12 +137,12 @@ K_Net_Flag_Pass Private_ToNetFlagPass(K_Pass _Pass) {
 	};
 }
 
-K_Net_Flag ToNetFlag(K_Flag _Flag) {
+K_Net_Flag Get_Net() {
 	return K_Net_Flag {
-		Location = Private_ToNetFlagLocation(_Flag.Location),
-		Lock = Private_ToNetFlagLock(_Flag.Lock),
-		Drop = Private_ToNetFlagDrop(_Flag.Drop),
-		LastPass = Private_ToNetFlagPass(_Flag.LastPass)
+		Location = Private_ToNetFlagLocation(G_Flag.Location),
+		Lock = Private_ToNetFlagLock(G_Flag.Lock),
+		Drop = Private_ToNetFlagDrop(G_Flag.Drop),
+		LastPass = Private_ToNetFlagPass(G_Flag.LastPass)
 	};
 }
 
@@ -154,147 +156,145 @@ Text DumpNetFlagStructs() {
 	dumptype(K_Net_Flag);
 }
 
-// Core: Basic functionality for updating the flag.
-
-K_Flag SetAtPosition(K_Flag _Flag, Vec3 _Position) {
-	declare K_Flag Flag = _Flag;
-	Flag.Location = K_Location{ Position = _Position, LastSafePosition = _Flag.Location.LastSafePosition };
-	return Flag;
-}
-
-K_Flag SetAtPlayer(K_Flag _Flag, CSmPlayer _Player) {
-	assert(_Player != Null);
-	declare K_Flag Flag = _Flag;
-	Flag.Location = K_Location{ Player = Private_ToPlayerStruct(_Player), Position = _Player.Position, LastSafePosition = _Flag.Location.LastSafePosition };
-	return Flag;
-}
-
-K_Flag SetAtLandmark(K_Flag _Flag, CMapLandmark _Landmark) {
-	assert(_Landmark != Null);
-	declare K_Flag Flag = _Flag;
-	Flag.Location = K_Location{ LandmarkId = _Landmark.Id, Position = _Landmark.Position, LastSafePosition = _Flag.Location.LastSafePosition };
-	return Flag;
-}
-
-K_Flag RemoveLock(K_Flag _Flag) {
-	declare K_Flag Flag = _Flag;
-	Flag.Lock = K_Lock{};
-	return Flag;
-}
-
-K_Flag Lock(K_Flag _Flag, Integer _Until) {
-	declare K_Flag Flag = _Flag;
-	declare K_Timer Timer = K_Timer{ Since = Now, Until = _Until };
-	Flag.Lock = K_Lock{ Timer = Timer };
-	return Flag;
-}
-
-K_Flag LockForPlayer(K_Flag _Flag, Integer _Until, CSmPlayer _Player) {
-	assert(_Player != Null);
-	declare K_Flag Flag = _Flag;
-	declare K_Timer Timer = K_Timer{ Since = Now, Until = _Until };
-	Flag.Lock = K_Lock{ Player = Private_ToPlayerStruct(_Player), Timer = Timer };
-	return Flag;
-}
-
-K_Flag LockForClan(K_Flag _Flag, Integer _Until, Integer _Clan) {
-	assert(_Clan > 0);
-	declare K_Flag Flag = _Flag;
-	declare K_Timer Timer = K_Timer{ Since = Now, Until = _Until };
-	Flag.Lock = K_Lock{ Clan = _Clan, Timer = Timer };
-	return Flag;
+Void Net_Update() {
+	declare netwrite K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
+	FlagRush_Net_Flag = Get_Net();
 }
 
 // Helpers: Easier querying for information.
 
-Boolean IsOnPlayer(K_Flag _Flag) {
-	return _Flag.Location.Player.Id != NullId;
+Boolean IsOnPlayer() {
+	return G_Flag.Location.Player.Id != NullId;
 }
 
-Boolean IsOnLandmark(K_Flag _Flag) {
-	return _Flag.Location.LandmarkId != NullId;
+Boolean IsOnLandmark() {
+	return G_Flag.Location.LandmarkId != NullId;
 }
 
-Boolean IsAtPosition(K_Flag _Flag) {
-	return _Flag.Location.Player.Id == NullId && _Flag.Location.LandmarkId == NullId;
+Boolean IsAtPosition() {
+	return G_Flag.Location.Player.Id == NullId && G_Flag.Location.LandmarkId == NullId;
 }
 
-Boolean HasActiveLock(K_Flag _Flag) {
-	return _Flag.Lock.Timer.Until > Now;
+Boolean HasActiveLock() {
+	return G_Flag.Lock.Timer.Until > Now;
 }
 
-Boolean IsLockedForEveryone(K_Flag _Flag) {
-	return HasActiveLock(_Flag) && _Flag.Lock.Clan == 0 && _Flag.Lock.Player.Id == NullId;
+Boolean IsLockedForEveryone() {
+	return HasActiveLock() && G_Flag.Lock.Clan == 0 && G_Flag.Lock.Player.Id == NullId;
 }
 
-Boolean IsLockedForClan(K_Flag _Flag, Integer _Clan) {
-	if (!HasActiveLock(_Flag)) {
+Boolean IsLockedForClan(Integer _Clan) {
+	if (!HasActiveLock()) {
 		return False;
 	}
-	return _Flag.Lock.Clan == _Clan || IsLockedForEveryone(_Flag);
+	return G_Flag.Lock.Clan == _Clan || IsLockedForEveryone();
 }
 
-Boolean IsLockedForPlayer(K_Flag _Flag, CSmPlayer _Player) {
-	if (!HasActiveLock(_Flag)) {
+Boolean IsLockedForPlayer(CSmPlayer _Player) {
+	if (!HasActiveLock()) {
 		return False;
 	}
-	return _Flag.Lock.Player.Id == _Player.Id || IsLockedForClan(_Flag, _Player.CurrentClan);
+	return G_Flag.Lock.Player.Id == _Player.Id || IsLockedForClan(_Player.CurrentClan);
 }
 
-Boolean IsPlayerConnected(K_Flag _Flag) {
-	return IsOnPlayer(_Flag) && Players.existskey(_Flag.Location.Player.Id);
+Boolean IsPlayerConnected() {
+	return IsOnPlayer() && Players.existskey(G_Flag.Location.Player.Id);
 }
 
-CSmPlayer GetPlayer(K_Flag _Flag) {
-	return Players.get(_Flag.Location.Player.Id, Null);
+CSmPlayer GetPlayer() {
+	return Players.get(G_Flag.Location.Player.Id, Null);
 }
 
-CMapLandmark GetLandmark(K_Flag _Flag) {
-	return MapLandmarks.get(_Flag.Location.LandmarkId, Null);
+CMapLandmark GetLandmark() {
+	return MapLandmarks.get(G_Flag.Location.LandmarkId, Null);
 }
 
-// Actions
+// Core: Basic functionality for updating the flag.
 
-K_Flag Drop(K_Flag _Flag, Integer _Until) {
-	assert(IsOnPlayer(_Flag));
-	declare K_Flag Flag = _Flag;
+K_Flag Get() {
+	return G_Flag;
+}
+
+Void SetAtPosition(Vec3 _Position) {
+	G_Flag.Location = K_Location{ Position = _Position, LastSafePosition = G_Flag.Location.LastSafePosition };
+	Net_Update();
+}
+
+Void SetAtPlayer(CSmPlayer _Player) {
+	assert(_Player != Null);
+
+	// If it was on a player before, record as last pass
+	if (IsOnPlayer() && GetPlayer() != _Player) {
+		G_Flag.LastPass = K_Pass{
+			Date = Now,
+			From = G_Flag.Location.Player,
+			To = Private_ToPlayerStruct(_Player)
+		};
+	}
+
+	G_Flag.Location = K_Location{ Player = Private_ToPlayerStruct(_Player), Position = _Player.Position, LastSafePosition = G_Flag.Location.LastSafePosition };
+	Net_Update();
+}
+
+Void SetAtLandmark(CMapLandmark _Landmark) {
+	assert(_Landmark != Null);
+	G_Flag.Location = K_Location{ LandmarkId = _Landmark.Id, Position = _Landmark.Position, LastSafePosition = G_Flag.Location.LastSafePosition };
+	Net_Update();
+}
+
+Void RemoveLock() {
+	G_Flag.Lock = K_Lock{};
+	Net_Update();
+}
+
+Void Lock(Integer _Until) {
 	declare K_Timer Timer = K_Timer{ Since = Now, Until = _Until };
-	Flag.Drop = K_Drop { Player = _Flag.Location.Player, Timer = Timer };
-	return Flag;
+	G_Flag.Lock = K_Lock{ Timer = Timer };
+	Net_Update();
 }
 
-K_Flag Pass(K_Flag _Flag, CSmPlayer _To) {
-	assert(IsOnPlayer(_Flag));
-	declare K_Flag Flag = SetAtPlayer(_Flag, _To);
-	Flag.LastPass = K_Pass{
-		Date = Now,
-		From = _Flag.Location.Player,
-		To = Private_ToPlayerStruct(_To)
-	};
-	return Flag;
+Void LockForPlayer(Integer _Until, CSmPlayer _Player) {
+	assert(_Player != Null);
+	declare K_Timer Timer = K_Timer{ Since = Now, Until = _Until };
+	G_Flag.Lock = K_Lock{ Player = Private_ToPlayerStruct(_Player), Timer = Timer };
+	Net_Update();
+}
+
+Void LockForClan(Integer _Until, Integer _Clan) {
+	assert(_Clan > 0);
+	declare K_Timer Timer = K_Timer{ Since = Now, Until = _Until };
+	G_Flag.Lock = K_Lock{ Clan = _Clan, Timer = Timer };
+	Net_Update();
+}
+
+Void SetDropTimer(Integer _Until) {
+	declare K_Timer Timer = K_Timer{ Since = Now, Until = _Until };
+	G_Flag.Drop = K_Drop { Player = G_Flag.Location.Player, Timer = Timer };
+	Net_Update();
+}
+
+Void RemoveDropTimer() {
+	G_Flag.Drop.Timer = K_Timer{};
+	Net_Update();
 }
 
 // Lifecycle
 
-K_Flag Update(K_Flag _Flag) {
-	declare K_Flag Flag = _Flag;
-
+Void Yield() {
 	// Update position when carried by player
-	if (IsPlayerConnected(_Flag)) {
-		declare CSmPlayer Player = GetPlayer(_Flag);
-		Flag.Location.Position = Player.Position;
+	if (IsPlayerConnected()) {
+		declare CSmPlayer Player = GetPlayer();
+		G_Flag.Location.Position = Player.Position;
 		if (Player.WheelsContactCount >= 3) {
-			Flag.Location.LastSafePosition = Player.Position;
+			G_Flag.Location.LastSafePosition = Player.Position;
 		}
 	}
-
-	return Flag;
 }
 
 Void Unload() {
-
+	G_Flag = K_Flag{};
 }
 
 Void Load() {
-
+	Unload();
 }

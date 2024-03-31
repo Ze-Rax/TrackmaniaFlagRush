@@ -4,7 +4,7 @@
 
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2.Script.txt"						as XmlRpc
 #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"								as ModeUtils
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_FlagState.Script.txt"			as FlagRush_FlagState
+#Include "Libs/Zrx/ModeLibs/FlagRush/Flag.Script.txt"										as Flag
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"				as FlagRush_Scores
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"						as FlagRush_Map
 
@@ -226,20 +226,23 @@ K_Rpc_Landmark LandmarkToRpcLandmark(CMapLandmark Landmark) {
 }
 
 K_Rpc_Flag CurrentFlagStateToRpcFlag() {
-	declare FlagRush_FlagState::K_FlagState FlagState = FlagRush_FlagState::Get();
+	declare Flag::K_Flag Flag = Flag::Get();
 	declare K_Rpc_Player Carrier;
-	if(FlagState.Carrier.PlayerId != NullId) {
-		declare CUser CarrierUser <=> ModeUtils::GetUser(FlagState.Carrier.Login);
-		if (CarrierUser != Null) Carrier = UserToRpcPlayer(CarrierUser);
+	if(Flag.Location.Player.Id != NullId) {
+		declare CUser CarrierUser = Users.get(Flag.Location.Player.UserId, Null);
+		if (CarrierUser != Null) {
+			Carrier = UserToRpcPlayer(CarrierUser);
+		}
 	}
 
 	declare K_Rpc_Landmark FlagSpawn;
-	if(FlagState.Landmark != Null) {
-		FlagSpawn = LandmarkToRpcLandmark(FlagState.Landmark);
+	declare CSmMapLandmark Landmark = MapLandmarks.get(Flag.Location.LandmarkId, Null);
+	if(Landmark != Null) {
+		FlagSpawn = LandmarkToRpcLandmark(Landmark);
 	}
 
 	return K_Rpc_Flag {
-		Position = FlagState.Position,
+		Position = Flag.Location.Position,
 		Carrier = Carrier,
 		Spawn = FlagSpawn
 	};

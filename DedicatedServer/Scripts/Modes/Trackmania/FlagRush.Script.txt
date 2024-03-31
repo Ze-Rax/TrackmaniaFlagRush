@@ -117,12 +117,6 @@ FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases);
 ***LoadLibraries***
 ***
 ModeCommands::AddQuickCommand(C_Command_ResetFlag, "UICommon64_1", "Flag_light");
-ModeCommands::AddQuickCommand("mr", "", "");
-ModeCommands::AddQuickCommand("mpos", "", "");
-ModeCommands::AddQuickCommand("ml", "", "");
-ModeCommands::AddQuickCommand("mp", "", "");
-ModeCommands::AddQuickCommand("lock", "", "");
-ModeCommands::AddQuickCommand("timer", "", "");
 Flag::Load();
 ***
 
@@ -642,25 +636,6 @@ Void OnGameplayCommand(CommandUtils::K_Command Command) {
 		case C_Command_ResetFlag: {
 			Flag_Reset(Command.ValueBoolean);
 			CommandText = "The flag was reset.";
-		}
-		case "mr": {
-			FlagMarker::Hide();
-		}
-		case "mpos": {
-			Flag::SetAtPosition(<50., 50., 50.>);
-			FlagMarker::Update();
-		}
-		case "mp": {
-			Flag::SetAtPlayer(Players[0]);
-			FlagMarker::Update();
-		}
-		case "ml": {
-			Flag::SetAtLandmark(MapLandmarks[0]);
-			FlagMarker::Update();
-		}
-		case "lock": {
-			Flag::LockForClan(Now + 3000, 1);
-			FlagMarker::Update();
 		}
 		default: return;
 	}

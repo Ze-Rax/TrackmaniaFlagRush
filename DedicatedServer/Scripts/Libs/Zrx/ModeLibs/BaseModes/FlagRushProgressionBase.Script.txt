@@ -38,7 +38,6 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
 
-
 ///////////////
 // Constants //
 ///////////////

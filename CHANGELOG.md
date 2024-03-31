@@ -16,11 +16,11 @@
 	* Mouse users can click the respective buttons on the bottom right below the scoreboard.
 	* Gamepad user can use the right stick to select the previous or car respectively.
 	* Car changes are applied on spawn. If a player wants to change their car mid round, they have to respawn.
-* Adjusts goal marker position to flaot 2m above its blocks pivot (previously 8m)
-* Adjusted flag marker:
-	* Added a drop shadow to increase visibility
-	* Moved the distance indicator to be above the flag icon
-	* Split the gauge into two different gauges:
+* Adjusted markers:
+	* Added drop shadows to all markers for better visibility
+	* Adjusted goal marker position to float 2m above its blocks pivot (previously 8m)
+	* Moved flag marker distance indicator to be above the flag icon
+	* Split flag marker gauge intoo two separate gauges:
 		1. Ring gauge around the flag to indicate the lock state ("steal resistance")
 		2. Circular background gauge behind the flag to indicate the drop reset timer
 

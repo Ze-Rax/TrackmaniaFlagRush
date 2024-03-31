@@ -181,7 +181,6 @@ Void StartMap() {
 
 Void Yield() {
 	declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
-	FlagRush_UIMarkers::FlagMarker_SetVisible(!FlagRush_Net_WarmUpIsRunning);
 	FlagRush_UIMarkers::FlagSpawnMarkers_SetVisible(FlagRush_Net_WarmUpIsRunning);
 
 	if (G_PreviousPlayersCount != Players.count) {

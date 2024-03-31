@@ -215,6 +215,7 @@ SettingTracker::Unload();
 ***LoadHud***
 ***
 FlagRush_UI::Load();
+FlagMarker::Load();
 ModeCommands::AddQuickCommand(C_Command_EndWarmup, "UICommon64_1", "Play_light");
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipRound, "UICommon64_1", "FastForward_light");

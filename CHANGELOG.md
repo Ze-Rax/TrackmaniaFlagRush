@@ -16,6 +16,7 @@
 	* Mouse users can click the respective buttons on the bottom right below the scoreboard.
 	* Gamepad user can use the right stick to select the previous or car respectively.
 	* Car changes are applied on spawn. If a player wants to change their car mid round, they have to respawn.
+* Adjusts goal marker position to flaot 2m above its blocks pivot (previously 8m)
 
 ---
 

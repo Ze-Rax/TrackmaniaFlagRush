@@ -171,22 +171,19 @@ Void Update() {
 	declare Boolean DisplayLock = False;
 	if (FlagRush_Net_Flag.Lock.Timer.Until > ArenaNow) {
 		declare Boolean LockedForAll = FlagRush_Net_Flag.Lock.Clan == 0 && FlagRush_Net_Flag.Lock.Player.Login == "";
+		declare Boolean LockedForClan = FlagRush_Net_Flag.Lock.Clan > 0;
 		if (GUIPlayer != Null) { // Playing or spectating a player: Only display if locked for current player or if player is carrier
-			declare Boolean IsCarrier = GUIPlayer.User.Login == FlagRush_Net_Flag.Location.Player.Login;
 			declare Boolean LockedForGUIPlayer = GUIPlayer.User.Login == FlagRush_Net_Flag.Lock.Player.Login;
-			declare Boolean LockedForGUIClan = GUIPlayer.CurrentClan == FlagRush_Net_Flag.Lock.Clan;
-			declare Boolean LockedForGUIOpponentClan = GUIPlayer.CurrentClan != FlagRush_Net_Flag.Lock.Clan;
-			declare Boolean LockedForOtherPlayer = FlagRush_Net_Flag.Lock.Player.Login != "";
-			if (IsCarrier) {
-				DisplayLock = LockedForGUIClan || LockedForGUIOpponentClan || LockedForAll;
+			declare Boolean LockedForGUIClan = LockedForClan && GUIPlayer.CurrentClan == FlagRush_Net_Flag.Lock.Clan;
+			declare Boolean LockedForGUIOpponentClan = LockedForClan && GUIPlayer.CurrentClan != FlagRush_Net_Flag.Lock.Clan;
+
+			DisplayLock = LockedForAll || LockedForGUIClan || LockedForGUIPlayer;
+			if (LockedForAll || LockedForGUIClan || LockedForGUIOpponentClan) {
 				G_FlagMarker.Lock.StatusLabel.TextColor = GetTeamMidColor(FlagRush_Net_Flag.Lock.Clan);
 			} else {
-				DisplayLock = LockedForGUIPlayer || LockedForGUIClan;
 				G_FlagMarker.Lock.StatusLabel.TextColor = GetTeamMidColor(GUIPlayer.CurrentClan);
 			}
-
 		} else { // Spectating in overview: Only display if locked for a clan or everyone
-			declare Boolean LockedForClan = FlagRush_Net_Flag.Lock.Clan > 0;
 			DisplayLock = LockedForClan || LockedForAll;
 			G_FlagMarker.Lock.StatusLabel.TextColor = GetTeamMidColor(FlagRush_Net_Flag.Lock.Clan);
 		}

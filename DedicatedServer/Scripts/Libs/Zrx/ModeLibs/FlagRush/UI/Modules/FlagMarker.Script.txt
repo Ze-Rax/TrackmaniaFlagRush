@@ -7,8 +7,8 @@
 
 #Const C_FrameId "FlagRush_Marker_Flag"
 
-#Const C_Box_Player		<0., 1., 0.>
-#Const C_Box_Landmark	<0., 2., 0.>
+#Const C_Box_Player		<0., 0.25, 0.>
+#Const C_Box_Landmark	<0., 1., 0.>
 #Const C_Box_Position	<0., 0.25, 0.>
 
 declare Ident G_MarkerId;
@@ -24,7 +24,7 @@ Text GetManialink() {
 				<quad id="icon-dropshadow" pos="0.25 -0.25" z-index="-1" size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="Flag_dark"/>
 			</frame>
 
-			<label id="distance" pos="0 -3.5" size="10 5" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="0.4" textemboss="1" text="2500m"/>
+			<label id="distance" pos="0 3.5" size="10 5" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="0.4" textemboss="1" text="2500m"/>
 
 			<frame id="height-indicator">
 				<quad id="up" pos="0 8" size="6 6" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" />
@@ -61,7 +61,7 @@ Text GetManialink() {
 #Include "TextLib" as TL
 
 #Const C_HeightIndicatorThreshold 7. // Less than one block (8m) to prevent potential flickering on one block height differences
-#Const C_FlagIconOffset 1.5
+#Const C_FlagIconOffset -1.
 #Const C_DropGaugeSize 12.
 
 {{{ Flag::DumpNetFlagStructs() }}}

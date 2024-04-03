@@ -1,15 +1,22 @@
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
 #Include "Libs/Zrx/ModeLibs/FlagRush/Flag.Script.txt" as Flag
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt" as Vehicles
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as Shared
 
 #Const C_LayerName "FlagRush_FlagMarker"
-
 #Const C_FrameId "FlagRush_Marker_Flag"
 
-#Const C_Box_Player		<0., 0.25, 0.>
-#Const C_Box_Landmark	<0., 1., 0.>
-#Const C_Box_Position	<0., 0.25, 0.>
+#Const Vehicles::C_Vehicle_Snow as C_Vehicle_Snow
+#Const Vehicles::C_Vehicle_Rally as C_Vehicle_Rally
+
+// Boxes are adjusted to be slightly above the highest part of the respective model when on flat ground
+// Vertical 0.0 is not on the ground but slightly above player head; negative values not possible
+#Const C_Box_Player_Stadium		<0., 0., 0.>
+#Const C_Box_Player_Snow			<0., 0.4, 0.>
+#Const C_Box_Player_Rally 		<0., 0.25, 0.>
+#Const C_Box_Landmark					<0., 1., 0.>
+#Const C_Box_Position					<0., 0.25, 0.>
 
 declare Ident G_MarkerId;
 
@@ -18,40 +25,42 @@ Text GetManialink() {
 <manialink version="3" name="{{{ C_LayerName }}}">
 	<frame z-index="2"> <!-- Display flag marker over other markers (highest z-index) -->
 		<frame id="{{{ C_FrameId }}}" scale="0.9" hidden="1"> <!-- Initialize as hidden; Markers will show it automatically -->
-			<frame id="flag">
-				<quad id="icon" pos="0 0" size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light"/>
-				<quad id="icon-dropshadow" pos="0.25 -0.25" z-index="-1" size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="Flag_dark"/>
-			</frame>
+			<frame id="botom-align-offset" pos="0 5">
+				<frame id="flag">
+					<quad id="icon" pos="0 0" size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light"/>
+					<quad id="icon-dropshadow" pos="0.25 -0.25" z-index="-1" size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="Flag_dark"/>
+				</frame>
 
-			<label id="distance" pos="0 3.5" size="10 5" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="0.4" textemboss="1" text="2500m"/>
+				<label id="distance" pos="0 3.5" size="10 5" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="0.4" textemboss="1" text="2500m"/>
 
-			<frame id="height-indicator">
-				<quad id="up" pos="0 8" size="6 6" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" />
-				<quad id="down" pos="0 -8" size="6 6" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center"/>
-			</frame>
+				<frame id="height-indicator">
+					<quad id="up" pos="0 8" size="6 6" style="UICommon64_2" substyle="ArrowUpSlim_light" halign="center" valign="center" />
+					<quad id="down" pos="0 -8" size="6 6" style="UICommon64_2" substyle="ArrowDownSlim_light" halign="center" valign="center"/>
+				</frame>
 
-			<frame id="lock">
-				<label id="status" pos="6 0" z-index="1" halign="center" valign="center2" text="" textemboss="1" textsize="2.5" size="8 8"/>
-				<frame id="gauge">
-					<frame size="80 160" pos="0 0" halign="right" valign="center">
-						<quad id="left" pos="0 0" valign="center" halign="right" size="8 16" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds"/>
-					</frame>
-					<frame size="80 160" pos="0 0" halign="right" valign="center" rot="180">
-						<quad id="right" pos="0 0" valign="center" halign="right" size="8 16" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds"/>
+				<frame id="lock">
+					<label id="status" pos="6 0" z-index="1" halign="center" valign="center2" text="" textemboss="1" textsize="2.5" size="8 8"/>
+					<frame id="gauge">
+						<frame size="80 160" pos="0 0" halign="right" valign="center">
+							<quad id="left" pos="0 0" valign="center" halign="right" size="8 16" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds"/>
+						</frame>
+						<frame size="80 160" pos="0 0" halign="right" valign="center" rot="180">
+							<quad id="right" pos="0 0" valign="center" halign="right" size="8 16" colorize="FFF" image="file://Media/Manialinks/Nadeo/Trackmania/Ingame/NewSpeed-gauge1.dds"/>
+						</frame>
 					</frame>
 				</frame>
-			</frame>
 
-			<frame id="drop-gauge" valign="bottom" halign="center" size="12 12" pos="0 -6" z-index="-1">
-					<quad id="background" pos="0 0" valign="bottom" halign="center" size="12 12" modulatecolor="fff" opacity="0.66" image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga"/>
-			</frame>
+				<frame id="drop-gauge" valign="bottom" halign="center" size="12 12" pos="0 -6" z-index="-1">
+						<quad id="background" pos="0 0" valign="bottom" halign="center" size="12 12" modulatecolor="fff" opacity="0.66" image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga"/>
+				</frame>
 
-			<!--
-				Changing visibility or ratation of elements causes the bounding box size of the marker to vary.
-				When at the border of the screen as the game tries to move it as close to the border as possible, which can cause jumping (when chaging element visibility) or bouncing (when rotating/moving elements).
-				This quad is slightly bigger than the bounding box of all other elements combined, therefore preventing the bouncing. Cannot be hidden, but opacity 0.
-			-->
-			<quad id="nobounce" size="22.75 22.75" opacity="0" halign="center" valign="center"/>
+				<!--
+					Changing visibility or ratation of elements causes the bounding box size of the marker to vary.
+					When at the border of the screen as the game tries to move it as close to the border as possible, which can cause jumping (when chaging element visibility) or bouncing (when rotating/moving elements).
+					This quad is slightly bigger than the bounding box of all other elements combined, therefore preventing the bouncing. Cannot be hidden, but opacity 0.
+				-->
+				<quad id="nobounce" size="22.75 22.75" halign="center" valign="center"/>
+			</frame>
 		</frame>
 	</frame>
 
@@ -96,6 +105,7 @@ Text GetManialink() {
 
 #Struct K_FlagMarker {
 	CMlFrame Frame;
+	CMlFrame OffsetFrame;
 	K_FlagIcon FlagIcon;
 	CMlLabel DistanceLabel;
 	K_HeightIndicator HeightIndicator;
@@ -114,6 +124,7 @@ Real Progress(Integer _From, Integer _To, Integer _Current) {
 
 Void Init() {
 	G_FlagMarker.Frame = (Page.GetFirstChild("{{{ C_FrameId }}}") as CMlFrame);
+	G_FlagMarker.OffsetFrame = (G_FlagMarker.Frame.GetFirstChild("botom-align-offset") as CMlFrame);
 	G_FlagMarker.DistanceLabel = (G_FlagMarker.Frame.GetFirstChild("distance") as CMlLabel);
 
 	declare K_FlagIcon FlagIcon;
@@ -215,6 +226,15 @@ Void UpdateDropGauge() {
 	G_FlagMarker.DropGauge.Frame.Visible = DisplayDropGauge;
 }
 
+Void UpdateOffset() {
+	declare netread K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
+	if (FlagRush_Net_Flag.Location.Player.Login != "") {
+		G_FlagMarker.OffsetFrame.RelativePosition_V3.Y = G_FlagMarker.FlagIcon.IconQuad.Size.Y / 2.0;
+	} else {
+		G_FlagMarker.OffsetFrame.RelativePosition_V3.Y = 0.0;
+	}
+}
+
 main() {
 	Init();
 	while(True) {
@@ -226,6 +246,7 @@ main() {
 		UpdateDistanceIndicators();
 		UpdateLock();
 		UpdateDropGauge();
+		UpdateOffset();
 	}
 }
 	--></script>
@@ -270,7 +291,17 @@ Void Private_SetAtPlayer(CSmPlayer _Player) {
 	Private_Remove();
 	declare CUIConfigMarker Marker = UIManager.UIAll.AddMarker(_Player);
 	G_MarkerId = Marker.Id;
-	Marker.Box = C_Box_Player;
+	switch (_Player.ForceModelId) {
+		case Vehicles::GetItemId(C_Vehicle_Snow.Id): {
+			Marker.Box = C_Box_Player_Snow;
+		}
+		case Vehicles::GetItemId(C_Vehicle_Rally.Id): {
+			Marker.Box = C_Box_Player_Rally;
+		}
+		default: {
+			Marker.Box = C_Box_Player_Stadium;
+		}
+	}
 	Marker.ManialinkFrameId = C_FrameId;
 	Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
 }

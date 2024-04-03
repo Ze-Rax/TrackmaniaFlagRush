@@ -144,30 +144,35 @@ Void Init() {
 	G_FlagMarker.DropGauge = DropGauge;
 }
 
-Void Update() {
+Void UpdateFlagColor() {
+	declare netread K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
+	G_FlagMarker.FlagIcon.IconQuad.Colorize = GetTeamMidColor(FlagRush_Net_Flag.Location.Player.Clan); // Clan will be 0 (neutral) if not carried
+}
+
+Void UpdateDistanceIndicators() {
 	declare netread K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
 
-	// Color
-	G_FlagMarker.FlagIcon.IconQuad.Colorize = GetTeamMidColor(FlagRush_Net_Flag.Location.Player.Clan); // Clan will be 0 (neutral) if not carried
-
-	// Distance and Height indicators
-	if (GUIPlayer == Null || FlagRush_Net_Flag.Location.Player.Login == GUIPlayer.User.Login) { // Not on a player
+	if (GUIPlayer == Null || FlagRush_Net_Flag.Location.Player.Login == GUIPlayer.User.Login) {
 		G_FlagMarker.DistanceLabel.Hide();
 		G_FlagMarker.HeightIndicator.UpQuad.Hide();
 		G_FlagMarker.HeightIndicator.DownQuad.Hide();
 		G_FlagMarker.FlagIcon.Frame.RelativePosition_V3.Y = 0.;
-	} else { // Playing or spectating a player
+	} else { // Playing or spectating a non-carrier player
 		declare Vec3 Displacement = FlagRush_Net_Flag.Location.Position - GUIPlayer.Position;
-		G_FlagMarker.DistanceLabel.Value = ML::TruncInteger(ML::Length(Displacement)) ^ "m";
+		declare Real Distance = ML::Length(Displacement);
+		G_FlagMarker.DistanceLabel.Value = ML::TruncInteger(Distance) ^ "m";
 		G_FlagMarker.FlagIcon.Frame.RelativePosition_V3.Y = C_FlagIconOffset;
 		G_FlagMarker.DistanceLabel.Show();
 
 		G_FlagMarker.HeightIndicator.UpQuad.Visible = Displacement.Y > C_HeightIndicatorThreshold;
 		G_FlagMarker.HeightIndicator.DownQuad.Visible = Displacement.Y < -C_HeightIndicatorThreshold;
 	}
+}
 
-	// Lock
+Void UpdateLock() {
+	declare netread K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
 	declare Boolean DisplayLock = False;
+
 	if (FlagRush_Net_Flag.Lock.Timer.Until > ArenaNow) {
 		declare Boolean LockedForAll = FlagRush_Net_Flag.Lock.Clan == 0 && FlagRush_Net_Flag.Lock.Player.Login == "";
 		declare Boolean LockedForClan = FlagRush_Net_Flag.Lock.Clan > 0;
@@ -197,9 +202,12 @@ Void Update() {
 		G_FlagMarker.Lock.Gauge.LeftQuad.Visible = GaugeProgress < 0.5;
 	}
 	G_FlagMarker.Lock.Frame.Visible = DisplayLock;
+}
 
-	// Drop gauge
+Void UpdateDropGauge() {
+	declare netread K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
 	declare Boolean DisplayDropGauge = FlagRush_Net_Flag.Drop.Timer.Until > ArenaNow;
+
 	if (DisplayDropGauge) {
 		declare Real GaugeProgress = Progress(FlagRush_Net_Flag.Drop.Timer.Since, FlagRush_Net_Flag.Drop.Timer.Until, ArenaNow);
 		G_FlagMarker.DropGauge.Frame.Size.Y = (1 - GaugeProgress) * C_DropGaugeSize;
@@ -208,14 +216,16 @@ Void Update() {
 }
 
 main() {
-
 	Init();
 	while(True) {
 		yield;
 		if (!G_FlagMarker.Frame.Visible || !Page.MainFrame.Visible) {
 			continue;
 		}
-		Update();
+		UpdateFlagColor();
+		UpdateDistanceIndicators();
+		UpdateLock();
+		UpdateDropGauge();
 	}
 }
 	--></script>

@@ -6,6 +6,7 @@
 
 #Const C_LayerName "FlagRush_FlagMarker"
 #Const C_FrameId "FlagRush_Marker_Flag"
+#Const C_FrameId_ShadowVisibilityMarker "FlagRush_Marker_FlagShadowVisibility"
 
 #Const Vehicles::C_Vehicle_Snow as C_Vehicle_Snow
 #Const Vehicles::C_Vehicle_Rally as C_Vehicle_Rally
@@ -15,17 +16,25 @@
 #Const C_Box_Player_Stadium		<0., 0., 0.>
 #Const C_Box_Player_Snow			<0., 0.4, 0.>
 #Const C_Box_Player_Rally 		<0., 0.25, 0.>
-#Const C_Box_Landmark					<0., 1., 0.>
-#Const C_Box_Position					<0., 0.25, 0.>
+#Const C_Box_Landmark					<0., 0., 0.>
+#Const C_Box_Position					<0., 0., 0.>
 
 declare Ident G_MarkerId;
+declare Ident G_ShadowVisibilityMarkerId;
 
 Text GetManialink() {
 	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="{{{ C_LayerName }}}">
-	<frame z-index="2"> <!-- Display flag marker over other markers (highest z-index) -->
+
+	<frame z-index="2">
+		<frame id="{{{ C_FrameId_ShadowVisibilityMarker }}}" hidden="1"></frame>
+	</frame>
+
+	<frame z-index="3"> <!-- Display flag marker over other markers (highest z-index) -->
 		<frame id="{{{ C_FrameId }}}" scale="0.9" hidden="1"> <!-- Initialize as hidden; Markers will show it automatically -->
-			<frame id="botom-align-offset" pos="0 5">
+			<frame id="botom-align-offset" pos="0 5"> <!-- Flag icon height / 2 -->
+				<quad id="flag-shadow" pos="0 -5" z-index="-2" size="1 1" halign="center" valign="center" style="Bgs1InRace" substyle="BgShadow" hidden="1"/>
+
 				<frame id="flag">
 					<quad id="icon" pos="0 0" size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="Flag_light"/>
 					<quad id="icon-dropshadow" pos="0.25 -0.25" z-index="-1" size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="Flag_dark"/>
@@ -71,6 +80,12 @@ Text GetManialink() {
 #Const C_HeightIndicatorThreshold 7. // Less than one block (8m) to prevent potential flickering on one block height differences
 #Const C_FlagIconOffset -1.
 #Const C_DropGaugeSize 12.
+#Const C_FlagShadowFadeDistance_Near 0.
+#Const C_FlagShadowFadeDistance_Far 3.
+#Const C_FlagShadowScale_Base 250.
+#Const C_FlagShadowScale_Max 50.
+#Const C_FlagShadowHeightRatio_Max 0.7
+#Const C_Epsilon 0.001
 
 {{{ Flag::DumpNetFlagStructs() }}}
 
@@ -106,6 +121,7 @@ Text GetManialink() {
 #Struct K_FlagMarker {
 	CMlFrame Frame;
 	CMlFrame OffsetFrame;
+	CMlQuad FlagShadowQuad;
 	K_FlagIcon FlagIcon;
 	CMlLabel DistanceLabel;
 	K_HeightIndicator HeightIndicator;
@@ -114,17 +130,25 @@ Text GetManialink() {
 }
 
 declare K_FlagMarker G_FlagMarker;
+declare CMlFrame G_FlagMarkerVisibilityMarker;
 
 {{{ Shared::GetTeamColorNetreadFunctions() }}}
 
-Real Progress(Integer _From, Integer _To, Integer _Current) {
-	declare Real Progress = 1.0 * (_Current - _From) / (_To - _From);
-	return ML::Clamp(Progress, 0.0, 1.0);
+Real Lerp01(Real _From, Real _To, Real _T) {
+	declare Real Lerp = (_T - _From) / (_To - _From);
+	return ML::Clamp(Lerp, 0.0, 1.0);
+}
+
+Real Lerp01(Integer _From, Integer _To, Integer _T) {
+	return Lerp01(ML::ToReal(_From), ML::ToReal(_To), ML::ToReal(_T));
 }
 
 Void Init() {
+	G_FlagMarkerVisibilityMarker = (Page.GetFirstChild("{{{ C_FrameId_ShadowVisibilityMarker }}}") as CMlFrame);
+
 	G_FlagMarker.Frame = (Page.GetFirstChild("{{{ C_FrameId }}}") as CMlFrame);
 	G_FlagMarker.OffsetFrame = (G_FlagMarker.Frame.GetFirstChild("botom-align-offset") as CMlFrame);
+	G_FlagMarker.FlagShadowQuad = (Page.GetFirstChild("flag-shadow") as CMlQuad);
 	G_FlagMarker.DistanceLabel = (G_FlagMarker.Frame.GetFirstChild("distance") as CMlLabel);
 
 	declare K_FlagIcon FlagIcon;
@@ -168,6 +192,7 @@ Void UpdateDistanceIndicators() {
 		G_FlagMarker.HeightIndicator.UpQuad.Hide();
 		G_FlagMarker.HeightIndicator.DownQuad.Hide();
 		G_FlagMarker.FlagIcon.Frame.RelativePosition_V3.Y = 0.;
+		G_FlagMarker.FlagShadowQuad.Hide();
 	} else { // Playing or spectating a non-carrier player
 		declare Vec3 Displacement = FlagRush_Net_Flag.Location.Position - GUIPlayer.Position;
 		declare Real Distance = ML::Length(Displacement);
@@ -177,6 +202,12 @@ Void UpdateDistanceIndicators() {
 
 		G_FlagMarker.HeightIndicator.UpQuad.Visible = Displacement.Y > C_HeightIndicatorThreshold;
 		G_FlagMarker.HeightIndicator.DownQuad.Visible = Displacement.Y < -C_HeightIndicatorThreshold;
+
+		G_FlagMarker.FlagShadowQuad.Visible = G_FlagMarkerVisibilityMarker.Visible;
+		if (G_FlagMarker.FlagShadowQuad.Visible) {
+			G_FlagMarker.FlagShadowQuad.RelativeScale = ML::Min(C_FlagShadowScale_Base / (Distance + C_Epsilon), C_FlagShadowScale_Max);
+			G_FlagMarker.FlagShadowQuad.Size.Y = ML::Min(1. / (Distance + C_Epsilon), C_FlagShadowHeightRatio_Max);
+		}
 	}
 }
 
@@ -205,7 +236,7 @@ Void UpdateLock() {
 	}
 
 	if (DisplayLock) {
-		declare Real GaugeProgress = Progress(FlagRush_Net_Flag.Lock.Timer.Since, FlagRush_Net_Flag.Lock.Timer.Until, ArenaNow);
+		declare Real GaugeProgress = Lerp01(FlagRush_Net_Flag.Lock.Timer.Since, FlagRush_Net_Flag.Lock.Timer.Until, ArenaNow);
 		declare Real LeftProgress = ML::Min(GaugeProgress * 2, 1.0);
 		declare Real RightProgress = ML::Max((GaugeProgress - 0.5) * 2, 0.0);
 		G_FlagMarker.Lock.Gauge.LeftQuad.RelativeRotation = LeftProgress * -180;
@@ -220,19 +251,10 @@ Void UpdateDropGauge() {
 	declare Boolean DisplayDropGauge = FlagRush_Net_Flag.Drop.Timer.Until > ArenaNow;
 
 	if (DisplayDropGauge) {
-		declare Real GaugeProgress = Progress(FlagRush_Net_Flag.Drop.Timer.Since, FlagRush_Net_Flag.Drop.Timer.Until, ArenaNow);
+		declare Real GaugeProgress = Lerp01(FlagRush_Net_Flag.Drop.Timer.Since, FlagRush_Net_Flag.Drop.Timer.Until, ArenaNow);
 		G_FlagMarker.DropGauge.Frame.Size.Y = (1 - GaugeProgress) * C_DropGaugeSize;
 	}
 	G_FlagMarker.DropGauge.Frame.Visible = DisplayDropGauge;
-}
-
-Void UpdateOffset() {
-	declare netread K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
-	if (FlagRush_Net_Flag.Location.Player.Login != "") {
-		G_FlagMarker.OffsetFrame.RelativePosition_V3.Y = G_FlagMarker.FlagIcon.IconQuad.Size.Y / 2.0;
-	} else {
-		G_FlagMarker.OffsetFrame.RelativePosition_V3.Y = 0.0;
-	}
 }
 
 main() {
@@ -246,7 +268,6 @@ main() {
 		UpdateDistanceIndicators();
 		UpdateLock();
 		UpdateDropGauge();
-		UpdateOffset();
 	}
 }
 	--></script>
@@ -255,15 +276,21 @@ main() {
 
 // Helpers
 
-CUIConfigMarker Private_GetMarker() {
-	return UIManager.UIAll.Markers.get(G_MarkerId, Null);
+CUIConfigMarker Private_GetMarker(Ident _Id) {
+	return UIManager.UIAll.Markers.get(_Id, Null);
 }
 
 Void Private_Remove() {
-	declare CUIConfigMarker Marker = Private_GetMarker();
+	declare CUIConfigMarker Marker = Private_GetMarker(G_MarkerId);
 	G_MarkerId = NullId;
 	if (Marker != Null) {
 		UIManager.UIAll.RemoveMarker(Marker);
+	}
+
+	declare CUIConfigMarker ShadowMarker = Private_GetMarker(G_ShadowVisibilityMarkerId);
+	G_ShadowVisibilityMarkerId = NullId;
+	if (ShadowMarker != Null) {
+		UIManager.UIAll.RemoveMarker(ShadowMarker);
 	}
 }
 
@@ -274,6 +301,13 @@ Void Private_SetAtPosition(Vec3 _Position) {
 	Marker.Box = C_Box_Position;
 	Marker.ManialinkFrameId = C_FrameId;
 	Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+
+	// Dummy marker without content to track if flag marker is currently in view. Used to toggle flag shadow
+	declare CUIConfigMarker ShadowMarker = UIManager.UIAll.AddMarker(_Position);
+	G_ShadowVisibilityMarkerId = ShadowMarker.Id;
+	ShadowMarker.Box = C_Box_Position;
+	ShadowMarker.ManialinkFrameId = C_FrameId_ShadowVisibilityMarker;
+	ShadowMarker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
 }
 
 Void Private_SetAtLandmark(CMapLandmark _Landmark) {
@@ -307,19 +341,25 @@ Void Private_SetAtPlayer(CSmPlayer _Player) {
 }
 
 Void Hide() {
-	declare CUIConfigMarker Marker = Private_GetMarker();
-	if (Marker == Null) {
-		return;
+	declare CUIConfigMarker Marker = Private_GetMarker(G_MarkerId);
+	if (Marker != Null) {
+		Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
 	}
-	Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
+	declare CUIConfigMarker ShadowMarker = Private_GetMarker(G_ShadowVisibilityMarkerId);
+	if (ShadowMarker != Null) {
+		ShadowMarker.HudVisibility = CUIConfigMarker::EHudVisibility::Never;
+	}
 }
 
 Void Show() {
-	declare CUIConfigMarker Marker = Private_GetMarker();
-	if (Marker == Null) {
-		return;
+	declare CUIConfigMarker Marker = Private_GetMarker(G_MarkerId);
+	if (Marker != Null) {
+		Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
 	}
-	Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
+	declare CUIConfigMarker ShadowMarker = Private_GetMarker(G_ShadowVisibilityMarkerId);
+	if (ShadowMarker != Null) {
+		ShadowMarker.HudVisibility = CUIConfigMarker::EHudVisibility::WhenInFrustum;
+	}
 }
 
 // Lifecycle

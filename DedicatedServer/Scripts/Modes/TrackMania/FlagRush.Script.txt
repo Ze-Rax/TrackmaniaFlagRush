@@ -1,12 +1,12 @@
 /**
  * FlagRush
- * Gamemode by Ze-Rax, Reaby, Geekid & Rxelux
+ * Gamemode by Ze-Rax, Reaby, Geekid & Rxelux.
  */
 
 #Extends "Libs/Zrx/ModeLibs/BaseModes/FlagRushProgressionBase.Script.txt"
 
 #Const	CompatibleMapTypes	"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version							"1.5.0-dev"
+#Const	Version							"1.5.0"
 #Const	ScriptName					"Modes/TrackMania/FlagRush.Script.txt"
 
 // ========= //

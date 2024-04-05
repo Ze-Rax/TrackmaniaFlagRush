@@ -23,6 +23,7 @@
 	* Split flag marker gauge intoo two separate gauges:
 		1. Ring gauge around the flag to indicate the lock state ("steal resistance")
 		2. Circular background gauge behind the flag to indicate the drop reset timer
+	* Added a fake shadow below the flag marker when in dropped state
 
 ---
 

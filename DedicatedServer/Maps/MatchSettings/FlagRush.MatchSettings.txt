@@ -36,6 +36,7 @@
 		<!-- Default : <setting name="S_FlagDropStateDurationSeconds" type="real" value="8"/> -->
 		<!-- Default : <setting name="S_FlagStealResistDurationSeconds" type="real" value="1"/> -->
 		<!-- Default : <setting name="S_FlagSameTeamSteal" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_FlagStealResistanceOnTeamPass" type="boolean" value="0"/> -->
 		<!-- Default : <setting name="S_FlagCarrierFragile" type="boolean" value="1"/> -->
 		<!-- Default : <setting name="S_FlagCarrierAcceleration" type="real" value="0.66"/> -->
 		<!-- Default : <setting name="S_FlagCarrierControl" type="real" value="1"/> -->
@@ -43,8 +44,9 @@
 		<!-- Default : <setting name="S_RespawnSpeedLimitKmh" type="real" value="30"/> -->
 		<!-- Default : <setting name="S_RespawnDelayPerPlayer" type="real" value="1"/> -->
 		<!-- Default : <setting name="S_DropFlagPickupPenalty" type="real" value="3"/> -->
-		<!-- Default : <setting name="S_DropFlagOnTeleportDetection" type="boolean" value="1"/> -->
+		<!-- Default : <setting name="S_TeleportDetectionThreshold" type="real" value="8"/> -->
 		<!-- Default : <setting name="S_UseCollisions" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_ForceEnabledVehiclesCsv" type="text" value=""/> -->
 	</mode_script_settings>
 
 	<startindex>0</startindex>

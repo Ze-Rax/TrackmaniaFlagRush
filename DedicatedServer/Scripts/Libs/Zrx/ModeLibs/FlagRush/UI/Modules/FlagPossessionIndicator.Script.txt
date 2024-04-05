@@ -1,0 +1,95 @@
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
+
+#Include "Libs/Zrx/ModeLibs/FlagRush/Flag.Script.txt" as Flag
+
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as Shared
+
+#Const C_LayerName "FlagRush_CarrierSelfIndicator"
+
+Text GetManialink() {
+	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="{{{ C_LayerName }}}">
+	<frame id="indicator-container" z-index="-10">
+		<quad id="top-bar" pos="0 91.5" size="960 10" halign="center" valign="top" image="file://Media/Manialinks/Nadeo/Trackmania/Modes/Knockout/hud_knockout_warning_top.dds" opacity="0"/>
+		<quad id="bottom-bar" pos="0 -91.5" size="960 10" halign="center" valign="top" rot="180" image="file://Media/Manialinks/Nadeo/Trackmania/Modes/Knockout/hud_knockout_warning_top.dds" opacity="0"/>
+	</frame>
+
+	<script><!--
+#Const C_FadeAnimDuration 500
+#Const C_FadeAnimEasing CAnimManager::EAnimManagerEasing::ExpOut
+
+{{{ Flag::DumpNetFlagStructs() }}}
+
+#Struct K_Indicator {
+	CMlFrame Frame;
+	CMlQuad TopBar;
+	CMlQuad BottomBar;
+}
+
+declare K_Indicator G_Indicator;
+
+{{{ Shared::GetTeamColorNetreadFunctions() }}}
+
+CMlQuad[] GetQuads() {
+	return [G_Indicator.TopBar, G_Indicator.BottomBar];
+}
+
+Void Animate(Real _Opacity) {
+	declare Target = "<elem opacity=\"" ^ _Opacity ^ "\"/>";
+	for (Control in GetQuads()) {
+		AnimMgr.Flush(Control);
+		AnimMgr.Add(Control, Target, C_FadeAnimDuration, C_FadeAnimEasing);
+	}
+}
+
+Void Show() {
+	Animate(1.0);
+}
+
+Void Hide() {
+	Animate(0.0);
+}
+
+Void Init() {
+	G_Indicator.Frame = (Page.GetFirstChild("indicator-container") as CMlFrame);
+	G_Indicator.BottomBar = (G_Indicator.Frame.GetFirstChild("bottom-bar") as CMlQuad);
+	G_Indicator.TopBar = (G_Indicator.Frame.GetFirstChild("top-bar") as CMlQuad);
+}
+
+main() {
+	Init();
+
+	declare netread K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
+	declare Boolean WasWatchingFlagCarrier = False;
+	while(True) {
+		yield;
+
+		declare Boolean IsWatchingFlagCarrier = GUIPlayer != Null && FlagRush_Net_Flag.Location.Player.Login == GUIPlayer.User.Login;
+		if (IsWatchingFlagCarrier && !WasWatchingFlagCarrier) {
+			foreach (Quad in GetQuads()) {
+				Quad.Colorize = GetTeamMidColor(GUIPlayer.CurrentClan);
+			}
+			Show();
+		} else if (WasWatchingFlagCarrier && !IsWatchingFlagCarrier){
+			Hide();
+		}
+		WasWatchingFlagCarrier = IsWatchingFlagCarrier;
+	}
+}
+	--></script>
+</manialink>
+	""";
+}
+
+// Lifecycle
+
+Void Unload() {
+	Layers::Destroy(C_LayerName);
+}
+
+Void Load() {
+	Unload();
+	Layers::Create(C_LayerName, GetManialink());
+	Layers::SetType(C_LayerName, CUILayer::EUILayerType::Normal);
+	Layers::Attach(C_LayerName);
+}

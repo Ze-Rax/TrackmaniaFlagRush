@@ -6,30 +6,27 @@
 
 // Modules
 #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"											as EventFeed
-#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"					as ModeCommands
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Header.Script.txt"						as FlagRush_UIScoresHeader
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Menu.Script.txt"							as FlagRush_UIMenu
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Sound.Script.txt"							as FlagRush_UISound
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Markers.Script.txt"						as FlagRush_UIMarkers
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Respawn.Script.txt"						as FlagRush_UIRespawn
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Spectator.Script.txt"					as FlagRush_UISpectator
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/PodiumBackground.Script.txt"	as FlagRush_Podium
 
+
 #Const C_AttachId_Podium							"16x9_StadiumSmall"
 
 #Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
 #Const C_LayerName_ScoresHeader				"Layer_FlagRush_ScoresHeader"
-#Const C_LayerName_Markers						"Layer_FlagRush_Markers"
 #Const C_LayerName_Menu								"Layer_FlagRush_Menu"
 #Const C_LayerName_Feed								"Layer_FlagRush_Feed"
 #Const C_LayerName_Flash							"Layer_FlagRush_Flash"
 #Const C_LayerName_Sound							"Layer_FlagRush_Sound"
 #Const C_LayerName_Spectator					"Layer_FlagRush_Spectator"
 #Const C_LayerName_Respawn						"Layer_FlagRush_Respawn"
-#Const C_LayerName_ModeCommands				"Layer_ModeCommands"
 #Const C_LayerName_Radar							"Layer_FlagRush_Radar"
 #Const C_LayerName_Podium							"Layer_FlagRush_Podium"
 
@@ -84,11 +81,6 @@ Void Private_AttachModules() {
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
 
-	// ModeCommands
-	Layers::Create(C_LayerName_ModeCommands, ModeCommands::GetManialink());
-	Layers::SetType(C_LayerName_ModeCommands, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName_ModeCommands);
-
 	// Sound
 	Layers::Create(C_LayerName_Sound, FlagRush_UISound::GetManialink());
 	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
@@ -104,20 +96,10 @@ Void Private_AttachModules() {
 	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Feed);
 
-	// Markers
-	Layers::Create(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
-	Layers::SetType(C_LayerName_Markers, CUILayer::EUILayerType::Markers);
-	Layers::Attach(C_LayerName_Markers);
-
 	// Respawn Bar
 	Layers::Create(C_LayerName_Respawn, FlagRush_UIRespawn::GetManialink());
 	Layers::SetType(C_LayerName_Respawn, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Respawn);
-
-	// Spectator controls
-	Layers::Create(C_LayerName_Spectator, FlagRush_UISpectator::GetManialink());
-	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName_Spectator);
 
 	// Radar
 	Layers::Create(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());
@@ -130,7 +112,7 @@ Void Private_AttachModules() {
 	Layers::Attach(C_LayerName_Flash);
 
 	// Podium background
-	Layers::Create(C_LayerName_Podium, FlagRush_Podium::GetManialink()); // Empty Manialink; Content set when set active
+	Layers::Create(C_LayerName_Podium, FlagRush_Podium::GetManialink());
 	Layers::SetType(C_LayerName_Podium, CUILayer::EUILayerType::ScreenIn3d);
 	Layers::Get(C_LayerName_Podium).AttachId = C_AttachId_Podium;
 	// Don't attach yet; only explicitly during podium
@@ -144,22 +126,18 @@ Void Private_AttachModules() {
 Void AttachPodiumBackground(CSmScore[] PodiumPlayerScores) {
 	FlagRush_Podium::SetContent(PodiumPlayerScores);
 	Layers::Attach(C_LayerName_Podium);
-	Layers::Hide(C_LayerName_Markers);
 }
 
 Void DetachPodiumBackground() {
 	Layers::Detach(C_LayerName_Podium);
-	Layers::Show(C_LayerName_Markers);
 }
 
 Void Private_DetachModules() {
 	Layers::Detach(C_LayerName_ScoresHeader);
 	Layers::Detach(C_LayerName_ScoresTable);
-	Layers::Detach(C_LayerName_ModeCommands);
 	Layers::Detach(C_LayerName_Sound);
 	Layers::Detach(C_LayerName_Menu);
 	Layers::Detach(C_LayerName_Feed);
-	Layers::Detach(C_LayerName_Markers);
 }
 
 /**
@@ -186,16 +164,7 @@ Void Net_SendModeScriptRoundLogicSettings(Boolean UseReversedBases) {
 
 /* Lifecycle */
 
-Void StartMap() {
-	FlagRush_UIMarkers::CreateMapMarkers();
-	Layers::Update(C_LayerName_Markers, FlagRush_UIMarkers::GetManialink());
-}
-
 Void Yield() {
-	declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
-	FlagRush_UIMarkers::FlagMarker_SetVisible(!FlagRush_Net_WarmUpIsRunning);
-	FlagRush_UIMarkers::FlagSpawnMarkers_SetVisible(FlagRush_Net_WarmUpIsRunning);
-
 	if (G_PreviousPlayersCount != Players.count) {
 		G_PreviousPlayersCount = Players.count;
 		Layers::Update(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());

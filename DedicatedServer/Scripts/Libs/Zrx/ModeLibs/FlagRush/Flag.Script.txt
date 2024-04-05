@@ -1,0 +1,314 @@
+#Const C_Position_Invalid <-1., -1., -1.>
+
+#Struct K_Player {
+	Ident Id;
+	// Additional data for when player disconnects
+	Ident ScoreId;
+	Ident UserId;
+	Integer Clan;
+}
+
+#Struct K_Location {
+	K_Player Player;
+	Ident LandmarkId;
+	Vec3 Position;
+	Vec3 LastSafePosition;
+}
+
+#Struct K_Timer {
+	Integer Since;
+	Integer Until;
+}
+
+#Struct K_Lock {
+	Integer Clan; // If not 0: Only locked for a specific clan, for example on team pass
+	K_Player Player; // If id present: Only locked for a specific player, for example on drop
+	K_Timer Timer;
+}
+
+#Struct K_Drop {
+	K_Player Player;
+	K_Timer Timer;
+}
+
+#Struct K_Pass {
+	Integer Date;
+	K_Player From;
+	K_Player To;
+}
+
+#Struct K_Flag {
+	K_Location Location;
+	K_Lock Lock;
+	K_Drop Drop;
+	K_Pass LastPass;
+}
+
+// Net compatible structs
+
+#Struct K_Net_Flag_Player {
+	Text Login;
+	Integer Clan;
+}
+
+#Struct K_Net_Flag_Location {
+	K_Net_Flag_Player Player;
+	Boolean IsAtLandmark;
+	Vec3 Position;
+}
+
+#Struct K_Net_Flag_Timer {
+	Integer Since;
+	Integer Until;
+}
+
+#Struct K_Net_Flag_Lock {
+	Integer Clan;
+	K_Net_Flag_Player Player;
+	K_Net_Flag_Timer Timer;
+}
+
+#Struct K_Net_Flag_Drop {
+	K_Net_Flag_Player Player;
+	K_Net_Flag_Timer Timer;
+}
+
+#Struct K_Net_Flag_Pass {
+	Integer Date;
+	K_Net_Flag_Player From;
+	K_Net_Flag_Player To;
+}
+
+#Struct K_Net_Flag {
+	K_Net_Flag_Location Location;
+	K_Net_Flag_Lock Lock;
+	K_Net_Flag_Drop Drop;
+	K_Net_Flag_Pass LastPass;
+}
+
+declare K_Flag G_Flag;
+
+// Transformation
+
+K_Player Private_ToPlayerStruct(CSmPlayer _Player) {
+	assert(_Player != Null);
+	return K_Player{ Id = _Player.Id, ScoreId = _Player.Score.Id, UserId = _Player.User.Id, Clan = _Player.CurrentClan };
+}
+
+K_Net_Flag_Player Private_ToNetFlagPlayer(K_Player _Player) {
+	declare K_Net_Flag_Player NetPlayer = K_Net_Flag_Player { Clan = _Player.Clan };
+	if (Users.existskey(_Player.UserId)) {
+		NetPlayer.Login = Users[_Player.UserId].Login;
+	}
+	return NetPlayer;
+}
+
+K_Net_Flag_Location Private_ToNetFlagLocation(K_Location _Location) {
+	return K_Net_Flag_Location{
+		Player = Private_ToNetFlagPlayer(_Location.Player),
+		IsAtLandmark = _Location.LandmarkId != NullId,
+		Position = _Location.Position
+	};
+}
+
+K_Net_Flag_Timer Private_ToNetFlagTimer(K_Timer _Timer) {
+	return K_Net_Flag_Timer{
+		Since = _Timer.Since,
+		Until = _Timer.Until
+	};
+}
+
+K_Net_Flag_Lock Private_ToNetFlagLock(K_Lock _Lock) {
+	return K_Net_Flag_Lock{
+		Clan = _Lock.Clan,
+		Player = Private_ToNetFlagPlayer(_Lock.Player),
+		Timer = Private_ToNetFlagTimer(_Lock.Timer)
+	};
+}
+
+K_Net_Flag_Drop Private_ToNetFlagDrop(K_Drop _Drop) {
+	return K_Net_Flag_Drop{
+		Player = Private_ToNetFlagPlayer(_Drop.Player),
+		Timer = Private_ToNetFlagTimer(_Drop.Timer)
+	};
+}
+
+K_Net_Flag_Pass Private_ToNetFlagPass(K_Pass _Pass) {
+	return K_Net_Flag_Pass{
+		Date = _Pass.Date,
+		From = Private_ToNetFlagPlayer(_Pass.From),
+		To = Private_ToNetFlagPlayer(_Pass.To)
+	};
+}
+
+K_Net_Flag Get_Net() {
+	return K_Net_Flag {
+		Location = Private_ToNetFlagLocation(G_Flag.Location),
+		Lock = Private_ToNetFlagLock(G_Flag.Lock),
+		Drop = Private_ToNetFlagDrop(G_Flag.Drop),
+		LastPass = Private_ToNetFlagPass(G_Flag.LastPass)
+	};
+}
+
+Text DumpNetFlagStructs() {
+	return dumptype(K_Net_Flag_Player) ^ "\n" ^
+	dumptype(K_Net_Flag_Location) ^ "\n" ^
+	dumptype(K_Net_Flag_Timer) ^ "\n" ^
+	dumptype(K_Net_Flag_Lock) ^ "\n" ^
+	dumptype(K_Net_Flag_Drop) ^ "\n" ^
+	dumptype(K_Net_Flag_Pass) ^ "\n" ^
+	dumptype(K_Net_Flag);
+}
+
+Void Net_Update() {
+	declare netwrite K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
+	FlagRush_Net_Flag = Get_Net();
+}
+
+// Helpers: Easier querying for information.
+
+Boolean IsOnPlayer() {
+	return G_Flag.Location.Player.Id != NullId;
+}
+
+Boolean IsOnLandmark() {
+	return G_Flag.Location.LandmarkId != NullId;
+}
+
+Boolean IsAtPosition() {
+	return !IsOnPlayer() && !IsOnLandmark() && G_Flag.Location.Position != C_Position_Invalid;
+}
+
+Boolean IsUnspawned() {
+	return !IsOnPlayer() && !IsOnLandmark() && G_Flag.Location.Position == C_Position_Invalid;
+}
+
+Boolean HasActiveLock() {
+	return G_Flag.Lock.Timer.Until > Now;
+}
+
+Boolean IsLockedForEveryone() {
+	return HasActiveLock() && G_Flag.Lock.Clan == 0 && G_Flag.Lock.Player.Id == NullId;
+}
+
+Boolean IsLockedForClan(Integer _Clan) {
+	if (!HasActiveLock()) {
+		return False;
+	}
+	return G_Flag.Lock.Clan == _Clan || IsLockedForEveryone();
+}
+
+Boolean IsLockedForPlayer(CSmPlayer _Player) {
+	if (!HasActiveLock()) {
+		return False;
+	}
+	return G_Flag.Lock.Player.Id == _Player.Id || IsLockedForClan(_Player.CurrentClan);
+}
+
+Boolean IsPlayerConnected() {
+	return IsOnPlayer() && Players.existskey(G_Flag.Location.Player.Id);
+}
+
+CSmPlayer GetPlayer() {
+	return Players.get(G_Flag.Location.Player.Id, Null);
+}
+
+CMapLandmark GetLandmark() {
+	return MapLandmarks.get(G_Flag.Location.LandmarkId, Null);
+}
+
+// Core: Basic functionality for updating the flag.
+
+K_Flag Get() {
+	return G_Flag;
+}
+
+Void SetUnspawned() {
+	G_Flag.Location = K_Location{ Position = C_Position_Invalid };
+	Net_Update();
+}
+
+Void SetAtPosition(Vec3 _Position) {
+	G_Flag.Location = K_Location{ Position = _Position, LastSafePosition = G_Flag.Location.LastSafePosition };
+	Net_Update();
+}
+
+Void SetAtPlayer(CSmPlayer _Player) {
+	assert(_Player != Null);
+
+	// If it was on a player before, record as last pass
+	if (IsOnPlayer() && GetPlayer() != _Player) {
+		G_Flag.LastPass = K_Pass{
+			Date = Now,
+			From = G_Flag.Location.Player,
+			To = Private_ToPlayerStruct(_Player)
+		};
+	}
+
+	G_Flag.Location = K_Location{ Player = Private_ToPlayerStruct(_Player), Position = _Player.Position, LastSafePosition = G_Flag.Location.LastSafePosition };
+	Net_Update();
+}
+
+Void SetAtLandmark(CMapLandmark _Landmark) {
+	assert(_Landmark != Null);
+	G_Flag.Location = K_Location{ LandmarkId = _Landmark.Id, Position = _Landmark.Position, LastSafePosition = G_Flag.Location.LastSafePosition };
+	Net_Update();
+}
+
+Void RemoveLock() {
+	G_Flag.Lock = K_Lock{};
+	Net_Update();
+}
+
+Void Lock(Integer _Until) {
+	declare K_Timer Timer = K_Timer{ Since = Now, Until = _Until };
+	G_Flag.Lock = K_Lock{ Timer = Timer };
+	Net_Update();
+}
+
+Void LockForPlayer(Integer _Until, CSmPlayer _Player) {
+	assert(_Player != Null);
+	declare K_Timer Timer = K_Timer{ Since = Now, Until = _Until };
+	G_Flag.Lock = K_Lock{ Player = Private_ToPlayerStruct(_Player), Timer = Timer };
+	Net_Update();
+}
+
+Void LockForClan(Integer _Until, Integer _Clan) {
+	assert(_Clan > 0);
+	declare K_Timer Timer = K_Timer{ Since = Now, Until = _Until };
+	G_Flag.Lock = K_Lock{ Clan = _Clan, Timer = Timer };
+	Net_Update();
+}
+
+Void SetDropTimer(Integer _Until) {
+	declare K_Timer Timer = K_Timer{ Since = Now, Until = _Until };
+	G_Flag.Drop = K_Drop { Player = G_Flag.Location.Player, Timer = Timer };
+	Net_Update();
+}
+
+Void RemoveDropTimer() {
+	G_Flag.Drop.Timer = K_Timer{};
+	Net_Update();
+}
+
+// Lifecycle
+
+Void Yield() {
+	// Update position when carried by player
+	if (IsPlayerConnected()) {
+		declare CSmPlayer Player = GetPlayer();
+		G_Flag.Location.Position = Player.Position;
+		if (Player.WheelsContactCount >= 3) {
+			G_Flag.Location.LastSafePosition = Player.Position;
+		}
+	}
+}
+
+Void Unload() {
+}
+
+Void Load() {
+	G_Flag = K_Flag{};
+	SetUnspawned();
+	Net_Update();
+}

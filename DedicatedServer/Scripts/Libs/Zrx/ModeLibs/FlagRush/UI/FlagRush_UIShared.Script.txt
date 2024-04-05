@@ -75,28 +75,6 @@ Text GetPlayerPositionFunctions() {
 }
 
 /**
- * Manialink script functions to get the current.
- * Correspond to Net Structs in FlagRush_FlagState.Script.txt.
- */
-Text GetFlagStateStructs() {
-	return """
-		#Struct K_Net_FlagHolder {
-			Integer Clan;
-			Text Name;
-			Text Login;
-		}
-
-		#Struct K_Net_FlagState {
-			K_Net_FlagHolder Holder;
-			Vec3 Position;
-			Integer CurrentStateStartDate;
-			Integer CurrentStateEndDate;
-			Boolean HasStealResistance;
-		}
-	""";
-}
-
-/**
  * Returns the manialink framemodel with a transparent for the logo of FlagRush
  */
 Text GetLogoTransparentFramemodel() {

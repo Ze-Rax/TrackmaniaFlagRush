@@ -1,6 +1,6 @@
 #Include "ColorLib" as CL
 
-#Include "Libs/Nadeo/Message.Script.txt" as Message
+#Include "Libs/Zrx/ModeLibs/Common/Message.Script.txt" as Message
 
 #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"									as ModeUtils
 #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"									as EventFeed

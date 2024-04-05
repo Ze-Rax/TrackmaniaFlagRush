@@ -76,7 +76,7 @@
 #Setting S_FlagInitialSpawnDelaySeconds			0. 			as "<hidden>" // Initial flag spawn delay (seconds)
 #Setting S_FlagRespawnDelaySeconds					0. 			as "<hidden>" // Flag respawn delay (seconds)
 #Setting S_FlagDropStateDurationSeconds			8. 			as "<hidden>" // Flag drop state duration (seconds)
-#Setting S_FlagStealResistDurationSeconds		0.2 			as "<hidden>" // Flag steal resistance (seconds)
+#Setting S_FlagStealResistDurationSeconds		1. 			as "<hidden>" // Flag steal resistance (seconds)
 #Setting S_FlagSameTeamSteal								True		as "<hidden>" // Team flag steal
 #Setting S_FlagStealResistanceOnTeamPass    False   as "<hidden>" // Flag steal resistance on passes between players in same team
 #Setting S_FlagCarrierFragile								True		as "Flag carrier becomes fragile"

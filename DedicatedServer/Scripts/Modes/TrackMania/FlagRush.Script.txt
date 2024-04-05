@@ -1,6 +1,6 @@
 /**
  * FlagRush
- * Gamemode by Ze-Rax, Reaby, Geekid & Rxelux
+ * Gamemode by Ze-Rax, Reaby, Geekid & Rxelux.
  */
 
 #Extends "Libs/Zrx/ModeLibs/BaseModes/FlagRushProgressionBase.Script.txt"

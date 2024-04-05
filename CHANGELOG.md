@@ -9,21 +9,22 @@
 * Reduced the default teleport detection threshold to 8 meters (quarter of a block).
 
 ### MapType
-+ Added the ability to select the available cars on a given map using the FlagRush settings dialog
++ Added the ability to select the available cars on a given map using the FlagRush settings dialog.
 
 ### UI
 + Added a car selection to the scoreboard
 	* Mouse users can click the respective buttons on the bottom right below the scoreboard.
 	* Gamepad user can use the right stick to select the previous or car respectively.
 	* Car changes are applied on spawn. If a player wants to change their car mid round, they have to respawn.
++ Added team-colored gradients to the top and bottom of the screen if the player is carrying the flag (or spectator is watching the flag carrier).
 * Adjusted markers:
-	* Added drop shadows to all markers for better visibility
-	* Adjusted goal marker position to float 2m above its blocks pivot (previously 8m)
-	* Moved flag marker distance indicator to be above the flag icon
+	* Added drop shadows to all markers for better visibility.
+	* Adjusted goal marker position to float 2m above its blocks pivot (previously 8m).
+	* Moved flag marker distance indicator to be above the flag icon.
 	* Split flag marker gauge intoo two separate gauges:
-		1. Ring gauge around the flag to indicate the lock state ("steal resistance")
-		2. Circular background gauge behind the flag to indicate the drop reset timer
-	* Added a fake shadow below the flag marker when in dropped state
+		1. Ring gauge around the flag to indicate the lock state ("steal resistance").
+		2. Circular background gauge behind the flag to indicate the drop reset timer.
+	* Added a fake shadow below the flag marker when in dropped state.
 
 ---
 

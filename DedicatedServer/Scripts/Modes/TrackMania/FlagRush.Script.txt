@@ -19,33 +19,34 @@
 // #Include "TextLib" as TL
 // #Include "MathLib" as ML
 
-// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"										as XmlRpc
-// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt"								as XmlRpc_Base
+// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"													as XmlRpc
+// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt"										as XmlRpc_Base
 
-// #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"										as EventFeed
-// #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"				as ModeCommands
-// #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"				as CommandUtils
-// #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"										as ModeUtils
-// #Include "Libs/Zrx/ModeLibs/Common/ModeEvents.Script.txt"										as ModeEvents
-// #Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
-#Include "Libs/Rx/ModeLibs/Common/Hitbox.Script.txt"												as Hitbox
+// #Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"													as EventFeed
+// #Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"							as ModeCommands
+// #Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"							as CommandUtils
+// #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"													as ModeUtils
+// #Include "Libs/Zrx/ModeLibs/Common/ModeEvents.Script.txt"												as ModeEvents
+// #Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt"				as WarmUpReadyUp
+#Include "Libs/Rx/ModeLibs/Common/Hitbox.Script.txt"																as Hitbox
 
 // FlagRush Libs
-// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"						as FlagRush_Common
-// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"								as FlagRush_Map
-// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"						as FlagRush_Scores
-// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
-// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
-// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_RpcEvents.Script.txt"					as FlagRush_XmlRpc
-#Include "Libs/Zrx/ModeLibs/FlagRush/Flag.Script.txt"												as Flag
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Handicaps.Script.txt"					as FlagRush_Handicaps
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt"							as FlagRush_Vehicle
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"									as FlagRush_Common
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"										as FlagRush_Map
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"									as FlagRush_Scores
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"				as FlagRush_MatchEvaluation
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"									as FlagRush_Teams
+// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_RpcEvents.Script.txt"							as FlagRush_XmlRpc
+#Include "Libs/Zrx/ModeLibs/FlagRush/Flag.Script.txt"																as Flag
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Handicaps.Script.txt"									as FlagRush_Handicaps
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt"										as FlagRush_Vehicle
 
-// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI
-// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"				as FlagRush_Messages
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_Flash
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/VehicleSelection.Script.txt"	as FlagRush_VehicleSelection
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/FlagMarker.Script.txt"				as FlagMarker
+// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"									as FlagRush_UI
+// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"						as FlagRush_Messages
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"										as FlagRush_Flash
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/VehicleSelection.Script.txt"				as FlagRush_VehicleSelection
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/FlagMarker.Script.txt"							as FlagMarker
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/FlagPossessionIndicator.Script.txt"	as FlagPossessionIndicator
 
 // ========= //
 // Constants //
@@ -123,6 +124,7 @@ Flag::Load();
 ***LoadHud***
 ***
 FlagRush_VehicleSelection::Load();
+FlagPossessionIndicator::Load();
 ***
 
 ***LoadItems***

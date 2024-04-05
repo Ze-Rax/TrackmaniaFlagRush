@@ -42,7 +42,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Vehicle.Script.txt"										as FlagRush_Vehicle
 
 // #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"									as FlagRush_UI
-// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_Messages.Script.txt"						as FlagRush_Messages
+// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Messages.Script.txt"											as Messages
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/Flash.Script.txt"										as FlagRush_Flash
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/VehicleSelection.Script.txt"				as FlagRush_VehicleSelection
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/FlagMarker.Script.txt"							as FlagMarker
@@ -187,7 +187,7 @@ if (Flag::IsOnPlayer() && !Flag::IsPlayerConnected()) {
 
 // Check if Carrier teleported
 if (Flag::IsOnPlayer() && ML::Length(Flag::Get().Location.Position - PreviousFlag.Location.Position) > S_TeleportDetectionThreshold) {
-	FlagRush_Messages::FlagCarrierTeleport();
+	Messages::FlagCarrierTeleport();
 	FlagCarrier_DropFlag(PreviousFlag.Location.Position);
 }
 
@@ -281,7 +281,7 @@ foreach (Event in PendingEvents) {
 		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 			// Player might have left in the same server frame, causing Player to be Null
 			if (Event.Player != Null && FlagRush_Map::IsOutOfBoundsTrigger(Event.Landmark)) {
-				FlagRush_Messages::PlayerOutOfBounds(Event.Player);
+				Messages::PlayerOutOfBounds(Event.Player);
 				UnspawnPlayer(Event.Player);
 				declare Integer FlagRush_Warmup_UnspawnDate for Event.Player = Now;
 				FlagRush_Warmup_UnspawnDate = Now;
@@ -346,7 +346,7 @@ if (UseCollisionsChanged) {
 }
 
 if (RestartTurn && MB_TurnIsRunning()) {
-	FlagRush_Messages::CriticalSettingUpdate_RestartTurn();
+	Messages::CriticalSettingUpdate_RestartTurn();
 	MB_StopTurn();
 }
 ***
@@ -402,7 +402,7 @@ CSmPlayer GetFirstCollidingPlayer_OpponentPriority(CSmPlayer ReferencePlayer) {
 }
 
 Void Flag_Reset(Boolean Silent) {
-	if (!Silent) FlagRush_Messages::FlagReset(C_Duration_EventMessage);
+	if (!Silent) Messages::FlagReset(C_Duration_EventMessage);
 
 	declare CMapLandmark FlagSpawn;
 	if (!S_RandomizeFlagSpawn) FlagSpawn = FlagRush_Map::GetDefaultFlagSpawn();
@@ -479,7 +479,7 @@ Boolean Player_CanPickUpDroppedFlag(CSmPlayer Player) {
 }
 
 Void Player_PickUpFlag(CSmPlayer Player) {
-	FlagRush_Messages::FlagPickUp(Player, C_Duration_EventMessage);
+	Messages::FlagPickUp(Player, C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);
 	Flag::SetAtPlayer(Player);
 	Flag::RemoveDropTimer();
@@ -498,7 +498,7 @@ Void FlagCarrier_PassFlag(CSmPlayer Player) {
 	}
 	Player_ResetHandicaps(OldCarrier);
 	// New Carrier
-	FlagRush_Messages::FlagPickUp(Player, C_Duration_EventMessage);
+	Messages::FlagPickUp(Player, C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(S_FlagStealResistDurationSeconds * 1000);
 	Flag::SetAtPlayer(Player);
 	if (IsNotSameTeam || S_FlagStealResistanceOnTeamPass) {
@@ -534,7 +534,7 @@ Void FlagCarrier_DropFlag(Vec3 _Position) {
 	Flag::SetDropTimer(DropStateEndDate);
 	Flag::SetAtPosition(_Position);
 	FlagMarker::Update();
-	FlagRush_Messages::FlagDropped(CarrierUser, C_Duration_EventMessage);
+	Messages::FlagDropped(CarrierUser, C_Duration_EventMessage);
 	FlagRush_XmlRpc::Send_FlagDrop(CarrierUser);
 }
 
@@ -544,7 +544,7 @@ Void FlagCarrier_DropFlag() {
 
 Void FlagCarrier_ScoreFlag() {
 	declare CSmPlayer CarrierPlayer = Flag::GetPlayer();
-	FlagRush_Messages::FlagScored(CarrierPlayer, C_Duration_EventMessage);
+	Messages::FlagScored(CarrierPlayer, C_Duration_EventMessage);
 	FlagRush_Scores::OnPlayerScoreFlag(CarrierPlayer.Score);
 	declare Flag::K_Flag Flag = Flag::Get();
 
@@ -591,7 +591,7 @@ Void OnPlayerRequestsRespawn(CSmPlayer Player) {
 	}
 
 	Player_Unspawn(Player);
-	FlagRush_Messages::PlayerRespawn(Player);
+	Messages::PlayerRespawn(Player);
 }
 
 Void OnPlayerDeath(CSmPlayer Player) {
@@ -607,7 +607,7 @@ Void OnPlayerOutOfBound(CSmPlayer Player) {
 		return;
 	}
 
-	FlagRush_Messages::PlayerOutOfBounds(Player);
+	Messages::PlayerOutOfBounds(Player);
 	if (Player == Flag::GetPlayer()) {
 		FlagCarrier_DropFlag(Flag::Get().Location.LastSafePosition);
 	}
@@ -642,7 +642,7 @@ Void OnGameplayCommand(CommandUtils::K_Command Command) {
 		}
 		default: return;
 	}
-	declare Text Message = """{{{ FlagRush_Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ Command.Source.Name }}}.""";
+	declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ Command.Source.Name }}}.""";
 	if (CommandText != "") Message ^= " " ^ CommandText;
 	UIManager.UIAll.SendChat(Message);
 }

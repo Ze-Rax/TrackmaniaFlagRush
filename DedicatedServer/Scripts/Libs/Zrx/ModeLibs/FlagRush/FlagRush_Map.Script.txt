@@ -52,6 +52,13 @@ CMapLandmark[] GetBases(Integer Clan) {
 }
 
 /**
+ * Check if the given landmark is a base that belongs to the given clan.
+ */
+Boolean IsBase(CMapLandmark _Landmark, Integer _Clan) {
+	return GetBases(_Clan).exists(_Landmark);
+}
+
+/**
  * Chooses a random flag spawn.
  */
 CMapLandmark GetRandomFlagSpawn() {

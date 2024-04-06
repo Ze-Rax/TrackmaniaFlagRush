@@ -26,7 +26,7 @@ Text GetManialink() {
 	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="{{{ C_LayerName }}}">
 
-	<frame id="{{{ C_FrameId_ShadowVisibilityMarker }}}"></frame>
+	<frame id="{{{ C_FrameId_ShadowVisibilityMarker }}}" hidden="1"></frame>
 
 	<frame z-index="2"> <!-- Display flag marker over other markers (highest z-index) -->
 		<frame id="{{{ C_FrameId }}}" scale="0.9" hidden="1"> <!-- Initialize as hidden; Markers will show it automatically -->

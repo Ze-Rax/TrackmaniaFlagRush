@@ -216,7 +216,23 @@ if (FlagCarrier != Null) {
 	if (FlagReceiver != Null) {
 		declare Boolean IsLocked = Flag::IsLockedForPlayer(FlagReceiver);
 		declare Boolean IsOpponent = FlagCarrier.CurrentClan != FlagReceiver.CurrentClan;
-		if (!IsLocked && (IsOpponent || S_FlagSameTeamSteal)) {
+		declare Boolean IsTryingToScore = False; // Don't pass to team member if trying to score in same frame
+		foreach (Event in PendingEvents) {
+			declare Boolean IsFlagCarrierEvent = Event.Player == FlagCarrier;
+			declare Integer TargetBaseClan;
+			if (S_UseReversedBases) {
+				TargetBaseClan = FlagCarrier.CurrentClan;
+			} else {
+				TargetBaseClan = 3 - FlagCarrier.CurrentClan;
+			}
+			declare Boolean IsOpponentBaseEvent = Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint && FlagRush_Map::IsBase(Event.Landmark, TargetBaseClan);
+			if (IsFlagCarrierEvent && IsOpponentBaseEvent) {
+				IsTryingToScore = True;
+				break;
+			}
+		}
+
+		if (!IsLocked && (IsOpponent || (S_FlagSameTeamSteal && !IsTryingToScore))) {
 			FlagCarrier_PassFlag(FlagReceiver);
 		}
 	}
@@ -627,7 +643,7 @@ Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {
 		} else {
 			TargetBaseClan = 3 - Player.CurrentClan;
 		}
-		if (FlagRush_Map::GetBases(TargetBaseClan).exists(Landmark)) {
+		if (FlagRush_Map::IsBase(Landmark, TargetBaseClan)) {
 			FlagCarrier_ScoreFlag();
 		}
 	}

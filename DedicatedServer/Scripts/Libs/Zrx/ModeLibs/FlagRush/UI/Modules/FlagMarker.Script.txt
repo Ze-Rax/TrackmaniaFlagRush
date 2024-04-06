@@ -131,8 +131,11 @@ declare CMlFrame G_FlagMarkerVisibilityMarker;
 {{{ Shared::GetTeamColorNetreadFunctions() }}}
 
 Real Lerp01(Real _From, Real _To, Real _T) {
-	if (_From >= _To) {
-		return 1.0;
+	if (_From == _To) {
+		if (_T >= _To) {
+			return 1.0;
+		}
+		return 0.0;
 	}
 	declare Real Lerp = (_T - _From) / (_To - _From);
 	return ML::Clamp(Lerp, 0.0, 1.0);

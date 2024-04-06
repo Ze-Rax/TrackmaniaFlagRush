@@ -280,7 +280,7 @@ foreach (Event in PendingEvents) {
 		}
 		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 			// Player might have left in the same server frame, causing Player to be Null
-			if (Event.Player != Null && FlagRush_Map::IsOutOfBoundsTrigger(Event.Landmark)) {
+			if (Event.Player != Null && FlagRush_Map::IsOutOfBoundsTrigger(Event.Landmark) && Event.Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
 				Messages::PlayerOutOfBounds(Event.Player);
 				UnspawnPlayer(Event.Player);
 				declare Integer FlagRush_Warmup_UnspawnDate for Event.Player = Now;

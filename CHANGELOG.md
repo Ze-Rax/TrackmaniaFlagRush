@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.5.1
+
+### General
+- Removed setting `S_UseTurns`.
+- Removed setting `S_UseReversedBases`.
+- Removed setting `S_FlagInitialSpawnDelaySeconds`.
+- Removed setting `S_FlagRespawnDelaySeconds`.
+- Removed setting `S_RandomizeFlagSpawn`.
+
+### Bugs and crashes
+* Fixed division by zero error in flag marker layer.
+* Fixed flag shadow being visible by default, sometimes causing it to be visible when not in dropped state.
+* Fixed "Player went out of bounds" message spam in warmup.
+* Fixed flag getting passed through goal without scoring if passing to a teammate in the same server frame as trying to score the flag.
+
+---
+
 ## 1.5.0
 
 ### General

@@ -6,7 +6,7 @@
 #Extends "Libs/Zrx/ModeLibs/BaseModes/FlagRushProgressionBase.Script.txt"
 
 #Const	CompatibleMapTypes	"Trackmania\\FlagRushArena,FlagRushArena"
-#Const	Version							"1.5.0"
+#Const	Version							"1.5.1-dev"
 #Const	ScriptName					"Modes/TrackMania/FlagRush.Script.txt"
 
 // ========= //

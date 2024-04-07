@@ -28,8 +28,6 @@ These settings change how the gameplay in a round behaves.
 | S_UseCrudeExtrapolation          | Boolean | True          | Determines the method that is used by clients to extrapolate player positions. Settings this setting to False has caused major desync issues in the past and is therefore not recommended. |
 | S_TrustClientSimu                | Boolean | True          | Whether to trust the physics simulation of the clients (players) or use serside physics simulation. Serverside physics simulation can cause teleporation on the client side, depending on their network connection to the server. |
 | S_RandomizeFlagSpawn             | Boolean | True          | Choose flag spawns at random (True) or always spawn the flag at the default flag spawn (False). The first flag of a round/turn will always spawn at the default flag spawn, independant from this setting. |
-| S_FlagInitialSpawnDelaySeconds   | Real    | 0.0           | Delay at the beginning of a round/turn in seconds during which the flag cannot be picked up from the initial flag spawn. |
-| S_FlagRespawnDelaySeconds        | Real    | 0.0           | Delay after the reset of the flag in seconds during which the flag cannot be picked up from the flag spawn. |
 | S_FlagDropStateDurationSeconds   | Real    | 8.0           | Duration in seconds that a dropped flag will stay dropped before being reset to a flagspawn. |
 | S_FlagStealResistDurationSeconds | Real    | 1.0           | Duration in seconds in which the flag cannot be stolen after picking it up. |
 | S_FlagSameTeamSteal              | Boolean | True          | Whether or not teammates can steal the flag from the flag carrier. |

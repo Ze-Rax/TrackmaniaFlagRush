@@ -402,7 +402,7 @@ Void Flag_Reset(Boolean Silent) {
 	if (!Silent) Messages::FlagReset(C_Duration_EventMessage);
 
 	Flag::Reset();
-	Flag::SetAtLandmark(FlagSpawn);
+	Flag::SetAtLandmark(FlagRush_Map::GetRandomFlagSpawn());
 	FlagMarker::Update();
 	FlagRush_XmlRpc::Send_FlagReset();
 }

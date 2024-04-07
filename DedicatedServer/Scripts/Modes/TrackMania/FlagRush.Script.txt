@@ -73,7 +73,6 @@
 // Gameplay
 #Setting S_UseReversedBases									False 	as "<hidden>" // Switch team bases
 #Setting S_RandomizeFlagSpawn								True 		as "<hidden>" // Randomize flag spawn location
-#Setting S_FlagInitialSpawnDelaySeconds			0. 			as "<hidden>" // Initial flag spawn delay (seconds)
 #Setting S_FlagRespawnDelaySeconds					0. 			as "<hidden>" // Flag respawn delay (seconds)
 #Setting S_FlagDropStateDurationSeconds			8. 			as "<hidden>" // Flag drop state duration (seconds)
 #Setting S_FlagStealResistDurationSeconds		1. 			as "<hidden>" // Flag steal resistance (seconds)
@@ -144,10 +143,8 @@ FlagRush_VehicleSelection::SetEnabledVehicles(Vehicle_GetEnabled());
 ***StartTurn***
 ***
 declare CMapLandmark FlagSpawn = FlagRush_Map::GetDefaultFlagSpawn();
-declare Integer FlagSpawnDate = Now + ML::NearestInteger(S_FlagInitialSpawnDelaySeconds * 1000);
 Flag::Load();
 Flag::SetAtLandmark(FlagSpawn);
-Flag::Lock(FlagSpawnDate);
 FlagMarker::Update();
 
 foreach (Player in Players) {

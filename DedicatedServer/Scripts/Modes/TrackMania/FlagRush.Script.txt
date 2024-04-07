@@ -71,9 +71,6 @@
 #Setting S_TrustClientSimu									True		as "<hidden>"
 
 // Gameplay
-#Setting S_UseReversedBases									False 	as "<hidden>" // Switch team bases
-#Setting S_FlagInitialSpawnDelaySeconds			0. 			as "<hidden>" // Initial flag spawn delay (seconds)
-#Setting S_FlagRespawnDelaySeconds					0. 			as "<hidden>" // Flag respawn delay (seconds)
 #Setting S_FlagDropStateDurationSeconds			8. 			as "<hidden>" // Flag drop state duration (seconds)
 #Setting S_FlagStealResistDurationSeconds		1. 			as "<hidden>" // Flag steal resistance (seconds)
 #Setting S_FlagSameTeamSteal								True		as "<hidden>" // Team flag steal
@@ -110,8 +107,6 @@ declare Boolean FlagRush_Debug for This;
 FlagRush_Debug = C_Debug;
 
 UsePvPCollisions = S_UseCollisions;
-
-FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases);
 ***
 
 ***LoadLibraries***
@@ -143,10 +138,8 @@ FlagRush_VehicleSelection::SetEnabledVehicles(Vehicle_GetEnabled());
 ***StartTurn***
 ***
 declare CMapLandmark FlagSpawn = FlagRush_Map::GetDefaultFlagSpawn();
-declare Integer FlagSpawnDate = Now + ML::NearestInteger(S_FlagInitialSpawnDelaySeconds * 1000);
-Flag::Load();
+Flag::Reset();
 Flag::SetAtLandmark(FlagSpawn);
-Flag::Lock(FlagSpawnDate);
 FlagMarker::Update();
 
 foreach (Player in Players) {
@@ -218,12 +211,7 @@ if (FlagCarrier != Null) {
 		declare Boolean IsTryingToScore = False; // Don't pass to team member if trying to score in same frame
 		foreach (Event in PendingEvents) {
 			declare Boolean IsFlagCarrierEvent = Event.Player == FlagCarrier;
-			declare Integer TargetBaseClan;
-			if (S_UseReversedBases) {
-				TargetBaseClan = FlagCarrier.CurrentClan;
-			} else {
-				TargetBaseClan = 3 - FlagCarrier.CurrentClan;
-			}
+			declare Integer TargetBaseClan = 3 - FlagCarrier.CurrentClan;
 			declare Boolean IsOpponentBaseEvent = Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint && FlagRush_Map::IsBase(Event.Landmark, TargetBaseClan);
 			if (IsFlagCarrierEvent && IsOpponentBaseEvent) {
 				IsTryingToScore = True;
@@ -348,12 +336,6 @@ if (TrustClientSimuChanged || UseCrudeExtrapolationChanged) {
 	RestartTurn = True;
 }
 
-declare Boolean UseReversedBasesChanged = SettingTracker::HasChanged(S_UseReversedBases, "S_UseReversedBases");
-if (UseReversedBasesChanged) {
-	FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases);
-	RestartTurn = True;
-}
-
 declare Boolean UseCollisionsChanged = SettingTracker::HasChanged(S_UseCollisions, "S_UseCollisions");
 if (UseCollisionsChanged) {
 	UsePvPCollisions = S_UseCollisions;
@@ -419,8 +401,8 @@ CSmPlayer GetFirstCollidingPlayer_OpponentPriority(CSmPlayer ReferencePlayer) {
 Void Flag_Reset(Boolean Silent) {
 	if (!Silent) Messages::FlagReset(C_Duration_EventMessage);
 
-	Flag::SetAtLandmark(FlagRush_Map::GetRandomFlagSpawn());
-	Flag::Lock(Now + ML::NearestInteger(S_FlagRespawnDelaySeconds * 1000));
+	Flag::Reset();
+	Flag::SetAtLandmark(FlagSpawn);
 	FlagMarker::Update();
 	FlagRush_XmlRpc::Send_FlagReset();
 }
@@ -572,7 +554,6 @@ Void FlagCarrier_ScoreFlag() {
 	Player_ResetHandicaps(CarrierPlayer);
 	FlagRush_XmlRpc::Send_FlagScored(CarrierPlayer, Assist);
 	Flag_Reset(True);
-	if (S_UseTurns) MB_StopTurn();
 }
 
 // =========================================================== //
@@ -633,12 +614,7 @@ Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {
 	} else if (Flag::Get().Location.LandmarkId == Landmark.Id && !Flag::IsLockedForPlayer(Player)) {
 		Player_PickUpFlag(Player);
 	} else if (Player == Flag::GetPlayer()){
-		declare Integer TargetBaseClan;
-		if (S_UseReversedBases) {
-			TargetBaseClan = Player.CurrentClan;
-		} else {
-			TargetBaseClan = 3 - Player.CurrentClan;
-		}
+		declare Integer TargetBaseClan = 3 - Player.CurrentClan;
 		if (FlagRush_Map::IsBase(Landmark, TargetBaseClan)) {
 			FlagCarrier_ScoreFlag();
 		}

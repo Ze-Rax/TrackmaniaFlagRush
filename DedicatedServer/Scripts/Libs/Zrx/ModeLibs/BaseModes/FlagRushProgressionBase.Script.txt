@@ -68,7 +68,6 @@
 #Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"
 #Setting S_NbFlagsToWinRound								3				as "Number of flags scored to win a round"
 #Setting S_RoundTimeLimitSeconds						360 		as "Round Timelimit (seconds)"
-#Setting S_UseTurns													False 	as "<hidden>" // "Use turns (Reset after a player scores a flag)"
 #Setting S_UseOvertime											True 		as "Use overtime when round is tied"
 #Setting S_UseWarmUp												True		as "Use warm up"
 #Setting S_WarmUpWaitForApproval						False		as "<hidden>" // Wait for admin approval in warmup to continue (for competition situations)

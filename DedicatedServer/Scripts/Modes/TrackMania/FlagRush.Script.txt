@@ -62,6 +62,8 @@
 #Const C_FlagDropPositionMode_LastSafePosition	"FlagDropPositionMode_LastSafePosition"
 
 #Const FlagRush_Vehicle::C_Vehicle_Stadium as C_Vehicle_Stadium
+#Const FlagRush_Vehicle::C_Vehicle_Snow as C_Vehicle_Snow
+#Const FlagRush_Vehicle::C_Vehicle_Rally as C_Vehicle_Rally
 
 // ======== //
 // Settings //
@@ -84,7 +86,18 @@
 #Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
 #Setting S_TeleportDetectionThreshold				8.			as "<hidden>" // Maximum allowed distance (meters) to teleport (lag) before dropping the flag
 #Setting S_UseCollisions										False		as "Use collisions (experimental)"
+
+// Vehicles
 #Setting S_ForceEnabledVehiclesCsv					""			as "Force enabled vehicles (Comma separated; Options: \"stadium\", \"snow\", \"rally\")"
+#Setting S_TuningStadiumAcceleration				1.0 		as "<hidden>"
+#Setting S_TuningStadiumAdherence						1.0 		as "<hidden>"
+#Setting S_TuningStadiumControl							1.0 		as "<hidden>"
+#Setting S_TuningSnowAcceleration						1.0 		as "<hidden>"
+#Setting S_TuningSnowAdherence							1.0 		as "<hidden>"
+#Setting S_TuningSnowControl								1.0 		as "<hidden>"
+#Setting S_TuningRallyAcceleration					0.66 		as "<hidden>"
+#Setting S_TuningRallyAdherence							1.0 		as "<hidden>"
+#Setting S_TuningRallyControl								1.0 		as "<hidden>"
 
 // ======== //
 // Commands //
@@ -167,7 +180,6 @@ foreach (Player in Players) {
 
 ***PlayLoop***
 ***
-FlagRush_Handicaps::Yield();
 declare Flag::K_Flag PreviousFlag = Flag::Get();
 Flag::Yield();
 
@@ -263,9 +275,7 @@ foreach (Player in Players) {
 	}
 
 	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && Now - FlagRush_Warmup_UnspawnDate > C_RespawnDelayMin) {
-		Player_Initialize(Player);
-		declare CMapSpawn Spawn = FlagRush_Map::GetSpawn(Player).PlayerSpawn;
-		SpawnPlayer(Player, Player.CurrentClan, 100, Spawn, Now + FlagRush_Common::C_SpawnAnimDuration);
+		Player_Spawn(Player);
 	}
 
 	Player_Net_SendPosition(Player);
@@ -303,6 +313,8 @@ foreach (Player in Players) {
 
 ***Yield***
 ***
+FlagRush_Handicaps::Yield();
+
 // Handle mode script updates
 declare Boolean RestartTurn = False;
 
@@ -339,6 +351,38 @@ if (TrustClientSimuChanged || UseCrudeExtrapolationChanged) {
 declare Boolean UseCollisionsChanged = SettingTracker::HasChanged(S_UseCollisions, "S_UseCollisions");
 if (UseCollisionsChanged) {
 	UsePvPCollisions = S_UseCollisions;
+	RestartTurn = True;
+}
+
+declare Boolean VehicleTuningChanged = False;
+VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningStadiumAcceleration,	"S_TuningStadiumAcceleration");
+VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningStadiumAdherence,			"S_TuningStadiumAdherence");
+VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningStadiumControl,				"S_TuningStadiumControl");
+VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningSnowAcceleration,			"S_TuningSnowAcceleration");
+VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningSnowAdherence,				"S_TuningSnowAdherence");
+VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningSnowControl,					"S_TuningSnowControl");
+VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningRallyAcceleration,		"S_TuningRallyAcceleration");
+VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningRallyAdherence,				"S_TuningRallyAdherence");
+VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningRallyControl,					"S_TuningRallyControl");
+if (VehicleTuningChanged) {
+	declare FlagRush_Vehicle::K_Tuning StadiumTuning = FlagRush_Vehicle::C_Tuning_Default;
+	StadiumTuning.Acceleration =	S_TuningStadiumAcceleration;
+	StadiumTuning.Adherence =			S_TuningStadiumAdherence;
+	StadiumTuning.Control =				S_TuningStadiumControl;
+	FlagRush_Vehicle::SetTuning(C_Vehicle_Stadium.Id, StadiumTuning);
+
+	declare FlagRush_Vehicle::K_Tuning SnowTuning = FlagRush_Vehicle::C_Tuning_Default;
+	SnowTuning.Acceleration =			S_TuningSnowAcceleration;
+	SnowTuning.Adherence =				S_TuningSnowAdherence;
+	SnowTuning.Control =					S_TuningSnowControl;
+	FlagRush_Vehicle::SetTuning(C_Vehicle_Snow.Id, SnowTuning);
+
+	declare FlagRush_Vehicle::K_Tuning RallyTuning = FlagRush_Vehicle::C_Tuning_Default;
+	RallyTuning.Acceleration =		S_TuningRallyAcceleration;
+	RallyTuning.Adherence =				S_TuningRallyAdherence;
+	RallyTuning.Control =					S_TuningRallyControl;
+	FlagRush_Vehicle::SetTuning(C_Vehicle_Rally.Id, RallyTuning);
+
 	RestartTurn = True;
 }
 
@@ -426,6 +470,13 @@ Boolean Player_IsDead(CSmPlayer Player) {
 	return Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned && Player.Armor <= 0;
 }
 
+Void Player_ApplyVehicleTuning(CSmPlayer _Player) {
+	declare FlagRush_Vehicle::K_Tuning Tuning = FlagRush_Vehicle::GetTuning(_Player.ForceModelId);
+	FlagRush_Handicaps::Queue_AccelCoef(_Player, Tuning.Acceleration);
+	FlagRush_Handicaps::Queue_AdherenceCoef(_Player, Tuning.Adherence);
+	FlagRush_Handicaps::Queue_ControlCoef(_Player, Tuning.Control);
+}
+
 Void Player_Initialize(CSmPlayer Player) {
 	Player.TrustClientSimu = !UsePvPCollisions && S_TrustClientSimu;
 	Player.UseCrudeExtrapolation = !UsePvPCollisions && S_UseCrudeExtrapolation;
@@ -445,6 +496,7 @@ Void Player_Spawn(CSmPlayer Player) {
 	declare CMapLandmark SpawnLandmark = FlagRush_Map::GetSpawn(Player);
 	if (SpawnLandmark != Null) {
 		SpawnPlayer(Player, Player.CurrentClan, 1, SpawnLandmark.PlayerSpawn, Now + FlagRush_Common::C_SpawnAnimDuration);
+		Player_ApplyVehicleTuning(Player);
 	}
 }
 
@@ -456,14 +508,16 @@ Void Player_Unspawn(CSmPlayer Player) {
 }
 
 Void Player_ApplyHandicaps(CSmPlayer Player) {
+	declare FlagRush_Vehicle::K_Tuning Tuning = FlagRush_Vehicle::GetTuning(Player.ForceModelId);
 	if (S_FlagCarrierFragile) FlagRush_Handicaps::Queue_Fragile(Player, True);
-	if (S_FlagCarrierAcceleration != 1.) FlagRush_Handicaps::Queue_AccelCoef(Player, S_FlagCarrierAcceleration);
-	if (S_FlagCarrierControl != 1.) FlagRush_Handicaps::Queue_ControlCoef(Player, S_FlagCarrierControl);
-	if (S_FlagCarrierAdherence != 1.) FlagRush_Handicaps::Queue_AdherenceCoef(Player, S_FlagCarrierAdherence);
+	FlagRush_Handicaps::Queue_AccelCoef(Player, Tuning.Acceleration * S_FlagCarrierAcceleration);
+	FlagRush_Handicaps::Queue_ControlCoef(Player, Tuning.Control * S_FlagCarrierControl);
+	FlagRush_Handicaps::Queue_AdherenceCoef(Player, Tuning.Adherence * S_FlagCarrierAdherence);
 }
 
 Void Player_ResetHandicaps(CSmPlayer Player) {
 	FlagRush_Handicaps::Queue_Reset(Player);
+	Player_ApplyVehicleTuning(Player);
 }
 
 Boolean Player_CanPickUpDroppedFlag(CSmPlayer Player) {

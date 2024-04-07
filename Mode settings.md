@@ -14,7 +14,6 @@ These settings change how the general progression of a match works, i.e. how man
 | S_NbRoundsToWinMap            | Integer | 2             | Number of rounds to win a map. |
 | S_NbFlagsToWinRound           | Integer | 3             | Number of flags scored to win a round. Unlimited if <= 0.0 |
 | S_RoundTimeLimitSeconds       | Integer | 360           | Round timelimit in seconds. Unlimited if <= 0.0 |
-| S_UseTurns                    | Boolean | False         | Use turn based rounds. In turn based mode, all players will be reset after a flag has been scored. |
 | S_UseOvertime                 | Boolean | True          | Use overtime. If the match is tied when the timelimit runs out, the round will go into overtime until a team scores the next flag. |
 | S_UseWarmUp                   | Boolean | True          | Use warm up. At the beginning of the map players have to press the ready button for the match to start. If at least one player in each team is ready, a 60 second countdown starts after which the map starts. If all players are ready, a 5 second countdown start after which the map starts. |
 | S_WarmUpWaitForApproval       | Boolean | False         | Wait for the approval of an admin for the warmup countdowns to start. Requires usage of ModeCommandsUI. |

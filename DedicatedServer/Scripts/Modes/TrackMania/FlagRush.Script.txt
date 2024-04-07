@@ -71,7 +71,6 @@
 #Setting S_TrustClientSimu									True		as "<hidden>"
 
 // Gameplay
-#Setting S_UseReversedBases									False 	as "<hidden>" // Switch team bases
 #Setting S_RandomizeFlagSpawn								True 		as "<hidden>" // Randomize flag spawn location
 #Setting S_FlagInitialSpawnDelaySeconds			0. 			as "<hidden>" // Initial flag spawn delay (seconds)
 #Setting S_FlagRespawnDelaySeconds					0. 			as "<hidden>" // Flag respawn delay (seconds)
@@ -111,8 +110,6 @@ declare Boolean FlagRush_Debug for This;
 FlagRush_Debug = C_Debug;
 
 UsePvPCollisions = S_UseCollisions;
-
-FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases);
 ***
 
 ***LoadLibraries***
@@ -219,12 +216,7 @@ if (FlagCarrier != Null) {
 		declare Boolean IsTryingToScore = False; // Don't pass to team member if trying to score in same frame
 		foreach (Event in PendingEvents) {
 			declare Boolean IsFlagCarrierEvent = Event.Player == FlagCarrier;
-			declare Integer TargetBaseClan;
-			if (S_UseReversedBases) {
-				TargetBaseClan = FlagCarrier.CurrentClan;
-			} else {
-				TargetBaseClan = 3 - FlagCarrier.CurrentClan;
-			}
+			declare Integer TargetBaseClan = 3 - FlagCarrier.CurrentClan;
 			declare Boolean IsOpponentBaseEvent = Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint && FlagRush_Map::IsBase(Event.Landmark, TargetBaseClan);
 			if (IsFlagCarrierEvent && IsOpponentBaseEvent) {
 				IsTryingToScore = True;
@@ -346,12 +338,6 @@ if (FlagRush_PreviousSettings_ForceEnabledVehiclesCsv != S_ForceEnabledVehiclesC
 declare Boolean TrustClientSimuChanged = SettingTracker::HasChanged(S_TrustClientSimu, "S_TrustClientSimu");
 declare Boolean UseCrudeExtrapolationChanged = SettingTracker::HasChanged(S_UseCrudeExtrapolation, "S_UseCrudeExtrapolation");
 if (TrustClientSimuChanged || UseCrudeExtrapolationChanged) {
-	RestartTurn = True;
-}
-
-declare Boolean UseReversedBasesChanged = SettingTracker::HasChanged(S_UseReversedBases, "S_UseReversedBases");
-if (UseReversedBasesChanged) {
-	FlagRush_UI::Net_SendModeScriptRoundLogicSettings(S_UseReversedBases);
 	RestartTurn = True;
 }
 
@@ -636,12 +622,7 @@ Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {
 	} else if (Flag::Get().Location.LandmarkId == Landmark.Id && !Flag::IsLockedForPlayer(Player)) {
 		Player_PickUpFlag(Player);
 	} else if (Player == Flag::GetPlayer()){
-		declare Integer TargetBaseClan;
-		if (S_UseReversedBases) {
-			TargetBaseClan = Player.CurrentClan;
-		} else {
-			TargetBaseClan = 3 - Player.CurrentClan;
-		}
+		declare Integer TargetBaseClan = 3 - Player.CurrentClan;
 		if (FlagRush_Map::IsBase(Landmark, TargetBaseClan)) {
 			FlagCarrier_ScoreFlag();
 		}

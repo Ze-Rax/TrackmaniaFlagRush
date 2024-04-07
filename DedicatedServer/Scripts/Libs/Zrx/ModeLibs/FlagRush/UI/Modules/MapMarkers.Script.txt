@@ -111,7 +111,7 @@ Text GetManialink() {
 			G_DefaultFlagSpawnMarker.Order.Show();
 		}
 
-		Void UpdateBaseMarkers(Boolean Reversed) {
+		Void UpdateBaseMarkers() {
 			declare Integer UIClan = 0;
 			if (GUIPlayer != Null) {
 				UIClan = GUIPlayer.CurrentClan;
@@ -120,16 +120,8 @@ Text GetManialink() {
 			}
 
 			foreach (Clan => BaseMarkers in G_TeamBaseMarkers) {
-				declare Boolean ShowDefenseIcon;
-				declare Vec3 Color;
-				if (Reversed) {
-					Color = GetTeamMidColor(3 - Clan); // Color of opponent clan
-					ShowDefenseIcon = UIClan == 0 || Clan != UIClan;
-				} else {
-					Color = GetTeamMidColor(Clan);
-					ShowDefenseIcon = UIClan == 0 || Clan == UIClan;
-				}
-
+				declare Boolean ShowDefenseIcon = UIClan == 0 || Clan == UIClan;
+				declare Vec3 Color = GetTeamMidColor(Clan);
 				foreach (BaseMarker in BaseMarkers) {
 					BaseMarker.Icon.TextColor = Color;
 					if (ShowDefenseIcon) {
@@ -143,10 +135,9 @@ Text GetManialink() {
 
 		main() {
 			Init();
-			declare netread Boolean FlagRush_Net_UseReversedBases for Teams[0] = False;
 			while(True) {
 				yield;
-				UpdateBaseMarkers(FlagRush_Net_UseReversedBases);
+				UpdateBaseMarkers();
 			}
 		}
 	--></script>

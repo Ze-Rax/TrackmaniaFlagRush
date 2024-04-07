@@ -576,7 +576,6 @@ Void FlagCarrier_ScoreFlag() {
 	Player_ResetHandicaps(CarrierPlayer);
 	FlagRush_XmlRpc::Send_FlagScored(CarrierPlayer, Assist);
 	Flag_Reset(True);
-	if (S_UseTurns) MB_StopTurn();
 }
 
 // =========================================================== //

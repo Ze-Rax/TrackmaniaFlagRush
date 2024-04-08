@@ -13,6 +13,7 @@
 #Const C_PlayerStatisticsKey_FlagTeamPass				"FlagTeamPass"
 #Const C_PlayerStatisticsKey_Respawn						"Respawn"
 #Const C_PlayerStatisticsKey_VehicleChanged			"VehicleChanged"
+#Const C_PlayerStatisticsKey_DistanceDriven			"DistanceDriven"
 
 // Must be same as Scores, PlayerStatistics and TeamPointsProgression Levels
 #Const Scores::C_Level_Match as C_Level_Match
@@ -222,6 +223,10 @@ Void OnPlayerRespawn(CSmScore _Score) {
 
 Void OnPlayerChangesVehicle(CSmScore _Score) {
 	PlayerStatistics::AddPlayerRoundInteger(_Score, C_PlayerStatisticsKey_VehicleChanged, 1);
+}
+
+Void OnPlayerDistanceDriven(CSmScore _Score, Real _Distance) {
+	PlayerStatistics::AddPlayerRoundReal(_Score, C_PlayerStatisticsKey_DistanceDriven, _Distance);
 }
 
 /* Progression */

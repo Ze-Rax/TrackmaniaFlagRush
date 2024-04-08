@@ -171,6 +171,18 @@ FlagRush_Handicaps::Yield();
 declare Flag::K_Flag PreviousFlag = Flag::Get();
 Flag::Yield();
 
+// Track distance driven
+foreach (Player in Players) {
+	declare Vec3 FlagRush_PreviousPosition for Player = Player.Position;
+	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
+		continue;
+	} else if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
+		declare Real Distance = ML::Distance(Player.Position, FlagRush_PreviousPosition);
+		Scores::OnPlayerDistanceDriven(Player.Score, Distance);
+	}
+	FlagRush_PreviousPosition = Player.Position;
+}
+
 // Update Flag
 // Update carrying statistic
 if (Flag::IsOnPlayer()) {

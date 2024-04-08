@@ -212,11 +212,11 @@ Void OnPlayerStealFlag(CSmScore _NewCarrierScore) {
 }
 
 Void OnPlayerPassFlag(CSmScore _OldCarrierScore) {
-	PlayerStatistics::AddPlayerRoundInteger(_OldCarrierScore, C_PlayerStasticsKey_FlagPossession, 1);
+	PlayerStatistics::AddPlayerRoundInteger(_OldCarrierScore, C_PlayerStasticsKey_FlagTeamPass, 1);
 }
 
 Void OnPlayerCarriesFlag(CSmScore _CarrierScore) {
-	PlayerStatistics::AddPlayerRoundInteger(_CarrierScore, C_PlayerStasticsKey_FlagTeamPass, Period);
+	PlayerStatistics::AddPlayerRoundInteger(_CarrierScore, C_PlayerStasticsKey_FlagPossession, Period);
 }
 
 Void OnPlayerRespawn(CSmScore _Score) {
@@ -277,6 +277,9 @@ Void StartRound() {
 }
 
 Void EndRound() {
+	foreach(Player in Players) {
+		log(PlayerStatistics::GetPlayerRoundIntegers(Player.Score));
+	}
 	Scores::EndRound();
 	PlayerStatistics::EndRound();
 	TeamPointsProgression::EndRound();

@@ -497,9 +497,9 @@ Void FlagCarrier_PassFlag(CSmPlayer Player) {
 	declare CSmPlayer OldCarrier = Flag::GetPlayer();
 	declare Boolean IsNotSameTeam = Player.CurrentClan != OldCarrier.CurrentClan;
 	if (IsNotSameTeam) {
-		Scores::OnPlayerStealFlag(Player.Score);
+		Scores::OnPlayerStealsFlag(Player.Score);
 	} else {
-		Scores::OnPlayerPassFlag(OldCarrier.Score);
+		Scores::OnPlayerPassesFlag(OldCarrier.Score);
 	}
 	Player_ResetHandicaps(OldCarrier);
 	// New Carrier
@@ -548,22 +548,25 @@ Void FlagCarrier_DropFlag() {
 }
 
 Void FlagCarrier_ScoreFlag() {
-	declare CSmPlayer CarrierPlayer = Flag::GetPlayer();
-	Messages::FlagScored(CarrierPlayer, C_Duration_EventMessage);
-	Scores::OnPlayerScoreFlag(CarrierPlayer.Score);
 	declare Flag::K_Flag Flag = Flag::Get();
+	declare CSmPlayer CarrierPlayer = Flag::GetPlayer();
 
 	// Check for assist
-	declare CUser Assist;
+	declare CSmScore AssistScore;
+	declare CUser AssistUser;
 	if (Now - Flag.LastPass.Date <= C_AssistTimeThreshold && Flag.LastPass.From.Id != NullId) {
-		declare CSmScore AssistScore <=> Scores[Flag.LastPass.From.ScoreId];
-		if (AssistScore.TeamNum == CarrierPlayer.Score.TeamNum) {
-			Assist = AssistScore.User;
-			Scores::OnPlayerScoreFlagAssist(AssistScore);
+		declare CSmScore LastPassSourceScore <=> Scores.get(Flag.LastPass.From.ScoreId, Null);
+		if (LastPassSourceScore.TeamNum == CarrierPlayer.Score.TeamNum) {
+			AssistScore <=> LastPassSourceScore;
+			AssistUser <=> LastPassSourceScore.User;
 		}
 	}
+
+	Messages::FlagScored(CarrierPlayer, C_Duration_EventMessage);
+	Scores::OnPlayerScoresFlag(CarrierPlayer.Score, AssistScore);
+
 	Player_ResetHandicaps(CarrierPlayer);
-	FlagRush_XmlRpc::Send_FlagScored(CarrierPlayer, Assist);
+	FlagRush_XmlRpc::Send_FlagScored(CarrierPlayer, AssistUser);
 	Flag_Reset(True);
 }
 

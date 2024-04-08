@@ -42,7 +42,7 @@ These settings change how the gameplay in a round behaves.
 | S_UseCollisions                  | Boolean | False         | Whether or not to use physics based collisions between players. This setting is EXPERIMENTAL: Player collisions can feel and be weird and inconsistent. If enabled, server will also switch to server side simulation (See S_TrustClientSimu) and disable crude extrapolation (See S_UseCrudeExtrapolation). |
 | S_ForceEnabledVehiclesCsv        | Text    | "" (blank)    | Forces the given list of vehicles to be enabled. Overrides the vehicle configuration of the map. Invalid values are ignored. Comma separated values, case insensitive and will be trimmed. Examples: `stadium,rally`, `Stadium, snow   , RaLlY` |
 
-## Vehicle Tunings
+## Vehicle tuning settings
 
 These settings change vehicle characteristic for balancing.
 

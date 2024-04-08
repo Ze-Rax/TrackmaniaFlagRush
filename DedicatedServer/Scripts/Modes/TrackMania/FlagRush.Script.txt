@@ -95,7 +95,7 @@
 #Setting S_TuningSnowAcceleration						1.0 		as "<hidden>"
 #Setting S_TuningSnowAdherence							1.0 		as "<hidden>"
 #Setting S_TuningSnowControl								1.0 		as "<hidden>"
-#Setting S_TuningRallyAcceleration					0.66 		as "<hidden>"
+#Setting S_TuningRallyAcceleration					0.7 		as "<hidden>"
 #Setting S_TuningRallyAdherence							1.0 		as "<hidden>"
 #Setting S_TuningRallyControl								1.0 		as "<hidden>"
 

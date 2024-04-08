@@ -1,6 +1,6 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt" as FlagRush_Scores
+#Include "Libs/Zrx/ModeLibs/FlagRush/Scores.Script.txt" as Scores
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
 
 #Struct K_PodiumPlaceConfig {
@@ -18,9 +18,9 @@
 }
 
 Void SetContent(CSmScore[] PodiumScores) {
-	declare CSmScore[] FlagsScoredMatchRanking = FlagRush_Scores::GetPlayerFlagsScoredMatchRanking();
-	declare CSmScore[] AssistsMatchRanking = FlagRush_Scores::GetPlayerAssistsMatchRanking();
-	declare CSmScore[] FlagsStolenMatchRanking = FlagRush_Scores::GetPlayerFlagsStealsMatchRanking();
+	declare CSmScore[] FlagsScoredMatchRanking = Scores::GetPlayerFlagsScoredMatchRanking();
+	declare CSmScore[] AssistsMatchRanking = Scores::GetPlayerAssistsMatchRanking();
+	declare CSmScore[] FlagsStolenMatchRanking = Scores::GetPlayerFlagsStealsMatchRanking();
 
 	declare netwrite K_PodiumPlaceConfig[Integer] FlagRush_Net_PodiumPlacementConfigs for Teams[0];
 	for (Placement, 1, 3) {
@@ -32,12 +32,12 @@ Void SetContent(CSmScore[] PodiumScores) {
 				Name = PlacementScore.User.Name,
 				Avatar = PlacementScore.User.CountryFlagUrl,
 				Clan = PlacementScore.TeamNum,
-				Points = FlagRush_Scores::GetPlayerMatchPoints(PlacementScore),
-				FlagsScored = FlagRush_Scores::GetPlayerMatchFlagScores(PlacementScore),
+				Points = Scores::GetPlayerMatchPoints(PlacementScore),
+				FlagsScored = Scores::GetPlayerMatchFlagScores(PlacementScore),
 				FlagsScoredPlacement = FlagsScoredMatchRanking.keyof(PlacementScore) + 1,
-				Assists = FlagRush_Scores::GetPlayerMatchFlagScoreAssists(PlacementScore),
+				Assists = Scores::GetPlayerMatchFlagScoreAssists(PlacementScore),
 				AssistsPlacement = AssistsMatchRanking.keyof(PlacementScore) + 1,
-				FlagsStolen = FlagRush_Scores::GetPlayerMatchFlagSteals(PlacementScore),
+				FlagsStolen = Scores::GetPlayerMatchFlagSteals(PlacementScore),
 				FlagsStolenPlacement = FlagsStolenMatchRanking.keyof(PlacementScore) + 1
 			};
 		} else {

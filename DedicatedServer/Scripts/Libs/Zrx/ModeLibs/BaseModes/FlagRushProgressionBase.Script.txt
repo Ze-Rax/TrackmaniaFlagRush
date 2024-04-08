@@ -30,7 +30,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"						as FlagRush_Common
 #Include "Libs/Zrx/ModeLibs/FlagRush/SettingTracker.Script.txt"							as SettingTracker
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"								as FlagRush_Map
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"						as FlagRush_Scores
+#Include "Libs/Zrx/ModeLibs/FlagRush/Scores.Script.txt"											as Scores
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_RpcEvents.Script.txt"					as FlagRush_XmlRpc
@@ -194,7 +194,7 @@ FlagRush_UI::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRound
 ***
 FlagRush_XmlRpc::Load();
 Messages::Load();
-FlagRush_Scores::Load();
+Scores::Load();
 
 FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
 FlagRush_Teams::SetTeam1HueOverride(S_Team1Hue);
@@ -210,7 +210,7 @@ SettingTracker::Load();
 ***
 FlagRush_XmlRpc::Unload();
 Messages::Unload();
-FlagRush_Scores::Unload();
+Scores::Unload();
 SettingTracker::Unload();
 ***
 
@@ -251,7 +251,7 @@ ModeUtils::SetEndTime(-1);
 
 ***InitMatch***
 ***
-FlagRush_Scores::StartMatch();
+Scores::StartMatch();
 FlagRush_XmlRpc::Send_MatchStart();
 ***
 
@@ -262,14 +262,14 @@ FlagRush_XmlRpc::Send_MatchEnd(MatchEndRequested);
 
 ***AfterEndMatch***
 ***
-FlagRush_Scores::EndMatch();
+Scores::EndMatch();
 ***
 
 // ~~~~~~~~~~ Map ~~~~~~~~~~ //
 
 ***InitMap***
 ***
-FlagRush_Scores::StartMap();
+Scores::StartMap();
 declare Boolean MapValid = FlagRush_Map::InitLandmarks();
 if (!MapValid) {
 	MatchEndRequested = True;
@@ -296,21 +296,21 @@ declare Boolean MapIsValid = Progression_MapIsValid();
 FlagRush_XmlRpc::Send_MapEnd(MapIsValid);
 if (!MapIsValid) {
 	Messages::MapSkip(C_Duration_MapEnd);
-	FlagRush_Scores::Clear(FlagRush_Scores::C_Level_Map);
+	Scores::Clear(Scores::C_Level_Map);
 } else {
 	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMap();
 	if (WinnerClan == 0) {
 		Messages::MapDraw(C_Duration_MapEnd);
 	} else {
 		Messages::MapWin(WinnerClan, C_Duration_MapEnd);
-		FlagRush_Scores::OnClanMapWin(WinnerClan);
+		Scores::OnClanMapWin(WinnerClan);
 	}
 }
 
 // Sleep during message and show scoreboard update half way through
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 MB_Sleep(C_Duration_MapEnd / 2);
-FlagRush_Scores::EndMap();
+Scores::EndMap();
 MB_Sleep(C_Duration_MapEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
@@ -325,7 +325,7 @@ if (Progression_MatchPointLimitReached()) {
 
 ***InitRound***
 ***
-FlagRush_Scores::StartRound();
+Scores::StartRound();
 FlagRush_XmlRpc::Send_RoundStart();
 declare Boolean Progression_RoundEndRequested for This;
 Progression_RoundEndRequested = False;
@@ -359,21 +359,21 @@ declare Boolean RoundIsValid = Progression_RoundIsValid();
 FlagRush_XmlRpc::Send_RoundEnd(RoundIsValid);
 if (!RoundIsValid) {
 	Messages::RoundSkip(C_Duration_RoundEnd);
-	FlagRush_Scores::Clear(FlagRush_Scores::C_Level_Round);
+	Scores::Clear(Scores::C_Level_Round);
 } else {
 	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateRound();
 	if (WinnerClan == 0) {
 		Messages::RoundDraw(C_Duration_RoundEnd);
 	} else {
 		Messages::RoundWin(WinnerClan, C_Duration_RoundEnd);
-		FlagRush_Scores::OnClanRoundWin(WinnerClan);
+		Scores::OnClanRoundWin(WinnerClan);
 	}
 }
 
 // Sleep during message and show scoreboard update half way through
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 MB_Sleep(C_Duration_RoundEnd / 2);
-FlagRush_Scores::EndRound();
+Scores::EndRound();
 MB_Sleep(C_Duration_RoundEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
@@ -477,7 +477,7 @@ if (WinnerClan == 0) {
 // Sleep during message and show scoreboard update half way through
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 MB_Sleep(C_Duration_MatchEnd / 2);
-FlagRush_Scores::EndMatch();
+Scores::EndMatch();
 MB_Sleep(C_Duration_MatchEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
@@ -572,7 +572,7 @@ FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 ModeEvents::Yield(); // Keep as first in yield
 ModeCommands::Yield();
 Messages::Yield();
-FlagRush_Scores::Yield();
+Scores::Yield();
 FlagRush_UI::Yield();
 { +++Private_Yield_HandleProgressionsCommands+++ }
 { +++Private_Yield_HandleCriticalModeScriptSettingsUpdates+++ }
@@ -714,42 +714,42 @@ foreach (Command in PendingCommands) {
 		}
 		case C_Command_SetTeam1RoundScore: {
 			declare Integer Value = ML::Max(Command.ValueInteger, 0);
-			FlagRush_Scores::SetClanRoundPoints(1, Value);
-			FlagRush_Scores::Net_SendTeamScores();
+			Scores::SetClanRoundPoints(1, Value);
+			Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[0].Name }}} round score to {{{ Value }}}.""";
 		}
 		case C_Command_SetTeam2RoundScore: {
 			declare Integer Value = ML::Max(Command.ValueInteger, 0);
-			FlagRush_Scores::SetClanRoundPoints(2, Value);
-			FlagRush_Scores::Net_SendTeamScores();
+			Scores::SetClanRoundPoints(2, Value);
+			Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[1].Name }}} round score to {{{ Value }}}.""";
 		}
 		case C_Command_SetTeam1MapScore: {
 			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbRoundsToWinMap);
-			FlagRush_Scores::SetClanMapPoints(1, Value);
-			FlagRush_Scores::Net_SendTeamScores();
+			Scores::SetClanMapPoints(1, Value);
+			Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[0].Name }}} map score to {{{ Value }}}.""";
 		}
 		case C_Command_SetTeam2MapScore: {
 			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbRoundsToWinMap);
-			FlagRush_Scores::SetClanMapPoints(2, Value);
-			FlagRush_Scores::Net_SendTeamScores();
+			Scores::SetClanMapPoints(2, Value);
+			Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[1].Name }}} map score to {{{ Value }}}.""";
 		}
 		case C_Command_SetTeam1MatchScore: {
 			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbMapsToWinMatch);
-			FlagRush_Scores::SetClanMatchPoints(1, Value);
-			FlagRush_Scores::Net_SendTeamScores();
+			Scores::SetClanMatchPoints(1, Value);
+			Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[0].Name }}} match score to {{{ Value }}}.""";
 		}
 		case C_Command_SetTeam2MatchScore: {
 			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbMapsToWinMatch);
-			FlagRush_Scores::SetClanMatchPoints(2, Value);
-			FlagRush_Scores::Net_SendTeamScores();
+			Scores::SetClanMatchPoints(2, Value);
+			Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[1].Name }}} match score to {{{ Value }}}.""";
 		}
 		case C_Command_ClearScores: {
-			FlagRush_Scores::Clear();
+			Scores::Clear();
 			CommandText = "Cleared all scores.";
 		}
 		case C_Command_BalanceTeams: {
@@ -805,17 +805,17 @@ Boolean Progression_OvertimeIsRunning() {
 }
 
 Boolean Progression_MatchPointLimitReached() {
-	return ML::Max(FlagRush_Scores::GetClanMatchPoints(1), FlagRush_Scores::GetClanMatchPoints(2)) >= S_NbMapsToWinMatch;
+	return ML::Max(Scores::GetClanMatchPoints(1), Scores::GetClanMatchPoints(2)) >= S_NbMapsToWinMatch;
 }
 
 Boolean Progression_MapPointLimitReached() {
-	return ML::Max(FlagRush_Scores::GetClanMapPoints(1), FlagRush_Scores::GetClanMapPoints(2)) >= S_NbRoundsToWinMap;
+	return ML::Max(Scores::GetClanMapPoints(1), Scores::GetClanMapPoints(2)) >= S_NbRoundsToWinMap;
 }
 
 Boolean Progression_FlagLimitReached() {
 	if (S_NbFlagsToWinRound <= 0) return False;
-	declare Integer RoundPointsTeam1 = FlagRush_Scores::GetClanRoundPoints(1);
-	declare Integer RoundPointsTeam2 = FlagRush_Scores::GetClanRoundPoints(2);
+	declare Integer RoundPointsTeam1 = Scores::GetClanRoundPoints(1);
+	declare Integer RoundPointsTeam2 = Scores::GetClanRoundPoints(2);
 	return ML::Max(RoundPointsTeam1, RoundPointsTeam2) >= S_NbFlagsToWinRound;
 }
 

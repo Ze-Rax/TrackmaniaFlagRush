@@ -33,7 +33,7 @@
 // FlagRush Libs
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"									as FlagRush_Common
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"										as FlagRush_Map
-// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"									as FlagRush_Scores
+// #Include "Libs/Zrx/ModeLibs/FlagRush/Scores.Script.txt"													as Scores
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"				as FlagRush_MatchEvaluation
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"									as FlagRush_Teams
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_RpcEvents.Script.txt"							as FlagRush_XmlRpc
@@ -174,9 +174,9 @@ Flag::Yield();
 // Update Flag
 // Update carrying statistic
 if (Flag::IsOnPlayer()) {
-	declare CSmScore CarrierScore = Scores.get(Flag::Get().Location.Player.ScoreId, Null);
+	declare CSmScore CarrierScore <=> Scores.get(Flag::Get().Location.Player.ScoreId, Null);
 	if (CarrierScore != Null) {
-		FlagRush_Scores::OnPlayerCarriesFlag(CarrierScore);
+		Scores::OnPlayerCarriesFlag(CarrierScore);
 	}
 }
 
@@ -448,7 +448,7 @@ Boolean Player_CanSpawn(CSmPlayer Player) {
 
 Void Player_Spawn(CSmPlayer Player) {
 	if (MB_TurnIsRunning() && Player.ForceModelId != Vehicle_GetModelId(Player)) {
-		FlagRush_Scores::OnPlayerChangesVehicle(Player.Score);
+		Scores::OnPlayerChangesVehicle(Player.Score);
 	}
 	Player_Initialize(Player);
 	declare CMapLandmark SpawnLandmark = FlagRush_Map::GetSpawn(Player);
@@ -497,9 +497,9 @@ Void FlagCarrier_PassFlag(CSmPlayer Player) {
 	declare CSmPlayer OldCarrier = Flag::GetPlayer();
 	declare Boolean IsNotSameTeam = Player.CurrentClan != OldCarrier.CurrentClan;
 	if (IsNotSameTeam) {
-		FlagRush_Scores::OnPlayerStealFlag(Player.Score);
+		Scores::OnPlayerStealFlag(Player.Score);
 	} else {
-		FlagRush_Scores::OnPlayerPassFlag(OldCarrier.Score);
+		Scores::OnPlayerPassFlag(OldCarrier.Score);
 	}
 	Player_ResetHandicaps(OldCarrier);
 	// New Carrier
@@ -550,7 +550,7 @@ Void FlagCarrier_DropFlag() {
 Void FlagCarrier_ScoreFlag() {
 	declare CSmPlayer CarrierPlayer = Flag::GetPlayer();
 	Messages::FlagScored(CarrierPlayer, C_Duration_EventMessage);
-	FlagRush_Scores::OnPlayerScoreFlag(CarrierPlayer.Score);
+	Scores::OnPlayerScoreFlag(CarrierPlayer.Score);
 	declare Flag::K_Flag Flag = Flag::Get();
 
 	// Check for assist
@@ -559,7 +559,7 @@ Void FlagCarrier_ScoreFlag() {
 		declare CSmScore AssistScore <=> Scores[Flag.LastPass.From.ScoreId];
 		if (AssistScore.TeamNum == CarrierPlayer.Score.TeamNum) {
 			Assist = AssistScore.User;
-			FlagRush_Scores::OnPlayerScoreFlagAssist(AssistScore);
+			Scores::OnPlayerScoreFlagAssist(AssistScore);
 		}
 	}
 	Player_ResetHandicaps(CarrierPlayer);
@@ -596,7 +596,7 @@ Void OnPlayerRequestsRespawn(CSmPlayer Player) {
 
 	Player_Unspawn(Player);
 	Messages::PlayerRespawn(Player);
-	FlagRush_Scores::OnPlayerRespawn(Player.Score);
+	Scores::OnPlayerRespawn(Player.Score);
 }
 
 Void OnPlayerDeath(CSmPlayer Player) {

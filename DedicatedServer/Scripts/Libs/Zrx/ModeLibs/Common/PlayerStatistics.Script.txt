@@ -1,10 +1,12 @@
-/*
+/**
  *	Library to keep track of players activity in gamemodes; Inspired by Scores library
  */
 
-#Const	C_Level_Match		0
-#Const	C_Level_Map			1
-#Const	C_Level_Round		2
+#Include "Libs/Nadeo/TMGame/Modes/Scores.Script.txt" as Scores // Only used for aliasing reset levels
+
+#Const Scores::C_Level_Match as C_Level_Match
+#Const Scores::C_Level_Map as C_Level_Map
+#Const Scores::C_Level_Round as C_Level_Round
 
 /* General functions for easy operation; Match progression methods at the bottom */
 
@@ -12,236 +14,224 @@
 // Round //
 ///////////
 
-Void ResetPlayerRoundTelemetry(CSmScore Score) {
-	declare Integer[Text] IntegerRoundTelemetry for Score;
-	IntegerRoundTelemetry = [];
-	declare Real[Text] RealRoundTelemetry for Score;
-	RealRoundTelemetry = [];
+Void ResetPlayerRoundStatistic(CSmScore _Score) {
+	declare Integer[Text] PlayerStatistics_Round_Integer for _Score = [];
+	PlayerStatistics_Round_Integer = [];
+	declare Real[Text] PlayerStatistics_Round_Real for _Score = [];
+	PlayerStatistics_Round_Real = [];
 }
 
 /* Integer */
 
-Void SetPlayerRoundInteger(CSmScore Score, Text Key, Integer Value) {
-	declare Integer[Text] IntegerRoundTelemetry for Score;
-	IntegerRoundTelemetry[Key] = Value;
+Void SetPlayerRoundInteger(CSmScore _Score, Text _Key, Integer _Value) {
+	declare Integer[Text] PlayerStatistics_Round_Integer for _Score = [];
+	PlayerStatistics_Round_Integer[_Key] = _Value;
 }
 
-Integer[Text] GetPlayerRoundIntegers(CSmScore Score) {
-	declare Integer[Text] IntegerRoundTelemetry for Score;
-	return IntegerRoundTelemetry;
+Integer[Text] GetPlayerRoundIntegers(CSmScore _Score) {
+	declare Integer[Text] PlayerStatistics_Round_Integer for _Score = [];
+	return PlayerStatistics_Round_Integer;
 }
 
-Integer GetPlayerRoundInteger(CSmScore Score, Text Key) {
-	declare Integer[Text] IntegerRoundTelemetry for Score;
-	return IntegerRoundTelemetry.get(Key, 0);
+Integer GetPlayerRoundInteger(CSmScore _Score, Text _Key) {
+	declare Integer[Text] PlayerStatistics_Round_Integer for _Score = [];
+	return PlayerStatistics_Round_Integer.get(_Key, 0);
 }
 
-Void AddPlayerRoundInteger(CSmScore Score, Text Key, Integer ValueAdd) {
-	declare Integer[Text] IntegerRoundTelemetry for Score;
-	SetPlayerRoundInteger(Score, Key, GetPlayerRoundInteger(Score, Key) + ValueAdd);
+Void AddPlayerRoundInteger(CSmScore _Score, Text _Key, Integer _ValueAdd) {
+	SetPlayerRoundInteger(_Score, _Key, GetPlayerRoundInteger(_Score, _Key) + _ValueAdd);
 }
 
-Void RemovePlayerRoundInteger(CSmScore Score, Text Key, Integer ValueRemove) {
-	declare Integer[Text] IntegerRoundTelemetry for Score;
-	SetPlayerRoundInteger(Score, Key, GetPlayerRoundInteger(Score, Key) - ValueRemove);
+Void SubtractPlayerRoundInteger(CSmScore _Score, Text _Key, Integer _ValueSubtract) {
+	SetPlayerRoundInteger(_Score, _Key, GetPlayerRoundInteger(_Score, _Key) - _ValueSubtract);
 }
 
 /* Real */
 
-Void SetPlayerRoundReal(CSmScore Score, Text Key, Real Value) {
-	declare Real[Text] RealRoundTelemetry for Score;
-	RealRoundTelemetry[Key] = Value;
+Void SetPlayerRoundReal(CSmScore _Score, Text _Key, Real _Value) {
+	declare Real[Text] PlayerStatistics_Round_Real for _Score = [];
+	PlayerStatistics_Round_Real[_Key] = _Value;
 }
 
-Real[Text] GetPlayerRoundReals(CSmScore Score) {
-	declare Real[Text] RealRoundTelemetry for Score;
-	return RealRoundTelemetry;
+Real[Text] GetPlayerRoundReals(CSmScore _Score) {
+	declare Real[Text] PlayerStatistics_Round_Real for _Score = [];
+	return PlayerStatistics_Round_Real;
 }
 
-Real GetPlayerRoundReal(CSmScore Score, Text Key) {
-	declare Real[Text] RealRoundTelemetry for Score;
-	return RealRoundTelemetry.get(Key, 0.);
+Real GetPlayerRoundReal(CSmScore _Score, Text _Key) {
+	declare Real[Text] PlayerStatistics_Round_Real for _Score = [];
+	return PlayerStatistics_Round_Real.get(_Key, 0.);
 }
 
-Void AddPlayerRoundReal(CSmScore Score, Text Key, Real ValueAdd) {
-	declare Real[Text] RealRoundTelemetry for Score;
-	SetPlayerRoundReal(Score, Key, GetPlayerRoundReal(Score, Key) + ValueAdd);
+Void AddPlayerRoundReal(CSmScore _Score, Text _Key, Real _ValueAdd) {
+	SetPlayerRoundReal(_Score, _Key, GetPlayerRoundReal(_Score, _Key) + _ValueAdd);
 }
 
-Void RemovePlayerRoundReal(CSmScore Score, Text Key, Real ValueRemove) {
-	declare Real[Text] RealRoundTelemetry for Score;
-	SetPlayerRoundReal(Score, Key, GetPlayerRoundReal(Score, Key) - ValueRemove);
+Void SubtractPlayerRoundReal(CSmScore _Score, Text _Key, Real _ValueSubtract) {
+	SetPlayerRoundReal(_Score, _Key, GetPlayerRoundReal(_Score, _Key) - _ValueSubtract);
 }
 
 /////////
 // Map //
 /////////
 
-Void ResetPlayerMapTelemetry(CSmScore Score) {
-	declare Integer[Text] IntegerMapTelemetry for Score;
-	IntegerMapTelemetry = [];
-	declare Real[Text] RealMapTelemetry for Score;
-	RealMapTelemetry = [];
+Void ResetPlayerMapStatistic(CSmScore _Score) {
+	declare Integer[Text] PlayerStatistics_Map_Integer for _Score = [];
+	PlayerStatistics_Map_Integer = [];
+	declare Real[Text] PlayerStatistics_Map_Real for _Score = [];
+	PlayerStatistics_Map_Real = [];
 }
 
 /* Integer */
 
-Void SetPlayerMapInteger(CSmScore Score, Text Key, Integer Value) {
-	declare Integer[Text] IntegerMapTelemetry for Score;
-	IntegerMapTelemetry[Key] = Value;
+Void SetPlayerMapInteger(CSmScore _Score, Text _Key, Integer _Value) {
+	declare Integer[Text] PlayerStatistics_Map_Integer for _Score = [];
+	PlayerStatistics_Map_Integer[_Key] = _Value;
 }
 
-Integer[Text] GetPlayerMapIntegers(CSmScore Score) {
-	declare Integer[Text] IntegerMapTelemetry for Score;
-	return IntegerMapTelemetry;
+Integer[Text] GetPlayerMapIntegers(CSmScore _Score) {
+	declare Integer[Text] PlayerStatistics_Map_Integer for _Score = [];
+	return PlayerStatistics_Map_Integer;
 }
 
-Integer GetPlayerMapInteger(CSmScore Score, Text Key) {
-	declare Integer[Text] IntegerMapTelemetry for Score;
-	return IntegerMapTelemetry.get(Key, 0);
+Integer GetPlayerMapInteger(CSmScore _Score, Text _Key) {
+	declare Integer[Text] PlayerStatistics_Map_Integer for _Score = [];
+	return PlayerStatistics_Map_Integer.get(_Key, 0);
 }
 
-Void AddPlayerMapInteger(CSmScore Score, Text Key, Integer ValueAdd) {
-	declare Integer[Text] IntegerMapTelemetry for Score;
-	SetPlayerMapInteger(Score, Key, GetPlayerMapInteger(Score, Key) + ValueAdd);
+Void AddPlayerMapInteger(CSmScore _Score, Text _Key, Integer _ValueAdd) {
+	SetPlayerMapInteger(_Score, _Key, GetPlayerMapInteger(_Score, _Key) + _ValueAdd);
 }
 
-Void RemovePlayerMapInteger(CSmScore Score, Text Key, Integer ValueRemove) {
-	declare Integer[Text] IntegerMapTelemetry for Score;
-	SetPlayerMapInteger(Score, Key, GetPlayerMapInteger(Score, Key) - ValueRemove);
+Void SubtractPlayerMapInteger(CSmScore _Score, Text _Key, Integer _ValueSubtract) {
+	SetPlayerMapInteger(_Score, _Key, GetPlayerMapInteger(_Score, _Key) - _ValueSubtract);
 }
 
 /* Real */
 
-Void SetPlayerMapReal(CSmScore Score, Text Key, Real Value) {
-	declare Real[Text] RealMapTelemetry for Score;
-	RealMapTelemetry[Key] = Value;
+Void SetPlayerMapReal(CSmScore _Score, Text _Key, Real _Value) {
+	declare Real[Text] PlayerStatistics_Map_Real for _Score = [];
+	PlayerStatistics_Map_Real[_Key] = _Value;
 }
 
-Real[Text] GetPlayerMapReals(CSmScore Score) {
-	declare Real[Text] RealMapTelemetry for Score;
-	return RealMapTelemetry;
+Real[Text] GetPlayerMapReals(CSmScore _Score) {
+	declare Real[Text] PlayerStatistics_Map_Real for _Score = [];
+	return PlayerStatistics_Map_Real;
 }
 
-Real GetPlayerMapReal(CSmScore Score, Text Key) {
-	declare Real[Text] RealMapTelemetry for Score;
-	return RealMapTelemetry.get(Key, 0.);
+Real GetPlayerMapReal(CSmScore _Score, Text _Key) {
+	declare Real[Text] PlayerStatistics_Map_Real for _Score = [];
+	return PlayerStatistics_Map_Real.get(_Key, 0.);
 }
 
-Void AddPlayerMapReal(CSmScore Score, Text Key, Real ValueAdd) {
-	declare Real[Text] RealMapTelemetry for Score;
-	SetPlayerMapReal(Score, Key, GetPlayerMapReal(Score, Key) + ValueAdd);
+Void AddPlayerMapReal(CSmScore _Score, Text _Key, Real _ValueAdd) {
+	SetPlayerMapReal(_Score, _Key, GetPlayerMapReal(_Score, _Key) + _ValueAdd);
 }
 
-Void RemovePlayerMapReal(CSmScore Score, Text Key, Real ValueRemove) {
-	declare Real[Text] RealMapTelemetry for Score;
-	SetPlayerMapReal(Score, Key, GetPlayerMapReal(Score, Key) - ValueRemove);
+Void SubtractPlayerMapReal(CSmScore _Score, Text _Key, Real _ValueSubtract) {
+	SetPlayerMapReal(_Score, _Key, GetPlayerMapReal(_Score, _Key) - _ValueSubtract);
 }
 
 ///////////
 // Match //
 ///////////
 
-Void ResetPlayerMatchTelemetry(CSmScore Score) {
-	declare Integer[Text] IntegerMatchTelemetry for Score;
-	IntegerMatchTelemetry = [];
-	declare Real[Text] RealMatchTelemetry for Score;
-	RealMatchTelemetry = [];
+Void ResetPlayerMatchStatistic(CSmScore _Score) {
+	declare Integer[Text] PlayerStatistics_Match_Integer for _Score = [];
+	PlayerStatistics_Match_Integer = [];
+	declare Real[Text] PlayerStatistics_Match_Real for _Score = [];
+	PlayerStatistics_Match_Real = [];
 }
 
 /* Integer */
 
-Void SetPlayerMatchInteger(CSmScore Score, Text Key, Integer Value) {
-	declare Integer[Text] IntegerMatchTelemetry for Score;
-	IntegerMatchTelemetry[Key] = Value;
+Void SetPlayerMatchInteger(CSmScore _Score, Text _Key, Integer _Value) {
+	declare Integer[Text] PlayerStatistics_Match_Integer for _Score = [];
+	PlayerStatistics_Match_Integer[_Key] = _Value;
 }
 
-Integer[Text] GetPlayerMatchIntegers(CSmScore Score) {
-	declare Integer[Text] IntegerMatchTelemetry for Score;
-	return IntegerMatchTelemetry;
+Integer[Text] GetPlayerMatchIntegers(CSmScore _Score) {
+	declare Integer[Text] PlayerStatistics_Match_Integer for _Score = [];
+	return PlayerStatistics_Match_Integer;
 }
 
-Integer GetPlayerMatchInteger(CSmScore Score, Text Key) {
-	declare Integer[Text] IntegerMatchTelemetry for Score;
-	return IntegerMatchTelemetry.get(Key, 0);
+Integer GetPlayerMatchInteger(CSmScore _Score, Text _Key) {
+	declare Integer[Text] PlayerStatistics_Match_Integer for _Score = [];
+	return PlayerStatistics_Match_Integer.get(_Key, 0);
 }
 
-Void AddPlayerMatchInteger(CSmScore Score, Text Key, Integer ValueAdd) {
-	declare Integer[Text] IntegerMatchTelemetry for Score;
-	SetPlayerMatchInteger(Score, Key, GetPlayerMatchInteger(Score, Key) + ValueAdd);
+Void AddPlayerMatchInteger(CSmScore _Score, Text _Key, Integer _ValueAdd) {
+	SetPlayerMatchInteger(_Score, _Key, GetPlayerMatchInteger(_Score, _Key) + _ValueAdd);
 }
 
-Void RemovePlayerMatchInteger(CSmScore Score, Text Key, Integer ValueRemove) {
-	declare Integer[Text] IntegerMatchTelemetry for Score;
-	SetPlayerMatchInteger(Score, Key, GetPlayerMatchInteger(Score, Key) - ValueRemove);
+Void SubtractPlayerMatchInteger(CSmScore _Score, Text _Key, Integer _ValueSubtract) {
+	SetPlayerMatchInteger(_Score, _Key, GetPlayerMatchInteger(_Score, _Key) - _ValueSubtract);
 }
 
 /* Real */
 
-Void SetPlayerMatchReal(CSmScore Score, Text Key, Real Value) {
-	declare Real[Text] RealMatchTelemetry for Score;
-	RealMatchTelemetry[Key] = Value;
+Void SetPlayerMatchReal(CSmScore _Score, Text _Key, Real _Value) {
+	declare Real[Text] PlayerStatistics_Match_Real for _Score = [];
+	PlayerStatistics_Match_Real[_Key] = _Value;
 }
 
-Real[Text] GetPlayerMatchReals(CSmScore Score) {
-	declare Real[Text] RealMatchTelemetry for Score;
-	return RealMatchTelemetry;
+Real[Text] GetPlayerMatchReals(CSmScore _Score) {
+	declare Real[Text] PlayerStatistics_Match_Real for _Score = [];
+	return PlayerStatistics_Match_Real;
 }
 
-Real GetPlayerMatchReal(CSmScore Score, Text Key) {
-	declare Real[Text] RealMatchTelemetry for Score;
-	return RealMatchTelemetry.get(Key, 0.);
+Real GetPlayerMatchReal(CSmScore _Score, Text _Key) {
+	declare Real[Text] PlayerStatistics_Match_Real for _Score = [];
+	return PlayerStatistics_Match_Real.get(_Key, 0.);
 }
 
-Void AddPlayerMatchReal(CSmScore Score, Text Key, Real ValueAdd) {
-	declare Real[Text] RealMatchTelemetry for Score;
-	SetPlayerMatchReal(Score, Key, GetPlayerMatchReal(Score, Key) + ValueAdd);
+Void AddPlayerMatchReal(CSmScore _Score, Text _Key, Real _ValueAdd) {
+	SetPlayerMatchReal(_Score, _Key, GetPlayerMatchReal(_Score, _Key) + _ValueAdd);
 }
 
-Void RemovePlayerMatchReal(CSmScore Score, Text Key, Real ValueRemove) {
-	declare Real[Text] RealMatchTelemetry for Score;
-	SetPlayerMatchReal(Score, Key, GetPlayerMatchReal(Score, Key) - ValueRemove);
+Void SubtractPlayerMatchReal(CSmScore _Score, Text _Key, Real _ValueSubtract) {
+	SetPlayerMatchReal(_Score, _Key, GetPlayerMatchReal(_Score, _Key) - _ValueSubtract);
 }
 
 /* Match Progression Methods */
 
-Void Clear(CSmScore Score, Integer Level) {
-	if(Level <= C_Level_Match) ResetPlayerMatchTelemetry(Score);
-	if(Level <= C_Level_Map) ResetPlayerMapTelemetry(Score);
-	if(Level <= C_Level_Round) ResetPlayerRoundTelemetry(Score);
+Void Clear(CSmScore _Score, Integer _Level) {
+	if(_Level <= C_Level_Match) ResetPlayerMatchStatistic(_Score);
+	if(_Level <= C_Level_Map) ResetPlayerMapStatistic(_Score);
+	if(_Level <= C_Level_Round) ResetPlayerRoundStatistic(_Score);
 }
 
-Void Clear(CSmScore Score) {
-	Clear(Score, C_Level_Match);
+Void Clear(CSmScore _Score) {
+	Clear(_Score, C_Level_Match);
 }
 
-Void Clear(Integer Level) {
-	foreach(Score in Scores) Clear(Score, Level);
+Void Clear(Integer _Level) {
+	foreach(_Score in Scores) Clear(_Score, _Level);
 }
 
 Void Clear() {
 	Clear(C_Level_Match);
 }
 
-Void AffectPlayerRoundToMapAndMatchTelemetry(CSmScore Score) {
-	declare Integer[Text] IntegerRoundTelemetry = GetPlayerRoundIntegers(Score);
+Void AffectPlayerRoundToMapAndMatchStatistic(CSmScore _Score) {
+	declare Integer[Text] PlayerStatistics_Round_Integer = GetPlayerRoundIntegers(_Score);
 
-	foreach(Key => Value in IntegerRoundTelemetry) {
-		AddPlayerMapInteger(Score, Key, Value);
-		AddPlayerMatchInteger(Score, Key, Value);
+	foreach(_Key => _Value in PlayerStatistics_Round_Integer) {
+		AddPlayerMapInteger(_Score, _Key, _Value);
+		AddPlayerMatchInteger(_Score, _Key, _Value);
 	}
 
-	declare Real[Text] RealRoundTelemetry = GetPlayerRoundReals(Score);
-	foreach(Key => Value in RealRoundTelemetry) {
-		AddPlayerMapReal(Score, Key, Value);
-		AddPlayerMatchReal(Score, Key, Value);
+	declare Real[Text] PlayerStatistics_Round_Real = GetPlayerRoundReals(_Score);
+	foreach(_Key => _Value in PlayerStatistics_Round_Real) {
+		AddPlayerMapReal(_Score, _Key, _Value);
+		AddPlayerMatchReal(_Score, _Key, _Value);
 	}
 
-	Clear(Score, C_Level_Round);
+	Clear(_Score, C_Level_Round);
 }
 
-Void AffectPlayersRoundToMapAndMatchTelemetry() {
-	foreach(Score in Scores) AffectPlayerRoundToMapAndMatchTelemetry(Score);
+Void AffectPlayersRoundToMapAndMatchStatistic() {
+	foreach(_Score in Scores) AffectPlayerRoundToMapAndMatchStatistic(_Score);
 }
 
 Void StartMatch() {
@@ -265,5 +255,5 @@ Void StartRound() {
 }
 
 Void EndRound() {
-	AffectPlayersRoundToMapAndMatchTelemetry();
+	AffectPlayersRoundToMapAndMatchStatistic();
 }

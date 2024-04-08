@@ -1,20 +1,20 @@
 #Include "Libs/Nadeo/TMGame/Modes/Scores.Script.txt" as Scores
-#Include "Libs/Zrx/ModeLibs/Common/PlayerTelemetry.Script.txt" as Telemetry
+#Include "Libs/Zrx/ModeLibs/Common/PlayerStatistics.Script.txt" as PlayerStatistics
 #Include "Libs/Zrx/ModeLibs/Common/TeamPointsProgression.Script.txt" as TeamPointsProgression
 
 #Const C_PointsValue_ScoreFlag				3
 #Const C_PointsValue_StealFlag				1
 #Const C_PointsValue_ScoreFlagAssist	1
 
-#Const C_Telemetry_Key_FlagsScored				"FlagsScored"
-#Const C_Telemetry_Key_FlagsStolen				"FlagsStolen"
-#Const C_Telemetry_Key_FlagScoreAssists		"FlagScoreAssists"
-#Const C_Telemetry_Key_FlagPossession			"FlagPossession"
-#Const C_Telemetry_Key_FlagTeamPass				"FlagTeamPass"
-#Const C_Telemetry_Key_Respawn						"Respawn"
-#Const C_Telemetry_Key_VehicleChanged			"VehicleChanged"
+#Const C_PlayerStasticsKey_FlagsScored				"FlagsScored"
+#Const C_PlayerStasticsKey_FlagsStolen				"FlagsStolen"
+#Const C_PlayerStasticsKey_FlagScoreAssists		"FlagScoreAssists"
+#Const C_PlayerStasticsKey_FlagPossession			"FlagPossession"
+#Const C_PlayerStasticsKey_FlagTeamPass				"FlagTeamPass"
+#Const C_PlayerStasticsKey_Respawn						"Respawn"
+#Const C_PlayerStasticsKey_VehicleChanged			"VehicleChanged"
 
-// Must be same as Scores, Telemetry and TeamPointsProgression Levels
+// Must be same as Scores, PlayerStatistics and TeamPointsProgression Levels
 #Const C_Level_Match		0
 #Const C_Level_Map			1
 #Const C_Level_Round		2
@@ -60,39 +60,39 @@ Integer GetPlayerMatchPoints(CSmScore Score) {
 }
 
 Integer GetPlayerRoundFlagScores(CSmScore Score) {
-	return Telemetry::GetPlayerRoundInteger(Score, C_Telemetry_Key_FlagsScored);
+	return PlayerStatistics::GetPlayerRoundInteger(Score, C_PlayerStasticsKey_FlagsScored);
 }
 
 Integer GetPlayerMapFlagScores(CSmScore Score) {
-	return Telemetry::GetPlayerMapInteger(Score, C_Telemetry_Key_FlagsScored);
+	return PlayerStatistics::GetPlayerMapInteger(Score, C_PlayerStasticsKey_FlagsScored);
 }
 
 Integer GetPlayerMatchFlagScores(CSmScore Score) {
-	return Telemetry::GetPlayerMatchInteger(Score, C_Telemetry_Key_FlagsScored);
+	return PlayerStatistics::GetPlayerMatchInteger(Score, C_PlayerStasticsKey_FlagsScored);
 }
 
 Integer GetPlayerRoundFlagScoreAssists(CSmScore Score) {
-	return Telemetry::GetPlayerRoundInteger(Score, C_Telemetry_Key_FlagScoreAssists);
+	return PlayerStatistics::GetPlayerRoundInteger(Score, C_PlayerStasticsKey_FlagScoreAssists);
 }
 
 Integer GetPlayerMapFlagScoreAssists(CSmScore Score) {
-	return Telemetry::GetPlayerMapInteger(Score, C_Telemetry_Key_FlagScoreAssists);
+	return PlayerStatistics::GetPlayerMapInteger(Score, C_PlayerStasticsKey_FlagScoreAssists);
 }
 
 Integer GetPlayerMatchFlagScoreAssists(CSmScore Score) {
-	return Telemetry::GetPlayerMatchInteger(Score, C_Telemetry_Key_FlagScoreAssists);
+	return PlayerStatistics::GetPlayerMatchInteger(Score, C_PlayerStasticsKey_FlagScoreAssists);
 }
 
 Integer GetPlayerRoundFlagSteals(CSmScore Score) {
-	return Telemetry::GetPlayerRoundInteger(Score, C_Telemetry_Key_FlagsStolen);
+	return PlayerStatistics::GetPlayerRoundInteger(Score, C_PlayerStasticsKey_FlagsStolen);
 }
 
 Integer GetPlayerMapFlagSteals(CSmScore Score) {
-	return Telemetry::GetPlayerMapInteger(Score, C_Telemetry_Key_FlagsStolen);
+	return PlayerStatistics::GetPlayerMapInteger(Score, C_PlayerStasticsKey_FlagsStolen);
 }
 
 Integer GetPlayerMatchFlagSteals(CSmScore Score) {
-	return Telemetry::GetPlayerMatchInteger(Score, C_Telemetry_Key_FlagsStolen);
+	return PlayerStatistics::GetPlayerMatchInteger(Score, C_PlayerStasticsKey_FlagsStolen);
 }
 
 CSmScore[] Private_MapToScoreArray(Integer[CSmScore] Arr) {
@@ -185,7 +185,7 @@ Void OnClanMapWin(Integer Clan) {
 }
 
 Void OnPlayerScoreFlag(CSmScore Score) {
-	Telemetry::AddPlayerRoundInteger(Score, C_Telemetry_Key_FlagsScored, 1);
+	PlayerStatistics::AddPlayerRoundInteger(Score, C_PlayerStasticsKey_FlagsScored, 1);
 	Scores::AddPlayerRoundPoints(Score, C_PointsValue_ScoreFlag);
 	Scores::AddClanRoundPoints(Score.TeamNum, 1); // TeamNum == Clan == Teams[]_Index + 1
 	Net_SendPlayerScore(Score);
@@ -193,7 +193,7 @@ Void OnPlayerScoreFlag(CSmScore Score) {
 }
 
 Void OnPlayerScoreFlagAssist(CSmScore Score) {
-	Telemetry::AddPlayerRoundInteger(Score, C_Telemetry_Key_FlagScoreAssists, 1);
+	PlayerStatistics::AddPlayerRoundInteger(Score, C_PlayerStasticsKey_FlagScoreAssists, 1);
 	Scores::AddPlayerRoundPoints(Score, C_PointsValue_ScoreFlagAssist);
 	Net_SendPlayerScore(Score);
 }
@@ -206,32 +206,32 @@ Void OnPlayerScoreFlag(CSmScore ScorerScore, CSmScore AssistScore) {
 }
 
 Void OnPlayerStealFlag(CSmScore NewCarrierScore) {
-	Telemetry::AddPlayerRoundInteger(NewCarrierScore, C_Telemetry_Key_FlagsStolen, 1);
+	PlayerStatistics::AddPlayerRoundInteger(NewCarrierScore, C_PlayerStasticsKey_FlagsStolen, 1);
 	Scores::AddPlayerRoundPoints(NewCarrierScore, C_PointsValue_StealFlag);
 	Net_SendPlayerScore(NewCarrierScore);
 }
 
 Void OnPlayerPassFlag(CSmScore OldCarrierScore) {
-	Telemetry::AddPlayerRoundInteger(OldCarrierScore, C_Telemetry_Key_FlagPossession, 1);
+	PlayerStatistics::AddPlayerRoundInteger(OldCarrierScore, C_PlayerStasticsKey_FlagPossession, 1);
 }
 
 Void OnPlayerCarriesFlag(CSmScore CarrierScore) {
-	Telemetry::AddPlayerRoundInteger(CarrierScore, C_Telemetry_Key_FlagTeamPass, Period);
+	PlayerStatistics::AddPlayerRoundInteger(CarrierScore, C_PlayerStasticsKey_FlagTeamPass, Period);
 }
 
 Void OnPlayerRespawn(CSmScore Score) {
-	Telemetry::AddPlayerRoundInteger(Score, C_Telemetry_Key_Respawn, 1);
+	PlayerStatistics::AddPlayerRoundInteger(Score, C_PlayerStasticsKey_Respawn, 1);
 }
 
 Void OnPlayerChangesVehicle(CSmScore Score) {
-	Telemetry::AddPlayerRoundInteger(Score, C_Telemetry_Key_VehicleChanged, 1);
+	PlayerStatistics::AddPlayerRoundInteger(Score, C_PlayerStasticsKey_VehicleChanged, 1);
 }
 
 /* Progression */
 
 Void Clear(Integer Level) {
 	Scores::Clear(Level);
-	Telemetry::Clear(Level);
+	PlayerStatistics::Clear(Level);
 	TeamPointsProgression::Clear(Level);
 	Net_SendScores();
 }
@@ -243,42 +243,42 @@ Void Clear() {
 
 Void StartMatch() {
 	Scores::StartMatch();
-	Telemetry::StartMatch();
+	PlayerStatistics::StartMatch();
 	TeamPointsProgression::StartMatch();
 	Net_SendScores();
 }
 
 Void EndMatch() {
 	Scores::EndMatch();
-	Telemetry::EndMatch();
+	PlayerStatistics::EndMatch();
 	TeamPointsProgression::EndMatch();
 	Net_SendScores();
 }
 
 Void StartMap() {
 	Scores::StartMap();
-	Telemetry::StartMap();
+	PlayerStatistics::StartMap();
 	TeamPointsProgression::StartMap();
 	Net_SendScores();
 }
 
 Void EndMap() {
 	Scores::EndMap();
-	Telemetry::EndMap();
+	PlayerStatistics::EndMap();
 	TeamPointsProgression::EndMap();
 	Net_SendScores();
 }
 
 Void StartRound() {
 	Scores::StartRound();
-	Telemetry::StartRound();
+	PlayerStatistics::StartRound();
 	TeamPointsProgression::StartRound();
 	Net_SendScores();
 }
 
 Void EndRound() {
 	Scores::EndRound();
-	Telemetry::EndRound();
+	PlayerStatistics::EndRound();
 	TeamPointsProgression::EndRound();
 	Net_SendScores();
 }

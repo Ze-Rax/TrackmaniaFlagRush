@@ -447,7 +447,7 @@ Boolean Player_CanSpawn(CSmPlayer Player) {
 }
 
 Void Player_Spawn(CSmPlayer Player) {
-	if (MB_TurnIsRunning() && Player.ForceModelId != Vehicle_GetModelId(Player)) {
+	if (MB_TurnIsRunning() && !Progression_WarmUpIsRunning() && Player.ForceModelId != Vehicle_GetModelId(Player)) {
 		Scores::OnPlayerChangesVehicle(Player.Score);
 	}
 	Player_Initialize(Player);

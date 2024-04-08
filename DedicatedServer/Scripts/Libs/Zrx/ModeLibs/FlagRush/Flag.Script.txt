@@ -307,6 +307,7 @@ Void Yield() {
 		if (Player.WheelsContactCount >= 3) {
 			G_Flag.Location.LastSafePosition = Player.Position;
 		}
+		Net_Update();
 	}
 }
 

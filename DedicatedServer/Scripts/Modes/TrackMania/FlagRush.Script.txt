@@ -133,6 +133,50 @@ FlagRush_Vehicle::LoadItems();
 FlagRush_VehicleSelection::SetEnabledVehicles(Vehicle_GetEnabled());
 ***
 
+***BeforePodiumSequence***
+***
+// Temporarily sending player statistics in chat. Should later be done using a manialink.
+declare Real LongestDistanceDriven = 0.0;
+declare CSmScore LongestDistanceDrivenScore = Null;
+declare Integer LongestFlagPossession = 0;
+declare CSmScore LongestFlagPossessionScore = Null;
+declare Integer MostFlagPasses = 0;
+declare CSmScore MostFlagPassesScore = Null;
+declare Integer MostRespawns = 0;
+declare CSmScore MostRespawnsScore = Null;
+declare Integer MostVehicleChanges = 0;
+declare CSmScore MostVehicleChangesScore = Null;
+foreach (Score in Scores) {
+	declare Scores::K_FlagRushPlayerStatistics PlayerStatistics = Scores::GetPlayerMatchStatistics(Score);
+	if (PlayerStatistics.DistanceDriven > LongestDistanceDriven) {
+		LongestDistanceDriven = PlayerStatistics.DistanceDriven;
+		LongestDistanceDrivenScore <=> Score;
+	}
+	if (PlayerStatistics.FlagPosessionTimeMs > LongestFlagPossession) {
+		LongestFlagPossession = PlayerStatistics.FlagPosessionTimeMs;
+		LongestFlagPossessionScore <=> Score;
+	}
+	if (PlayerStatistics.FlagTeamPasses > MostFlagPasses) {
+		MostFlagPasses = PlayerStatistics.FlagTeamPasses;
+		MostFlagPassesScore <=> Score;
+	}
+	if (PlayerStatistics.Respawns > MostRespawns) {
+		MostRespawns = PlayerStatistics.Respawns;
+		MostRespawnsScore <=> Score;
+	}
+	if (PlayerStatistics.VehicleChanges > MostVehicleChanges) {
+		MostVehicleChanges = PlayerStatistics.VehicleChanges;
+		MostVehicleChangesScore <=> Score;
+	}
+}
+
+if (LongestDistanceDrivenScore != Null) UIManager.UIAll.SendChat("""{{{ Messages::C_ChatPrefix }}} The Explorer: {{{ LongestDistanceDrivenScore.User.Name }}} drove a total of {{{ TL::FormatReal(LongestDistanceDriven / 1000., 2, False, False) }}}km.""");
+if (LongestFlagPossessionScore != Null) UIManager.UIAll.SendChat("""{{{ Messages::C_ChatPrefix }}} The Vexillologist: {{{ LongestFlagPossessionScore.User.Name }}} held the flag for {{{ ML::NearestInteger(LongestFlagPossession / 1000.) }}}s.""");
+if (MostFlagPassesScore != Null) UIManager.UIAll.SendChat("""{{{ Messages::C_ChatPrefix }}} The Altruist: {{{ MostFlagPassesScore.User.Name }}} passed the flag {{{ MostFlagPasses }}} time(s).""");
+if (MostRespawnsScore != Null) UIManager.UIAll.SendChat("""{{{ Messages::C_ChatPrefix }}} The Phoenix: {{{ MostRespawnsScore.User.Name }}} respawned {{{ MostRespawns }}} time(s).""");
+if (MostVehicleChangesScore != Null) UIManager.UIAll.SendChat("""{{{Messages::C_ChatPrefix }}} The Shapeshifter: {{{ MostVehicleChangesScore.User.Name }}} switched vehicles {{{ MostVehicleChanges }}} time(s).""");
+***
+
 // ~~~~~~~~~~ Turn ~~~~~~~~~~ //
 
 ***StartTurn***

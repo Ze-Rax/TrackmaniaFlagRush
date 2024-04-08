@@ -157,10 +157,10 @@ Void Net_SendTeamScores() {
 }
 
 Void Net_SendPlayerScore(CSmScore _Score) {
-	declare netwrite K_FlagRushPlayerStatistics[Integer] Net_FlagRush_Statistics for _Score = [];
-	Net_FlagRush_Statistics[C_Level_Round] = GetPlayerRoundStatistics(_Score);
-	Net_FlagRush_Statistics[C_Level_Map] = GetPlayerMapStatistics(_Score);
-	Net_FlagRush_Statistics[C_Level_Match] = GetPlayerMatchStatistics(_Score);
+	declare netwrite K_FlagRushPlayerStatistics[Integer] Net_FlagRush_PlayerStatistics for _Score = [];
+	Net_FlagRush_PlayerStatistics[C_Level_Round] = GetPlayerRoundStatistics(_Score);
+	Net_FlagRush_PlayerStatistics[C_Level_Map] = GetPlayerMapStatistics(_Score);
+	Net_FlagRush_PlayerStatistics[C_Level_Match] = GetPlayerMatchStatistics(_Score);
 
 	declare netwrite Integer Net_FlagRush_Points_Match for _Score = 0;
 	Net_FlagRush_Points_Match = GetPlayerMatchPoints(_Score);

@@ -20,6 +20,17 @@
 #Const Scores::C_Level_Map as C_Level_Map
 #Const Scores::C_Level_Round as C_Level_Round
 
+#Struct K_FlagRushPlayerStatistics {
+	Integer FlagsScored;
+	Integer FlagsStolen;
+	Integer FlagScoreAssists;
+	Integer FlagPosessionTimeMs;
+	Integer FlagTeamPasses;
+	Integer Respawns;
+	Integer VehicleChanges;
+	Real DistanceDriven;
+}
+
 /* Teams */
 
 Integer GetClanRoundPoints(Integer _Clan) {
@@ -48,52 +59,56 @@ Void SetClanMatchPoints(Integer _Clan, Integer _Value) {
 
 /* Players */
 
+Integer GetPlayerPoints(CSmScore _Score, Integer _Level) {
+	switch (_Level) {
+		case C_Level_Match: {
+			return Scores::GetPlayerMatchPoints(_Score);}
+		case C_Level_Map: {
+			return Scores::GetPlayerMapPoints(_Score);
+		}
+		case C_Level_Round: {
+			return Scores::GetPlayerRoundPoints(_Score);
+		}
+	}
+	return 0;
+}
+
 Integer GetPlayerRoundPoints(CSmScore _Score) {
-	return Scores::GetPlayerRoundPoints(_Score);
+	return GetPlayerPoints(_Score, C_Level_Round);
 }
 
 Integer GetPlayerMapPoints(CSmScore _Score) {
-	return Scores::GetPlayerMapPoints(_Score);
+	return GetPlayerPoints(_Score, C_Level_Map);
 }
 
 Integer GetPlayerMatchPoints(CSmScore _Score) {
-	return Scores::GetPlayerMatchPoints(_Score);
+	return GetPlayerPoints(_Score, C_Level_Match);
 }
 
-Integer GetPlayerRoundFlagScores(CSmScore _Score) {
-	return PlayerStatistics::GetPlayerRoundInteger(_Score, C_PlayerStatisticsKey_FlagsScored);
+K_FlagRushPlayerStatistics GetPlayerStatistics(CSmScore _Score, Integer _Level) {
+	declare PlayerStatistics::K_PlayerStatistics PlayerStatistics = PlayerStatistics::GetPlayerStatistics(_Score, _Level);
+	return K_FlagRushPlayerStatistics{
+		FlagsScored = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_FlagsScored, 0),
+		FlagsStolen = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_FlagsStolen, 0),
+		FlagScoreAssists = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_FlagScoreAssists, 0),
+		FlagPosessionTimeMs = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_FlagPossession, 0),
+		FlagTeamPasses = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_FlagTeamPass, 0),
+		Respawns = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_Respawn, 0),
+		VehicleChanges = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_VehicleChanged, 0),
+		DistanceDriven = PlayerStatistics.Reals.get(C_PlayerStatisticsKey_DistanceDriven, 0.0)
+	};
 }
 
-Integer GetPlayerMapFlagScores(CSmScore _Score) {
-	return PlayerStatistics::GetPlayerMapInteger(_Score, C_PlayerStatisticsKey_FlagsScored);
+K_FlagRushPlayerStatistics GetPlayerRoundStatistics(CSmScore _Score) {
+	return GetPlayerStatistics(_Score, C_Level_Round);
 }
 
-Integer GetPlayerMatchFlagScores(CSmScore _Score) {
-	return PlayerStatistics::GetPlayerMatchInteger(_Score, C_PlayerStatisticsKey_FlagsScored);
+K_FlagRushPlayerStatistics GetPlayerMapStatistics(CSmScore _Score) {
+	return GetPlayerStatistics(_Score, C_Level_Map);
 }
 
-Integer GetPlayerRoundFlagScoreAssists(CSmScore _Score) {
-	return PlayerStatistics::GetPlayerRoundInteger(_Score, C_PlayerStatisticsKey_FlagScoreAssists);
-}
-
-Integer GetPlayerMapFlagScoreAssists(CSmScore _Score) {
-	return PlayerStatistics::GetPlayerMapInteger(_Score, C_PlayerStatisticsKey_FlagScoreAssists);
-}
-
-Integer GetPlayerMatchFlagScoreAssists(CSmScore _Score) {
-	return PlayerStatistics::GetPlayerMatchInteger(_Score, C_PlayerStatisticsKey_FlagScoreAssists);
-}
-
-Integer GetPlayerRoundFlagSteals(CSmScore _Score) {
-	return PlayerStatistics::GetPlayerRoundInteger(_Score, C_PlayerStatisticsKey_FlagsStolen);
-}
-
-Integer GetPlayerMapFlagSteals(CSmScore _Score) {
-	return PlayerStatistics::GetPlayerMapInteger(_Score, C_PlayerStatisticsKey_FlagsStolen);
-}
-
-Integer GetPlayerMatchFlagSteals(CSmScore _Score) {
-	return PlayerStatistics::GetPlayerMatchInteger(_Score, C_PlayerStatisticsKey_FlagsStolen);
+K_FlagRushPlayerStatistics GetPlayerMatchStatistics(CSmScore _Score) {
+	return GetPlayerStatistics(_Score, C_Level_Match);
 }
 
 CSmScore[] Private_MapToScoreArray(Integer[CSmScore] _Array) {
@@ -107,7 +122,7 @@ CSmScore[] Private_MapToScoreArray(Integer[CSmScore] _Array) {
 CSmScore[] GetPlayerFlagsScoredMatchRanking() {
 	declare Integer[CSmScore] FlagsScored;
 	foreach (Score in Scores) {
-		FlagsScored[Score] = GetPlayerMatchFlagScores(Score);
+		FlagsScored[Score] = GetPlayerMatchStatistics(Score).FlagsScored;
 	}
 	return Private_MapToScoreArray(FlagsScored.sortreverse());
 }
@@ -115,7 +130,7 @@ CSmScore[] GetPlayerFlagsScoredMatchRanking() {
 CSmScore[] GetPlayerAssistsMatchRanking() {
 	declare Integer[CSmScore] Assists;
 	foreach (Score in Scores) {
-		Assists[Score] = GetPlayerMatchFlagScoreAssists(Score);
+		Assists[Score] = GetPlayerMatchStatistics(Score).FlagScoreAssists;
 	}
 	return Private_MapToScoreArray(Assists.sortreverse());
 }
@@ -123,7 +138,7 @@ CSmScore[] GetPlayerAssistsMatchRanking() {
 CSmScore[] GetPlayerFlagsStealsMatchRanking() {
 	declare Integer[CSmScore] FlagSteals;
 	foreach (Score in Scores) {
-		FlagSteals[Score] = GetPlayerMatchFlagSteals(Score);
+		FlagSteals[Score] = GetPlayerMatchStatistics(Score).FlagsStolen;
 	}
 	return Private_MapToScoreArray(FlagSteals.sortreverse());
 }
@@ -142,30 +157,13 @@ Void Net_SendTeamScores() {
 }
 
 Void Net_SendPlayerScore(CSmScore _Score) {
+	declare netwrite K_FlagRushPlayerStatistics[Integer] Net_FlagRush_Statistics for _Score = [];
+	Net_FlagRush_Statistics[C_Level_Round] = GetPlayerRoundStatistics(_Score);
+	Net_FlagRush_Statistics[C_Level_Map] = GetPlayerMapStatistics(_Score);
+	Net_FlagRush_Statistics[C_Level_Match] = GetPlayerMatchStatistics(_Score);
+
 	declare netwrite Integer Net_FlagRush_Points_Match for _Score = 0;
-	declare netwrite Integer Net_FlagRush_FlagsScored_Match for _Score = 0;
-	declare netwrite Integer Net_FlagRush_FlagsScored_Map for _Score = 0;
-	declare netwrite Integer Net_FlagRush_FlagsScored_Round for _Score = 0;
-	declare netwrite Integer Net_FlagRush_FlagsStolen_Match for _Score = 0;
-	declare netwrite Integer Net_FlagRush_FlagsStolen_Map for _Score = 0;
-	declare netwrite Integer Net_FlagRush_FlagsStolen_Round for _Score = 0;
-	declare netwrite Integer Net_FlagRush_FlagsAssists_Match for _Score = 0;
-	declare netwrite Integer Net_FlagRush_FlagsAssists_Map for _Score = 0;
-	declare netwrite Integer Net_FlagRush_FlagsAssists_Round for _Score = 0;
-
 	Net_FlagRush_Points_Match = GetPlayerMatchPoints(_Score);
-
-	Net_FlagRush_FlagsScored_Match = GetPlayerMatchFlagScores(_Score);
-	Net_FlagRush_FlagsScored_Map = GetPlayerMapFlagScores(_Score);
-	Net_FlagRush_FlagsScored_Round = GetPlayerRoundFlagScores(_Score);
-
-	Net_FlagRush_FlagsStolen_Match = GetPlayerMatchFlagSteals(_Score);
-	Net_FlagRush_FlagsStolen_Map = GetPlayerMapFlagSteals(_Score);
-	Net_FlagRush_FlagsStolen_Round = GetPlayerRoundFlagSteals(_Score);
-
-	Net_FlagRush_FlagsAssists_Match = GetPlayerMatchFlagScoreAssists(_Score);
-	Net_FlagRush_FlagsAssists_Map = GetPlayerMapFlagScoreAssists(_Score);
-	Net_FlagRush_FlagsAssists_Round = GetPlayerRoundFlagScoreAssists(_Score);
 }
 
 Void Net_SendScores() {

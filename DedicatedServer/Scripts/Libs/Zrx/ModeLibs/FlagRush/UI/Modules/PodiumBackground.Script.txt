@@ -27,17 +27,18 @@ Void SetContent(CSmScore[] PodiumScores) {
 		declare Integer ScoreIndex = Placement - 1;
 		if (PodiumScores.existskey(ScoreIndex)) {
 			declare CSmScore PlacementScore <=> PodiumScores[ScoreIndex];
+			declare Scores::K_FlagRushPlayerStatistics PlayerStatistics = Scores::GetPlayerMatchStatistics(PlacementScore);
 			FlagRush_Net_PodiumPlacementConfigs[Placement] = K_PodiumPlaceConfig{
 				Present = True,
 				Name = PlacementScore.User.Name,
 				Avatar = PlacementScore.User.CountryFlagUrl,
 				Clan = PlacementScore.TeamNum,
 				Points = Scores::GetPlayerMatchPoints(PlacementScore),
-				FlagsScored = Scores::GetPlayerMatchFlagScores(PlacementScore),
+				FlagsScored = PlayerStatistics.FlagsScored,
 				FlagsScoredPlacement = FlagsScoredMatchRanking.keyof(PlacementScore) + 1,
-				Assists = Scores::GetPlayerMatchFlagScoreAssists(PlacementScore),
+				Assists = PlayerStatistics.FlagScoreAssists,
 				AssistsPlacement = AssistsMatchRanking.keyof(PlacementScore) + 1,
-				FlagsStolen = Scores::GetPlayerMatchFlagSteals(PlacementScore),
+				FlagsStolen = PlayerStatistics.FlagsStolen,
 				FlagsStolenPlacement = FlagsStolenMatchRanking.keyof(PlacementScore) + 1
 			};
 		} else {

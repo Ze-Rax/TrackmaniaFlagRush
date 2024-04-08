@@ -272,38 +272,15 @@ K_Rpc_Map CurrentMapToRpcMap() {
 }
 
 K_Rpc_PlayerScore ScoreToRpcPlayerScore(CSmScore Score, Integer ScoreLevel) {
-	declare Integer Points;
-	declare Integer FlagsScored;
-	declare Integer FlagsStolen;
-	declare Integer Assists;
-
-	switch (ScoreLevel) {
-		case Scores::C_Level_Match: {
-			Points = Scores::GetPlayerMatchPoints(Score);
-			FlagsScored = Scores::GetPlayerMatchFlagScores(Score);
-			FlagsStolen = Scores::GetPlayerMatchFlagSteals(Score);
-			Assists = Scores::GetPlayerMatchFlagScoreAssists(Score);
-		}
-		case Scores::C_Level_Map: {
-			Points = Scores::GetPlayerMapPoints(Score);
-			FlagsScored = Scores::GetPlayerMapFlagScores(Score);
-			FlagsStolen = Scores::GetPlayerMapFlagSteals(Score);
-			Assists = Scores::GetPlayerMapFlagScoreAssists(Score);
-		}
-		case Scores::C_Level_Round: {
-			Points = Scores::GetPlayerRoundPoints(Score);
-			FlagsScored = Scores::GetPlayerRoundFlagScores(Score);
-			FlagsStolen = Scores::GetPlayerRoundFlagSteals(Score);
-			Assists = Scores::GetPlayerRoundFlagScoreAssists(Score);
-		}
-	}
+	declare Integer Points = Scores::GetPlayerPoints(Score, ScoreLevel);
+	declare Scores::K_FlagRushPlayerStatistics PlayerStatistics = Scores::GetPlayerStatistics(Score, ScoreLevel);
 
 	return K_Rpc_PlayerScore{
 		Player = ScoreToRpcPlayer(Score),
 		Points = Points,
-		FlagsScored = FlagsScored,
-		FlagsStolen = FlagsStolen,
-		Assists = Assists
+		FlagsScored = PlayerStatistics.FlagsScored,
+		FlagsStolen = PlayerStatistics.FlagsStolen,
+		Assists = PlayerStatistics.FlagScoreAssists
 	};
 }
 

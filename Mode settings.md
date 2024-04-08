@@ -32,15 +32,31 @@ These settings change how the gameplay in a round behaves.
 | S_FlagSameTeamSteal              | Boolean | True          | Whether or not teammates can steal the flag from the flag carrier. |
 | S_FlagStealResistanceOnTeamPass  | Boolean | False         | Whether or not to give flag steal resistance to the player when passing the flag between team members. |
 | S_FlagCarrierFragile             | Boolean | True          | Whether or not the flag carrier should become fragile. |
-| S_FlagCarrierAcceleration        | Real    | 0.66          | Acceleration coefficient for the flag carrier. |
-| S_FlagCarrierControl             | Real    | 1.0           | Control ("Steering") coefficient for the flag carrier. |
-| S_FlagCarrierAdherence           | Real    | 0.9           | Adherence ("Grip") coefficient for the flag carrier. |
+| S_FlagCarrierAcceleration        | Real    | 0.66          | Acceleration coefficient for the flag carrier. Multiplicative to vehicle tunings. |
+| S_FlagCarrierControl             | Real    | 1.0           | Control ("Steering") coefficient for the flag carrier. Multiplicative to vehicle tunings. |
+| S_FlagCarrierAdherence           | Real    | 0.9           | Adherence ("Grip") coefficient for the flag carrier. Multiplicative to vehicle tunings. |
 | S_RespawnSpeedLimitKmh           | Real    | 30.0          | Maximum speed allowed for respawning. No limitation if <= 0.0. |
 | S_RespawnDelayPerPlayer          | Real    | 1.0           | Respawn delay in seconds per player in a team: `Total respawn delay = S_RespawnDelayPerPlayer * Number of players in the team + 1.5 (spawn animation)`|
 | S_DropFlagPickupPenalty          | Real    | 3.0           | Duration in seconds in which a player cannot pick up the flag after dropping it. (Other players can instantly pick it up.) |
 | S_TeleportDetectionThreshold     | Real    | 8.0           | Maximum distance in meters that a player is allowed to teleport (lag) during one server frame before the flag is automatically dropped. Teleport detection is disabled for values <= 0 |
 | S_UseCollisions                  | Boolean | False         | Whether or not to use physics based collisions between players. This setting is EXPERIMENTAL: Player collisions can feel and be weird and inconsistent. If enabled, server will also switch to server side simulation (See S_TrustClientSimu) and disable crude extrapolation (See S_UseCrudeExtrapolation). |
 | S_ForceEnabledVehiclesCsv        | Text    | "" (blank)    | Forces the given list of vehicles to be enabled. Overrides the vehicle configuration of the map. Invalid values are ignored. Comma separated values, case insensitive and will be trimmed. Examples: `stadium,rally`, `Stadium, snow   , RaLlY` |
+
+## Vehicle tuning settings
+
+These settings change vehicle characteristic for balancing.
+
+| Setting name                | Type | Default value | Description                                              |
+| --------------------------- | ---- | ------------- | -------------------------------------------------------- |
+| S_TuningStadiumAcceleration | Real | 1.0           | Base acceleration coefficient for the stadium car.       |
+| S_TuningStadiumAdherence    | Real | 1.0           | Base adherence coefficient for the stadium car.          |
+| S_TuningStadiumControl      | Real | 1.0           | Base control (steering) coefficient for the stadium car. |
+| S_TuningSnowAcceleration    | Real | 1.0           | Base acceleration coefficient for the snow car.          |
+| S_TuningSnowAdherence       | Real | 1.0           | Base adherence coefficient for the snow car.             |
+| S_TuningSnowControl         | Real | 1.0           | Base control (steering) coefficient for the snow car.    |
+| S_TuningRallyAcceleration   | Real | 0.7           | Base acceleration coefficient for the rally car.         |
+| S_TuningRallyAdherence      | Real | 1.0           | Base adherence coefficient for the rally car.            |
+| S_TuningRallyControl        | Real | 1.0           | Base control (steering) coefficient for the rally car.   |
 
 ## Team settings
 

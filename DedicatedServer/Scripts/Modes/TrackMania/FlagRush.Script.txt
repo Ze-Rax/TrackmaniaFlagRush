@@ -172,6 +172,14 @@ declare Flag::K_Flag PreviousFlag = Flag::Get();
 Flag::Yield();
 
 // Update Flag
+// Update carrying statistic
+if (Flag::IsOnPlayer()) {
+	declare CSmScore CarrierScore = Scores.get(Flag::Get().Location.Player.ScoreId, Null);
+	if (CarrierScore != Null) {
+		FlagRush_Scores::OnPlayerCarriesFlag(CarrierScore);
+	}
+}
+
 // Check if carrier is still connected
 if (Flag::IsOnPlayer() && !Flag::IsPlayerConnected()) {
 	FlagCarrier_DropFlag();
@@ -263,9 +271,7 @@ foreach (Player in Players) {
 	}
 
 	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && Now - FlagRush_Warmup_UnspawnDate > C_RespawnDelayMin) {
-		Player_Initialize(Player);
-		declare CMapSpawn Spawn = FlagRush_Map::GetSpawn(Player).PlayerSpawn;
-		SpawnPlayer(Player, Player.CurrentClan, 100, Spawn, Now + FlagRush_Common::C_SpawnAnimDuration);
+		Player_Spawn(Player);
 	}
 
 	Player_Net_SendPosition(Player);
@@ -441,6 +447,9 @@ Boolean Player_CanSpawn(CSmPlayer Player) {
 }
 
 Void Player_Spawn(CSmPlayer Player) {
+	if (MB_TurnIsRunning() && Player.ForceModelId != Vehicle_GetModelId(Player)) {
+		FlagRush_Scores::OnPlayerChangesVehicle(Player.Score);
+	}
 	Player_Initialize(Player);
 	declare CMapLandmark SpawnLandmark = FlagRush_Map::GetSpawn(Player);
 	if (SpawnLandmark != Null) {
@@ -488,7 +497,9 @@ Void FlagCarrier_PassFlag(CSmPlayer Player) {
 	declare CSmPlayer OldCarrier = Flag::GetPlayer();
 	declare Boolean IsNotSameTeam = Player.CurrentClan != OldCarrier.CurrentClan;
 	if (IsNotSameTeam) {
-		FlagRush_Scores::OnPlayerStealFlag(Player);
+		FlagRush_Scores::OnPlayerStealFlag(Player.Score);
+	} else {
+		FlagRush_Scores::OnPlayerPassFlag(OldCarrier.Score);
 	}
 	Player_ResetHandicaps(OldCarrier);
 	// New Carrier
@@ -585,6 +596,7 @@ Void OnPlayerRequestsRespawn(CSmPlayer Player) {
 
 	Player_Unspawn(Player);
 	Messages::PlayerRespawn(Player);
+	FlagRush_Scores::OnPlayerRespawn(Player.Score);
 }
 
 Void OnPlayerDeath(CSmPlayer Player) {

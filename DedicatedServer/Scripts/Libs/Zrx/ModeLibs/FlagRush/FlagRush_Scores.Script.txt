@@ -2,18 +2,22 @@
 #Include "Libs/Zrx/ModeLibs/Common/PlayerTelemetry.Script.txt" as Telemetry
 #Include "Libs/Zrx/ModeLibs/Common/TeamPointsProgression.Script.txt" as TeamPointsProgression
 
-#Const	C_PointsValue_ScoreFlag				3
-#Const	C_PointsValue_StealFlag				1
-#Const	C_PointsValue_ScoreFlagAssist	1
+#Const C_PointsValue_ScoreFlag				3
+#Const C_PointsValue_StealFlag				1
+#Const C_PointsValue_ScoreFlagAssist	1
 
-#Const	C_Telemetry_Key_FlagsScored				"FlagsScored"
-#Const	C_Telemetry_Key_FlagsStolen				"FlagsStolen"
-#Const	C_Telemetry_Key_FlagScoreAssists	"FlagScoreAssists"
+#Const C_Telemetry_Key_FlagsScored				"FlagsScored"
+#Const C_Telemetry_Key_FlagsStolen				"FlagsStolen"
+#Const C_Telemetry_Key_FlagScoreAssists		"FlagScoreAssists"
+#Const C_Telemetry_Key_FlagPossession			"FlagPossession"
+#Const C_Telemetry_Key_FlagTeamPass				"FlagTeamPass"
+#Const C_Telemetry_Key_Respawn						"Respawn"
+#Const C_Telemetry_Key_VehicleChanged			"VehicleChanged"
 
 // Must be same as Scores, Telemetry and TeamPointsProgression Levels
-#Const	C_Level_Match		0
-#Const	C_Level_Map			1
-#Const	C_Level_Round		2
+#Const C_Level_Match		0
+#Const C_Level_Map			1
+#Const C_Level_Round		2
 
 /* Teams */
 
@@ -201,10 +205,26 @@ Void OnPlayerScoreFlag(CSmScore ScorerScore, CSmScore AssistScore) {
 	Net_SendPlayerScore(AssistScore);
 }
 
-Void OnPlayerStealFlag(CSmPlayer Player) {
-	Telemetry::AddPlayerRoundInteger(Player.Score, C_Telemetry_Key_FlagsStolen, 1);
-	Scores::AddPlayerRoundPoints(Player.Score, C_PointsValue_StealFlag);
-	Net_SendPlayerScore(Player.Score);
+Void OnPlayerStealFlag(CSmScore NewCarrierScore) {
+	Telemetry::AddPlayerRoundInteger(NewCarrierScore, C_Telemetry_Key_FlagsStolen, 1);
+	Scores::AddPlayerRoundPoints(NewCarrierScore, C_PointsValue_StealFlag);
+	Net_SendPlayerScore(NewCarrierScore);
+}
+
+Void OnPlayerPassFlag(CSmScore OldCarrierScore) {
+	Telemetry::AddPlayerRoundInteger(OldCarrierScore, C_Telemetry_Key_FlagPossession, 1);
+}
+
+Void OnPlayerCarriesFlag(CSmScore CarrierScore) {
+	Telemetry::AddPlayerRoundInteger(CarrierScore, C_Telemetry_Key_FlagTeamPass, Period);
+}
+
+Void OnPlayerRespawn(CSmScore Score) {
+	Telemetry::AddPlayerRoundInteger(Score, C_Telemetry_Key_Respawn, 1);
+}
+
+Void OnPlayerChangesVehicle(CSmScore Score) {
+	Telemetry::AddPlayerRoundInteger(Score, C_Telemetry_Key_VehicleChanged, 1);
 }
 
 /* Progression */

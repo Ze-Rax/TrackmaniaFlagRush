@@ -462,21 +462,21 @@ Text GetManialink() {
 		// Statistics
 		declare netread K_FlagRushPlayerStatistics[Integer] Net_FlagRush_PlayerStatistics for Score = [];
 		Playercard.Points.Add.Value = TL::ToText(Score.RoundPoints);
-		Playercard.FlagsScored.Add.Value = TL::ToText(Net_FlagRush_PlayerStatistics[{{{ Scores::C_Level_Round }}}].FlagsScored);
-		Playercard.FlagsStolen.Add.Value = TL::ToText(Net_FlagRush_PlayerStatistics[{{{ Scores::C_Level_Round }}}].FlagsStolen);
-		Playercard.Assists.Add.Value = TL::ToText(Net_FlagRush_PlayerStatistics[{{{ Scores::C_Level_Round }}}].FlagScoreAssists);
+		Playercard.FlagsScored.Add.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Round }}}, K_FlagRushPlayerStatistics{}).FlagsScored);
+		Playercard.FlagsStolen.Add.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Round }}}, K_FlagRushPlayerStatistics{}).FlagsStolen);
+		Playercard.Assists.Add.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Round }}}, K_FlagRushPlayerStatistics{}).FlagScoreAssists);
 
 		if (Footer.ScoresToggle.State) {
 			declare netread Integer Net_FlagRush_Points_Match for Score;
 			Playercard.Points.Total.Value = TL::ToText(Net_FlagRush_Points_Match);
-			Playercard.FlagsScored.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics[{{{ Scores::C_Level_Match }}}].FlagsScored);
-			Playercard.FlagsStolen.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics[{{{ Scores::C_Level_Match }}}].FlagsStolen);
-			Playercard.Assists.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics[{{{ Scores::C_Level_Match }}}].FlagScoreAssists);
+			Playercard.FlagsScored.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Match }}}, K_FlagRushPlayerStatistics{}).FlagsScored);
+			Playercard.FlagsStolen.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Match }}}, K_FlagRushPlayerStatistics{}).FlagsStolen);
+			Playercard.Assists.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Match }}}, K_FlagRushPlayerStatistics{}).FlagScoreAssists);
 		} else {
 			Playercard.Points.Total.Value = TL::ToText(Score.Points);
-			Playercard.FlagsScored.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics[{{{ Scores::C_Level_Map }}}].FlagsScored);
-			Playercard.FlagsStolen.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics[{{{ Scores::C_Level_Map }}}].FlagsStolen);
-			Playercard.Assists.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics[{{{ Scores::C_Level_Map }}}].FlagScoreAssists);
+			Playercard.FlagsScored.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Map }}}, K_FlagRushPlayerStatistics{}).FlagsScored);
+			Playercard.FlagsStolen.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Map }}}, K_FlagRushPlayerStatistics{}).FlagsStolen);
+			Playercard.Assists.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Map }}}, K_FlagRushPlayerStatistics{}).FlagScoreAssists);
 		}
 
 

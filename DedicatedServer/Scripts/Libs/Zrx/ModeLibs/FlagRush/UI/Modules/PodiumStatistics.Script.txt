@@ -242,10 +242,10 @@ CSmScore[][Text] Private_CreateStatisticRankings() {
 Text Private_GetStatisticValue(CSmScore _Score, Text _StatisticsKey) {
 	declare K_StatisticDefinition Definition = Private_GetDefinition(_StatisticsKey);
 	if (Definition.IsReal) {
-		declare Real Value = PlayerStatistics::GetPlayerMatchReal(_Score, _StatisticsKey);
+		declare Real Value = PlayerStatistics::GetMatchReal(_Score, _StatisticsKey);
 		return TL::FormatReal(Value, 2, False, False);
 	}
-	declare Integer Value = PlayerStatistics::GetPlayerMatchInteger(_Score, _StatisticsKey);
+	declare Integer Value = PlayerStatistics::GetMatchInteger(_Score, _StatisticsKey);
 	return TL::ToText(Value);
 }
 

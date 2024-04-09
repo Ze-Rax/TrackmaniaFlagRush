@@ -92,19 +92,18 @@ Integer GetPlayerMatchPoints(CSmScore _Score) {
 }
 
 K_FlagRushPlayerStatistics GetPlayerStatistics(CSmScore _Score, Integer _Level) {
-	declare PlayerStatistics::K_PlayerStatistics PlayerStatistics = PlayerStatistics::GetPlayerStatistics(_Score, _Level);
 	return K_FlagRushPlayerStatistics{
-		FlagsScored = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_FlagsScored, 0),
-		FlagsStolen = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_FlagsStolen, 0),
-		FlagScoreAssists = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_FlagScoreAssists, 0),
-		FlagPosessionTimeMs = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_FlagPossession, 0),
-		FlagTeamPasses = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_FlagTeamPass, 0),
-		Respawns = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_Respawn, 0),
-		VehicleChanges = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_VehicleChanged, 0),
-		DistanceDriven = PlayerStatistics.Reals.get(C_PlayerStatisticsKey_DistanceDriven, 0.0),
-		FlagsPickedUpFromLandmarks = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_FlagPickUpLandmark, 0),
-		OutOfBoundsCount = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_OutOfBounds, 0),
-		Deaths = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_Deaths, 0)
+		FlagsScored = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_FlagsScored, _Level),
+		FlagsStolen = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_FlagsStolen, _Level),
+		FlagScoreAssists = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_FlagScoreAssists, _Level),
+		FlagPosessionTimeMs = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_FlagPossession, _Level),
+		FlagTeamPasses = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_FlagTeamPass, _Level),
+		Respawns = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_Respawn, _Level),
+		VehicleChanges = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_VehicleChanged, _Level),
+		DistanceDriven = PlayerStatistics::GetReal(_Score, C_PlayerStatisticsKey_DistanceDriven, _Level),
+		FlagsPickedUpFromLandmarks = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_FlagPickUpLandmark, _Level),
+		OutOfBoundsCount = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_OutOfBounds, _Level),
+		Deaths = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_Deaths, _Level)
 	};
 }
 
@@ -139,8 +138,7 @@ CSmScore[] Private_MapToScoreArray(Real[CSmScore] _Array) {
 CSmScore[] SortByIntegerStatistic(Text _StatisticsKey) {
 	declare Integer[CSmScore] ScoreMap;
 	foreach (Score in Scores) {
-		declare PlayerStatistics::K_PlayerStatistics PlayerStatistics = PlayerStatistics::GetPlayerStatistics(Score, C_Level_Match);
-		ScoreMap[Score] = PlayerStatistics.Integers.get(_StatisticsKey, 0);
+		ScoreMap[Score] = PlayerStatistics::GetMatchInteger(Score, _StatisticsKey);
 	}
 	return Private_MapToScoreArray(ScoreMap.sortreverse());
 }
@@ -148,8 +146,7 @@ CSmScore[] SortByIntegerStatistic(Text _StatisticsKey) {
 CSmScore[] SortByRealStatistic(Text _StatisticsKey) {
 	declare Real[CSmScore] ScoreMap;
 	foreach (Score in Scores) {
-		declare PlayerStatistics::K_PlayerStatistics PlayerStatistics = PlayerStatistics::GetPlayerStatistics(Score, C_Level_Match);
-		ScoreMap[Score] = PlayerStatistics.Reals.get(_StatisticsKey, 0.0);
+		ScoreMap[Score] = PlayerStatistics::GetMatchReal(Score, _StatisticsKey);
 	}
 	return Private_MapToScoreArray(ScoreMap.sortreverse());
 }
@@ -195,14 +192,14 @@ Void OnClanMapWin(Integer _Clan) {
 }
 
 Void OnPlayerScoresFlag(CSmScore _ScorerScore, CSmScore _AssistScore) {
-	PlayerStatistics::AddPlayerRoundInteger(_ScorerScore, C_PlayerStatisticsKey_FlagsScored, 1);
+	PlayerStatistics::AddRound(_ScorerScore, C_PlayerStatisticsKey_FlagsScored, 1);
 	Scores::AddPlayerRoundPoints(_ScorerScore, C_PointsValue_ScoreFlag);
 	Scores::AddClanRoundPoints(_ScorerScore.TeamNum, 1); // TeamNum == Clan == Teams[]_Index + 1
 	Net_SendPlayerScore(_ScorerScore);
 	Net_SendTeamScores();
 
 	if (_AssistScore != Null) {
-		PlayerStatistics::AddPlayerRoundInteger(_AssistScore, C_PlayerStatisticsKey_FlagScoreAssists, 1);
+		PlayerStatistics::AddRound(_AssistScore, C_PlayerStatisticsKey_FlagScoreAssists, 1);
 		Scores::AddPlayerRoundPoints(_AssistScore, C_PointsValue_ScoreFlagAssist);
 		Net_SendPlayerScore(_AssistScore);
 	}
@@ -213,41 +210,41 @@ Void OnPlayerScoresFlag(CSmScore _ScorerScore) {
 }
 
 Void OnPlayerStealsFlag(CSmScore _NewCarrierScore) {
-	PlayerStatistics::AddPlayerRoundInteger(_NewCarrierScore, C_PlayerStatisticsKey_FlagsStolen, 1);
+	PlayerStatistics::AddRound(_NewCarrierScore, C_PlayerStatisticsKey_FlagsStolen, 1);
 	Scores::AddPlayerRoundPoints(_NewCarrierScore, C_PointsValue_StealFlag);
 	Net_SendPlayerScore(_NewCarrierScore);
 }
 
 Void OnPlayerPassesFlag(CSmScore _OldCarrierScore) {
-	PlayerStatistics::AddPlayerRoundInteger(_OldCarrierScore, C_PlayerStatisticsKey_FlagTeamPass, 1);
+	PlayerStatistics::AddRound(_OldCarrierScore, C_PlayerStatisticsKey_FlagTeamPass, 1);
 }
 
 Void OnPlayerCarriesFlag(CSmScore _CarrierScore) {
-	PlayerStatistics::AddPlayerRoundInteger(_CarrierScore, C_PlayerStatisticsKey_FlagPossession, Period);
+	PlayerStatistics::AddRound(_CarrierScore, C_PlayerStatisticsKey_FlagPossession, Period);
 }
 
 Void OnPlayerRespawn(CSmScore _Score) {
-	PlayerStatistics::AddPlayerRoundInteger(_Score, C_PlayerStatisticsKey_Respawn, 1);
+	PlayerStatistics::AddRound(_Score, C_PlayerStatisticsKey_Respawn, 1);
 }
 
 Void OnPlayerChangesVehicle(CSmScore _Score) {
-	PlayerStatistics::AddPlayerRoundInteger(_Score, C_PlayerStatisticsKey_VehicleChanged, 1);
+	PlayerStatistics::AddRound(_Score, C_PlayerStatisticsKey_VehicleChanged, 1);
 }
 
 Void OnPlayerDistanceDriven(CSmScore _Score, Real _Distance) {
-	PlayerStatistics::AddPlayerRoundReal(_Score, C_PlayerStatisticsKey_DistanceDriven, _Distance);
+	PlayerStatistics::AddRound(_Score, C_PlayerStatisticsKey_DistanceDriven, _Distance);
 }
 
 Void OnPlayerPicksUpFlagFromLandmark(CSmScore _Score) {
-	PlayerStatistics::AddPlayerRoundInteger(_Score, C_PlayerStatisticsKey_FlagPickUpLandmark, 1);
+	PlayerStatistics::AddRound(_Score, C_PlayerStatisticsKey_FlagPickUpLandmark, 1);
 }
 
 Void OnPlayerOutOfBounds(CSmScore _Score) {
-	PlayerStatistics::AddPlayerRoundInteger(_Score, C_PlayerStatisticsKey_OutOfBounds, 1);
+	PlayerStatistics::AddRound(_Score, C_PlayerStatisticsKey_OutOfBounds, 1);
 }
 
 Void OnPlayerDeath(CSmScore _Score) {
-	PlayerStatistics::AddPlayerRoundInteger(_Score, C_PlayerStatisticsKey_Deaths, 1);
+	PlayerStatistics::AddRound(_Score, C_PlayerStatisticsKey_Deaths, 1);
 }
 
 /* Progression */

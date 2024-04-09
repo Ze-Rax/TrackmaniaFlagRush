@@ -182,6 +182,7 @@ Void Private_ApplyToTeams() {
 
 		Teams[Clan - 1].ColorPrimary = MidColor;
 		Teams[Clan - 1].ColorSecondary = MidColor;
+		Teams[Clan - 1].ColorUI = MidColor;
 
 		declare netwrite Vec3 Net_FlagRush_LightColor for Teams[Clan - 1];
 		Net_FlagRush_LightColor = LightColor;

@@ -40,6 +40,8 @@
 	Text Description;
 }
 
+#Const C_PlayerStatisticDescription_Participant K_Net_PlayerStatisticDescription{ Title = "the Participant", Description = "You were there. :)" }
+
 Text GetManialink() {
 	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="{{{ C_LayerName }}}">
@@ -264,28 +266,28 @@ K_Net_PlayerStatisticDescription[][Integer] Private_DeterminePlayerStatistics(CS
 	for (Clan, 1, 2) {
 		Descriptions[Clan] = [];
 		declare Integer StatisticsCount = ML::Min(_ScoresByClan.get(Clan, []).count, C_PlayerStatisticCount);
-		declare Text[] TakenStatistics;
 		for (StatisticIndex, 0, StatisticsCount - 1) {
+			// Check for categories that the players was best in
 			declare CSmScore Score <=> _ScoresByClan[Clan][StatisticIndex];
-			// Check best statistic of the player that is not already taken
-			declare Text BestRankingKey;
-			declare Integer BestRankingIndex = 9999;
+			declare Text[] CategoriesWithBestRank;
 			foreach (Key => Ranking in StatisticRankings) {
-				if (TakenStatistics.exists(Key)) {
-					continue;
-				}
-				declare Integer RankingIndex = Ranking.keyof(Score);
-				if (RankingIndex < BestRankingIndex) {
-					BestRankingIndex = RankingIndex;
-					BestRankingKey = Key;
+				if (Ranking.get(0, Null) == Score) {
+					CategoriesWithBestRank.add(Key);
 				}
 			}
 
-			if (BestRankingKey == "") {
-				continue;
+			declare K_Net_PlayerStatisticDescription StatisticDescription;
+			if (CategoriesWithBestRank.count > 0) {
+				// Choose random category
+				declare Integer CategoryIndex = ML::Rand(0, CategoriesWithBestRank.count - 1, Now);
+				declare Text Category = CategoriesWithBestRank[CategoryIndex];
+				StatisticDescription = Private_BuildStatisticDescription(Score, Category);
+				StatisticRankings.removekey(Category);
+			} else {
+				// Use a default "participation" title
+				StatisticDescription = C_PlayerStatisticDescription_Participant;
+				StatisticDescription.PlayerName = Score.User.Name;
 			}
-			TakenStatistics.add(BestRankingKey);
-			declare K_Net_PlayerStatisticDescription StatisticDescription = Private_BuildStatisticDescription(Score, BestRankingKey);
 			Descriptions[Clan].add(StatisticDescription);
 		}
 	}

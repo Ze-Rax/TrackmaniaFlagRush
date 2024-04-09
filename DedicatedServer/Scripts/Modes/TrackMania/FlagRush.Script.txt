@@ -55,6 +55,7 @@
 
 #Const C_Debug False
 
+#Const C_Epsilon_Distance 0.001
 #Const C_AssistTimeThreshold 5000
 #Const C_RespawnDelayMin 1000 // Player needs to be unspawned for a few (?) yields before respawning, else physics with different vehicles do not apply correctly
 
@@ -189,7 +190,9 @@ foreach (Player in Players) {
 		continue;
 	} else if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
 		declare Real Distance = ML::Distance(Player.Position, FlagRush_PreviousPosition);
-		Scores::OnPlayerDistanceDriven(Player.Score, Distance);
+		if (Distance > C_Epsilon_Distance) {
+			Scores::OnPlayerDistanceDriven(Player.Score, Distance);
+		}
 	}
 	FlagRush_PreviousPosition = Player.Position;
 }

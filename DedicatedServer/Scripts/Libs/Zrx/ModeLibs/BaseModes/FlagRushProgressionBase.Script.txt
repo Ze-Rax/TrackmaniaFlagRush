@@ -497,6 +497,7 @@ if (HasPodium) {
 	UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
 	MB_Sleep(ML::NearestInteger(C_Duration_Podium * 0.33));
+	PodiumStatistics::Update();
 	PodiumStatistics::Attach();
 	MB_Sleep(ML::NearestInteger(C_Duration_Podium * 0.67));
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;

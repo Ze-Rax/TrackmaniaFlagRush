@@ -698,6 +698,7 @@ Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {
 		OnPlayerOutOfBound(Player);
 	} else if (Flag::Get().Location.LandmarkId == Landmark.Id && !Flag::IsLockedForPlayer(Player)) {
 		Player_PickUpFlag(Player);
+		Scores::OnPlayerPicksUpFlagFromLandmark(Player.Score);
 	} else if (Player == Flag::GetPlayer()){
 		declare Integer TargetBaseClan = 3 - Player.CurrentClan;
 		if (FlagRush_Map::IsBase(Landmark, TargetBaseClan)) {

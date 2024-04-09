@@ -14,18 +14,21 @@
 #Struct K_StatisticDefinition {
 	Text Title;
 	Text DescriptionFormat;
+	Boolean IsReal;
 }
 
-#Const C_Definition_MostDistanceDriven K_StatisticDefinition{ Title = "the Explorer", DescriptionFormat = "Drove a total of %1km" }
+#Const C_Definition_MostDistanceDriven K_StatisticDefinition{ Title = "the Explorer", DescriptionFormat = "Drove a total of %1km", IsReal = True }
 #Const Scores::C_PlayerStatisticsKey_DistanceDriven as C_Key_MostDistanceDriven
-#Const C_Definition_MostRespawns K_StatisticDefinition{ Title = "the Phoenix", DescriptionFormat = "Respawned %1 time(s)" }
+#Const C_Definition_MostRespawns K_StatisticDefinition{ Title = "the Phoenix", DescriptionFormat = "Respawned %1 time(s)", IsReal = False }
 #Const Scores::C_PlayerStatisticsKey_Respawn as C_Key_MostRespawns
-#Const C_Definition_MostVehicleChanges K_StatisticDefinition{ Title = "the Shapeshifter", DescriptionFormat = "Switched vehicles %1 time(s)" }
+#Const C_Definition_MostVehicleChanges K_StatisticDefinition{ Title = "the Shapeshifter", DescriptionFormat = "Switched vehicles %1 time(s)", IsReal = False }
 #Const Scores::C_PlayerStatisticsKey_VehicleChanged as C_Key_MostVehicleChanges
-#Const C_Definition_LongestFlagPossession K_StatisticDefinition{ Title = "the Vexillologist", DescriptionFormat = "Held the flag for %1 second(s)" }
+#Const C_Definition_LongestFlagPossession K_StatisticDefinition{ Title = "the Vexillologist", DescriptionFormat = "Held the flag for %1 second(s)", IsReal = False }
 #Const Scores::C_PlayerStatisticsKey_FlagPossession as C_Key_LongestFlagPossession
-#Const C_Definition_MostFlagPasses K_StatisticDefinition{ Title = "the Altruist", DescriptionFormat = "Passed the flag %1 time(s)" }
+#Const C_Definition_MostFlagPasses K_StatisticDefinition{ Title = "the Altruist", DescriptionFormat = "Passed the flag %1 time(s)", IsReal = False }
 #Const Scores::C_PlayerStatisticsKey_FlagTeamPass as C_Key_MostFlagPasses
+#Const C_Definition_MostFlagPickupsFromLandmark K_StatisticDefinition{ Title = "the Camper", DescriptionFormat = "Picked up the flag from flag spawns %1 time(s)", IsReal = False }
+#Const Scores::C_PlayerStatisticsKey_FlagPickUpLandmark as C_Key_MostFlagPickupsFromLandmark
 
 
 #Struct K_Net_PlayerStatisticDescription {
@@ -193,30 +196,19 @@ main() {
 </manialink>""";
 }
 
-Text[] Private_GetIntegerStatisticCategories() {
+K_StatisticDefinition[Text] Private_GetDefinitions() {
 	return [
-		C_Key_LongestFlagPossession,
-		C_Key_MostFlagPasses,
-		C_Key_MostRespawns,
-		C_Key_MostVehicleChanges
-	];
-}
-
-Text[] Private_GetRealStatisticCategories() {
-	return [
-		C_Key_MostDistanceDriven
-	];
-}
-
-K_StatisticDefinition Private_GetDefinition(Text _StatisticsKey) {
-	declare K_StatisticDefinition[Text] KeyTitleMap = [
 		C_Key_MostDistanceDriven => C_Definition_MostDistanceDriven,
 		C_Key_MostRespawns => C_Definition_MostRespawns,
 		C_Key_MostVehicleChanges => C_Definition_MostVehicleChanges,
 		C_Key_LongestFlagPossession => C_Definition_LongestFlagPossession,
-		C_Key_MostFlagPasses => C_Definition_MostFlagPasses
+		C_Key_MostFlagPasses => C_Definition_MostFlagPasses,
+		C_Key_MostFlagPickupsFromLandmark => C_Definition_MostFlagPickupsFromLandmark
 	];
-	return KeyTitleMap.get(_StatisticsKey, K_StatisticDefinition{});
+}
+
+K_StatisticDefinition Private_GetDefinition(Text _StatisticsKey) {
+	return Private_GetDefinitions().get(_StatisticsKey, K_StatisticDefinition{});
 }
 
 CSmScore[][Integer] Private_SortScoresByClan() {
@@ -232,24 +224,24 @@ CSmScore[][Integer] Private_SortScoresByClan() {
 
 CSmScore[][Text] Private_CreateStatisticRankings() {
 	declare CSmScore[][Text] RankingsByCategory;
-	foreach (CategoryKey in Private_GetIntegerStatisticCategories()) {
-		RankingsByCategory[CategoryKey] = Scores::SortByIntegerStatistic(CategoryKey);
+	foreach (Key => Definition in Private_GetDefinitions()) {
+		if (Definition.IsReal) {
+			RankingsByCategory[Key] = Scores::SortByRealStatistic(Key);
+		} else {
+			RankingsByCategory[Key] = Scores::SortByIntegerStatistic(Key);
+		}
 	}
-
-	foreach (CategoryKey in Private_GetRealStatisticCategories()) {
-		RankingsByCategory[CategoryKey] = Scores::SortByRealStatistic(CategoryKey);
-	}
-
 	return RankingsByCategory;
 }
 
 Text Private_GetStatisticValue(CSmScore _Score, Text _StatisticsKey) {
-	if (Private_GetIntegerStatisticCategories().exists(_StatisticsKey)) {
-		declare Integer Value = PlayerStatistics::GetPlayerMatchInteger(_Score, _StatisticsKey);
-		return TL::ToText(Value);
+	declare K_StatisticDefinition Definition = Private_GetDefinition(_StatisticsKey);
+	if (Definition.IsReal) {
+		declare Real Value = PlayerStatistics::GetPlayerMatchReal(_Score, _StatisticsKey);
+		return TL::FormatReal(Value, 2, False, False);
 	}
-	declare Real Value = PlayerStatistics::GetPlayerMatchReal(_Score, _StatisticsKey);
-	return TL::FormatReal(Value, 2, False, False);
+	declare Integer Value = PlayerStatistics::GetPlayerMatchInteger(_Score, _StatisticsKey);
+	return TL::ToText(Value);
 }
 
 K_Net_PlayerStatisticDescription Private_BuildStatisticDescription(CSmScore _Score, Text _StatisticsKey) {

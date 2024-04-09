@@ -1,0 +1,315 @@
+#Include "MathLib" as ML
+#Include "TextLib" as TL
+
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
+
+#Include "Libs/Zrx/ModeLibs/FlagRush/Scores.Script.txt" as Scores
+#Include "Libs/Zrx/ModeLibs/Common/PlayerStatistics.Script.txt" as PlayerStatistics
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as Shared
+
+#Const C_LayerName "FlagRush_PodiumStatistics"
+
+#Const C_PlayerStatisticCount 5
+
+#Struct K_StatisticDefinition {
+	Text Title;
+	Text DescriptionFormat;
+}
+
+#Const C_Definition_MostDistanceDriven K_StatisticDefinition{ Title = "the Explorer", DescriptionFormat = "Drove a total of %1km" }
+#Const Scores::C_PlayerStatisticsKey_DistanceDriven as C_Key_MostDistanceDriven
+#Const C_Definition_MostRespawns K_StatisticDefinition{ Title = "the Phoenix", DescriptionFormat = "Respawned %1 time(s)" }
+#Const Scores::C_PlayerStatisticsKey_Respawn as C_Key_MostRespawns
+#Const C_Definition_MostVehicleChanges K_StatisticDefinition{ Title = "the Shapeshifter", DescriptionFormat = "Switched vehicles %1 time(s)" }
+#Const Scores::C_PlayerStatisticsKey_VehicleChanged as C_Key_MostVehicleChanges
+#Const C_Definition_LongestFlagPossession K_StatisticDefinition{ Title = "the Vexillologist", DescriptionFormat = "Held the flag for %1 second(s)" }
+#Const Scores::C_PlayerStatisticsKey_FlagPossession as C_Key_LongestFlagPossession
+#Const C_Definition_MostFlagPasses K_StatisticDefinition{ Title = "the Altruist", DescriptionFormat = "Passed the flag %1 time(s)" }
+#Const Scores::C_PlayerStatisticsKey_FlagTeamPass as C_Key_MostFlagPasses
+
+
+#Struct K_Net_PlayerStatisticDescription {
+	Text PlayerName;
+	Text Title;
+	Text Description;
+}
+
+Text GetManialink() {
+	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="{{{ C_LayerName }}}">
+	<framemodel id="player-statistic">
+		<label id="title" pos="0 2.5" halign="center" valign="center" size="55 5" text="<Name>, the <Title>" textfont="GameFontSemiBold" textsize="2.5" textemboss="1"/>
+		<label id="description" pos="0 -2.5" halign="center" valign="center" size="55 5" text="Did <Something> for <Value><Unit of Measurements>>" style="GameFontRegular" textsize="0.5" textemboss="1"/>
+	</framemodel>
+
+	<frame id="statistics" pos="130 0">
+		<quad id="background" pos="0 0" valign="center" halign="center" size="60 182" style="Bgs1" substyle="BgDialogBlur" colorize="888"/>
+
+		<!-- Divider -->
+		<frame id="divider">
+			<label id="label" pos="0 0.5" size="55 5" text="Statistics" textfont="GameFontBlack" valign="center" halign="center" textsize="5" textemboss="1"/>
+			<quad id="top-bar" pos="0 4" size="55 0.5" bgcolor="fff" valign="center"  halign="center"/>
+			<quad id="bottom-bar" pos="0 -4" size="55 0.5" bgcolor="fff" valign="center"  halign="center"/>
+		</frame>
+
+		<!-- Team 1 (Top) -->
+		<frameinstance modelid="player-statistic" id="statistic-team1-0" pos="0 15"/>
+		<frameinstance modelid="player-statistic" id="statistic-team1-1" pos="0 30"/>
+		<frameinstance modelid="player-statistic" id="statistic-team1-2" pos="0 45"/>
+		<frameinstance modelid="player-statistic" id="statistic-team1-3" pos="0 60"/>
+		<frameinstance modelid="player-statistic" id="statistic-team1-4" pos="0 75"/>
+
+		<!-- Team 2 (Bottom) -->
+		<frameinstance modelid="player-statistic" id="statistic-team2-0" pos="0 -15"/>
+		<frameinstance modelid="player-statistic" id="statistic-team2-1" pos="0 -30"/>
+		<frameinstance modelid="player-statistic" id="statistic-team2-2" pos="0 -45"/>
+		<frameinstance modelid="player-statistic" id="statistic-team2-3" pos="0 -60"/>
+		<frameinstance modelid="player-statistic" id="statistic-team2-4" pos="0 -75"/>
+	</frame>
+
+	<script><!--
+#Include "ColorLib" as CL
+
+#Const C_ElementAnimDuration 500
+#Const C_ElementAnimStartTimeOffset 100
+#Const C_ElementAnimPosXOffset 30.
+#Const C_PlayerStatisticsPosYOffset 15.
+
+#Struct K_PlayerStatistic {
+	CMlFrame Frame;
+	CMlLabel Title;
+	CMlLabel Description;
+}
+
+#Struct K_Divider {
+	CMlFrame Frame;
+	CMlLabel Label;
+	CMlQuad TopBar;
+	CMlQuad BottomBar;
+}
+
+#Struct K_Statistics {
+	CMlFrame Frame;
+	CMlQuad Background;
+	K_Divider Divider;
+	K_PlayerStatistic[][Integer] PlayerStatistics;
+}
+
+{{{ dumptype(K_Net_PlayerStatisticDescription) }}}
+
+declare K_Statistics G_Statistics;
+
+{{{ Shared::GetTeamColorNetreadFunctions() }}}
+
+Void Init() {
+	G_Statistics.Frame = (Page.GetFirstChild("statistics") as CMlFrame);
+	G_Statistics.Background = (G_Statistics.Frame.GetFirstChild("background") as CMlQuad);
+
+	G_Statistics.Divider.Frame = (G_Statistics.Frame.GetFirstChild("divider") as CMlFrame);
+	G_Statistics.Divider.Label = (G_Statistics.Divider.Frame.GetFirstChild("label") as CMlLabel);
+	G_Statistics.Divider.TopBar = (G_Statistics.Divider.Frame.GetFirstChild("top-bar") as CMlQuad);
+	G_Statistics.Divider.BottomBar = (G_Statistics.Divider.Frame.GetFirstChild("bottom-bar") as CMlQuad);
+
+	for (Clan, 1, 2) {
+		G_Statistics.PlayerStatistics[Clan] = [];
+		for (StatisticIndex, 0, 4) {
+			declare K_PlayerStatistic PlayerStatistic;
+			PlayerStatistic.Frame = (G_Statistics.Frame.GetFirstChild("statistic-team" ^ Clan ^ "-" ^ StatisticIndex) as CMlFrame);
+			PlayerStatistic.Title = (PlayerStatistic.Frame.GetFirstChild("title") as CMlLabel);
+			PlayerStatistic.Description = (PlayerStatistic.Frame.GetFirstChild("description") as CMlLabel);
+			G_Statistics.PlayerStatistics[Clan].add(PlayerStatistic);
+		}
+	}
+}
+
+Void ResetControls() {
+	G_Statistics.Frame.RelativePosition_V3 = <160. - G_Statistics.Background.Size.X * 0.5 + C_ElementAnimPosXOffset, 0.>;
+
+	G_Statistics.Divider.Frame.RelativePosition_V3 = <C_ElementAnimPosXOffset, 0.>;
+	G_Statistics.Divider.Label.Opacity = 0.;
+	G_Statistics.Divider.TopBar.Opacity = 0.;
+	G_Statistics.Divider.BottomBar.Opacity = 0.;
+
+
+	for (Clan, 1, 2) {
+		foreach (StatisticIndex => Statistic in G_Statistics.PlayerStatistics[Clan]) {
+			declare Real PosY = (StatisticIndex + 1) * C_PlayerStatisticsPosYOffset;
+			if (Clan == 2) {
+				PosY *= -1;
+			}
+			Statistic.Frame.RelativePosition_V3 = <C_ElementAnimPosXOffset, PosY>;
+			Statistic.Title.Opacity = 0.;
+			Statistic.Description.Opacity = 0.;
+		}
+	}
+}
+
+Void SetContent() {
+	declare netread K_Net_PlayerStatisticDescription[][Integer] Net_FlagRush_PodiumStatistics for Teams[0] = [];
+	for (Clan, 1, 2) {
+		foreach (StatisticIndex => Statistic in G_Statistics.PlayerStatistics[Clan]) {
+			declare K_Net_PlayerStatisticDescription StatisticDescription = Net_FlagRush_PodiumStatistics.get(Clan, []).get(StatisticIndex, K_Net_PlayerStatisticDescription{});
+			if (StatisticDescription.PlayerName == "") { // No statistic for that index
+				Statistic.Frame.Hide();
+				continue;
+			}
+
+			Statistic.Title.Value = "$" ^ CL::RgbToHex3(GetTeamMidColor(Clan)) ^ StatisticDescription.PlayerName ^ "$g, " ^ StatisticDescription.Title;
+			Statistic.Description.Value = StatisticDescription.Description;
+		}
+	}
+}
+
+Void AnimateIn() {
+	ResetControls();
+	AnimMgr.Add(G_Statistics.Frame, "<elem pos=\"130 0\" />", C_ElementAnimDuration, CAnimManager::EAnimManagerEasing::ExpOut);
+	AnimMgr.Add(G_Statistics.Divider.Frame, "<elem pos=\"0 0\" />", Now + C_ElementAnimStartTimeOffset, C_ElementAnimDuration, CAnimManager::EAnimManagerEasing::ExpOut);
+	AnimMgr.Add(G_Statistics.Divider.Label, "<elem opacity=\"1\" />", Now + C_ElementAnimStartTimeOffset, C_ElementAnimDuration, CAnimManager::EAnimManagerEasing::ExpOut);
+	AnimMgr.Add(G_Statistics.Divider.TopBar, "<elem opacity=\"1\" />", Now + C_ElementAnimStartTimeOffset, C_ElementAnimDuration, CAnimManager::EAnimManagerEasing::ExpOut);
+	AnimMgr.Add(G_Statistics.Divider.BottomBar, "<elem opacity=\"1\" />", Now + C_ElementAnimStartTimeOffset, C_ElementAnimDuration, CAnimManager::EAnimManagerEasing::ExpOut);
+	for (Clan, 1, 2) {
+		foreach (StatisticIndex => Statistic in G_Statistics.PlayerStatistics[Clan]) {
+			declare Integer AnimStartTime = Now + ((StatisticIndex + 2) * C_ElementAnimStartTimeOffset);
+			declare Real PosY = (StatisticIndex + 1) * C_PlayerStatisticsPosYOffset;
+			if (Clan == 2) {
+				PosY *= -1;
+			}
+			AnimMgr.Add(Statistic.Frame, "<elem pos=\"0 " ^ PosY ^ "\" />", AnimStartTime, C_ElementAnimDuration, CAnimManager::EAnimManagerEasing::ExpOut);
+			AnimMgr.Add(Statistic.Title, "<elem opacity=\"1\" />", AnimStartTime, C_ElementAnimDuration, CAnimManager::EAnimManagerEasing::ExpOut);
+			AnimMgr.Add(Statistic.Description, "<elem opacity=\"1\" />", AnimStartTime, C_ElementAnimDuration, CAnimManager::EAnimManagerEasing::ExpOut);
+		}
+	}
+}
+
+main() {
+	Init();
+	SetContent();
+	AnimateIn();
+}
+	--></script>
+</manialink>""";
+}
+
+Text[] Private_GetIntegerStatisticCategories() {
+	return [
+		C_Key_LongestFlagPossession,
+		C_Key_MostFlagPasses,
+		C_Key_MostRespawns,
+		C_Key_MostVehicleChanges
+	];
+}
+
+Text[] Private_GetRealStatisticCategories() {
+	return [
+		C_Key_MostDistanceDriven
+	];
+}
+
+CSmScore[][Integer] Private_SortScoresByClan() {
+	declare CSmScore[][Integer] ScoresByClan;
+	foreach (Score in Scores) {
+		if (!ScoresByClan.existskey(Score.TeamNum)) {
+			ScoresByClan[Score.TeamNum] = [];
+		}
+		ScoresByClan[Score.TeamNum].add(Score);
+	}
+	return ScoresByClan;
+}
+
+CSmScore[][Text] Private_CreateStatisticRankings() {
+	declare CSmScore[][Text] RankingsByCategory;
+	foreach (CategoryKey in Private_GetIntegerStatisticCategories()) {
+		RankingsByCategory[CategoryKey] = Scores::SortByIntegerStatistic(CategoryKey);
+	}
+
+	foreach (CategoryKey in Private_GetRealStatisticCategories()) {
+		RankingsByCategory[CategoryKey] = Scores::SortByRealStatistic(CategoryKey);
+	}
+
+	return RankingsByCategory;
+}
+
+K_StatisticDefinition Private_GetDefinition(Text _StatisticsKey) {
+	declare K_StatisticDefinition[Text] KeyTitleMap = [
+		C_Key_MostDistanceDriven => C_Definition_MostDistanceDriven,
+		C_Key_MostRespawns => C_Definition_MostRespawns,
+		C_Key_MostVehicleChanges => C_Definition_MostVehicleChanges,
+		C_Key_LongestFlagPossession => C_Definition_LongestFlagPossession,
+		C_Key_MostFlagPasses => C_Definition_MostFlagPasses
+	];
+	return KeyTitleMap.get(_StatisticsKey, K_StatisticDefinition{});
+}
+
+Text Private_GetStatisticValue(CSmScore _Score, Text _StatisticsKey) {
+	if (Private_GetIntegerStatisticCategories().exists(_StatisticsKey)) {
+		declare Integer Value = PlayerStatistics::GetPlayerMatchInteger(_Score, _StatisticsKey);
+		return TL::ToText(Value);
+	}
+	declare Real Value = PlayerStatistics::GetPlayerMatchReal(_Score, _StatisticsKey);
+	return TL::FormatReal(Value, 2, False, False);
+}
+
+K_Net_PlayerStatisticDescription Private_BuildStatisticDescription(CSmScore _Score, Text _StatisticsKey) {
+	declare K_StatisticDefinition StatisticDefinition = Private_GetDefinition(_StatisticsKey);
+	return K_Net_PlayerStatisticDescription {
+		PlayerName = _Score.User.Name,
+		Title = StatisticDefinition.Title,
+		Description = TL::Compose(StatisticDefinition.DescriptionFormat, Private_GetStatisticValue(_Score, _StatisticsKey))
+	};
+}
+
+K_Net_PlayerStatisticDescription[][Integer] Private_DeterminePlayerStatistics(CSmScore[][Integer] _ScoresByClan) {
+	declare K_Net_PlayerStatisticDescription[][Integer] Descriptions;
+	declare CSmScore[][Text] StatisticRankings = Private_CreateStatisticRankings();
+	for (Clan, 1, 2) {
+		Descriptions[Clan] = [];
+		declare Integer StatisticsCount = ML::Min(_ScoresByClan.get(Clan, []).count, C_PlayerStatisticCount);
+		declare Text[] TakenStatistics;
+		for (StatisticIndex, 0, StatisticsCount - 1) {
+			declare CSmScore Score <=> _ScoresByClan[Clan][StatisticIndex];
+			// Check best statistic of the player that is not already taken
+			declare Text BestRankingKey;
+			declare Integer BestRankingIndex = 9999;
+			foreach (Key => Ranking in StatisticRankings) {
+				if (TakenStatistics.exists(Key)) {
+					continue;
+				}
+				declare Integer RankingIndex = Ranking.keyof(Score);
+				if (RankingIndex < BestRankingIndex) {
+					BestRankingIndex = RankingIndex;
+					BestRankingKey = Key;
+				}
+			}
+
+			if (BestRankingKey == "") {
+				continue;
+			}
+			TakenStatistics.add(BestRankingKey);
+			declare K_Net_PlayerStatisticDescription StatisticDescription = Private_BuildStatisticDescription(Score, BestRankingKey);
+			Descriptions[Clan].add(StatisticDescription);
+		}
+	}
+	return Descriptions;
+}
+
+Void Attach() {
+	declare CSmScore[][Integer] ScoresByClan = Private_SortScoresByClan();
+	declare K_Net_PlayerStatisticDescription[][Integer] PlayerStatisticDescriptions = Private_DeterminePlayerStatistics(ScoresByClan);
+	declare netwrite K_Net_PlayerStatisticDescription[][Integer] Net_FlagRush_PodiumStatistics for Teams[0] = [];
+	Net_FlagRush_PodiumStatistics = PlayerStatisticDescriptions;
+	Layers::Attach(C_LayerName);
+}
+
+Void Detach() {
+	Layers::Detach(C_LayerName);
+}
+
+Void Unload() {
+	Layers::Destroy(C_LayerName);
+}
+
+Void Load() {
+	Unload();
+	Layers::Create(C_LayerName, GetManialink());
+	Layers::SetType(C_LayerName, CUILayer::EUILayerType::Normal);
+}

@@ -18,9 +18,9 @@
 }
 
 Void SetContent(CSmScore[] PodiumScores) {
-	declare CSmScore[] FlagsScoredMatchRanking = Scores::GetPlayerFlagsScoredMatchRanking();
-	declare CSmScore[] AssistsMatchRanking = Scores::GetPlayerAssistsMatchRanking();
-	declare CSmScore[] FlagsStolenMatchRanking = Scores::GetPlayerFlagsStealsMatchRanking();
+	declare CSmScore[] FlagsScoredMatchRanking = Scores::SortByIntegerStatistic(Scores::C_PlayerStatisticsKey_FlagsScored);
+	declare CSmScore[] AssistsMatchRanking = Scores::SortByIntegerStatistic(Scores::C_PlayerStatisticsKey_FlagScoreAssists);
+	declare CSmScore[] FlagsStolenMatchRanking = Scores::SortByIntegerStatistic(Scores::C_PlayerStatisticsKey_FlagsStolen);
 
 	declare netwrite K_PodiumPlaceConfig[Integer] FlagRush_Net_PodiumPlacementConfigs for Teams[0];
 	for (Placement, 1, 3) {

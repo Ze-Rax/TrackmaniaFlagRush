@@ -17,27 +17,28 @@
 
 // From mode base:
 // #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"										as XmlRpc
-// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt"								as XmlRpc_Base
+// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt"							as XmlRpc_Base
 
-#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"										as EventFeed
-#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"				as ModeCommands
-#Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"				as CommandUtils
-#Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"										as ModeUtils
-#Include "Libs/Zrx/ModeLibs/Common/ModeEvents.Script.txt"										as ModeEvents
-#Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
+#Include "Libs/Zrx/ModeLibs/Common/EventFeed.Script.txt"											as EventFeed
+#Include "Libs/Zrx/ModeLibs/Common/Commands/ModeCommands.Script.txt"					as ModeCommands
+#Include "Libs/Zrx/ModeLibs/Common/Commands/CommandUtils.Script.txt"					as CommandUtils
+#Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"											as ModeUtils
+#Include "Libs/Zrx/ModeLibs/Common/ModeEvents.Script.txt"											as ModeEvents
+#Include "Libs/Zrx/ModeLibs/Common/WarmUpReadyUp/WarmUpReadyUp.Script.txt"		as WarmUpReadyUp
 
 // FlagRush Libs
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"						as FlagRush_Common
-#Include "Libs/Zrx/ModeLibs/FlagRush/SettingTracker.Script.txt"							as SettingTracker
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"								as FlagRush_Map
-#Include "Libs/Zrx/ModeLibs/FlagRush/Scores.Script.txt"											as Scores
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"		as FlagRush_MatchEvaluation
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"							as FlagRush_Teams
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_RpcEvents.Script.txt"					as FlagRush_XmlRpc
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"							as FlagRush_Common
+#Include "Libs/Zrx/ModeLibs/FlagRush/SettingTracker.Script.txt"								as SettingTracker
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"									as FlagRush_Map
+#Include "Libs/Zrx/ModeLibs/FlagRush/Scores.Script.txt"												as Scores
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"			as FlagRush_MatchEvaluation
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"								as FlagRush_Teams
+#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_RpcEvents.Script.txt"						as FlagRush_XmlRpc
 
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Messages.Script.txt"								as Messages
-#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MapMarkers.Script.txt"			as MapMarkers
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UI.Script.txt"								as FlagRush_UI
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Messages.Script.txt"									as Messages
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/MapMarkers.Script.txt"				as MapMarkers
+#Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/PodiumStatistics.Script.txt"	as PodiumStatistics
 
 ///////////////
 // Constants //
@@ -219,6 +220,7 @@ SettingTracker::Unload();
 FlagRush_UI::Load();
 FlagMarker::Load();
 MapMarkers::Load();
+PodiumStatistics::Load();
 ModeCommands::AddQuickCommand(C_Command_EndWarmup, "UICommon64_1", "Play_light");
 ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(C_Command_SkipRound, "UICommon64_1", "FastForward_light");
@@ -494,7 +496,10 @@ if (HasPodium) {
 	FlagRush_UI::AttachPodiumBackground(PodiumPlayerScores);
 	UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
-	MB_Sleep(C_Duration_Podium);
+	MB_Sleep(ML::NearestInteger(C_Duration_Podium * 0.33));
+	PodiumStatistics::Attach();
+	MB_Sleep(ML::NearestInteger(C_Duration_Podium * 0.67));
+	PodiumStatistics::Detach();
 	FlagRush_UI::DetachPodiumBackground();
 	MapMarkers::Show();
 }

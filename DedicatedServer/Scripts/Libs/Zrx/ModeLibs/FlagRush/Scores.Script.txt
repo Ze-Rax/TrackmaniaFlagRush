@@ -119,28 +119,30 @@ CSmScore[] Private_MapToScoreArray(Integer[CSmScore] _Array) {
 	return Result;
 }
 
-CSmScore[] GetPlayerFlagsScoredMatchRanking() {
-	declare Integer[CSmScore] FlagsScored;
-	foreach (Score in Scores) {
-		FlagsScored[Score] = GetPlayerMatchStatistics(Score).FlagsScored;
+CSmScore[] Private_MapToScoreArray(Real[CSmScore] _Array) {
+	declare CSmScore[] Result;
+	foreach (Score => Value in _Array) {
+		Result.add(Score);
 	}
-	return Private_MapToScoreArray(FlagsScored.sortreverse());
+	return Result;
 }
 
-CSmScore[] GetPlayerAssistsMatchRanking() {
-	declare Integer[CSmScore] Assists;
+CSmScore[] SortByIntegerStatistic(Text _StatisticsKey) {
+	declare Integer[CSmScore] ScoreMap;
 	foreach (Score in Scores) {
-		Assists[Score] = GetPlayerMatchStatistics(Score).FlagScoreAssists;
+		declare PlayerStatistics::K_PlayerStatistics PlayerStatistics = PlayerStatistics::GetPlayerStatistics(Score, C_Level_Match);
+		ScoreMap[Score] = PlayerStatistics.Integers.get(_StatisticsKey, 0);
 	}
-	return Private_MapToScoreArray(Assists.sortreverse());
+	return Private_MapToScoreArray(ScoreMap.sortreverse());
 }
 
-CSmScore[] GetPlayerFlagsStealsMatchRanking() {
-	declare Integer[CSmScore] FlagSteals;
+CSmScore[] SortByRealStatistic(Text _StatisticsKey) {
+	declare Real[CSmScore] ScoreMap;
 	foreach (Score in Scores) {
-		FlagSteals[Score] = GetPlayerMatchStatistics(Score).FlagsStolen;
+		declare PlayerStatistics::K_PlayerStatistics PlayerStatistics = PlayerStatistics::GetPlayerStatistics(Score, C_Level_Match);
+		ScoreMap[Score] = PlayerStatistics.Reals.get(_StatisticsKey, 0.0);
 	}
-	return Private_MapToScoreArray(FlagSteals.sortreverse());
+	return Private_MapToScoreArray(ScoreMap.sortreverse());
 }
 
 /* Net send scores */

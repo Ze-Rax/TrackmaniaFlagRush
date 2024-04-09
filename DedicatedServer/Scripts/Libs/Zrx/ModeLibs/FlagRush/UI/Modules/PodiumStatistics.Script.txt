@@ -29,6 +29,8 @@
 #Const Scores::C_PlayerStatisticsKey_FlagTeamPass as C_Key_MostFlagPasses
 #Const C_Definition_MostFlagPickupsFromLandmark K_StatisticDefinition{ Title = "the Camper", DescriptionFormat = "Picked up the flag from flag spawns %1 time(s)", IsReal = False }
 #Const Scores::C_PlayerStatisticsKey_FlagPickUpLandmark as C_Key_MostFlagPickupsFromLandmark
+#Const C_Definition_MostOutOfBounds K_StatisticDefinition{ Title = "the Clumsy", DescriptionFormat = "Went out of bounds %1 time(s)", IsReal = False }
+#Const Scores::C_PlayerStatisticsKey_OutOfBounds as C_Key_MostOutOfBounds
 
 #Struct K_Net_PlayerStatisticDescription {
 	Text PlayerName;
@@ -200,6 +202,7 @@ K_StatisticDefinition[Text] Private_GetDefinitions() {
 		C_Key_LongestFlagPossession => C_Definition_LongestFlagPossession,
 		C_Key_MostFlagPasses => C_Definition_MostFlagPasses,
 		C_Key_MostFlagPickupsFromLandmark => C_Definition_MostFlagPickupsFromLandmark,
+		C_Key_MostOutOfBounds => C_Definition_MostOutOfBounds,
 		C_Key_MostRespawns => C_Definition_MostRespawns,
 		C_Key_MostVehicleChanges => C_Definition_MostVehicleChanges,
 		C_Key_MostDistanceDriven => C_Definition_MostDistanceDriven

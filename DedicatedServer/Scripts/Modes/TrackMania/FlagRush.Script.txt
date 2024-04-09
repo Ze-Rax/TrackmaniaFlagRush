@@ -691,6 +691,7 @@ Void OnPlayerOutOfBound(CSmPlayer Player) {
 	}
 	FlagRush_XmlRpc::Send_PlayerDeath(Player);
 	Player_Unspawn(Player);
+	Scores::OnPlayerOutOfBounds(Player.Score);
 }
 
 Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {

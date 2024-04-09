@@ -183,8 +183,8 @@ foreach (Player in Players) {
 declare Flag::K_Flag PreviousFlag = Flag::Get();
 Flag::Yield();
 
-// Track distance driven
 foreach (Player in Players) {
+	// Track distance driven
 	declare Vec3 FlagRush_PreviousPosition for Player = Player.Position;
 	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
 		continue;
@@ -195,6 +195,9 @@ foreach (Player in Players) {
 		}
 	}
 	FlagRush_PreviousPosition = Player.Position;
+
+	// Track speed
+	Scores::OnPlayerHasSpeed(Player.Score, Player.Speed * 3.6);
 }
 
 // Update Flag

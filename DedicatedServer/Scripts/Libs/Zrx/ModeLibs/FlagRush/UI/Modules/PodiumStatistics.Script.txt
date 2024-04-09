@@ -33,6 +33,8 @@
 #Const Scores::C_PlayerStatisticsKey_OutOfBounds as C_Key_MostOutOfBounds
 #Const C_Definition_MostDeaths K_StatisticDefinition{ Title = "the Squishy", DescriptionFormat = "Got eleminated by moving blocks %1 time(s)", IsReal = False }
 #Const Scores::C_PlayerStatisticsKey_Deaths as C_Key_MostDeaths
+#Const C_Definition_TopSpeed K_StatisticDefinition{ Title = "the Speed Demon", DescriptionFormat = "Reached a top speed of %1km/h", IsReal = False }
+#Const Scores::C_PlayerStatisticsKey_TopSpeed as C_Key_TopSpeed
 
 #Struct K_Net_PlayerStatisticDescription {
 	Text PlayerName;
@@ -40,7 +42,19 @@
 	Text Description;
 }
 
-#Const C_PlayerStatisticDescription_Participant K_Net_PlayerStatisticDescription{ Title = "the Participant", Description = "You were there. :)" }
+#Const C_NoTopStatistic_Title "the Participant"
+#Const C_NoTopStatistic_Descriptions [
+	"Was there as well",
+	"Managed to join the server",
+	"Got a participation trophy",
+	"*Cricket chirping*",
+	"Fell asleep",
+	"Lorem ipsum dolor sit amet",
+	"Should turn on their screen",
+	"Tried their best",
+	"Was quite unremarkable",
+	"..."
+]
 
 Text GetManialink() {
 	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
@@ -208,6 +222,7 @@ K_StatisticDefinition[Text] Private_GetDefinitions() {
 		C_Key_MostFlagPickupsFromLandmark => C_Definition_MostFlagPickupsFromLandmark,
 		C_Key_MostDistanceDriven => C_Definition_MostDistanceDriven,
 		C_Key_MostDeaths => C_Definition_MostDeaths,
+		C_Key_TopSpeed => C_Definition_TopSpeed,
 		C_Key_MostOutOfBounds => C_Definition_MostOutOfBounds,
 		C_Key_MostRespawns => C_Definition_MostRespawns,
 		C_Key_MostVehicleChanges => C_Definition_MostVehicleChanges
@@ -263,6 +278,7 @@ K_Net_PlayerStatisticDescription Private_BuildStatisticDescription(CSmScore _Sco
 K_Net_PlayerStatisticDescription[][Integer] Private_DeterminePlayerStatistics(CSmScore[][Integer] _ScoresByClan) {
 	declare K_Net_PlayerStatisticDescription[][Integer] Descriptions;
 	declare CSmScore[][Text] StatisticRankings = Private_CreateStatisticRankings();
+	declare Text[] PossibleNoRankingDescriptions = C_NoTopStatistic_Descriptions;
 	for (Clan, 1, 2) {
 		Descriptions[Clan] = [];
 		declare Integer StatisticsCount = ML::Min(_ScoresByClan.get(Clan, []).count, C_PlayerStatisticCount);
@@ -285,8 +301,16 @@ K_Net_PlayerStatisticDescription[][Integer] Private_DeterminePlayerStatistics(CS
 				StatisticRankings.removekey(Category);
 			} else {
 				// Use a default "participation" title
-				StatisticDescription = C_PlayerStatisticDescription_Participant;
-				StatisticDescription.PlayerName = Score.User.Name;
+				declare Integer DescriptionIndex = ML::Rand(0, PossibleNoRankingDescriptions.count - 1, Now);
+				StatisticDescription = K_Net_PlayerStatisticDescription {
+					PlayerName = Score.User.Name,
+					Title = C_NoTopStatistic_Title,
+					Description = PossibleNoRankingDescriptions[DescriptionIndex]
+				};
+
+				if (PossibleNoRankingDescriptions.count > 1) {
+					PossibleNoRankingDescriptions.removekey(DescriptionIndex);
+				}
 			}
 			Descriptions[Clan].add(StatisticDescription);
 		}

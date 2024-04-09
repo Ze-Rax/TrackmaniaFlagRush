@@ -17,6 +17,7 @@
 #Const C_PlayerStatisticsKey_FlagPickUpLandmark	"PickUpFlagFromLandmark"
 #Const C_PlayerStatisticsKey_OutOfBounds				"OutOfBounds"
 #Const C_PlayerStatisticsKey_Deaths							"Deaths"
+#Const C_PlayerStatisticsKey_TopSpeed						"TopSpeed"
 
 // Must be same as Scores, PlayerStatistics and TeamPointsProgression Levels
 #Const Scores::C_Level_Match as C_Level_Match
@@ -35,6 +36,7 @@
 	Integer FlagsPickedUpFromLandmarks;
 	Integer OutOfBoundsCount;
 	Integer Deaths;
+	Real TopSpeed;
 }
 
 /* Teams */
@@ -103,7 +105,8 @@ K_FlagRushPlayerStatistics GetPlayerStatistics(CSmScore _Score, Integer _Level) 
 		DistanceDriven = PlayerStatistics::GetReal(_Score, C_PlayerStatisticsKey_DistanceDriven, _Level),
 		FlagsPickedUpFromLandmarks = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_FlagPickUpLandmark, _Level),
 		OutOfBoundsCount = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_OutOfBounds, _Level),
-		Deaths = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_Deaths, _Level)
+		Deaths = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_Deaths, _Level),
+		TopSpeed = PlayerStatistics::GetReal(_Score, C_PlayerStatisticsKey_TopSpeed, _Level)
 	};
 }
 
@@ -245,6 +248,13 @@ Void OnPlayerOutOfBounds(CSmScore _Score) {
 
 Void OnPlayerDeath(CSmScore _Score) {
 	PlayerStatistics::AddRound(_Score, C_PlayerStatisticsKey_Deaths, 1);
+}
+
+Void OnPlayerHasSpeed(CSmScore _Score, Real _Speed) {
+	declare Real CurrentTopSpeed = PlayerStatistics::GetMatchReal(_Score, C_PlayerStatisticsKey_TopSpeed);
+	if (_Speed > CurrentTopSpeed) {
+		PlayerStatistics::SetMatch(_Score, C_PlayerStatisticsKey_TopSpeed, _Speed);
+	}
 }
 
 /* Progression */

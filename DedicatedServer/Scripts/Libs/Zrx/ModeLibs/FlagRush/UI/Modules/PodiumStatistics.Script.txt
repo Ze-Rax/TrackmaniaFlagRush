@@ -19,6 +19,10 @@
 	Real Factor;
 }
 
+#Const C_Definition_MostFlagsScored K_StatisticDefinition { Title = "the Unstoppable", DescriptionFormat = "Scored a total of %1 flag(s)", IsReal = False, MinValue = 1.0, Factor = 1.0 }
+#Const Scores::C_PlayerStatisticsKey_FlagsScored as C_Key_MostFlagsScored
+#Const C_Definition_MostFlagsStolen K_StatisticDefinition { Title = "the Thieve", DescriptionFormat = "Stole a total of %1 flag(s)", IsReal = False, MinValue = 1.0, Factor = 1.0 }
+#Const Scores::C_PlayerStatisticsKey_FlagsStolen as C_Key_MostFlagsStolen
 #Const C_Definition_MostDistanceDriven K_StatisticDefinition{ Title = "the Explorer", DescriptionFormat = "Drove a total of %1km", IsReal = True, MinValue = 1.0, Factor = 0.001}
 #Const Scores::C_PlayerStatisticsKey_DistanceDriven as C_Key_MostDistanceDriven
 #Const C_Definition_MostRespawns K_StatisticDefinition{ Title = "the Phoenix", DescriptionFormat = "Respawned %1 time(s)", IsReal = False, MinValue = 1.0, Factor = 1. }
@@ -219,6 +223,8 @@ main() {
 
 K_StatisticDefinition[Text] Private_GetDefinitions() {
 	return [
+		C_Key_MostFlagsScored => C_Definition_MostFlagsScored,
+		C_Key_MostFlagsStolen => C_Definition_MostFlagsStolen,
 		C_Key_LongestFlagPossession => C_Definition_LongestFlagPossession,
 		C_Key_MostFlagPasses => C_Definition_MostFlagPasses,
 		C_Key_MostFlagPickupsFromLandmark => C_Definition_MostFlagPickupsFromLandmark,
@@ -262,7 +268,7 @@ Boolean Private_CheckCategoryRequirement(CSmScore _Score, Text _StatisticsKey) {
 	declare Real Value = PlayerStatistics::GetMatchReal(_Score, _StatisticsKey);
 	declare Real Factor = Private_GetDefinition(_StatisticsKey).Factor;
 	declare Real MinValue = Private_GetDefinition(_StatisticsKey).MinValue;
-	return  Value * Factor > MinValue;
+	return  Value * Factor >= MinValue;
 }
 
 Text Private_GetStatisticValue(CSmScore _Score, Text _StatisticsKey) {
@@ -272,7 +278,7 @@ Text Private_GetStatisticValue(CSmScore _Score, Text _StatisticsKey) {
 		return TL::FormatReal(Value * Definition.Factor, 2, False, False);
 	}
 	declare Integer Value = PlayerStatistics::GetMatchInteger(_Score, _StatisticsKey);
-	return TL::ToText(Value * Definition.Factor);
+	return TL::ToText(ML::NearestInteger(Value * Definition.Factor));
 }
 
 K_Net_PlayerStatisticDescription Private_BuildStatisticDescription(CSmScore _Score, Text _StatisticsKey) {

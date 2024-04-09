@@ -678,6 +678,7 @@ Void OnPlayerDeath(CSmPlayer Player) {
 	}
 	FlagRush_XmlRpc::Send_PlayerDeath(Player);
 	Player_Unspawn(Player);
+	Scores::OnPlayerDeath(Player.Score);
 }
 
 Void OnPlayerOutOfBound(CSmPlayer Player) {

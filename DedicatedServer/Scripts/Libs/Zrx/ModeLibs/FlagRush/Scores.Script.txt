@@ -16,6 +16,7 @@
 #Const C_PlayerStatisticsKey_DistanceDriven			"DistanceDriven"
 #Const C_PlayerStatisticsKey_FlagPickUpLandmark	"PickUpFlagFromLandmark"
 #Const C_PlayerStatisticsKey_OutOfBounds				"OutOfBounds"
+#Const C_PlayerStatisticsKey_Deaths							"Deaths"
 
 // Must be same as Scores, PlayerStatistics and TeamPointsProgression Levels
 #Const Scores::C_Level_Match as C_Level_Match
@@ -33,6 +34,7 @@
 	Real DistanceDriven;
 	Integer FlagsPickedUpFromLandmarks;
 	Integer OutOfBoundsCount;
+	Integer Deaths;
 }
 
 /* Teams */
@@ -101,7 +103,8 @@ K_FlagRushPlayerStatistics GetPlayerStatistics(CSmScore _Score, Integer _Level) 
 		VehicleChanges = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_VehicleChanged, 0),
 		DistanceDriven = PlayerStatistics.Reals.get(C_PlayerStatisticsKey_DistanceDriven, 0.0),
 		FlagsPickedUpFromLandmarks = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_FlagPickUpLandmark, 0),
-		OutOfBoundsCount = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_OutOfBounds, 0)
+		OutOfBoundsCount = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_OutOfBounds, 0),
+		Deaths = PlayerStatistics.Integers.get(C_PlayerStatisticsKey_Deaths, 0)
 	};
 }
 
@@ -241,6 +244,10 @@ Void OnPlayerPicksUpFlagFromLandmark(CSmScore _Score) {
 
 Void OnPlayerOutOfBounds(CSmScore _Score) {
 	PlayerStatistics::AddPlayerRoundInteger(_Score, C_PlayerStatisticsKey_OutOfBounds, 1);
+}
+
+Void OnPlayerDeath(CSmScore _Score) {
+	PlayerStatistics::AddPlayerRoundInteger(_Score, C_PlayerStatisticsKey_Deaths, 1);
 }
 
 /* Progression */

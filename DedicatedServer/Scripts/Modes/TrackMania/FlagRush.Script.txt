@@ -197,7 +197,7 @@ foreach (Player in Players) {
 	FlagRush_PreviousPosition = Player.Position;
 
 	// Track speed
-	Scores::OnPlayerHasSpeed(Player.Score, Player.Speed * 3.6);
+	Scores::OnPlayerHasSpeed(Player.Score, Player.Speed);
 }
 
 // Update Flag

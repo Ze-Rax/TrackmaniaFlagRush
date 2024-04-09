@@ -144,7 +144,7 @@ Void ResetControls() {
 	}
 }
 
-Void SetContent() {
+Void UpdateContent() {
 	declare netread K_Net_PlayerStatisticDescription[][Integer] Net_FlagRush_PodiumStatistics for Teams[0] = [];
 	for (Clan, 1, 2) {
 		foreach (StatisticIndex => Statistic in G_Statistics.PlayerStatistics[Clan]) {
@@ -183,8 +183,11 @@ Void AnimateIn() {
 
 main() {
 	Init();
-	SetContent();
 	AnimateIn();
+	while(True) {
+		yield;
+		UpdateContent();
+	}
 }
 	--></script>
 </manialink>""";
@@ -203,6 +206,17 @@ Text[] Private_GetRealStatisticCategories() {
 	return [
 		C_Key_MostDistanceDriven
 	];
+}
+
+K_StatisticDefinition Private_GetDefinition(Text _StatisticsKey) {
+	declare K_StatisticDefinition[Text] KeyTitleMap = [
+		C_Key_MostDistanceDriven => C_Definition_MostDistanceDriven,
+		C_Key_MostRespawns => C_Definition_MostRespawns,
+		C_Key_MostVehicleChanges => C_Definition_MostVehicleChanges,
+		C_Key_LongestFlagPossession => C_Definition_LongestFlagPossession,
+		C_Key_MostFlagPasses => C_Definition_MostFlagPasses
+	];
+	return KeyTitleMap.get(_StatisticsKey, K_StatisticDefinition{});
 }
 
 CSmScore[][Integer] Private_SortScoresByClan() {
@@ -227,17 +241,6 @@ CSmScore[][Text] Private_CreateStatisticRankings() {
 	}
 
 	return RankingsByCategory;
-}
-
-K_StatisticDefinition Private_GetDefinition(Text _StatisticsKey) {
-	declare K_StatisticDefinition[Text] KeyTitleMap = [
-		C_Key_MostDistanceDriven => C_Definition_MostDistanceDriven,
-		C_Key_MostRespawns => C_Definition_MostRespawns,
-		C_Key_MostVehicleChanges => C_Definition_MostVehicleChanges,
-		C_Key_LongestFlagPossession => C_Definition_LongestFlagPossession,
-		C_Key_MostFlagPasses => C_Definition_MostFlagPasses
-	];
-	return KeyTitleMap.get(_StatisticsKey, K_StatisticDefinition{});
 }
 
 Text Private_GetStatisticValue(CSmScore _Score, Text _StatisticsKey) {
@@ -292,11 +295,14 @@ K_Net_PlayerStatisticDescription[][Integer] Private_DeterminePlayerStatistics(CS
 	return Descriptions;
 }
 
-Void Attach() {
+Void Update() {
 	declare CSmScore[][Integer] ScoresByClan = Private_SortScoresByClan();
 	declare K_Net_PlayerStatisticDescription[][Integer] PlayerStatisticDescriptions = Private_DeterminePlayerStatistics(ScoresByClan);
 	declare netwrite K_Net_PlayerStatisticDescription[][Integer] Net_FlagRush_PodiumStatistics for Teams[0] = [];
 	Net_FlagRush_PodiumStatistics = PlayerStatisticDescriptions;
+}
+
+Void Attach() {
 	Layers::Attach(C_LayerName);
 }
 

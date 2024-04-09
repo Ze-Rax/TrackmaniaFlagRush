@@ -499,6 +499,7 @@ if (HasPodium) {
 	MB_Sleep(ML::NearestInteger(C_Duration_Podium * 0.33));
 	PodiumStatistics::Attach();
 	MB_Sleep(ML::NearestInteger(C_Duration_Podium * 0.67));
+	UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 	PodiumStatistics::Detach();
 	FlagRush_UI::DetachPodiumBackground();
 	MapMarkers::Show();

@@ -128,12 +128,12 @@ Text GetMapConfigWindowManialink() {
 	</framemodel>
 
 	<framemodel id="vehiclebutton" class="vehiclebutton">
-		<label id="button" pos="0 0" size="20 5" text="Vehicle___" style="CardButtonMediumS" valign="center" halign="center" scriptevents="1"/>
+		<label id="button" pos="0 0" size="20 5" text="Vehicle___" style="CardButtonMedium" valign="center" halign="center" scriptevents="1"/>
 		<quad id="checkbox" pos="10 0" size="5 5" valign="center" halign="center" style="UICommon64_1" substyle="CheckboxCircle_light"/>
 	</framemodel>
 
-	<frame pos="0 45">
-		<quad pos="0 0" z-index="-2" size="100 90" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ Stylesheet::C_ColorHex6_GreenThree }}}" halign="center" valign="top" />
+	<frame pos="0 50">
+		<quad pos="0 0" z-index="-2" size="100 100" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ Stylesheet::C_ColorHex6_GreenThree }}}" halign="center" valign="top" />
 		<quad pos="0 0" z-index="-1" size="100 10" style="UICommon64_1" substyle="BgFrame1"  colorize="{{{ Stylesheet::C_ColorHex6_GreenTwo }}}" halign="center" valign="top" />
 		<label pos="0 -5.25" z-index="0" size="90 8" text="$iFlagRush Settings" halign="center" valign="center2" textfont="GameFontBlack" textsize="3" />
 
@@ -146,13 +146,14 @@ Text GetMapConfigWindowManialink() {
 
 		<frame id="vehicles" pos="0 -60">
 			<label size="45 5" text="$iVehicles:" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="3" z-index="1" textcolor="FFF"/>
-			<frameinstance modelid="vehiclebutton" pos="-30 -7.5" id="{{{ C_VehicleId_Stadium }}}" data-label="Stadium"/>
-			<frameinstance modelid="vehiclebutton" pos="0 -7.5" id="{{{ C_VehicleId_Snow }}}" data-label="Snow"/>
-			<frameinstance modelid="vehiclebutton" pos="30 -7.5" id="{{{ C_VehicleId_Rally }}}" data-label="Rally"/>
-			<label size="70 5" pos="0 -14" text=" $iThe gamemode defaults to all vehicles being enabled if no selection is made here." halign="center" valign="center2" textfont="GameFontRegular" textsize="0.5" z-index="1" textcolor="FFF"/>
+			<frameinstance modelid="vehiclebutton" pos="-20 -7.5" id="{{{ C_VehicleId_Stadium }}}" data-label="Stadium"/>
+			<frameinstance modelid="vehiclebutton" pos="20 -7.5" id="{{{ C_VehicleId_Snow }}}" data-label="Snow"/>
+			<frameinstance modelid="vehiclebutton" pos="-20 -17.5" id="{{{ C_VehicleId_Rally }}}" data-label="Rally"/>
+			<frameinstance modelid="vehiclebutton" pos="20 -17.5" id="{{{ C_VehicleId_Desert }}}" data-label="Desert"/>
+			<label size="70 5" pos="0 -24" text=" $iThe gamemode defaults to all vehicles being enabled if no selection is made here." halign="center" valign="center2" textfont="GameFontRegular" textsize="0.5" z-index="1" textcolor="FFF"/>
 		</frame>
 
-		<label id="close" pos="0 -82.5" z-index="0" size="20 5" text="Close" style="CardButtonMediumL" valign="center" halign="center" scriptevents="1"/>
+		<label id="close" pos="0 -92.5" z-index="0" size="20 5" text="Close" style="CardButtonMediumL" valign="center" halign="center" scriptevents="1"/>
 	</frame>
 
 
@@ -238,7 +239,7 @@ Text GetMapConfigWindowManialink() {
 
 		declare metadata Text[] FlagRush_Meta_Vehicles for Editor.Map = [];
 		Page.GetClassChildren("vehiclebutton", Page.MainFrame, True);
-		for (ButtonFrame in Page.GetClassChildren_Result) {
+		foreach (ButtonFrame in Page.GetClassChildren_Result) {
 			declare K_VehicleButton VehicleButton;
 			VehicleButton.Frame = ButtonFrame as CMlFrame;
 			VehicleButton.Button = (VehicleButton.Frame.GetFirstChild("button") as CMlLabel);
@@ -284,7 +285,7 @@ Text GetMapConfigWindowManialink() {
 									}
 								}
 							}
-							for (VehicleButton in G_VehicleButtons) {
+							foreach (VehicleButton in G_VehicleButtons) {
 								if (Event.Control == VehicleButton.Button) {
 									SendCustomEvent("{{{ C_UIEventType_ToggleVehicle }}}", [VehicleButton.Frame.ControlId]);
 								}

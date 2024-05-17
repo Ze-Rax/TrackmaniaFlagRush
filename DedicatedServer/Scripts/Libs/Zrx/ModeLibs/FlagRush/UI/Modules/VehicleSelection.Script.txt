@@ -8,26 +8,12 @@
 
 #Const C_LayerName "FlagRush_VehicleSelection"
 
-#Struct K_UIVehicleButtonParameter {
-	Text Label;
-	Text Icon;
-}
-
-// Keys should be same a FlagRush_Vehicle::C_Vehicle_*.Id
-#Const C_UIVehicleButtonParameters [
-	"stadium" => K_UIVehicleButtonParameter{Label = "Stadium", Icon = ""},
-	"snow" => K_UIVehicleButtonParameter{Label = "Snow", Icon = "❄"},
-	"rally" => K_UIVehicleButtonParameter{Label = "Rally", Icon = ""},
-	"desert" => K_UIVehicleButtonParameter{Label = "Desert", Icon = ""}
-]
-
 declare FlagRush_Vehicle::K_Vehicle[] G_EnabledVehicles;
 
 Text GetManialink() {
 	declare Text VehicleFrameInstances;
-	for (Index => Vehicle in G_EnabledVehicles) {
-		declare K_UIVehicleButtonParameter Parameters = C_UIVehicleButtonParameters.get(Vehicle.Id, K_UIVehicleButtonParameter{});
-		VehicleFrameInstances ^= """<frameinstance modelid="vehicle-option" id="vehicle-option-{{{ Vehicle.Id }}}" pos="{{{ 6 + Index * 13 }}} 0" data-name="{{{ Parameters.Label }}}" data-icon="{{{ Parameters.Icon }}}" data-id="{{{ Vehicle.Id }}}" />""";
+	foreach (Index => Vehicle in G_EnabledVehicles) {
+		VehicleFrameInstances ^= """<frameinstance modelid="vehicle-option" id="vehicle-option-{{{ Vehicle.Id }}}" pos="{{{ 6 + Index * 13 }}} 0" data-name="{{{ Vehicle.DisplayName }}}" data-icon="{{{ Vehicle.DisplayIcon }}}" data-id="{{{ Vehicle.Id }}}" />""";
 	}
 
 	return """
@@ -175,7 +161,7 @@ Text GetManialink() {
 FlagRush_Vehicle::K_Vehicle GetSlectedVehicle(CSmPlayer Player) {
 	declare CUIConfig UI = UIManager.GetUI(Player);
 	declare netread Text Net_FlagRush_SelectedVehicleId for UI = "";
-	for (Vehicle in G_EnabledVehicles) {
+	foreach (Vehicle in G_EnabledVehicles) {
 		if (Vehicle.Id == Net_FlagRush_SelectedVehicleId) {
 			return Vehicle;
 		}

@@ -329,7 +329,7 @@ if (FlagRush_PreviousSettings_ForceEnabledVehiclesCsv != S_ForceEnabledVehiclesC
 	// Note: Cannot use functions like Vehicle_GetEnabled or globals in Yield due to ordering after compilation
 	declare FlagRush_Vehicle::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
 	FlagRush_ForceEnabledVehicles.clear();
-	for (CsvEntry in TL::Split(",", S_ForceEnabledVehiclesCsv)) {
+	foreach (CsvEntry in TL::Split(",", S_ForceEnabledVehiclesCsv)) {
 		declare Text VehicleId = TL::ToLowerCase(TL::Trim(CsvEntry));
 		if (FlagRush_Vehicle::IsValid(VehicleId)) {
 			FlagRush_ForceEnabledVehicles.add(FlagRush_Vehicle::Get(VehicleId));
@@ -416,7 +416,7 @@ FlagRush_Vehicle::K_Vehicle[] Vehicle_GetEnabled() {
 
 Boolean Vehicle_IsEnabled(FlagRush_Vehicle::K_Vehicle Vehicle) {
 	declare FlagRush_Vehicle::K_Vehicle[] Vehicles = Vehicle_GetEnabled();
-	for (EnabledVehicle in Vehicles) {
+	foreach (EnabledVehicle in Vehicles) {
 		if (Vehicle.Id == EnabledVehicle.Id) {
 			return True;
 		}

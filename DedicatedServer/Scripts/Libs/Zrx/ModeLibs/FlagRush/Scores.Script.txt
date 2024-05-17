@@ -18,6 +18,7 @@
 #Const C_PlayerStatisticsKey_OutOfBounds				"OutOfBounds"
 #Const C_PlayerStatisticsKey_Deaths							"Deaths"
 #Const C_PlayerStatisticsKey_TopSpeed						"TopSpeed"
+#Const C_PlayerStatisticsKey_Airtime						"Airtime"
 
 // Must be same as Scores, PlayerStatistics and TeamPointsProgression Levels
 #Const Scores::C_Level_Match as C_Level_Match
@@ -37,6 +38,7 @@
 	Integer OutOfBoundsCount;
 	Integer Deaths;
 	Real TopSpeed;
+	Integer AirtimeMs;
 }
 
 /* Teams */
@@ -106,7 +108,8 @@ K_FlagRushPlayerStatistics GetPlayerStatistics(CSmScore _Score, Integer _Level) 
 		FlagsPickedUpFromLandmarks = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_FlagPickUpLandmark, _Level),
 		OutOfBoundsCount = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_OutOfBounds, _Level),
 		Deaths = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_Deaths, _Level),
-		TopSpeed = PlayerStatistics::GetReal(_Score, C_PlayerStatisticsKey_TopSpeed, _Level)
+		TopSpeed = PlayerStatistics::GetReal(_Score, C_PlayerStatisticsKey_TopSpeed, _Level),
+		AirtimeMs = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_Airtime, _Level)
 	};
 }
 
@@ -225,6 +228,10 @@ Void OnPlayerHasSpeed(CSmScore _Score, Real _Speed) {
 	}
 }
 
+Void OnPlayerLandedJump(CSmScore _Score, Integer _JumpDuration) {
+	PlayerStatistics::AddRound(_Score, C_PlayerStatisticsKey_Airtime, _JumpDuration);
+}
+
 /* Progression */
 
 Void Clear(Integer _Level) {
@@ -305,4 +312,5 @@ Void Load() {
 	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_OutOfBounds);
 	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_Deaths);
 	PlayerStatistics::RegisterReal(C_PlayerStatisticsKey_TopSpeed);
+	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_Airtime);
 }

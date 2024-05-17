@@ -186,6 +186,15 @@ declare Flag::K_Flag PreviousFlag = Flag::Get();
 Flag::Yield();
 
 foreach (Player in Players) {
+	// Track airtime
+	declare Integer FlagRush_PreviousFlyingDuration for Player = Player.FlyingDuration;
+	declare Boolean WasInAir = FlagRush_PreviousFlyingDuration > 0;
+	declare Boolean IsInAir = Player.FlyingDuration > 0; // Player.IsInAir does not work
+	if (!IsInAir && WasInAir) {
+		Scores::OnPlayerLandedJump(Player.Score, FlagRush_PreviousFlyingDuration / 2); // Flying duration is in units on 0.5ms for some reason
+	}
+	FlagRush_PreviousFlyingDuration = Player.FlyingDuration;
+
 	// Track distance driven
 	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
 		continue;

@@ -40,6 +40,8 @@
 #Const Scores::C_PlayerStatisticsKey_Deaths as C_Key_MostDeaths
 #Const C_Definition_TopSpeed K_StatisticDefinition{ Title = "the Speed Demon", DescriptionFormat = "Reached a top speed of %1km/h", MinValue = 250.0, Factor = 3.6 }
 #Const Scores::C_PlayerStatisticsKey_TopSpeed as C_Key_TopSpeed
+#Const C_Definition_MostAirTime K_StatisticDefinition{ Title = "the Acrobat", DescriptionFormat = "Spent a total of %1 second(s) in the air", MinValue = 10., Factor = 0.001 }
+#Const Scores::C_PlayerStatisticsKey_Airtime as C_Key_MostAirtime
 
 #Struct K_Net_PlayerStatisticDescription {
 	Text PlayerName;
@@ -229,6 +231,7 @@ K_StatisticDefinition[Text] Private_GetDefinitions() {
 		C_Key_MostFlagPickupsFromLandmark => C_Definition_MostFlagPickupsFromLandmark,
 		C_Key_MostDistanceDriven => C_Definition_MostDistanceDriven,
 		C_Key_MostDeaths => C_Definition_MostDeaths,
+		C_Key_MostAirtime => C_Definition_MostAirTime,
 		C_Key_TopSpeed => C_Definition_TopSpeed,
 		C_Key_MostOutOfBounds => C_Definition_MostOutOfBounds,
 		C_Key_MostRespawns => C_Definition_MostRespawns,

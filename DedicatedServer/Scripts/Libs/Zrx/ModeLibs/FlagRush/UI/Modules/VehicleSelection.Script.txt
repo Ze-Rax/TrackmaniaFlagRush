@@ -17,7 +17,8 @@
 #Const C_UIVehicleButtonParameters [
 	"stadium" => K_UIVehicleButtonParameter{Label = "Stadium", Icon = ""},
 	"snow" => K_UIVehicleButtonParameter{Label = "Snow", Icon = "❄"},
-	"rally" => K_UIVehicleButtonParameter{Label = "Rally", Icon = ""}
+	"rally" => K_UIVehicleButtonParameter{Label = "Rally", Icon = ""},
+	"desert" => K_UIVehicleButtonParameter{Label = "Desert", Icon = ""}
 ]
 
 declare FlagRush_Vehicle::K_Vehicle[] G_EnabledVehicles;

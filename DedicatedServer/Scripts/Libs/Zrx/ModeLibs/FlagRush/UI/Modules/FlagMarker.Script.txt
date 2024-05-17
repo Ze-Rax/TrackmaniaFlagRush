@@ -10,12 +10,14 @@
 
 #Const Vehicles::C_Vehicle_Snow as C_Vehicle_Snow
 #Const Vehicles::C_Vehicle_Rally as C_Vehicle_Rally
+#Const Vehicles::C_Vehicle_Desert as C_Vehicle_Desert
 
 // Boxes are adjusted to be slightly above the highest part of the respective model when on flat ground
 // Vertical 0.0 is not on the ground but slightly above player head; negative values not possible
 #Const C_Box_Player_Stadium		<0., 0., 0.>
 #Const C_Box_Player_Snow			<0., 0.4, 0.>
 #Const C_Box_Player_Rally 		<0., 0.25, 0.>
+#Const C_Box_Player_Desert 		<0., 0.25, 0.> // TODO: Adjust
 #Const C_Box_Landmark					<0., 0., 0.>
 #Const C_Box_Position					<0., 0., 0.>
 
@@ -329,6 +331,9 @@ Void Private_SetAtPlayer(CSmPlayer _Player) {
 		}
 		case Vehicles::GetItemId(C_Vehicle_Rally.Id): {
 			Marker.Box = C_Box_Player_Rally;
+		}
+		case Vehicles::GetItemId(C_Vehicle_Desert.Id): {
+			Marker.Box = C_Box_Player_Desert;
 		}
 		default: {
 			Marker.Box = C_Box_Player_Stadium;

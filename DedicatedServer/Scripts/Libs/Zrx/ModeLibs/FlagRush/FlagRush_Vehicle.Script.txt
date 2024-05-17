@@ -15,6 +15,7 @@
 #Const C_Vehicle_Stadium K_Vehicle{ Id = "stadium", Order = 0, ModelName = "CarSport"}
 #Const C_Vehicle_Snow K_Vehicle{ Id = "snow", Order = 1, ModelName = "CarSnow"}
 #Const C_Vehicle_Rally K_Vehicle{ Id = "rally", Order = 2, ModelName = "CarRally"}
+#Const C_Vehicle_Desert K_Vehicle{ Id = "desert", Order = 3, ModelName = "CarDesert"}
 
 #Const C_Tuning_Default K_Tuning{ Acceleration = 1.0, Adherence = 1.0, Control = 1.0 }
 
@@ -41,7 +42,7 @@ K_Vehicle[] Sort(K_Vehicle[] Vehicles) {
  * Returns a array of all vehicles that are known to the mode.
  */
 K_Vehicle[] GetAll() {
-	return [C_Vehicle_Stadium, C_Vehicle_Snow, C_Vehicle_Rally];
+	return [C_Vehicle_Stadium, C_Vehicle_Snow, C_Vehicle_Rally, C_Vehicle_Desert];
 }
 
 /**
@@ -135,7 +136,7 @@ Ident GetItemId(Text VehicleId) {
  */
 Void LoadItems() {
 	G_VehicleItems.clear();
-	for (Vehicle in GetAll()) {
+	foreach (Vehicle in GetAll()) {
 		G_VehicleItems[Vehicle.Id] = ItemList_Add(Vehicle.ModelName);
 	}
 }

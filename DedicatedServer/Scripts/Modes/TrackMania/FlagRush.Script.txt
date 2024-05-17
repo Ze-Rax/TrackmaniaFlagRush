@@ -148,6 +148,8 @@ FlagRush_Vehicle::LoadItems();
 FlagRush_VehicleSelection::SetEnabledVehicles(Vehicle_GetEnabled());
 ***
 
+// ~~~~~~~~~~ Turn ~~~~~~~~~~ //
+
 ***StartTurn***
 ***
 declare CMapLandmark FlagSpawn = FlagRush_Map::GetDefaultFlagSpawn();
@@ -185,10 +187,12 @@ Flag::Yield();
 
 foreach (Player in Players) {
 	// Track distance driven
-	declare Vec3 FlagRush_PreviousPosition for Player = Player.Position;
 	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
 		continue;
-	} else if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
+	}
+
+	declare Vec3 FlagRush_PreviousPosition for Player = Player.Position;
+	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
 		declare Real Distance = ML::Distance(Player.Position, FlagRush_PreviousPosition);
 		if (Distance > C_Epsilon_Distance) {
 			Scores::OnPlayerDistanceDriven(Player.Score, Distance);

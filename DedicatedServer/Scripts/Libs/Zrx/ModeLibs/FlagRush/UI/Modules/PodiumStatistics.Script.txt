@@ -14,32 +14,31 @@
 #Struct K_StatisticDefinition {
 	Text Title;
 	Text DescriptionFormat;
-	Boolean IsReal;
 	Real MinValue;
 	Real Factor;
 }
 
-#Const C_Definition_MostFlagsScored K_StatisticDefinition { Title = "the Unstoppable", DescriptionFormat = "Scored a total of %1 flag(s)", IsReal = False, MinValue = 1.0, Factor = 1.0 }
+#Const C_Definition_MostFlagsScored K_StatisticDefinition { Title = "the Unstoppable", DescriptionFormat = "Scored a total of %1 flag(s)", MinValue = 1.0, Factor = 1.0 }
 #Const Scores::C_PlayerStatisticsKey_FlagsScored as C_Key_MostFlagsScored
-#Const C_Definition_MostFlagsStolen K_StatisticDefinition { Title = "the Thieve", DescriptionFormat = "Stole a total of %1 flag(s)", IsReal = False, MinValue = 1.0, Factor = 1.0 }
+#Const C_Definition_MostFlagsStolen K_StatisticDefinition { Title = "the Thieve", DescriptionFormat = "Stole a total of %1 flag(s)", MinValue = 1.0, Factor = 1.0 }
 #Const Scores::C_PlayerStatisticsKey_FlagsStolen as C_Key_MostFlagsStolen
-#Const C_Definition_MostDistanceDriven K_StatisticDefinition{ Title = "the Explorer", DescriptionFormat = "Drove a total of %1km", IsReal = True, MinValue = 1.0, Factor = 0.001}
+#Const C_Definition_MostDistanceDriven K_StatisticDefinition{ Title = "the Explorer", DescriptionFormat = "Drove a total of %1km", MinValue = 1.0, Factor = 0.001}
 #Const Scores::C_PlayerStatisticsKey_DistanceDriven as C_Key_MostDistanceDriven
-#Const C_Definition_MostRespawns K_StatisticDefinition{ Title = "the Phoenix", DescriptionFormat = "Respawned %1 time(s)", IsReal = False, MinValue = 1.0, Factor = 1. }
+#Const C_Definition_MostRespawns K_StatisticDefinition{ Title = "the Phoenix", DescriptionFormat = "Respawned %1 time(s)", MinValue = 1.0, Factor = 1. }
 #Const Scores::C_PlayerStatisticsKey_Respawn as C_Key_MostRespawns
-#Const C_Definition_MostVehicleChanges K_StatisticDefinition{ Title = "the Shapeshifter", DescriptionFormat = "Switched vehicles %1 time(s)", IsReal = False, MinValue = 1.0, Factor = 1. }
+#Const C_Definition_MostVehicleChanges K_StatisticDefinition{ Title = "the Shapeshifter", DescriptionFormat = "Switched vehicles %1 time(s)", MinValue = 1.0, Factor = 1. }
 #Const Scores::C_PlayerStatisticsKey_VehicleChanged as C_Key_MostVehicleChanges
-#Const C_Definition_LongestFlagPossession K_StatisticDefinition{ Title = "the Vexillologist", DescriptionFormat = "Held the flag for %1 second(s)", IsReal = False, MinValue = 10.0, Factor = 0.001 }
+#Const C_Definition_LongestFlagPossession K_StatisticDefinition{ Title = "the Vexillologist", DescriptionFormat = "Held the flag for %1 second(s)", MinValue = 10.0, Factor = 0.001 }
 #Const Scores::C_PlayerStatisticsKey_FlagPossession as C_Key_LongestFlagPossession
-#Const C_Definition_MostFlagPasses K_StatisticDefinition{ Title = "the Altruist", DescriptionFormat = "Passed the flag %1 time(s)", IsReal = False, MinValue = 1.0, Factor = 1. }
+#Const C_Definition_MostFlagPasses K_StatisticDefinition{ Title = "the Altruist", DescriptionFormat = "Passed the flag %1 time(s)", MinValue = 1.0, Factor = 1. }
 #Const Scores::C_PlayerStatisticsKey_FlagTeamPass as C_Key_MostFlagPasses
-#Const C_Definition_MostFlagPickupsFromLandmark K_StatisticDefinition{ Title = "the Camper", DescriptionFormat = "Picked up the flag from flag spawns %1 time(s)", IsReal = False, MinValue = 5.0, Factor = 1. }
+#Const C_Definition_MostFlagPickupsFromLandmark K_StatisticDefinition{ Title = "the Camper", DescriptionFormat = "Picked up the flag from flag spawns %1 time(s)", MinValue = 5.0, Factor = 1. }
 #Const Scores::C_PlayerStatisticsKey_FlagPickUpLandmark as C_Key_MostFlagPickupsFromLandmark
-#Const C_Definition_MostOutOfBounds K_StatisticDefinition{ Title = "the Clumsy", DescriptionFormat = "Went out of bounds %1 time(s)", IsReal = False, MinValue = 1.0, Factor = 1. }
+#Const C_Definition_MostOutOfBounds K_StatisticDefinition{ Title = "the Clumsy", DescriptionFormat = "Went out of bounds %1 time(s)", MinValue = 1.0, Factor = 1. }
 #Const Scores::C_PlayerStatisticsKey_OutOfBounds as C_Key_MostOutOfBounds
-#Const C_Definition_MostDeaths K_StatisticDefinition{ Title = "the Squishy", DescriptionFormat = "Got eleminated by moving blocks %1 time(s)", IsReal = False, MinValue = 1.0, Factor = 1. }
+#Const C_Definition_MostDeaths K_StatisticDefinition{ Title = "the Squishy", DescriptionFormat = "Got eleminated by moving blocks %1 time(s)", MinValue = 1.0, Factor = 1. }
 #Const Scores::C_PlayerStatisticsKey_Deaths as C_Key_MostDeaths
-#Const C_Definition_TopSpeed K_StatisticDefinition{ Title = "the Speed Demon", DescriptionFormat = "Reached a top speed of %1km/h", IsReal = True, MinValue = 250.0, Factor = 3.6 }
+#Const C_Definition_TopSpeed K_StatisticDefinition{ Title = "the Speed Demon", DescriptionFormat = "Reached a top speed of %1km/h", MinValue = 250.0, Factor = 3.6 }
 #Const Scores::C_PlayerStatisticsKey_TopSpeed as C_Key_TopSpeed
 
 #Struct K_Net_PlayerStatisticDescription {
@@ -255,17 +254,17 @@ CSmScore[][Integer] Private_SortScoresByClan() {
 CSmScore[][Text] Private_CreateStatisticRankings() {
 	declare CSmScore[][Text] RankingsByCategory;
 	foreach (Key => Definition in Private_GetDefinitions()) {
-		if (Definition.IsReal) {
-			RankingsByCategory[Key] = Scores::SortByRealStatistic(Key);
-		} else {
-			RankingsByCategory[Key] = Scores::SortByIntegerStatistic(Key);
-		}
+		RankingsByCategory[Key] = PlayerStatistics::SortBy(Key);
 	}
 	return RankingsByCategory;
 }
 
 Boolean Private_CheckCategoryRequirement(CSmScore _Score, Text _StatisticsKey) {
-	declare Real Value = PlayerStatistics::GetMatchReal(_Score, _StatisticsKey);
+	declare Real Value;
+	switch (PlayerStatistics::GetRegistrations()[_StatisticsKey]) {
+		case PlayerStatistics::C_StatisticType_Real: Value = PlayerStatistics::GetMatchReal(_Score, _StatisticsKey);
+		case PlayerStatistics::C_StatisticType_Integer: Value = ML::ToReal(PlayerStatistics::GetMatchInteger(_Score, _StatisticsKey));
+	}
 	declare Real Factor = Private_GetDefinition(_StatisticsKey).Factor;
 	declare Real MinValue = Private_GetDefinition(_StatisticsKey).MinValue;
 	return  Value * Factor >= MinValue;
@@ -273,7 +272,7 @@ Boolean Private_CheckCategoryRequirement(CSmScore _Score, Text _StatisticsKey) {
 
 Text Private_GetStatisticValue(CSmScore _Score, Text _StatisticsKey) {
 	declare K_StatisticDefinition Definition = Private_GetDefinition(_StatisticsKey);
-	if (Definition.IsReal) {
+	if (PlayerStatistics::GetRegistrations()[_StatisticsKey] == PlayerStatistics::C_StatisticType_Real) {
 		declare Real Value = PlayerStatistics::GetMatchReal(_Score, _StatisticsKey);
 		return TL::FormatReal(Value * Definition.Factor, 2, False, False);
 	}

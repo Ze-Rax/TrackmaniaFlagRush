@@ -122,38 +122,6 @@ K_FlagRushPlayerStatistics GetPlayerMatchStatistics(CSmScore _Score) {
 	return GetPlayerStatistics(_Score, C_Level_Match);
 }
 
-CSmScore[] Private_MapToScoreArray(Integer[CSmScore] _Array) {
-	declare CSmScore[] Result;
-	foreach (Score => Value in _Array) {
-		Result.add(Score);
-	}
-	return Result;
-}
-
-CSmScore[] Private_MapToScoreArray(Real[CSmScore] _Array) {
-	declare CSmScore[] Result;
-	foreach (Score => Value in _Array) {
-		Result.add(Score);
-	}
-	return Result;
-}
-
-CSmScore[] SortByIntegerStatistic(Text _StatisticsKey) {
-	declare Integer[CSmScore] ScoreMap;
-	foreach (Score in Scores) {
-		ScoreMap[Score] = PlayerStatistics::GetMatchInteger(Score, _StatisticsKey);
-	}
-	return Private_MapToScoreArray(ScoreMap.sortreverse());
-}
-
-CSmScore[] SortByRealStatistic(Text _StatisticsKey) {
-	declare Real[CSmScore] ScoreMap;
-	foreach (Score in Scores) {
-		ScoreMap[Score] = PlayerStatistics::GetMatchReal(Score, _StatisticsKey);
-	}
-	return Private_MapToScoreArray(ScoreMap.sortreverse());
-}
-
 /* Net send scores */
 
 Void Net_SendTeamScores() {
@@ -319,8 +287,22 @@ Void Yield() {
 
 Void Unload() {
 	Scores::Unload();
+	PlayerStatistics::Unload();
 }
 
 Void Load() {
 	Scores::Load();
+	PlayerStatistics::Load();
+	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_FlagsScored);
+	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_FlagsStolen);
+	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_FlagScoreAssists);
+	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_FlagPossession);
+	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_FlagTeamPass);
+	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_Respawn);
+	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_VehicleChanged);
+	PlayerStatistics::RegisterReal(C_PlayerStatisticsKey_DistanceDriven);
+	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_FlagPickUpLandmark);
+	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_OutOfBounds);
+	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_Deaths);
+	PlayerStatistics::RegisterReal(C_PlayerStatisticsKey_TopSpeed);
 }

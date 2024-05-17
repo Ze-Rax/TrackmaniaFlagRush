@@ -1,6 +1,6 @@
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
 #Include "Libs/Zrx/ModeLibs/FlagRush/Scores.Script.txt" as Scores
+#Include "Libs/Zrx/ModeLibs/Common/PlayerStatistics.Script.txt" as PlayerStatistics
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
 
 #Struct K_PodiumPlaceConfig {
@@ -17,16 +17,16 @@
 	Integer FlagsStolenPlacement;
 }
 
-Void SetContent(CSmScore[] PodiumScores) {
-	declare CSmScore[] FlagsScoredMatchRanking = Scores::SortByIntegerStatistic(Scores::C_PlayerStatisticsKey_FlagsScored);
-	declare CSmScore[] AssistsMatchRanking = Scores::SortByIntegerStatistic(Scores::C_PlayerStatisticsKey_FlagScoreAssists);
-	declare CSmScore[] FlagsStolenMatchRanking = Scores::SortByIntegerStatistic(Scores::C_PlayerStatisticsKey_FlagsStolen);
+Void SetContent(CSmScore[] _PodiumScores) {
+	declare CSmScore[] FlagsScoredMatchRanking = PlayerStatistics::SortBy(Scores::C_PlayerStatisticsKey_FlagsScored);
+	declare CSmScore[] AssistsMatchRanking = PlayerStatistics::SortBy(Scores::C_PlayerStatisticsKey_FlagScoreAssists);
+	declare CSmScore[] FlagsStolenMatchRanking = PlayerStatistics::SortBy(Scores::C_PlayerStatisticsKey_FlagsStolen);
 
-	declare netwrite K_PodiumPlaceConfig[Integer] FlagRush_Net_PodiumPlacementConfigs for Teams[0];
+	declare netwrite K_PodiumPlaceConfig[Integer] FlagRush_Net_PodiumPlacementConfigs for Teams[0] = [];
 	for (Placement, 1, 3) {
 		declare Integer ScoreIndex = Placement - 1;
-		if (PodiumScores.existskey(ScoreIndex)) {
-			declare CSmScore PlacementScore <=> PodiumScores[ScoreIndex];
+		if (_PodiumScores.existskey(ScoreIndex)) {
+			declare CSmScore PlacementScore <=> _PodiumScores[ScoreIndex];
 			declare Scores::K_FlagRushPlayerStatistics PlayerStatistics = Scores::GetPlayerMatchStatistics(PlacementScore);
 			FlagRush_Net_PodiumPlacementConfigs[Placement] = K_PodiumPlaceConfig{
 				Present = True,

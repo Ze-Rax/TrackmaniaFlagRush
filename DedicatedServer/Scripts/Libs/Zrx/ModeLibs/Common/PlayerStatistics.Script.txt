@@ -10,79 +10,146 @@
 #Const Scores::C_Level_Map as C_Level_Map
 #Const Scores::C_Level_Round as C_Level_Round
 
-#Struct K_PlayerStatistic {
-	Integer ValueInteger;
-	Real ValueReal;
-	Boolean Cumulative;
+#Const C_StatisticType_Integer "Integer"
+#Const C_StatisticType_Real "Real"
+
+#Struct K_PlayerStatistics { // Used as trait on scores by Score level (K_PlayerStatistics[Integer])
+	Integer[Text] Integers; // Values by Key
+	Real[Text] Reals;
+}
+
+declare Text[Text] G_RegisteredStatistics;
+
+Void Private_AssertExists(Text _Key) {
+	assert(G_RegisteredStatistics.existskey(_Key), """No registered integer statistic with key "{{{ _Key }}}" """);
+}
+
+Void Private_AssertIsType(Text _Key, Text _ExpectedType) {
+	Private_AssertExists(_Key);
+	assert(G_RegisteredStatistics[_Key] == _ExpectedType, """Expected statistic of type "{{{ _ExpectedType }}}" but actual is "{{{ G_RegisteredStatistics[_Key] }}}" """);
+}
+
+/* Registration */
+
+Void Register(Text _Key, Text _Type) {
+	assert(!G_RegisteredStatistics.existskey(_Key), """Statistic with key \"{{{_Key}}}\" already exists""");
+	declare Text[] ValidTypes = [C_StatisticType_Integer, C_StatisticType_Real];
+	assert(ValidTypes.exists(_Type), """Invalid statistics type "{{{_Type}}}" """);
+	G_RegisteredStatistics[_Key] = _Type;
+}
+
+Void RegisterInteger(Text _Key) {
+	Register(_Key, C_StatisticType_Integer);
+}
+
+Void RegisterReal(Text _Key) {
+	Register(_Key, C_StatisticType_Real);
+}
+
+Text[Text] GetRegistrations() {
+	return G_RegisteredStatistics;
 }
 
 /* General functions for easy operation */
 
-Void Reset(CSmScore _Score, Integer _Level) {
-	declare K_PlayerStatistic[Text][Integer] PlayerStatistics for _Score = [];
-	PlayerStatistics[_Level] = [];
+K_PlayerStatistics[Integer] Get(CSmScore _Score) {
+	declare K_PlayerStatistics[Integer] PlayerStatistics for _Score = [];
+	return PlayerStatistics;
 }
 
-K_PlayerStatistic[Text] Get(CSmScore _Score, Integer _Level) {
-	declare K_PlayerStatistic[Text][Integer] PlayerStatistics for _Score = [];
-	return PlayerStatistics.get(_Level, []);
-}
-
-/* Integer */
-
-Void Set(CSmScore _Score, Text _Key, Integer _Value, Integer _Level) {
-	declare K_PlayerStatistic[Text][Integer] PlayerStatistics for _Score = [];
-	if (!PlayerStatistics.existskey(_Level)) {
-		PlayerStatistics[_Level] = [];
-	}
-	PlayerStatistics[_Level][_Key] = K_PlayerStatistic{ ValueInteger = _Value, ValueReal = ML::ToReal(_Value) };
-}
-
-Integer GetInteger(CSmScore _Score, Text _Key, Integer _Level) {
-	declare K_PlayerStatistic[Text][Integer] PlayerStatistics for _Score = [];
-	return PlayerStatistics.get(_Level, []).get(_Key, K_PlayerStatistic{}).ValueInteger;
-}
-
-Void Add(CSmScore _Score, Text _Key, Integer _ValueAdd, Integer _Level) {
-	declare Integer Value = GetInteger(_Score, _Key, _Level) + _ValueAdd;
-	Set(_Score, _Key, Value, _Level);
-}
-
-Void Subtract(CSmScore _Score, Text _Key, Integer _ValueSubtract, Integer _Level) {
-	declare Integer Value = GetInteger(_Score, _Key, _Level) - _ValueSubtract;
-	Set(_Score, _Key, Value, _Level);
+K_PlayerStatistics Get(CSmScore _Score, Integer _Level) {
+	declare K_PlayerStatistics[Integer] PlayerStatistics for _Score = [];
+	return PlayerStatistics.get(_Level, K_PlayerStatistics{});
 }
 
 /* Reals */
 
 Void Set(CSmScore _Score, Text _Key, Real _Value, Integer _Level) {
-	declare K_PlayerStatistic[Text][Integer] PlayerStatistics for _Score = [];
+	Private_AssertIsType(_Key, C_StatisticType_Real);
+
+	declare K_PlayerStatistics[Integer] PlayerStatistics for _Score = [];
 	if (!PlayerStatistics.existskey(_Level)) {
-		PlayerStatistics[_Level] = [];
+		PlayerStatistics[_Level] = K_PlayerStatistics{};
 	}
-	PlayerStatistics[_Level][_Key] = K_PlayerStatistic{ ValueInteger = ML::NearestInteger(_Value), ValueReal = _Value };
+	PlayerStatistics[_Level].Reals[_Key] = _Value;
 }
 
 Real GetReal(CSmScore _Score, Text _Key, Integer _Level) {
-	declare K_PlayerStatistic[Text][Integer] PlayerStatistics for _Score = [];
-	return PlayerStatistics.get(_Level, []).get(_Key, K_PlayerStatistic{}).ValueReal;
+	Private_AssertIsType(_Key, C_StatisticType_Real);
+
+	declare K_PlayerStatistics[Integer] PlayerStatistics for _Score = [];
+	return PlayerStatistics.get(_Level, K_PlayerStatistics{}).Reals.get(_Key, 0.);
 }
 
 Void Add(CSmScore _Score, Text _Key, Real _ValueAdd, Integer _Level) {
+	Private_AssertIsType(_Key, C_StatisticType_Real);
+
 	declare Real Value = GetReal(_Score, _Key, _Level) + _ValueAdd;
 	Set(_Score, _Key, Value, _Level);
 }
 
 Void Subtract(CSmScore _Score, Text _Key, Real _ValueSubtract, Integer _Level) {
+	Private_AssertIsType(_Key, C_StatisticType_Real);
+
 	declare Real Value = GetReal(_Score, _Key, _Level) - _ValueSubtract;
+	Set(_Score, _Key, Value, _Level);
+}
+
+/* Integer */
+
+Void Set(CSmScore _Score, Text _Key, Integer _Value, Integer _Level) {
+	Private_AssertExists(_Key);
+
+	// We allow setting a real statistic with an integer
+	if (G_RegisteredStatistics[_Key] == C_StatisticType_Real) {
+		Set(_Score, _Key, ML::ToReal(_Value), _Level);
+		return;
+	}
+
+	declare K_PlayerStatistics[Integer] PlayerStatistics for _Score = [];
+	if (!PlayerStatistics.existskey(_Level)) {
+		PlayerStatistics[_Level] = K_PlayerStatistics{};
+	}
+	PlayerStatistics[_Level].Integers[_Key] = _Value;
+}
+
+Integer GetInteger(CSmScore _Score, Text _Key, Integer _Level) {
+	Private_AssertIsType(_Key, C_StatisticType_Integer);
+
+	declare K_PlayerStatistics[Integer] PlayerStatistics for _Score = [];
+	return PlayerStatistics.get(_Level, K_PlayerStatistics{}).Integers.get(_Key, 0);
+}
+
+Void Add(CSmScore _Score, Text _Key, Integer _ValueAdd, Integer _Level) {
+	Private_AssertExists(_Key);
+
+	// We allow adding to a real statistic with an integer
+	if (G_RegisteredStatistics[_Key] == C_StatisticType_Real) {
+		Add(_Score, _Key, ML::ToReal(_ValueAdd), _Level);
+		return;
+	}
+
+	declare Integer Value = GetInteger(_Score, _Key, _Level) + _ValueAdd;
+	Set(_Score, _Key, Value, _Level);
+}
+
+Void Subtract(CSmScore _Score, Text _Key, Integer _ValueSubtract, Integer _Level) {
+	Private_AssertExists(_Key);
+
+	// We allow subtracting from a real statistic with an integer
+	if (G_RegisteredStatistics[_Key] == C_StatisticType_Real) {
+		Subtract(_Score, _Key, ML::ToReal(_ValueSubtract), _Level);
+		return;
+	}
+
+	declare Integer Value = GetInteger(_Score, _Key, _Level) - _ValueSubtract;
 	Set(_Score, _Key, Value, _Level);
 }
 
 /* Segment specific delegates */
 
 // Round
-Void ResetRound(CSmScore _Score) { Reset(_Score, C_Level_Round); }
-K_PlayerStatistic[Text] GetRound(CSmScore _Score) { return Get(_Score, C_Level_Round); }
+K_PlayerStatistics GetRound(CSmScore _Score) { return Get(_Score, C_Level_Round); }
 
 Void SetRound(CSmScore _Score, Text _Key, Integer _Value) { Set(_Score, _Key, _Value, C_Level_Round); }
 Integer GetRoundInteger(CSmScore _Score, Text _Key) { return GetInteger(_Score, _Key, C_Level_Round); }
@@ -95,8 +162,7 @@ Void AddRound(CSmScore _Score, Text _Key, Real _ValueAdd) { Add(_Score, _Key, _V
 Void SubtractRound(CSmScore _Score, Text _Key, Real _ValueSubtract) { Subtract(_Score, _Key, _ValueSubtract, C_Level_Round); }
 
 // Map
-Void ResetMap(CSmScore _Score) { Reset(_Score, C_Level_Map); }
-K_PlayerStatistic[Text] GetMap(CSmScore _Score) { return Get(_Score, C_Level_Map); }
+K_PlayerStatistics GetMap(CSmScore _Score) { return Get(_Score, C_Level_Map); }
 
 Void SetMap(CSmScore _Score, Text _Key, Integer _Value) { Set(_Score, _Key, _Value, C_Level_Map); }
 Integer GetMapInteger(CSmScore _Score, Text _Key) { return GetInteger(_Score, _Key, C_Level_Map); }
@@ -109,8 +175,7 @@ Void AddMap(CSmScore _Score, Text _Key, Real _ValueAdd) { Add(_Score, _Key, _Val
 Void SubtractMap(CSmScore _Score, Text _Key, Real _ValueSubtract) { Subtract(_Score, _Key, _ValueSubtract, C_Level_Map); }
 
 // Match
-Void ResetMatch(CSmScore _Score) { Reset(_Score, C_Level_Match); }
-K_PlayerStatistic[Text] GetMatch(CSmScore _Score) { return Get(_Score, C_Level_Match); }
+K_PlayerStatistics GetMatch(CSmScore _Score) { return Get(_Score, C_Level_Match); }
 
 Void SetMatch(CSmScore _Score, Text _Key, Integer _Value) { Set(_Score, _Key, _Value, C_Level_Match); }
 Integer GetMatchInteger(CSmScore _Score, Text _Key) { return GetInteger(_Score, _Key, C_Level_Match); }
@@ -122,12 +187,65 @@ Real GetMatchReal(CSmScore _Score, Text _Key) { return GetReal(_Score, _Key, C_L
 Void AddMatch(CSmScore _Score, Text _Key, Real _ValueAdd) { Add(_Score, _Key, _ValueAdd, C_Level_Match); }
 Void SubtractMatch(CSmScore _Score, Text _Key, Real _ValueSubtract) { Subtract(_Score, _Key, _ValueSubtract, C_Level_Match); }
 
+/* Ranking / Sorting */
+
+CSmScore[] Private_MapToScoreArray(Integer[CSmScore] _Array) {
+	declare CSmScore[] Result;
+	foreach (Score => Value in _Array) {
+		Result.add(Score);
+	}
+	return Result;
+}
+
+CSmScore[] Private_MapToScoreArray(Real[CSmScore] _Array) {
+	declare CSmScore[] Result;
+	foreach (Score => Value in _Array) {
+		Result.add(Score);
+	}
+	return Result;
+}
+
+CSmScore[] Private_SortByInteger(Text _Key) {
+	Private_AssertIsType(_Key, C_StatisticType_Integer);
+
+	declare Integer[CSmScore] ScoreMap;
+	foreach (Score in Scores) {
+		ScoreMap[Score] = GetMatchInteger(Score, _Key);
+	}
+
+	return Private_MapToScoreArray(ScoreMap.sortreverse());
+}
+
+CSmScore[] Private_SortByReal(Text _Key) {
+	Private_AssertIsType(_Key, C_StatisticType_Real);
+
+	declare Real[CSmScore] ScoreMap;
+	foreach (Score in Scores) {
+		ScoreMap[Score] = GetMatchReal(Score, _Key);
+	}
+
+	return Private_MapToScoreArray(ScoreMap.sortreverse());
+}
+
+CSmScore[] SortBy(Text _Key) {
+	Private_AssertExists(_Key);
+
+	switch (G_RegisteredStatistics[_Key]) {
+		case C_StatisticType_Integer: return Private_SortByInteger(_Key);
+		case C_StatisticType_Real: return Private_SortByReal(_Key);
+	}
+
+	assert(False, """Cannot sort by statistic "{{{ _Key }}}" (Type: "{{{ G_RegisteredStatistics[_Key] }}}")""");
+	return[];
+}
+
 /* Match Progression Methods */
 
 Void Clear(CSmScore _Score, Integer _Level) {
-	if(_Level <= C_Level_Match) ResetMatch(_Score);
-	if(_Level <= C_Level_Map) ResetMap(_Score);
-	if(_Level <= C_Level_Round) ResetRound(_Score);
+	declare K_PlayerStatistics[Integer] PlayerStatistics for _Score = [];
+	if (_Level <= C_Level_Match) PlayerStatistics[C_Level_Match] = K_PlayerStatistics{};
+	if (_Level <= C_Level_Map) PlayerStatistics[C_Level_Map] = K_PlayerStatistics{};
+	if (_Level <= C_Level_Round) PlayerStatistics[C_Level_Round] = K_PlayerStatistics{};
 }
 
 Void Clear(CSmScore _Score) {
@@ -143,10 +261,14 @@ Void Clear() {
 }
 
 Void AffectPlayerRoundToMapAndMatchStatistic(CSmScore _Score) {
-	declare K_PlayerStatistic[Text] RoundStatistics = GetRound(_Score);
-	foreach (Key => Statistic in RoundStatistics) {
-		AddMap(_Score, Key, Statistic.ValueReal);
-		AddMatch(_Score, Key, Statistic.ValueReal);
+	declare K_PlayerStatistics RoundStatistics = GetRound(_Score);
+	foreach (Key => Value in RoundStatistics.Integers) {
+		AddMap(_Score, Key, Value);
+		AddMatch(_Score, Key, Value);
+	}
+	foreach (Key => Value in RoundStatistics.Reals) {
+		AddMap(_Score, Key, Value);
+		AddMatch(_Score, Key, Value);
 	}
 	Clear(_Score, C_Level_Round);
 }
@@ -177,4 +299,12 @@ Void StartRound() {
 
 Void EndRound() {
 	AffectPlayersRoundToMapAndMatchStatistic();
+}
+
+Void Unload() {
+	G_RegisteredStatistics.clear();
+}
+
+Void Load() {
+	Unload();
 }

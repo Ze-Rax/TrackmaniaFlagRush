@@ -57,6 +57,9 @@ These settings change vehicle characteristic for balancing.
 | S_TuningRallyAcceleration   | Real | 0.7           | Base acceleration coefficient for the rally car.         |
 | S_TuningRallyAdherence      | Real | 1.0           | Base adherence coefficient for the rally car.            |
 | S_TuningRallyControl        | Real | 1.0           | Base control (steering) coefficient for the rally car.   |
+| S_TuningDesertAcceleration  | Real | 0.7           | Base acceleration coefficient for the desert car.         |
+| S_TuningDesertAdherence     | Real | 1.0           | Base adherence coefficient for the desert car.            |
+| S_TuningDesertControl       | Real | 1.0           | Base control (steering) coefficient for the desert car.   |
 
 ## Team settings
 

@@ -300,17 +300,95 @@ Void Unload() {
 Void Load() {
 	Scores::Load();
 	PlayerStatistics::Load();
-	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_FlagsScored);
-	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_FlagsStolen);
-	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_FlagScoreAssists);
-	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_FlagPossession);
-	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_FlagTeamPass);
-	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_Respawn);
-	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_VehicleChanged);
-	PlayerStatistics::RegisterReal(C_PlayerStatisticsKey_DistanceDriven);
-	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_FlagPickUpLandmark);
-	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_OutOfBounds);
-	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_Deaths);
-	PlayerStatistics::RegisterReal(C_PlayerStatisticsKey_TopSpeed);
-	PlayerStatistics::RegisterInteger(C_PlayerStatisticsKey_Airtime);
+	PlayerStatistics::Register(
+		C_PlayerStatisticsKey_FlagsScored,
+		PlayerStatistics::K_Registration{
+			Type = PlayerStatistics::C_StatisticType_Integer,
+			AggregationFunction = PlayerStatistics::C_AggregationFunction_Add
+		}
+	);
+	PlayerStatistics::Register(
+		C_PlayerStatisticsKey_FlagsStolen,
+		PlayerStatistics::K_Registration{
+			Type = PlayerStatistics::C_StatisticType_Integer,
+			AggregationFunction = PlayerStatistics::C_AggregationFunction_Add
+		}
+	);
+	PlayerStatistics::Register(
+		C_PlayerStatisticsKey_FlagScoreAssists,
+		PlayerStatistics::K_Registration{
+			Type = PlayerStatistics::C_StatisticType_Integer,
+			AggregationFunction = PlayerStatistics::C_AggregationFunction_Add
+		}
+	);
+	PlayerStatistics::Register(
+		C_PlayerStatisticsKey_FlagPossession,
+		PlayerStatistics::K_Registration{
+			Type = PlayerStatistics::C_StatisticType_Integer,
+			AggregationFunction = PlayerStatistics::C_AggregationFunction_Add
+		}
+	);
+	PlayerStatistics::Register(
+		C_PlayerStatisticsKey_FlagTeamPass,
+		PlayerStatistics::K_Registration{
+			Type = PlayerStatistics::C_StatisticType_Integer,
+			AggregationFunction = PlayerStatistics::C_AggregationFunction_Add
+		}
+	);
+	PlayerStatistics::Register(
+		C_PlayerStatisticsKey_Respawn,
+		PlayerStatistics::K_Registration{
+			Type = PlayerStatistics::C_StatisticType_Integer,
+			AggregationFunction = PlayerStatistics::C_AggregationFunction_Add
+		}
+	);
+	PlayerStatistics::Register(
+		C_PlayerStatisticsKey_VehicleChanged,
+		PlayerStatistics::K_Registration{
+			Type = PlayerStatistics::C_StatisticType_Integer,
+			AggregationFunction = PlayerStatistics::C_AggregationFunction_Add
+		}
+	);
+	PlayerStatistics::Register(
+		C_PlayerStatisticsKey_DistanceDriven,
+		PlayerStatistics::K_Registration{
+			Type = PlayerStatistics::C_StatisticType_Real,
+			AggregationFunction = PlayerStatistics::C_AggregationFunction_Add
+		}
+	);
+	PlayerStatistics::Register(
+		C_PlayerStatisticsKey_FlagPickUpLandmark,
+		PlayerStatistics::K_Registration{
+			Type = PlayerStatistics::C_StatisticType_Integer,
+			AggregationFunction = PlayerStatistics::C_AggregationFunction_Add
+		}
+	);
+	PlayerStatistics::Register(
+		C_PlayerStatisticsKey_OutOfBounds,
+		PlayerStatistics::K_Registration{
+			Type = PlayerStatistics::C_StatisticType_Integer,
+			AggregationFunction = PlayerStatistics::C_AggregationFunction_Add
+		}
+	);
+	PlayerStatistics::Register(
+		C_PlayerStatisticsKey_Deaths,
+		PlayerStatistics::K_Registration{
+			Type = PlayerStatistics::C_StatisticType_Integer,
+			AggregationFunction = PlayerStatistics::C_AggregationFunction_Add
+		}
+	);
+	PlayerStatistics::Register(
+		C_PlayerStatisticsKey_TopSpeed,
+		PlayerStatistics::K_Registration{
+			Type = PlayerStatistics::C_StatisticType_Real,
+			AggregationFunction = PlayerStatistics::C_AggregationFunction_Max
+		}
+	);
+	PlayerStatistics::Register(
+		C_PlayerStatisticsKey_Airtime,
+		PlayerStatistics::K_Registration{
+			Type = PlayerStatistics::C_StatisticType_Integer,
+			AggregationFunction = PlayerStatistics::C_AggregationFunction_Add
+		}
+	);
 }

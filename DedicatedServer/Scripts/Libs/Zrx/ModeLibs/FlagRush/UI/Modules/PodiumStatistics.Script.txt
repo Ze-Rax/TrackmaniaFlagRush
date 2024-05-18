@@ -264,7 +264,7 @@ CSmScore[][Text] Private_CreateStatisticRankings() {
 
 Boolean Private_CheckCategoryRequirement(CSmScore _Score, Text _StatisticsKey) {
 	declare Real Value;
-	switch (PlayerStatistics::GetRegistrations()[_StatisticsKey]) {
+	switch (PlayerStatistics::GetRegistrations()[_StatisticsKey].Type) {
 		case PlayerStatistics::C_StatisticType_Real: Value = PlayerStatistics::GetMatchReal(_Score, _StatisticsKey);
 		case PlayerStatistics::C_StatisticType_Integer: Value = ML::ToReal(PlayerStatistics::GetMatchInteger(_Score, _StatisticsKey));
 	}
@@ -275,7 +275,7 @@ Boolean Private_CheckCategoryRequirement(CSmScore _Score, Text _StatisticsKey) {
 
 Text Private_GetStatisticValue(CSmScore _Score, Text _StatisticsKey) {
 	declare K_StatisticDefinition Definition = Private_GetDefinition(_StatisticsKey);
-	if (PlayerStatistics::GetRegistrations()[_StatisticsKey] == PlayerStatistics::C_StatisticType_Real) {
+	if (PlayerStatistics::GetRegistrations()[_StatisticsKey].Type == PlayerStatistics::C_StatisticType_Real) {
 		declare Real Value = PlayerStatistics::GetMatchReal(_Score, _StatisticsKey);
 		return TL::FormatReal(Value * Definition.Factor, 2, False, False);
 	}

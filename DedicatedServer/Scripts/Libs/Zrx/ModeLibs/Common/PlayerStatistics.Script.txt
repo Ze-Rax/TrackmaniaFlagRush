@@ -13,12 +13,23 @@
 #Const C_StatisticType_Integer "Integer"
 #Const C_StatisticType_Real "Real"
 
+#Const C_AggregationFunction_Add 0 // Default
+#Const C_AggregationFunction_Subtract 1
+#Const C_AggregationFunction_Min 2
+#Const C_AggregationFunction_Max 3
+#Const C_AggregationFunction_Latest 4
+
 #Struct K_PlayerStatistics { // Used as trait on scores by Score level (K_PlayerStatistics[Integer])
 	Integer[Text] Integers; // Values by Key
 	Real[Text] Reals;
 }
 
-declare Text[Text] G_RegisteredStatistics;
+#Struct K_Registration {
+	Text Type;
+	Integer AggregationFunction; ///< Defines how the round statistic is merged into the map and match statistics
+}
+
+declare K_Registration[Text] G_RegisteredStatistics; ///< Statistics Key/Name => Regsitration
 
 Void Private_AssertExists(Text _Key) {
 	assert(G_RegisteredStatistics.existskey(_Key), """No registered integer statistic with key "{{{ _Key }}}" """);
@@ -26,27 +37,19 @@ Void Private_AssertExists(Text _Key) {
 
 Void Private_AssertIsType(Text _Key, Text _ExpectedType) {
 	Private_AssertExists(_Key);
-	assert(G_RegisteredStatistics[_Key] == _ExpectedType, """Expected statistic of type "{{{ _ExpectedType }}}" but actual is "{{{ G_RegisteredStatistics[_Key] }}}" """);
+	assert(G_RegisteredStatistics[_Key].Type == _ExpectedType, """Expected statistic of type "{{{ _ExpectedType }}}" but actual is "{{{ G_RegisteredStatistics[_Key].Type }}}" """);
 }
 
 /* Registration */
 
-Void Register(Text _Key, Text _Type) {
-	assert(!G_RegisteredStatistics.existskey(_Key), """Statistic with key \"{{{_Key}}}\" already exists""");
+Void Register(Text _Key, K_Registration	 _Registration) {
+	assert(!G_RegisteredStatistics.existskey(_Key), """Statistic with key \"{{{ _Key }}}\" already exists""");
 	declare Text[] ValidTypes = [C_StatisticType_Integer, C_StatisticType_Real];
-	assert(ValidTypes.exists(_Type), """Invalid statistics type "{{{_Type}}}" """);
-	G_RegisteredStatistics[_Key] = _Type;
+	assert(ValidTypes.exists(_Registration.Type), """Invalid statistics type "{{{ _Registration.Type }}}" """);
+	G_RegisteredStatistics[_Key] = _Registration;
 }
 
-Void RegisterInteger(Text _Key) {
-	Register(_Key, C_StatisticType_Integer);
-}
-
-Void RegisterReal(Text _Key) {
-	Register(_Key, C_StatisticType_Real);
-}
-
-Text[Text] GetRegistrations() {
+K_Registration[Text] GetRegistrations() {
 	return G_RegisteredStatistics;
 }
 
@@ -101,7 +104,7 @@ Void Set(CSmScore _Score, Text _Key, Integer _Value, Integer _Level) {
 	Private_AssertExists(_Key);
 
 	// We allow setting a real statistic with an integer
-	if (G_RegisteredStatistics[_Key] == C_StatisticType_Real) {
+	if (G_RegisteredStatistics[_Key].Type == C_StatisticType_Real) {
 		Set(_Score, _Key, ML::ToReal(_Value), _Level);
 		return;
 	}
@@ -124,7 +127,7 @@ Void Add(CSmScore _Score, Text _Key, Integer _ValueAdd, Integer _Level) {
 	Private_AssertExists(_Key);
 
 	// We allow adding to a real statistic with an integer
-	if (G_RegisteredStatistics[_Key] == C_StatisticType_Real) {
+	if (G_RegisteredStatistics[_Key].Type == C_StatisticType_Real) {
 		Add(_Score, _Key, ML::ToReal(_ValueAdd), _Level);
 		return;
 	}
@@ -137,7 +140,7 @@ Void Subtract(CSmScore _Score, Text _Key, Integer _ValueSubtract, Integer _Level
 	Private_AssertExists(_Key);
 
 	// We allow subtracting from a real statistic with an integer
-	if (G_RegisteredStatistics[_Key] == C_StatisticType_Real) {
+	if (G_RegisteredStatistics[_Key].Type == C_StatisticType_Real) {
 		Subtract(_Score, _Key, ML::ToReal(_ValueSubtract), _Level);
 		return;
 	}
@@ -230,13 +233,13 @@ CSmScore[] Private_SortByReal(Text _Key) {
 CSmScore[] SortBy(Text _Key) {
 	Private_AssertExists(_Key);
 
-	switch (G_RegisteredStatistics[_Key]) {
+	switch (G_RegisteredStatistics[_Key].Type) {
 		case C_StatisticType_Integer: return Private_SortByInteger(_Key);
 		case C_StatisticType_Real: return Private_SortByReal(_Key);
 	}
 
-	assert(False, """Cannot sort by statistic "{{{ _Key }}}" (Type: "{{{ G_RegisteredStatistics[_Key] }}}")""");
-	return[];
+	assert(False, """Cannot sort by statistic "{{{ _Key }}}" (Type: "{{{ G_RegisteredStatistics[_Key].Type }}}")""");
+	return [];
 }
 
 /* Match Progression Methods */
@@ -260,21 +263,65 @@ Void Clear() {
 	Clear(C_Level_Match);
 }
 
-Void AffectPlayerRoundToMapAndMatchStatistic(CSmScore _Score) {
+Void AffectPlayerRoundToMapAndMatchStatistics(CSmScore _Score) {
 	declare K_PlayerStatistics RoundStatistics = GetRound(_Score);
 	foreach (Key => Value in RoundStatistics.Integers) {
-		AddMap(_Score, Key, Value);
-		AddMatch(_Score, Key, Value);
+		switch (G_RegisteredStatistics[Key].AggregationFunction) {
+			case C_AggregationFunction_Add: {
+				AddMap(_Score, Key, Value);
+				AddMatch(_Score, Key, Value);
+			}
+			case C_AggregationFunction_Subtract: {
+				SubtractMap(_Score, Key, Value);
+				SubtractMatch(_Score, Key, Value);
+			}
+			case C_AggregationFunction_Min: {
+				SetMap(_Score, Key, ML::Min(Value, GetMapInteger(_Score, Key)));
+				SetMatch(_Score, Key, ML::Min(Value, GetMatchInteger(_Score, Key)));
+			}
+			case C_AggregationFunction_Max: {
+				SetMap(_Score, Key, ML::Max(Value, GetMapInteger(_Score, Key)));
+				SetMatch(_Score, Key, ML::Max(Value, GetMatchInteger(_Score, Key)));
+			}
+			case C_AggregationFunction_Latest: {
+				SetMap(_Score, Key, Value);
+				SetMatch(_Score, Key, Value);
+			}
+		}
 	}
+
 	foreach (Key => Value in RoundStatistics.Reals) {
-		AddMap(_Score, Key, Value);
-		AddMatch(_Score, Key, Value);
+		switch (G_RegisteredStatistics[Key].AggregationFunction) {
+			case C_AggregationFunction_Add: {
+				AddMap(_Score, Key, Value);
+				AddMatch(_Score, Key, Value);
+			}
+			case C_AggregationFunction_Subtract: {
+				SubtractMap(_Score, Key, Value);
+				SubtractMatch(_Score, Key, Value);
+			}
+			case C_AggregationFunction_Min: {
+				SetMap(_Score, Key, ML::Min(Value, GetMapReal(_Score, Key)));
+				SetMatch(_Score, Key, ML::Min(Value, GetMapReal(_Score, Key)));
+			}
+			case C_AggregationFunction_Max: {
+				SetMap(_Score, Key, ML::Max(Value, GetMapReal(_Score, Key)));
+				SetMatch(_Score, Key, ML::Max(Value, GetMapReal(_Score, Key)));
+			}
+			case C_AggregationFunction_Latest: {
+				SetMap(_Score, Key, Value);
+				SetMatch(_Score, Key, Value);
+			}
+		}
 	}
+
 	Clear(_Score, C_Level_Round);
 }
 
-Void AffectPlayersRoundToMapAndMatchStatistic() {
-	foreach(_Score in Scores) AffectPlayerRoundToMapAndMatchStatistic(_Score);
+Void AffectPlayersRoundToMapAndMatchStatistics() {
+	foreach(_Score in Scores) {
+		AffectPlayerRoundToMapAndMatchStatistics(_Score);
+	}
 }
 
 Void StartMatch() {
@@ -298,7 +345,7 @@ Void StartRound() {
 }
 
 Void EndRound() {
-	AffectPlayersRoundToMapAndMatchStatistic();
+	AffectPlayersRoundToMapAndMatchStatistics();
 }
 
 Void Unload() {

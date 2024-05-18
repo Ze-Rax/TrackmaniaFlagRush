@@ -521,6 +521,8 @@ Void Player_Initialize(CSmPlayer Player) {
 	Player.Dossard_Number = "  ";
 	Player.Dossard_Color = <1., 1., 1.>;
 	Player.ForceModelId = Vehicle_GetModelId(Player);
+	declare Boolean FlagRush_WasInitializedBefore for Player = False;
+	FlagRush_WasInitializedBefore = True;
 }
 
 Boolean Player_CanSpawn(CSmPlayer Player) {
@@ -530,7 +532,8 @@ Boolean Player_CanSpawn(CSmPlayer Player) {
 }
 
 Void Player_Spawn(CSmPlayer Player) {
-	if (MB_TurnIsRunning() && !Progression_WarmUpIsRunning() && Player.ForceModelId != Vehicle_GetModelId(Player)) {
+	declare Boolean FlagRush_WasInitializedBefore for Player = False;
+	if (MB_TurnIsRunning() && !Progression_WarmUpIsRunning() && FlagRush_WasInitializedBefore && Player.ForceModelId != Vehicle_GetModelId(Player)) {
 		Scores::OnPlayerChangesVehicle(Player.Score);
 	}
 	Player_Initialize(Player);

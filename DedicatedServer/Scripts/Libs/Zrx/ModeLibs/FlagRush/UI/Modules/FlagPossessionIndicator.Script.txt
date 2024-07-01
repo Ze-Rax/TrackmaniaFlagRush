@@ -36,7 +36,7 @@ CMlQuad[] GetQuads() {
 
 Void Animate(Real _Opacity) {
 	declare Target = "<elem opacity=\"" ^ _Opacity ^ "\"/>";
-	for (Control in GetQuads()) {
+	foreach (Control in GetQuads()) {
 		AnimMgr.Flush(Control);
 		AnimMgr.Add(Control, Target, C_FadeAnimDuration, C_FadeAnimEasing);
 	}

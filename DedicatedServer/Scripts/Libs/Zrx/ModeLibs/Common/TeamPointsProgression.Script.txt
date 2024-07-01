@@ -1,10 +1,12 @@
-/*
-*	For Tracking Match Score/Points Progression throughout a multiround/-map match
-*/
+/**
+ *	For Tracking Match Score/Points Progression throughout a multiround/-map match
+ */
 
-#Const	C_Level_Match		0
-#Const	C_Level_Map			1
-#Const	C_Level_Round		2
+#Include "Libs/Nadeo/TMGame/Modes/Scores.Script.txt" as Scores // Only used for aliasing reset levels
+
+#Const Scores::C_Level_Match as C_Level_Match
+#Const Scores::C_Level_Map as C_Level_Map
+#Const Scores::C_Level_Round as C_Level_Round
 
 declare Integer[Integer] G_ClanTurnsWon;
 declare Integer[Integer] G_ClanRoundsWon;

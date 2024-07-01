@@ -5,7 +5,7 @@
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2.Script.txt"						as XmlRpc
 #Include "Libs/Zrx/ModeLibs/Common/ModeUtils.Script.txt"								as ModeUtils
 #Include "Libs/Zrx/ModeLibs/FlagRush/Flag.Script.txt"										as Flag
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"				as FlagRush_Scores
+#Include "Libs/Zrx/ModeLibs/FlagRush/Scores.Script.txt"									as Scores
 #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"						as FlagRush_Map
 
 // XMLRPC events
@@ -272,38 +272,15 @@ K_Rpc_Map CurrentMapToRpcMap() {
 }
 
 K_Rpc_PlayerScore ScoreToRpcPlayerScore(CSmScore Score, Integer ScoreLevel) {
-	declare Integer Points;
-	declare Integer FlagsScored;
-	declare Integer FlagsStolen;
-	declare Integer Assists;
-
-	switch (ScoreLevel) {
-		case FlagRush_Scores::C_Level_Match: {
-			Points = FlagRush_Scores::GetPlayerMatchPoints(Score);
-			FlagsScored = FlagRush_Scores::GetPlayerMatchFlagScores(Score);
-			FlagsStolen = FlagRush_Scores::GetPlayerMatchFlagSteals(Score);
-			Assists = FlagRush_Scores::GetPlayerMatchFlagScoreAssists(Score);
-		}
-		case FlagRush_Scores::C_Level_Map: {
-			Points = FlagRush_Scores::GetPlayerMapPoints(Score);
-			FlagsScored = FlagRush_Scores::GetPlayerMapFlagScores(Score);
-			FlagsStolen = FlagRush_Scores::GetPlayerMapFlagSteals(Score);
-			Assists = FlagRush_Scores::GetPlayerMapFlagScoreAssists(Score);
-		}
-		case FlagRush_Scores::C_Level_Round: {
-			Points = FlagRush_Scores::GetPlayerRoundPoints(Score);
-			FlagsScored = FlagRush_Scores::GetPlayerRoundFlagScores(Score);
-			FlagsStolen = FlagRush_Scores::GetPlayerRoundFlagSteals(Score);
-			Assists = FlagRush_Scores::GetPlayerRoundFlagScoreAssists(Score);
-		}
-	}
+	declare Integer Points = Scores::GetPlayerPoints(Score, ScoreLevel);
+	declare Scores::K_FlagRushPlayerStatistics PlayerStatistics = Scores::GetPlayerStatistics(Score, ScoreLevel);
 
 	return K_Rpc_PlayerScore{
 		Player = ScoreToRpcPlayer(Score),
 		Points = Points,
-		FlagsScored = FlagsScored,
-		FlagsStolen = FlagsStolen,
-		Assists = Assists
+		FlagsScored = PlayerStatistics.FlagsScored,
+		FlagsStolen = PlayerStatistics.FlagsStolen,
+		Assists = PlayerStatistics.FlagScoreAssists
 	};
 }
 
@@ -317,14 +294,14 @@ K_Rpc_PlayerScore[] ScoresToRpcPlayerScores(Integer ScoreLevel) {
 
 Integer[] GetTeamScores(Integer ScoreLevel) {
 	switch (ScoreLevel) {
-		case FlagRush_Scores::C_Level_Match: {
-			return [FlagRush_Scores::GetClanMatchPoints(1), FlagRush_Scores::GetClanMatchPoints(2)];
+		case Scores::C_Level_Match: {
+			return [Scores::GetClanMatchPoints(1), Scores::GetClanMatchPoints(2)];
 		}
-		case FlagRush_Scores::C_Level_Map: {
-			return [FlagRush_Scores::GetClanMapPoints(1), FlagRush_Scores::GetClanMapPoints(2)];
+		case Scores::C_Level_Map: {
+			return [Scores::GetClanMapPoints(1), Scores::GetClanMapPoints(2)];
 		}
-		case FlagRush_Scores::C_Level_Round: {
-			return [FlagRush_Scores::GetClanRoundPoints(1), FlagRush_Scores::GetClanRoundPoints(2)];
+		case Scores::C_Level_Round: {
+			return [Scores::GetClanRoundPoints(1), Scores::GetClanRoundPoints(2)];
 		}
 	}
 	return [];
@@ -382,7 +359,7 @@ Void Send_FlagScored(CSmPlayer _Scorer, CUser _AssistNullable) {
 		Time = Now,
 		Scorer = Scorer,
 		Assist = Assist,
-		TeamScores = GetTeamScores(FlagRush_Scores::C_Level_Round)
+		TeamScores = GetTeamScores(Scores::C_Level_Round)
 	};
 	XmlRpc::SendCallback(C_Event_Flag_Scored, Data.tojson());
 }
@@ -410,8 +387,8 @@ Void Send_MatchEnd(Boolean Valid) {
 	declare K_Event_Flow_MatchEnd Data = K_Event_Flow_MatchEnd{
 		Time = Now,
 		Valid = Valid,
-		TeamScores = GetTeamScores(FlagRush_Scores::C_Level_Match),
-		PlayerScores = ScoresToRpcPlayerScores(FlagRush_Scores::C_Level_Match)
+		TeamScores = GetTeamScores(Scores::C_Level_Match),
+		PlayerScores = ScoresToRpcPlayerScores(Scores::C_Level_Match)
 	};
 	XmlRpc::SendCallback(C_Event_Flow_MatchEnd, Data.tojson());
 }
@@ -429,8 +406,8 @@ Void Send_MapEnd(Boolean Valid) {
 		Time = Now,
 		Valid = Valid,
 		Map = CurrentMapToRpcMap(),
-		TeamScores = GetTeamScores(FlagRush_Scores::C_Level_Map),
-		PlayerScores = ScoresToRpcPlayerScores(FlagRush_Scores::C_Level_Map)
+		TeamScores = GetTeamScores(Scores::C_Level_Map),
+		PlayerScores = ScoresToRpcPlayerScores(Scores::C_Level_Map)
 	};
 	XmlRpc::SendCallback(C_Event_Flow_MapEnd, Data.tojson());
 }
@@ -446,8 +423,8 @@ Void Send_RoundEnd(Boolean Valid) {
 	declare K_Event_Flow_RoundEnd Data = K_Event_Flow_RoundEnd{
 		Time = Now,
 		Valid = Valid,
-		TeamScores = GetTeamScores(FlagRush_Scores::C_Level_Round),
-		PlayerScores = ScoresToRpcPlayerScores(FlagRush_Scores::C_Level_Round)
+		TeamScores = GetTeamScores(Scores::C_Level_Round),
+		PlayerScores = ScoresToRpcPlayerScores(Scores::C_Level_Round)
 	};
 	XmlRpc::SendCallback(C_Event_Flow_RoundEnd, Data.tojson());
 }
@@ -469,7 +446,7 @@ Void Send_WarmUpEnd() {
 Void Send_Overtime() {
 	declare K_Event_Flow_Overtime Data = K_Event_Flow_Overtime{
 		Time = Now,
-		TeamScores = GetTeamScores(FlagRush_Scores::C_Level_Round)
+		TeamScores = GetTeamScores(Scores::C_Level_Round)
 	};
 	XmlRpc::SendCallback(C_Event_Flow_Overtime, Data.tojson());
 }

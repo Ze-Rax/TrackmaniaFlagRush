@@ -33,7 +33,7 @@
 // FlagRush Libs
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Common.Script.txt"									as FlagRush_Common
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Map.Script.txt"										as FlagRush_Map
-// #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt"									as FlagRush_Scores
+// #Include "Libs/Zrx/ModeLibs/FlagRush/Scores.Script.txt"													as Scores
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_MatchEvaluation.Script.txt"				as FlagRush_MatchEvaluation
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt"									as FlagRush_Teams
 // #Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_RpcEvents.Script.txt"							as FlagRush_XmlRpc
@@ -47,6 +47,7 @@
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/VehicleSelection.Script.txt"				as FlagRush_VehicleSelection
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/FlagMarker.Script.txt"							as FlagMarker
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/FlagPossessionIndicator.Script.txt"	as FlagPossessionIndicator
+// #Include "Libs/Zrx/ModeLibs/FlagRush/UI/Modules/PodiumStatistics.Script.txt"			as PodiumStatistics
 
 // ========= //
 // Constants //
@@ -54,6 +55,7 @@
 
 #Const C_Debug False
 
+#Const C_Epsilon_Distance 0.001
 #Const C_AssistTimeThreshold 5000
 #Const C_RespawnDelayMin 1000 // Player needs to be unspawned for a few (?) yields before respawning, else physics with different vehicles do not apply correctly
 
@@ -187,7 +189,43 @@ foreach (Player in Players) {
 declare Flag::K_Flag PreviousFlag = Flag::Get();
 Flag::Yield();
 
+foreach (Player in Players) {
+	// Track airtime
+	declare Integer FlagRush_PreviousFlyingDuration for Player = Player.FlyingDuration;
+	declare Boolean WasInAir = FlagRush_PreviousFlyingDuration > 0;
+	declare Boolean IsInAir = Player.FlyingDuration > 0; // Player.IsInAir does not work
+	if (!IsInAir && WasInAir) {
+		Scores::OnPlayerLandedJump(Player.Score, FlagRush_PreviousFlyingDuration / 2); // Flying duration is in units on 0.5ms for some reason
+	}
+	FlagRush_PreviousFlyingDuration = Player.FlyingDuration;
+
+	// Track distance driven
+	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
+		continue;
+	}
+
+	declare Vec3 FlagRush_PreviousPosition for Player = Player.Position;
+	if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
+		declare Real Distance = ML::Distance(Player.Position, FlagRush_PreviousPosition);
+		if (Distance > C_Epsilon_Distance) {
+			Scores::OnPlayerDistanceDriven(Player.Score, Distance);
+		}
+	}
+	FlagRush_PreviousPosition = Player.Position;
+
+	// Track speed
+	Scores::OnPlayerHasSpeed(Player.Score, Player.Speed);
+}
+
 // Update Flag
+// Update carrying statistic
+if (Flag::IsOnPlayer()) {
+	declare CSmScore CarrierScore <=> Scores.get(Flag::Get().Location.Player.ScoreId, Null);
+	if (CarrierScore != Null) {
+		Scores::OnPlayerCarriesFlag(CarrierScore);
+	}
+}
+
 // Check if carrier is still connected
 if (Flag::IsOnPlayer() && !Flag::IsPlayerConnected()) {
 	FlagCarrier_DropFlag();
@@ -493,6 +531,8 @@ Void Player_Initialize(CSmPlayer Player) {
 	Player.Dossard_Number = "  ";
 	Player.Dossard_Color = <1., 1., 1.>;
 	Player.ForceModelId = Vehicle_GetModelId(Player);
+	declare Boolean FlagRush_WasInitializedBefore for Player = False;
+	FlagRush_WasInitializedBefore = True;
 }
 
 Boolean Player_CanSpawn(CSmPlayer Player) {
@@ -502,6 +542,10 @@ Boolean Player_CanSpawn(CSmPlayer Player) {
 }
 
 Void Player_Spawn(CSmPlayer Player) {
+	declare Boolean FlagRush_WasInitializedBefore for Player = False;
+	if (MB_TurnIsRunning() && !Progression_WarmUpIsRunning() && FlagRush_WasInitializedBefore && Player.ForceModelId != Vehicle_GetModelId(Player)) {
+		Scores::OnPlayerChangesVehicle(Player.Score);
+	}
 	Player_Initialize(Player);
 	declare CMapLandmark SpawnLandmark = FlagRush_Map::GetSpawn(Player);
 	if (SpawnLandmark != Null) {
@@ -552,7 +596,9 @@ Void FlagCarrier_PassFlag(CSmPlayer Player) {
 	declare CSmPlayer OldCarrier = Flag::GetPlayer();
 	declare Boolean IsNotSameTeam = Player.CurrentClan != OldCarrier.CurrentClan;
 	if (IsNotSameTeam) {
-		FlagRush_Scores::OnPlayerStealFlag(Player);
+		Scores::OnPlayerStealsFlag(Player.Score);
+	} else {
+		Scores::OnPlayerPassesFlag(OldCarrier.Score);
 	}
 	Player_ResetHandicaps(OldCarrier);
 	// New Carrier
@@ -601,22 +647,25 @@ Void FlagCarrier_DropFlag() {
 }
 
 Void FlagCarrier_ScoreFlag() {
-	declare CSmPlayer CarrierPlayer = Flag::GetPlayer();
-	Messages::FlagScored(CarrierPlayer, C_Duration_EventMessage);
-	FlagRush_Scores::OnPlayerScoreFlag(CarrierPlayer.Score);
 	declare Flag::K_Flag Flag = Flag::Get();
+	declare CSmPlayer CarrierPlayer = Flag::GetPlayer();
 
 	// Check for assist
-	declare CUser Assist;
+	declare CSmScore AssistScore;
+	declare CUser AssistUser;
 	if (Now - Flag.LastPass.Date <= C_AssistTimeThreshold && Flag.LastPass.From.Id != NullId) {
-		declare CSmScore AssistScore <=> Scores[Flag.LastPass.From.ScoreId];
-		if (AssistScore.TeamNum == CarrierPlayer.Score.TeamNum) {
-			Assist = AssistScore.User;
-			FlagRush_Scores::OnPlayerScoreFlagAssist(AssistScore);
+		declare CSmScore LastPassSourceScore <=> Scores.get(Flag.LastPass.From.ScoreId, Null);
+		if (LastPassSourceScore.TeamNum == CarrierPlayer.Score.TeamNum) {
+			AssistScore <=> LastPassSourceScore;
+			AssistUser <=> LastPassSourceScore.User;
 		}
 	}
+
+	Messages::FlagScored(CarrierPlayer, C_Duration_EventMessage);
+	Scores::OnPlayerScoresFlag(CarrierPlayer.Score, AssistScore);
+
 	Player_ResetHandicaps(CarrierPlayer);
-	FlagRush_XmlRpc::Send_FlagScored(CarrierPlayer, Assist);
+	FlagRush_XmlRpc::Send_FlagScored(CarrierPlayer, AssistUser);
 	Flag_Reset(True);
 }
 
@@ -649,6 +698,7 @@ Void OnPlayerRequestsRespawn(CSmPlayer Player) {
 
 	Player_Unspawn(Player);
 	Messages::PlayerRespawn(Player);
+	Scores::OnPlayerRespawn(Player.Score);
 }
 
 Void OnPlayerDeath(CSmPlayer Player) {
@@ -657,6 +707,7 @@ Void OnPlayerDeath(CSmPlayer Player) {
 	}
 	FlagRush_XmlRpc::Send_PlayerDeath(Player);
 	Player_Unspawn(Player);
+	Scores::OnPlayerDeath(Player.Score);
 }
 
 Void OnPlayerOutOfBound(CSmPlayer Player) {
@@ -670,6 +721,7 @@ Void OnPlayerOutOfBound(CSmPlayer Player) {
 	}
 	FlagRush_XmlRpc::Send_PlayerDeath(Player);
 	Player_Unspawn(Player);
+	Scores::OnPlayerOutOfBounds(Player.Score);
 }
 
 Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {
@@ -677,6 +729,7 @@ Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {
 		OnPlayerOutOfBound(Player);
 	} else if (Flag::Get().Location.LandmarkId == Landmark.Id && !Flag::IsLockedForPlayer(Player)) {
 		Player_PickUpFlag(Player);
+		Scores::OnPlayerPicksUpFlagFromLandmark(Player.Score);
 	} else if (Player == Flag::GetPlayer()){
 		declare Integer TargetBaseClan = 3 - Player.CurrentClan;
 		if (FlagRush_Map::IsBase(Landmark, TargetBaseClan)) {

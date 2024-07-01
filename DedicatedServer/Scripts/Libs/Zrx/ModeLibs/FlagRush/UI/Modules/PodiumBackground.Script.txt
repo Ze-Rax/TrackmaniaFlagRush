@@ -1,6 +1,6 @@
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Teams.Script.txt" as FlagRush_Teams
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
-#Include "Libs/Zrx/ModeLibs/FlagRush/FlagRush_Scores.Script.txt" as FlagRush_Scores
+#Include "Libs/Zrx/ModeLibs/FlagRush/Scores.Script.txt" as Scores
+#Include "Libs/Zrx/ModeLibs/Common/PlayerStatistics.Script.txt" as PlayerStatistics
 #Include "Libs/Zrx/ModeLibs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
 
 #Struct K_PodiumPlaceConfig {
@@ -17,27 +17,28 @@
 	Integer FlagsStolenPlacement;
 }
 
-Void SetContent(CSmScore[] PodiumScores) {
-	declare CSmScore[] FlagsScoredMatchRanking = FlagRush_Scores::GetPlayerFlagsScoredMatchRanking();
-	declare CSmScore[] AssistsMatchRanking = FlagRush_Scores::GetPlayerAssistsMatchRanking();
-	declare CSmScore[] FlagsStolenMatchRanking = FlagRush_Scores::GetPlayerFlagsStealsMatchRanking();
+Void SetContent(CSmScore[] _PodiumScores) {
+	declare CSmScore[] FlagsScoredMatchRanking = PlayerStatistics::SortBy(Scores::C_PlayerStatisticsKey_FlagsScored);
+	declare CSmScore[] AssistsMatchRanking = PlayerStatistics::SortBy(Scores::C_PlayerStatisticsKey_FlagScoreAssists);
+	declare CSmScore[] FlagsStolenMatchRanking = PlayerStatistics::SortBy(Scores::C_PlayerStatisticsKey_FlagsStolen);
 
-	declare netwrite K_PodiumPlaceConfig[Integer] FlagRush_Net_PodiumPlacementConfigs for Teams[0];
+	declare netwrite K_PodiumPlaceConfig[Integer] FlagRush_Net_PodiumPlacementConfigs for Teams[0] = [];
 	for (Placement, 1, 3) {
 		declare Integer ScoreIndex = Placement - 1;
-		if (PodiumScores.existskey(ScoreIndex)) {
-			declare CSmScore PlacementScore <=> PodiumScores[ScoreIndex];
+		if (_PodiumScores.existskey(ScoreIndex)) {
+			declare CSmScore PlacementScore <=> _PodiumScores[ScoreIndex];
+			declare Scores::K_FlagRushPlayerStatistics PlayerStatistics = Scores::GetPlayerMatchStatistics(PlacementScore);
 			FlagRush_Net_PodiumPlacementConfigs[Placement] = K_PodiumPlaceConfig{
 				Present = True,
 				Name = PlacementScore.User.Name,
 				Avatar = PlacementScore.User.CountryFlagUrl,
 				Clan = PlacementScore.TeamNum,
-				Points = FlagRush_Scores::GetPlayerMatchPoints(PlacementScore),
-				FlagsScored = FlagRush_Scores::GetPlayerMatchFlagScores(PlacementScore),
+				Points = Scores::GetPlayerMatchPoints(PlacementScore),
+				FlagsScored = PlayerStatistics.FlagsScored,
 				FlagsScoredPlacement = FlagsScoredMatchRanking.keyof(PlacementScore) + 1,
-				Assists = FlagRush_Scores::GetPlayerMatchFlagScoreAssists(PlacementScore),
+				Assists = PlayerStatistics.FlagScoreAssists,
 				AssistsPlacement = AssistsMatchRanking.keyof(PlacementScore) + 1,
-				FlagsStolen = FlagRush_Scores::GetPlayerMatchFlagSteals(PlacementScore),
+				FlagsStolen = PlayerStatistics.FlagsStolen,
 				FlagsStolenPlacement = FlagsStolenMatchRanking.keyof(PlacementScore) + 1
 			};
 		} else {

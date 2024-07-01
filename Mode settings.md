@@ -40,6 +40,7 @@ These settings change how the gameplay in a round behaves.
 | S_DropFlagPickupPenalty          | Real    | 3.0           | Duration in seconds in which a player cannot pick up the flag after dropping it. (Other players can instantly pick it up.) |
 | S_TeleportDetectionThreshold     | Real    | 8.0           | Maximum distance in meters that a player is allowed to teleport (lag) during one server frame before the flag is automatically dropped. Teleport detection is disabled for values <= 0 |
 | S_UseCollisions                  | Boolean | False         | Whether or not to use physics based collisions between players. This setting is EXPERIMENTAL: Player collisions can feel and be weird and inconsistent. If enabled, server will also switch to server side simulation (See S_TrustClientSimu) and disable crude extrapolation (See S_UseCrudeExtrapolation). |
+| S_UseLightTrails                 | Boolean | True          | Whether to use light trails for the player carrying the flag. |
 | S_ForceEnabledVehiclesCsv        | Text    | "" (blank)    | Forces the given list of vehicles to be enabled. Overrides the vehicle configuration of the map. Invalid values are ignored. Comma separated values, case insensitive and will be trimmed. Examples: `stadium,rally`, `Stadium, snow   , RaLlY` |
 
 ## Vehicle tuning settings

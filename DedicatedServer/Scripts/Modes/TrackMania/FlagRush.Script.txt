@@ -66,6 +66,7 @@
 #Const FlagRush_Vehicle::C_Vehicle_Stadium as C_Vehicle_Stadium
 #Const FlagRush_Vehicle::C_Vehicle_Snow as C_Vehicle_Snow
 #Const FlagRush_Vehicle::C_Vehicle_Rally as C_Vehicle_Rally
+#Const FlagRush_Vehicle::C_Vehicle_Desert as C_Vehicle_Desert
 
 // ======== //
 // Settings //
@@ -100,6 +101,9 @@
 #Setting S_TuningRallyAcceleration					0.7 		as "<hidden>"
 #Setting S_TuningRallyAdherence							1.0 		as "<hidden>"
 #Setting S_TuningRallyControl								1.0 		as "<hidden>"
+#Setting S_TuningDesertAcceleration					0.66 		as "<hidden>"
+#Setting S_TuningDesertAdherence						1.0 		as "<hidden>"
+#Setting S_TuningDesertControl							1.0 		as "<hidden>"
 
 // ======== //
 // Commands //
@@ -363,7 +367,7 @@ if (FlagRush_PreviousSettings_ForceEnabledVehiclesCsv != S_ForceEnabledVehiclesC
 	// Note: Cannot use functions like Vehicle_GetEnabled or globals in Yield due to ordering after compilation
 	declare FlagRush_Vehicle::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
 	FlagRush_ForceEnabledVehicles.clear();
-	for (CsvEntry in TL::Split(",", S_ForceEnabledVehiclesCsv)) {
+	foreach (CsvEntry in TL::Split(",", S_ForceEnabledVehiclesCsv)) {
 		declare Text VehicleId = TL::ToLowerCase(TL::Trim(CsvEntry));
 		if (FlagRush_Vehicle::IsValid(VehicleId)) {
 			FlagRush_ForceEnabledVehicles.add(FlagRush_Vehicle::Get(VehicleId));
@@ -421,6 +425,12 @@ if (VehicleTuningChanged) {
 	RallyTuning.Control =					S_TuningRallyControl;
 	FlagRush_Vehicle::SetTuning(C_Vehicle_Rally.Id, RallyTuning);
 
+	declare FlagRush_Vehicle::K_Tuning DesertTuning = FlagRush_Vehicle::C_Tuning_Default;
+	DesertTuning.Acceleration =		S_TuningDesertAcceleration;
+	DesertTuning.Adherence =			S_TuningDesertAdherence;
+	DesertTuning.Control =				S_TuningDesertControl;
+	FlagRush_Vehicle::SetTuning(C_Vehicle_Desert.Id, DesertTuning);
+
 	RestartTurn = True;
 }
 
@@ -444,7 +454,7 @@ FlagRush_Vehicle::K_Vehicle[] Vehicle_GetEnabled() {
 
 Boolean Vehicle_IsEnabled(FlagRush_Vehicle::K_Vehicle Vehicle) {
 	declare FlagRush_Vehicle::K_Vehicle[] Vehicles = Vehicle_GetEnabled();
-	for (EnabledVehicle in Vehicles) {
+	foreach (EnabledVehicle in Vehicles) {
 		if (Vehicle.Id == EnabledVehicle.Id) {
 			return True;
 		}

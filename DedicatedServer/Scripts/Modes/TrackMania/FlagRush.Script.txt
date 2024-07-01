@@ -99,7 +99,7 @@
 #Setting S_TuningRallyAcceleration					0.7 		as "<hidden>"
 #Setting S_TuningRallyAdherence							1.0 		as "<hidden>"
 #Setting S_TuningRallyControl								1.0 		as "<hidden>"
-#Setting S_TuningDesertAcceleration					1.0 		as "<hidden>" // TODO: Tune
+#Setting S_TuningDesertAcceleration					0.66 		as "<hidden>"
 #Setting S_TuningDesertAdherence						1.0 		as "<hidden>"
 #Setting S_TuningDesertControl							1.0 		as "<hidden>"
 

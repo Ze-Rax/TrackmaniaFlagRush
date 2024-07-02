@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.6.0
+
+### General
+- Removed setting `S_UseTurns`.
+- Removed setting `S_UseReversedBases`.
+- Removed setting `S_FlagInitialSpawnDelaySeconds`.
+- Removed setting `S_FlagRespawnDelaySeconds`.
+- Removed setting `S_RandomizeFlagSpawn`.
++ Added a statistics panel to the podium sequence to show the best players in various categories, like "Most distance driven", "Most airtime" and several others.
++ Added support for the new desert car.
++ Added vehicle specific tunings for balancing with respective settings (`S_Tuning<Car><Tuning type>`, see [Mode settings](./Mode%20settings.md/#vehicle-tuning-settings)).
++ Added a setting `S_UseLightTrails` to toggle light trails for the flag carrier.
+
+### Bugs and crashes
+* Fixed division by zero error in flag marker layer.
+* Fixed flag shadow being visible by default, sometimes causing it to be visible when not in dropped state.
+* Fixed "Player went out of bounds" message spam in warmup.
+* Fixed flag getting passed through goal without scoring if passing to a teammate in the same server frame as trying to score the flag.
+
+---
+
 ## 1.5.0
 
 ### General

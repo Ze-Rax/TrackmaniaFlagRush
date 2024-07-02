@@ -52,6 +52,13 @@ CMapLandmark[] GetBases(Integer Clan) {
 }
 
 /**
+ * Check if the given landmark is a base that belongs to the given clan.
+ */
+Boolean IsBase(CMapLandmark _Landmark, Integer _Clan) {
+	return GetBases(_Clan).exists(_Landmark);
+}
+
+/**
  * Chooses a random flag spawn.
  */
 CMapLandmark GetRandomFlagSpawn() {
@@ -67,7 +74,7 @@ FlagRush_Vehicle::K_Vehicle[] GetEnabledVehicles() {
 	declare metadata Text[] FlagRush_Meta_Vehicles for Map = [];
 	declare FlagRush_Vehicle::K_Vehicle[] EnabledVehicles;
 
-	for (VehicleId in FlagRush_Meta_Vehicles) {
+	foreach (VehicleId in FlagRush_Meta_Vehicles) {
 		if (FlagRush_Vehicle::IsValid(VehicleId)) {
 			EnabledVehicles.add(FlagRush_Vehicle::Get(VehicleId));
 		}
@@ -84,7 +91,7 @@ FlagRush_Vehicle::K_Vehicle[] GetEnabledVehicles() {
  * @see GetEnabledVehiclew
  */
 Boolean IsVehicleEnabled(Text VehicleId) {
-	for (Vehicle in GetEnabledVehicles()) {
+	foreach (Vehicle in GetEnabledVehicles()) {
 		if (Vehicle.Id == VehicleId) {
 			return True;
 		}

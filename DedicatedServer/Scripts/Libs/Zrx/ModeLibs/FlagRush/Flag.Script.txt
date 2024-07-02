@@ -291,6 +291,12 @@ Void RemoveDropTimer() {
 	Net_Update();
 }
 
+Void Reset() {
+	G_Flag = K_Flag{};
+	SetUnspawned();
+	Net_Update();
+}
+
 // Lifecycle
 
 Void Yield() {
@@ -301,14 +307,14 @@ Void Yield() {
 		if (Player.WheelsContactCount >= 3) {
 			G_Flag.Location.LastSafePosition = Player.Position;
 		}
+		Net_Update();
 	}
 }
 
 Void Unload() {
+	Reset();
 }
 
 Void Load() {
-	G_Flag = K_Flag{};
-	SetUnspawned();
-	Net_Update();
+	Unload();
 }

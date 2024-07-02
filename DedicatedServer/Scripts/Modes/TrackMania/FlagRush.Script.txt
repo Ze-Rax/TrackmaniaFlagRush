@@ -755,3 +755,4 @@ Void OnGameplayCommand(CommandUtils::K_Command Command) {
 	if (CommandText != "") Message ^= " " ^ CommandText;
 	UIManager.UIAll.SendChat(Message);
 }
+

@@ -89,6 +89,7 @@
 #Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
 #Setting S_TeleportDetectionThreshold				8.			as "<hidden>" // Maximum allowed distance (meters) to teleport (lag) before dropping the flag
 #Setting S_UseCollisions										False		as "Use collisions (experimental)"
+#Setting S_UseLightTrails										True		as "<hidden>" // Use light trails for the flag carrier
 
 // Vehicles
 #Setting S_ForceEnabledVehiclesCsv					""			as "Force enabled vehicles (Comma separated; Options: \"stadium\", \"snow\", \"rally\")"
@@ -531,6 +532,7 @@ Void Player_Initialize(CSmPlayer Player) {
 	Player.Dossard_Number = "  ";
 	Player.Dossard_Color = <1., 1., 1.>;
 	Player.ForceModelId = Vehicle_GetModelId(Player);
+	Player.ForceLightTrail = False;
 	declare Boolean FlagRush_WasInitializedBefore for Player = False;
 	FlagRush_WasInitializedBefore = True;
 }
@@ -567,11 +569,13 @@ Void Player_ApplyHandicaps(CSmPlayer Player) {
 	FlagRush_Handicaps::Queue_AccelCoef(Player, Tuning.Acceleration * S_FlagCarrierAcceleration);
 	FlagRush_Handicaps::Queue_ControlCoef(Player, Tuning.Control * S_FlagCarrierControl);
 	FlagRush_Handicaps::Queue_AdherenceCoef(Player, Tuning.Adherence * S_FlagCarrierAdherence);
+	Player.ForceLightTrail = S_UseLightTrails;
 }
 
 Void Player_ResetHandicaps(CSmPlayer Player) {
 	FlagRush_Handicaps::Queue_Reset(Player);
 	Player_ApplyVehicleTuning(Player);
+	Player.ForceLightTrail = False;
 }
 
 Boolean Player_CanPickUpDroppedFlag(CSmPlayer Player) {

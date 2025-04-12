@@ -1,5 +1,5 @@
 //#RequireContext CSmMlScriptIngame
-#Include "Libs/FlagRush/Core/FlagRush_Common.Script.txt" as FlagRush_Common
+#Include "Libs/FlagRush/Const/Durations.Script.txt" as Durations
 #Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as UIShared
 
 Text GetManialink() {
@@ -32,7 +32,7 @@ Text GetManialink() {
 		while (True) {
 			yield;
 
-			declare Integer MillisRemaining = Net_SpawnDate - GameTime + {{{ FlagRush_Common::C_SpawnAnimDuration }}};
+			declare Integer MillisRemaining = Net_SpawnDate - GameTime + {{{ Durations::C_SpawnAnimDuration }}};
 			if (Net_SpawnDate <= 0 || MillisRemaining <= 0 || IsSpectator) {
 				RespawnFrame.Hide();
 				TotalRespawnTime = -1;

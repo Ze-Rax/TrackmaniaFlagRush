@@ -1,5 +1,5 @@
 #Include "MathLib" as ML
-#Include "Libs/FlagRush/Core/FlagRush_Common.Script.txt" as FlagRush_Common
+#Include "Libs/FlagRush/Core/Log.Script.txt" as Log
 #Include "Libs/FlagRush/Core/FlagRush_Vehicle.Script.txt" as FlagRush_Vehicle
 
 #Const C_LandmarkTag_SpawnTeam1					"SpawnTeam1"
@@ -110,7 +110,7 @@ Boolean IsOutOfBoundsTrigger(CMapLandmark Landmark) {
  * Looks through all the landmarks on the map and assigns them to the corresponding variables.
  */
 Boolean InitLandmarks() {
-	FlagRush_Common::Log("Initialising Landmarks...");
+	Log::Info("Initialising Landmarks...");
 	G_DefaultFlagSpawn = Null;
 	G_FlagSpawns.clear();
 	G_Bases = [1 => [], 2 => []];
@@ -154,6 +154,6 @@ Boolean InitLandmarks() {
 		);
 	}
 
-	FlagRush_Common::Log("All Landmarks found!");
+	Log::Info("All Landmarks found!");
 	return Valid;
 }

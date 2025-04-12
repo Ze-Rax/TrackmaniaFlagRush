@@ -1,0 +1,24 @@
+#Const C_Prefix "FlagRush"
+
+#Const C_Info "INFO"
+#Const C_Warn "WARN"
+#Const C_Error "ERROR"
+
+Void Private_Log(Text _Message) {
+	declare Boolean FlagRush_Debug for This = False;
+	if(FlagRush_Debug) {
+		log(_Message);
+	}
+}
+
+Void Info(Text _Message) {
+	Private_Log("""{{{ C_Info }}}: {{{ C_Prefix }}}: {{{ _Message }}}""");
+}
+
+Void Warn(Text _Message) {
+	Private_Log("""{{{ C_Warn }}}: {{{ C_Prefix }}}: {{{ _Message }}}""");
+}
+
+Void Error(Text _Message) {
+	Private_Log("""{{{ C_Error }}}: {{{ C_Prefix }}}: {{{ _Message }}}""");
+}

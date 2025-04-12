@@ -22,7 +22,9 @@
 #Include "Libs/FlagRush/WarmUpReadyUp/WarmUpReadyUp.Script.txt"		as WarmUpReadyUp
 
 // FlagRush Libs
-#Include "Libs/FlagRush/Core/FlagRush_Common.Script.txt"							as FlagRush_Common
+#Include "Libs/FlagRush/Const/Durations.Script.txt"										as Durations
+
+#Include "Libs/FlagRush/Core/Log.Script.txt"													as Log
 #Include "Libs/FlagRush/Core/SettingTracker.Script.txt"								as SettingTracker
 #Include "Libs/FlagRush/Core/FlagRush_Map.Script.txt"									as FlagRush_Map
 #Include "Libs/FlagRush/Core/Scores.Script.txt"												as Scores
@@ -43,21 +45,6 @@
 ///////////////
 // Constants //
 ///////////////
-
-// Duration / Timings for sequences and/or messages
-#Const C_Duration_Podium				15000
-#Const C_Duration_MatchEnd			5000
-#Const C_Duration_MapStart			3000
-#Const C_Duration_MapEnd				5000
-#Const C_Duration_RoundStart		3000
-#Const C_Duration_RoundEnd			5000
-#Const C_Duration_TurnEnd				3000
-#Const C_Duration_Overtime			2000
-#Const C_Duration_WarmUpStart		2000
-#Const C_Duration_WarmUpEnd			2000
-#Const C_Duration_PauseStart		2000
-#Const C_Duration_PauseEnd			2000
-#Const C_Duration_EventMessage	2000
 
 #Const C_TimeLimitWarning_Seconds [60, 30]
 
@@ -286,7 +273,7 @@ MB_Synchro();
 
 ***StartMap***
 ***
-MB_Sleep(C_Duration_MapStart);
+MB_Sleep(Durations::C_Duration_MapStart);
 
 StartTime = Now; // Start time has to be set otherwise cannot spawn players
 if (S_UseWarmUp && !MatchEndRequested) +++Private_WarmUp+++
@@ -297,23 +284,23 @@ if (S_UseWarmUp && !MatchEndRequested) +++Private_WarmUp+++
 declare Boolean MapIsValid = Progression_MapIsValid();
 FlagRush_XmlRpc::Send_MapEnd(MapIsValid);
 if (!MapIsValid) {
-	Messages::MapSkip(C_Duration_MapEnd);
+	Messages::MapSkip(Durations::C_Duration_MapEnd);
 	Scores::Clear(Scores::C_Level_Map);
 } else {
 	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMap();
 	if (WinnerClan == 0) {
-		Messages::MapDraw(C_Duration_MapEnd);
+		Messages::MapDraw(Durations::C_Duration_MapEnd);
 	} else {
-		Messages::MapWin(WinnerClan, C_Duration_MapEnd);
+		Messages::MapWin(WinnerClan, Durations::C_Duration_MapEnd);
 		Scores::OnClanMapWin(WinnerClan);
 	}
 }
 
 // Sleep during message and show scoreboard update half way through
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-MB_Sleep(C_Duration_MapEnd / 2);
+MB_Sleep(Durations::C_Duration_MapEnd / 2);
 Scores::EndMap();
-MB_Sleep(C_Duration_MapEnd / 2);
+MB_Sleep(Durations::C_Duration_MapEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
 if (Progression_MatchPointLimitReached()) {
@@ -336,8 +323,8 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 
 ***StartRound***
 ***
-Messages::RoundStart(MB_GetRoundCount(), C_Duration_RoundStart);
-MB_Sleep(C_Duration_RoundStart);
+Messages::RoundStart(MB_GetRoundCount(), Durations::C_Duration_RoundStart);
+MB_Sleep(Durations::C_Duration_RoundStart);
 StartTime = Now;
 Private_Progression_RoundTimeRemaining = S_RoundTimeLimitSeconds * 1000;
 
@@ -360,23 +347,23 @@ FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
 declare Boolean RoundIsValid = Progression_RoundIsValid();
 FlagRush_XmlRpc::Send_RoundEnd(RoundIsValid);
 if (!RoundIsValid) {
-	Messages::RoundSkip(C_Duration_RoundEnd);
+	Messages::RoundSkip(Durations::C_Duration_RoundEnd);
 	Scores::Clear(Scores::C_Level_Round);
 } else {
 	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateRound();
 	if (WinnerClan == 0) {
-		Messages::RoundDraw(C_Duration_RoundEnd);
+		Messages::RoundDraw(Durations::C_Duration_RoundEnd);
 	} else {
-		Messages::RoundWin(WinnerClan, C_Duration_RoundEnd);
+		Messages::RoundWin(WinnerClan, Durations::C_Duration_RoundEnd);
 		Scores::OnClanRoundWin(WinnerClan);
 	}
 }
 
 // Sleep during message and show scoreboard update half way through
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-MB_Sleep(C_Duration_RoundEnd / 2);
+MB_Sleep(Durations::C_Duration_RoundEnd / 2);
 Scores::EndRound();
-MB_Sleep(C_Duration_RoundEnd / 2);
+MB_Sleep(Durations::C_Duration_RoundEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
 if (Progression_MapPointLimitReached()) MB_StopMap();
@@ -395,7 +382,7 @@ if (Progression_PauseRequested) {
 
 // Set end time
 if (S_RoundTimeLimitSeconds > 0) {
-	ModeUtils::SetEndTime(Now + Private_Progression_RoundTimeRemaining + FlagRush_Common::C_SpawnAnimDuration);
+	ModeUtils::SetEndTime(Now + Private_Progression_RoundTimeRemaining + Durations::C_SpawnAnimDuration);
 }
 
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
@@ -410,7 +397,7 @@ ModeUtils::SetEndTime(-1);
 ***AfterEndTurn***
 ***
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
-MB_Sleep(C_Duration_TurnEnd);
+MB_Sleep(Durations::C_Duration_TurnEnd);
 ***
 
 // ~~~~~~~~~~ PlayLoop ~~~~~~~~~~ //
@@ -433,7 +420,7 @@ if(Progression_OvertimeIsRunning()) {
 		if (Progression_RoundIsTied() && S_UseOvertime) {
 			+++StartOvertime+++
 		} else {
-			Messages::TimeLimitEnd(C_Duration_EventMessage);
+			Messages::TimeLimitEnd(Durations::C_Duration_EventMessage);
 			MB_StopRound();
 		}
 	}
@@ -445,7 +432,7 @@ foreach (WarningSeonds => Enabled in Private_TimeLimitWarningsEnabled) {
 		continue;
 	}
 	Private_TimeLimitWarningsEnabled[WarningSeonds] = False;
-	Messages::TimeLimitSecondsRemaining(WarningSeonds, C_Duration_EventMessage);
+	Messages::TimeLimitSecondsRemaining(WarningSeonds, Durations::C_Duration_EventMessage);
 }
 
 // Pause handling (Request reaction, execution on StartTurn)
@@ -461,7 +448,7 @@ FlagRush_XmlRpc::Send_Overtime();
 Private_OvertimeIsRunning = True;
 declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
 FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
-Messages::OvertimeStart(C_Duration_Overtime);
+Messages::OvertimeStart(Durations::C_Duration_Overtime);
 ***
 
 // ~~~~~~~~~~ Podium (Match end MVP) ~~~~~~~~~~ //
@@ -472,15 +459,15 @@ Messages::OvertimeStart(C_Duration_Overtime);
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMatch();
 if (WinnerClan == 0) {
-	Messages::MatchDraw(C_Duration_MatchEnd);
+	Messages::MatchDraw(Durations::C_Duration_MatchEnd);
 } else {
-	Messages::MatchWin(WinnerClan, C_Duration_MatchEnd);
+	Messages::MatchWin(WinnerClan, Durations::C_Duration_MatchEnd);
 }
 // Sleep during message and show scoreboard update half way through
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-MB_Sleep(C_Duration_MatchEnd / 2);
+MB_Sleep(Durations::C_Duration_MatchEnd / 2);
 Scores::EndMatch();
-MB_Sleep(C_Duration_MatchEnd / 2);
+MB_Sleep(Durations::C_Duration_MatchEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
 // Actual podium phase
@@ -496,10 +483,10 @@ if (HasPodium) {
 	FlagRush_UI::AttachPodiumBackground(PodiumPlayerScores);
 	UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
-	MB_Sleep(ML::NearestInteger(C_Duration_Podium * 0.33));
+	MB_Sleep(ML::NearestInteger(Durations::C_Duration_Podium * 0.33));
 	PodiumStatistics::Update();
 	PodiumStatistics::Attach();
-	MB_Sleep(ML::NearestInteger(C_Duration_Podium * 0.67));
+	MB_Sleep(ML::NearestInteger(Durations::C_Duration_Podium * 0.67));
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 	PodiumStatistics::Detach();
 	FlagRush_UI::DetachPodiumBackground();
@@ -515,11 +502,11 @@ FlagRush_XmlRpc::Send_WarmUpStart();
 Private_WarmUpIsRunning = True;
 declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
 FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
-Messages::WarmUpStart(C_Duration_WarmUpStart);
+Messages::WarmUpStart(Durations::C_Duration_WarmUpStart);
 MapMarkers::ShowFlagSpawnMarkers();
 WarmUpReadyUp::Start(S_WarmUpWaitForApproval);
 if (S_WarmUpWaitForApproval) Messages::WarmUpWaitForApproval();
-MB_Sleep(C_Duration_WarmUpStart);
+MB_Sleep(Durations::C_Duration_WarmUpStart);
 declare CUIConfig::EUISequence PreviousSequence = UIManager.UIAll.UISequence;
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
@@ -542,9 +529,9 @@ while(!WarmUpReadyUp::WarmUpShouldStop()) {
 { +++EndWarmUp+++ }
 
 ModeUtils::SetEndTime(-1);
-Messages::WarmUpEnd(C_Duration_WarmUpEnd);
+Messages::WarmUpEnd(Durations::C_Duration_WarmUpEnd);
 UIManager.UIAll.UISequence = PreviousSequence;
-MB_Sleep(C_Duration_WarmUpEnd);
+MB_Sleep(Durations::C_Duration_WarmUpEnd);
 Private_WarmUpIsRunning = False;
 FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
 MapMarkers::HideFlagSpawnMarkers();
@@ -557,13 +544,13 @@ Private_PauseIsRunning = True;
 declare netwrite Boolean FlagRush_Net_PauseIsRunning for Teams[0];
 FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 ModeUtils::SetEndTime(-1);
-Messages::PauseStart(C_Duration_PauseStart);
-MB_Sleep(C_Duration_PauseStart);
+Messages::PauseStart(Durations::C_Duration_PauseStart);
+MB_Sleep(Durations::C_Duration_PauseStart);
 
 { +++Private_WarmUp+++ }
 
-Messages::PauseEnd(C_Duration_PauseEnd);
-MB_Sleep(C_Duration_PauseEnd);
+Messages::PauseEnd(Durations::C_Duration_PauseEnd);
+MB_Sleep(Durations::C_Duration_PauseEnd);
 Private_PauseIsRunning = False;
 FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 ***
@@ -619,7 +606,7 @@ if (ReinitTeamNames) {
 declare Boolean MatchWasStarted =  MB_GetMapCount() > 1 || MB_GetRoundCount() > 0; // At least first round on first map was started
 if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted && Map != Null) {
 	Messages::AllPlayersLeft_SkipMatch();
-	FlagRush_Common::Log("Current match was skipped as there are no players remaining");
+	Log::Info("Current match was skipped as there are no players remaining");
 	MatchEndRequested = True; // Invalidate Map, Round, ...
 	MB_StopMatch();
 	declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0]; // Can't use global variable in yield

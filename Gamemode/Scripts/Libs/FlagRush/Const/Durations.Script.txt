@@ -1,0 +1,15 @@
+#Const	C_SpawnAnimDuration 1500
+
+#Const C_Duration_Podium				15000
+#Const C_Duration_MatchEnd			5000
+#Const C_Duration_MapStart			3000
+#Const C_Duration_MapEnd				5000
+#Const C_Duration_RoundStart		3000
+#Const C_Duration_RoundEnd			5000
+#Const C_Duration_TurnEnd				3000
+#Const C_Duration_Overtime			2000
+#Const C_Duration_WarmUpStart		2000
+#Const C_Duration_WarmUpEnd			2000
+#Const C_Duration_PauseStart		2000
+#Const C_Duration_PauseEnd			2000
+#Const C_Duration_EventMessage	2000

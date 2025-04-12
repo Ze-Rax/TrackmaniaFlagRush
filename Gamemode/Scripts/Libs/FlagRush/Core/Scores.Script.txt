@@ -41,6 +41,17 @@
 	Integer AirtimeMs;
 }
 
+Integer Private_DetermineWinnerClan(Integer _Clan1Points, Integer _Clan2Points) {
+	declare Integer Diff = _Clan1Points - _Clan2Points;
+	if (Diff > 0) {
+		return 1;
+	}
+  if (Diff < 0) {
+		return 2;
+	}
+	return 0;
+}
+
 /* Teams */
 
 Integer GetClanRoundPoints(Integer _Clan) {
@@ -65,6 +76,42 @@ Void SetClanMapPoints(Integer _Clan, Integer _Value) {
 
 Void SetClanMatchPoints(Integer _Clan, Integer _Value) {
 	TeamPointsProgression::SetClanMapsWon(_Clan, _Value);
+}
+
+/**
+ * Evalutates the current round and determines the winner
+ * @return Integer
+ * 0 Draw
+ * 1,2... for WinnerClan number
+ */
+ Integer EvaluateRound() {
+	declare Integer RoundPointsTeam1 = GetClanRoundPoints(1);
+	declare Integer RoundPointsTeam2 = GetClanRoundPoints(2);
+	return Private_DetermineWinnerClan(RoundPointsTeam1, RoundPointsTeam2);
+}
+
+/**
+ * Evalutates the current map and determines the winner
+ * @return Integer
+ * 0 for Draw
+ * 1,2... for WinnerClan number
+ */
+Integer EvaluateMap() {
+	declare Integer MapPointsTeam1 = GetClanMapPoints(1);
+	declare Integer MapPointsTeam2 = GetClanMapPoints(2);
+	return Private_DetermineWinnerClan(MapPointsTeam1, MapPointsTeam2);
+}
+
+/**
+ * Evalutates the current match and determines the winner
+ * @return Integer
+ * 0 for Draw
+ * 1,2... for WinnerClan number
+ */
+Integer EvaluateMatch() {
+	declare Integer MatchPointsTeam1 = GetClanMatchPoints(1);
+	declare Integer MatchPointsTeam2 = GetClanMatchPoints(2);
+	return Private_DetermineWinnerClan(MatchPointsTeam1, MatchPointsTeam2);
 }
 
 /* Players */

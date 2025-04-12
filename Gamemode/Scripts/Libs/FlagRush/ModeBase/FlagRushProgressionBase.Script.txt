@@ -28,7 +28,6 @@
 #Include "Libs/FlagRush/Core/SettingTracker.Script.txt"								as SettingTracker
 #Include "Libs/FlagRush/Core/Map.Script.txt"									as FlagRushMap
 #Include "Libs/FlagRush/Core/Scores.Script.txt"												as Scores
-#Include "Libs/FlagRush/Core/FlagRush_MatchEvaluation.Script.txt"			as FlagRush_MatchEvaluation
 #Include "Libs/FlagRush/Core/FlagRush_Teams.Script.txt"								as FlagRush_Teams
 #Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"						as FlagRush_XmlRpc
 #Include "Libs/FlagRush/Core/ModeUtils.Script.txt"										as ModeUtils
@@ -288,7 +287,7 @@ if (!MapIsValid) {
 	Messages::MapSkip(Durations::C_Duration_MapEnd);
 	Scores::Clear(Scores::C_Level_Map);
 } else {
-	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMap();
+	declare Integer WinnerClan = Scores::EvaluateMap();
 	if (WinnerClan == 0) {
 		Messages::MapDraw(Durations::C_Duration_MapEnd);
 	} else {
@@ -351,7 +350,7 @@ if (!RoundIsValid) {
 	Messages::RoundSkip(Durations::C_Duration_RoundEnd);
 	Scores::Clear(Scores::C_Level_Round);
 } else {
-	declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateRound();
+	declare Integer WinnerClan = Scores::EvaluateRound();
 	if (WinnerClan == 0) {
 		Messages::RoundDraw(Durations::C_Duration_RoundEnd);
 	} else {
@@ -458,7 +457,7 @@ Messages::OvertimeStart(Durations::C_Duration_Overtime);
 ***
 // Score table phase
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
-declare Integer WinnerClan = FlagRush_MatchEvaluation::EvaluateMatch();
+declare Integer WinnerClan = Scores::EvaluateMatch();
 if (WinnerClan == 0) {
 	Messages::MatchDraw(Durations::C_Duration_MatchEnd);
 } else {
@@ -820,7 +819,7 @@ Boolean Progression_TimeLimitReached() {
 }
 
 Boolean Progression_RoundIsTied() {
-	return FlagRush_MatchEvaluation::EvaluateRound() == 0;
+	return Scores::EvaluateRound() == 0;
 }
 
 Boolean Progression_MapIsValid() {

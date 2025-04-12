@@ -36,7 +36,6 @@
 // #Include "Libs/FlagRush/Core/Log.Script.txt"															as Log
 // #Include "Libs/FlagRush/Core/Map.Script.txt"										as FlagRushMap
 // #Include "Libs/FlagRush/Core/Scores.Script.txt"													as Scores
-// #Include "Libs/FlagRush/Core/FlagRush_MatchEvaluation.Script.txt"				as FlagRush_MatchEvaluation
 // #Include "Libs/FlagRush/Core/FlagRush_Teams.Script.txt"									as FlagRush_Teams
 // #Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"							as FlagRush_XmlRpc
 #Include "Libs/FlagRush/Core/Flag.Script.txt"																as Flag

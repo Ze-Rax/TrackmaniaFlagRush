@@ -28,7 +28,7 @@
 #Include "Libs/FlagRush/Core/SettingTracker.Script.txt"								as SettingTracker
 #Include "Libs/FlagRush/Core/Map.Script.txt"									as FlagRushMap
 #Include "Libs/FlagRush/Core/Scores.Script.txt"												as Scores
-#Include "Libs/FlagRush/Core/FlagRush_Teams.Script.txt"								as FlagRush_Teams
+#Include "Libs/FlagRush/Core/Teams.Script.txt"								as Teams
 #Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"						as FlagRush_XmlRpc
 #Include "Libs/FlagRush/Core/ModeUtils.Script.txt"										as ModeUtils
 #Include "Libs/FlagRush/Core/ModeEvents.Script.txt"										as ModeEvents
@@ -184,12 +184,12 @@ FlagRush_XmlRpc::Load();
 Messages::Load();
 Scores::Load();
 
-FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
-FlagRush_Teams::SetTeam1HueOverride(S_Team1Hue);
-FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
-FlagRush_Teams::SetTeam2HueOverride(S_Team2Hue);
-FlagRush_Teams::UseClubTags(S_UseClubTags);
-FlagRush_Teams::Init();
+Teams::SetTeam1NameOverride(S_Team1Name);
+Teams::SetTeam1HueOverride(S_Team1Hue);
+Teams::SetTeam2NameOverride(S_Team2Name);
+Teams::SetTeam2HueOverride(S_Team2Hue);
+Teams::UseClubTags(S_UseClubTags);
+Teams::Init();
 
 SettingTracker::Load();
 ***
@@ -217,7 +217,7 @@ ModeCommands::Load();
 
 ***LoadItems***
 ***
-FlagRush_Teams::LoadSkins();
+Teams::LoadSkins();
 ***
 
 // ~~~~~~~~~~ Server ~~~~~~~~~~ //
@@ -266,7 +266,7 @@ if (!MapValid) {
 }
 FlagRush_XmlRpc::Send_MapStart();
 MapMarkers::Update();
-FlagRush_Teams::Init();
+Teams::Init();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 MB_Synchro();
 ***
@@ -599,7 +599,7 @@ foreach (Event in ModeEvents::PendingPlayerLifecycleEvents()) {
 }
 
 if (ReinitTeamNames) {
-	FlagRush_Teams::Init();
+	Teams::Init();
 }
 
 // Skip running match if the last player left, but not if we're before the first round of the first map
@@ -633,12 +633,12 @@ declare Boolean Team1HueChanged = SettingTracker::HasChanged(S_Team1Hue, "S_Team
 declare Boolean Team2NameChanged = SettingTracker::HasChanged(S_Team2Name, "S_Team2Name");
 declare Boolean Team2HueChanged = SettingTracker::HasChanged(S_Team2Hue, "S_Team2Hue");
 if (UseClubTagsChanged || Team1NameChanged || Team1HueChanged || Team2NameChanged || Team2HueChanged) {
-	FlagRush_Teams::UseClubTags(S_UseClubTags);
-	FlagRush_Teams::SetTeam1NameOverride(S_Team1Name);
-	FlagRush_Teams::SetTeam2NameOverride(S_Team2Name);
-	FlagRush_Teams::SetTeam1HueOverride(S_Team1Hue);
-	FlagRush_Teams::SetTeam2HueOverride(S_Team2Hue);
-	FlagRush_Teams::Init();
+	Teams::UseClubTags(S_UseClubTags);
+	Teams::SetTeam1NameOverride(S_Team1Name);
+	Teams::SetTeam2NameOverride(S_Team2Name);
+	Teams::SetTeam1HueOverride(S_Team1Hue);
+	Teams::SetTeam2HueOverride(S_Team2Hue);
+	Teams::Init();
 }
 
 // Mode commands

@@ -7,25 +7,25 @@
 #Const C_DefaultTeamHue			120
 #Const C_DefaultTeamHues		[0 => 240, 1 => 0]
 
-#Struct K_TeamColor {
+#Struct K_TeamPresetConfig {
 	Text TeamName;
 	Text SkinName;
 }
 
-#Const C_TeamColorLut [
-	K_TeamColor{ TeamName = "Red", SkinName = "https://core.trackmania.nadeo.live/storageObjects/f94a342c-cbd2-4136-953c-b5da764b487e" },
-	K_TeamColor{ TeamName = "Orange", SkinName = "https://core.trackmania.nadeo.live/storageObjects/b9f750a2-38d5-4ef8-b9c4-7e2820014b2c" },
-	K_TeamColor{ TeamName = "Yellow", SkinName = "https://core.trackmania.nadeo.live/storageObjects/edf2a1fd-3326-460e-ae27-babe0d501ee9" },
-	K_TeamColor{ TeamName = "Lime", SkinName = "https://core.trackmania.nadeo.live/storageObjects/6a7361fe-483e-4cab-92de-5276438764dc" },
-	K_TeamColor{ TeamName = "Green", SkinName = "https://core.trackmania.nadeo.live/storageObjects/779dfacc-5b75-4619-abbd-1d698e25813d" },
-	K_TeamColor{ TeamName = "Teal", SkinName = "https://core.trackmania.nadeo.live/storageObjects/808f84d2-d41d-4fb6-8df7-2b7f404463ef" },
-	K_TeamColor{ TeamName = "Cyan", SkinName = "https://core.trackmania.nadeo.live/storageObjects/370a2a6a-1847-4e2a-ac17-4bcef7568cbc" },
-	K_TeamColor{ TeamName = "Azure", SkinName = "https://core.trackmania.nadeo.live/storageObjects/570227b5-418b-4cee-b704-1221d3105f58" },
-	K_TeamColor{ TeamName = "Blue", SkinName = "https://core.trackmania.nadeo.live/storageObjects/1842cac7-75e2-4457-a2f4-fad48d67ef03" },
-	K_TeamColor{ TeamName = "Purple", SkinName = "https://core.trackmania.nadeo.live/storageObjects/d2260262-6fbb-4488-af6a-a01ed5279188" },
-	K_TeamColor{ TeamName = "Magenta", SkinName = "https://core.trackmania.nadeo.live/storageObjects/e8e53aa9-7072-4f02-9dba-3a9bf0d7ddd6" },
-	K_TeamColor{ TeamName = "Rose", SkinName = "https://core.trackmania.nadeo.live/storageObjects/750eb055-6913-4cdd-a8b7-6c1fad72fd78" },
-	K_TeamColor{ TeamName = "Red", SkinName = "https://core.trackmania.nadeo.live/storageObjects/f94a342c-cbd2-4136-953c-b5da764b487e" }
+#Const C_HueToTeamPresetLut [
+	K_TeamPresetConfig{ TeamName = "Red", SkinName = "https://core.trackmania.nadeo.live/storageObjects/f94a342c-cbd2-4136-953c-b5da764b487e" },
+	K_TeamPresetConfig{ TeamName = "Orange", SkinName = "https://core.trackmania.nadeo.live/storageObjects/b9f750a2-38d5-4ef8-b9c4-7e2820014b2c" },
+	K_TeamPresetConfig{ TeamName = "Yellow", SkinName = "https://core.trackmania.nadeo.live/storageObjects/edf2a1fd-3326-460e-ae27-babe0d501ee9" },
+	K_TeamPresetConfig{ TeamName = "Lime", SkinName = "https://core.trackmania.nadeo.live/storageObjects/6a7361fe-483e-4cab-92de-5276438764dc" },
+	K_TeamPresetConfig{ TeamName = "Green", SkinName = "https://core.trackmania.nadeo.live/storageObjects/779dfacc-5b75-4619-abbd-1d698e25813d" },
+	K_TeamPresetConfig{ TeamName = "Teal", SkinName = "https://core.trackmania.nadeo.live/storageObjects/808f84d2-d41d-4fb6-8df7-2b7f404463ef" },
+	K_TeamPresetConfig{ TeamName = "Cyan", SkinName = "https://core.trackmania.nadeo.live/storageObjects/370a2a6a-1847-4e2a-ac17-4bcef7568cbc" },
+	K_TeamPresetConfig{ TeamName = "Azure", SkinName = "https://core.trackmania.nadeo.live/storageObjects/570227b5-418b-4cee-b704-1221d3105f58" },
+	K_TeamPresetConfig{ TeamName = "Blue", SkinName = "https://core.trackmania.nadeo.live/storageObjects/1842cac7-75e2-4457-a2f4-fad48d67ef03" },
+	K_TeamPresetConfig{ TeamName = "Purple", SkinName = "https://core.trackmania.nadeo.live/storageObjects/d2260262-6fbb-4488-af6a-a01ed5279188" },
+	K_TeamPresetConfig{ TeamName = "Magenta", SkinName = "https://core.trackmania.nadeo.live/storageObjects/e8e53aa9-7072-4f02-9dba-3a9bf0d7ddd6" },
+	K_TeamPresetConfig{ TeamName = "Rose", SkinName = "https://core.trackmania.nadeo.live/storageObjects/750eb055-6913-4cdd-a8b7-6c1fad72fd78" },
+	K_TeamPresetConfig{ TeamName = "Red", SkinName = "https://core.trackmania.nadeo.live/storageObjects/f94a342c-cbd2-4136-953c-b5da764b487e" }
 ]
 
 #Struct K_TeamConfig {
@@ -42,76 +42,77 @@ declare Integer[Integer] G_TeamHueOverrides;
 declare Ident[Integer] G_SkinIds;
 declare Boolean G_UseClubTags;
 
-Integer Private_GetClosestLutIndex(Integer Hue) {
+Integer Private_GetClosestLutIndex(Integer _Hue) {
 	declare Integer LutIdx = 0;
 	declare Integer Dist = 400;
 	for (I, 0, 12) {
-		declare Integer H = I * 30;
-		if (ML::Abs(Hue - H) < Dist){
-			Dist = ML::Abs(Hue - H);
+		declare Integer PresetHue = I * 30;
+		declare Integer PresetDist = ML::Abs(_Hue - PresetHue);
+		if (PresetDist < Dist){
+			Dist = PresetDist;
 			LutIdx = I;
 		}
 	}
 	return LutIdx;
 }
 
-Void SetTeam1NameOverride(Text Name) {
-	G_TeamNameOverrides[1] = Name;
+Void SetTeam1NameOverride(Text _Name) {
+	G_TeamNameOverrides[1] = _Name;
 }
 
-Void SetTeam2NameOverride(Text Name) {
-	G_TeamNameOverrides[2] = Name;
+Void SetTeam2NameOverride(Text _Name) {
+	G_TeamNameOverrides[2] = _Name;
 }
 
-Void SetTeam1HueOverride(Integer Hue) {
-	if (Hue < 0) {
+Void SetTeam1HueOverride(Integer _Hue) {
+	if (_Hue < 0) {
 		G_TeamHueOverrides[1] = C_Hue_UseDefault;
 	} else {
-		G_TeamHueOverrides[1] = ML::Min(Hue, 360);
+		G_TeamHueOverrides[1] = ML::Min(_Hue, 360);
 	}
 }
 
-Void SetTeam2HueOverride(Integer Hue) {
-	if (Hue < 0) {
+Void SetTeam2HueOverride(Integer _Hue) {
+	if (_Hue < 0) {
 		G_TeamHueOverrides[2] = C_Hue_UseDefault;
 	} else {
-		G_TeamHueOverrides[2] = ML::Min(Hue, 360);
+		G_TeamHueOverrides[2] = ML::Min(_Hue, 360);
 	}
 }
 
-Void UseClubTags(Boolean UseClubTags) {
-	G_UseClubTags = UseClubTags;
+Void UseClubTags(Boolean _UseClubTags) {
+	G_UseClubTags = _UseClubTags;
 }
 
 Void LoadSkins() {
-	foreach (Index => TeamColor in C_TeamColorLut) {
+	foreach (Index => TeamColor in C_HueToTeamPresetLut) {
 		G_SkinIds[Index] = ItemList_AddWithSkin("CarSport", TeamColor.SkinName);
 	}
 }
 
-Ident GetSkinModelIdForTeam(Integer Clan) {
-	if (G_TeamConfigs.existskey(Clan)) {
-		return G_TeamConfigs[Clan].ItemId;
+Ident GetSkinModelIdForTeam(Integer _Clan) {
+	if (G_TeamConfigs.existskey(_Clan)) {
+		return G_TeamConfigs[_Clan].ItemId;
 	}
 	return NullId;
 }
 
-Text GetSkinNameForTeam(Integer Clan) {
-	if (G_TeamConfigs.existskey(Clan)) {
-		return G_TeamConfigs[Clan].SkinName;
+Text GetSkinNameForTeam(Integer _Clan) {
+	if (G_TeamConfigs.existskey(_Clan)) {
+		return G_TeamConfigs[_Clan].SkinName;
 	}
 	return "";
 }
 
-Integer GetDefaultTeamHue(Integer Clan) {
-	return C_DefaultTeamHues.get(Clan - 1, C_DefaultTeamHue);
+Integer GetDefaultTeamHue(Integer _Clan) {
+	return C_DefaultTeamHues.get(_Clan - 1, C_DefaultTeamHue);
 }
 
-Text GetDefaultTeamName(Integer Clan) {
+Text GetDefaultTeamName(Integer _Clan) {
 	declare Text Teamname = "???";
-	if (G_TeamConfigs.existskey(Clan)) {
-		declare Integer Idx = Private_GetClosestLutIndex(G_TeamConfigs[Clan].Hue);
-		Teamname = C_TeamColorLut[Idx].TeamName;
+	if (G_TeamConfigs.existskey(_Clan)) {
+		declare Integer Idx = Private_GetClosestLutIndex(G_TeamConfigs[_Clan].Hue);
+		Teamname = C_HueToTeamPresetLut[Idx].TeamName;
 	}
 	return "Team " ^ Teamname;
 }
@@ -155,7 +156,7 @@ Void Private_SetTeamNamesFromClubTags(){
 }
 
 Void Private_SetTeamHueFromMap() {
-	declare metadata Real[Integer] FlagRush_Meta_TeamHues for Map;
+	declare metadata Real[Integer] FlagRush_Meta_TeamHues for Map = [];
 	for (Clan, 1, 2) {
 		declare Integer Hue = C_Hue_UseDefault;
 		if (FlagRush_Meta_TeamHues.existskey(Clan)) {
@@ -184,15 +185,15 @@ Void Private_ApplyToTeams() {
 		Teams[Clan - 1].ColorSecondary = MidColor;
 		Teams[Clan - 1].ColorUI = MidColor;
 
-		declare netwrite Vec3 Net_FlagRush_LightColor for Teams[Clan - 1];
+		declare netwrite Vec3 Net_FlagRush_LightColor for Teams[Clan - 1] = <0., 0., 0.>;
 		Net_FlagRush_LightColor = LightColor;
-		declare netwrite Vec3 Net_FlagRush_MidColor for Teams[Clan - 1];
+		declare netwrite Vec3 Net_FlagRush_MidColor for Teams[Clan - 1] = <0., 0., 0.>;
 		Net_FlagRush_MidColor = MidColor;
-		declare netwrite Vec3 Net_FlagRush_DarkColor for Teams[Clan - 1];
+		declare netwrite Vec3 Net_FlagRush_DarkColor for Teams[Clan - 1] = <0., 0., 0.>;
 		Net_FlagRush_DarkColor = DarkColor;
 
 		declare Integer LutIdx = Private_GetClosestLutIndex(Hue);
-		G_TeamConfigs[Clan].SkinName = C_TeamColorLut[LutIdx].SkinName;
+		G_TeamConfigs[Clan].SkinName = C_HueToTeamPresetLut[LutIdx].SkinName;
 		G_TeamConfigs[Clan].ItemId = G_SkinIds.get(LutIdx, NullId);
 	}
 }

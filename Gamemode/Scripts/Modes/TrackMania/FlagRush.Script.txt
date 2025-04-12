@@ -36,7 +36,7 @@
 // #Include "Libs/FlagRush/Core/Log.Script.txt"															as Log
 // #Include "Libs/FlagRush/Core/Map.Script.txt"										as FlagRushMap
 // #Include "Libs/FlagRush/Core/Scores.Script.txt"													as Scores
-// #Include "Libs/FlagRush/Core/FlagRush_Teams.Script.txt"									as FlagRush_Teams
+// #Include "Libs/FlagRush/Core/Teams.Script.txt"									as Teams
 // #Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"							as FlagRush_XmlRpc
 #Include "Libs/FlagRush/Core/Flag.Script.txt"																as Flag
 #Include "Libs/FlagRush/Core/HandicapQueue.Script.txt"									as HandicapQueue
@@ -475,7 +475,7 @@ FlagRush_Vehicle::K_Vehicle Vehicle_GetSelected(CSmPlayer Player) {
 Ident Vehicle_GetModelId(CSmPlayer Player) {
 	declare FlagRush_Vehicle::K_Vehicle Vehicle = Vehicle_GetSelected(Player);
 	if (Vehicle.Id == C_Vehicle_Stadium.Id) {
-		return FlagRush_Teams::GetSkinModelIdForTeam(Player.RequestedClan);
+		return Teams::GetSkinModelIdForTeam(Player.RequestedClan);
 	}
 	return FlagRush_Vehicle::GetItemId(Vehicle.Id);
 }

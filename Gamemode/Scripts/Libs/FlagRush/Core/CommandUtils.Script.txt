@@ -28,33 +28,33 @@
 /**
  * Transfroms a Text and Params into a Command
  */
-K_Command FromNameAndParams(Text Name, Text[] Params, K_Source Source) {
+K_Command FromNameAndParams(Text _Name, Text[] _Params, K_Source _Source) {
 	declare K_Command Command = K_Command {
-		Name = Name,
-		Params = Params,
-		Source = Source,
-		ValueText = TL::Join(" ", Params)
+		Name = _Name,
+		Params = _Params,
+		Source = _Source,
+		ValueText = TL::Join(" ", _Params)
 	};
 
-	switch(Params.count) {
+	switch(_Params.count) {
 		case 1: {
-			Command.ValueBoolean	= Params[0] == "True";
-			Command.ValueInteger	= TL::ToInteger(Params[0]);
-			Command.ValueReal			= TL::ToReal(Params[0]);
+			Command.ValueBoolean	= _Params[0] == "True";
+			Command.ValueInteger	= TL::ToInteger(_Params[0]);
+			Command.ValueReal			= TL::ToReal(_Params[0]);
 		}
 		case 2: {
-			Command.ValueVec2.X		= TL::ToReal(Params[0]);
-			Command.ValueVec2.Y		= TL::ToReal(Params[1]);
-			Command.ValueInt2.X		= TL::ToInteger(Params[0]);
-			Command.ValueInt2.Y		= TL::ToInteger(Params[1]);
+			Command.ValueVec2.X		= TL::ToReal(_Params[0]);
+			Command.ValueVec2.Y		= TL::ToReal(_Params[1]);
+			Command.ValueInt2.X		= TL::ToInteger(_Params[0]);
+			Command.ValueInt2.Y		= TL::ToInteger(_Params[1]);
 		}
 		case 3: {
-			Command.ValueVec3.X		= TL::ToReal(Params[0]);
-			Command.ValueVec3.Y		= TL::ToReal(Params[1]);
-			Command.ValueVec3.Z		= TL::ToReal(Params[2]);
-			Command.ValueInt3.X		= TL::ToInteger(Params[0]);
-			Command.ValueInt3.Y		= TL::ToInteger(Params[1]);
-			Command.ValueInt3.Z		= TL::ToInteger(Params[2]);
+			Command.ValueVec3.X		= TL::ToReal(_Params[0]);
+			Command.ValueVec3.Y		= TL::ToReal(_Params[1]);
+			Command.ValueVec3.Z		= TL::ToReal(_Params[2]);
+			Command.ValueInt3.X		= TL::ToInteger(_Params[0]);
+			Command.ValueInt3.Y		= TL::ToInteger(_Params[1]);
+			Command.ValueInt3.Z		= TL::ToInteger(_Params[2]);
 		}
 	}
 
@@ -64,11 +64,11 @@ K_Command FromNameAndParams(Text Name, Text[] Params, K_Source Source) {
 /**
  * Transforms a Text into a Command
  */
-K_Command FromText(Text CommandText, K_Source Source) {
+K_Command FromText(Text _CommandText, K_Source _Source) {
 	declare K_Command Command;
-	declare Text[] CommandSplit = TL::Split(" ", CommandText);
+	declare Text[] CommandSplit = TL::Split(" ", _CommandText);
 	if(CommandSplit.count >= 1) {
-		Command = FromNameAndParams(CommandSplit[0], CommandSplit.slice(1, CommandSplit.count - 1), Source);
+		Command = FromNameAndParams(CommandSplit[0], CommandSplit.slice(1, CommandSplit.count - 1), _Source);
 	}
 	return Command;
 }
@@ -76,18 +76,18 @@ K_Command FromText(Text CommandText, K_Source Source) {
 /**
  * Transforms a CSmModeEvent into a Command struct. Command_ prefix is removed if present.
  */
-K_Command FromEvent(CSmModeEvent Event) {
-	declare Text UnprefixedName = TL::RegexReplace("""^{{{ C_CommandPrefix }}}""", Event.CommandName, "", "");
+K_Command FromEvent(CSmModeEvent _Event) {
+	declare Text UnprefixedName = TL::RegexReplace("""^{{{ C_CommandPrefix }}}""", _Event.CommandName, "", "");
 	return K_Command {
 		Name					= UnprefixedName,
-		ValueBoolean	= Event.CommandValueBoolean,
-		ValueInteger	= Event.CommandValueInteger,
-		ValueReal			= Event.CommandValueReal,
-		ValueText			= Event.CommandValueText,
-		ValueVec2			= Event.CommandValueVec2,
-		ValueVec3			= Event.CommandValueVec3,
-		ValueInt2			= Event.CommandValueInt2,
-		ValueInt3			= Event.CommandValueInt3,
+		ValueBoolean	= _Event.CommandValueBoolean,
+		ValueInteger	= _Event.CommandValueInteger,
+		ValueReal			= _Event.CommandValueReal,
+		ValueText			= _Event.CommandValueText,
+		ValueVec2			= _Event.CommandValueVec2,
+		ValueVec3			= _Event.CommandValueVec3,
+		ValueInt2			= _Event.CommandValueInt2,
+		ValueInt3			= _Event.CommandValueInt3,
 		Source				= K_Source{ Type = C_SourceType_Mode, Name = C_SourceType_Mode }
 	};
 }
@@ -95,16 +95,16 @@ K_Command FromEvent(CSmModeEvent Event) {
 /**
  * Transforms a CUIConfigEvent into a Command struct. Command_ prefix is removed if present.
  */
-K_Command FromEvent(CUIConfigEvent Event) {
+K_Command FromEvent(CUIConfigEvent _Event) {
 	declare K_Source Source;
 	Source.Type = C_SourceType_Player;
-	if(Event.UI != Null) {
-		declare CSmPlayer Player = GetPlayer(Event.UI);
+	if(_Event.UI != Null) {
+		declare CSmPlayer Player = GetPlayer(_Event.UI);
 		if (Player != Null) {
 			Source.Login = Player.User.Login;
 			Source.Name = Player.User.Name;
 		}
 	}
-	declare Text UnprefixedName = TL::RegexReplace("""^{{{ C_CommandPrefix }}}""", Event.CustomEventType, "", "");
-	return FromNameAndParams(UnprefixedName, Event.CustomEventData, Source);
+	declare Text UnprefixedName = TL::RegexReplace("""^{{{ C_CommandPrefix }}}""", _Event.CustomEventType, "", "");
+	return FromNameAndParams(UnprefixedName, _Event.CustomEventData, Source);
 }

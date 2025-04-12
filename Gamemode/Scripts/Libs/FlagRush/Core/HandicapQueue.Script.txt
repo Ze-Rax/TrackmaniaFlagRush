@@ -11,30 +11,33 @@
 declare K_HandicapValue[Text][Ident] G_QueuedHandicaps;
 declare Ident[] G_QueuedResets;
 
-Void Private_HandicapQueueSet(Ident PlayerId, Text HandicapType, K_HandicapValue HandicapValue) {
-	if (!G_QueuedHandicaps.existskey(PlayerId)) G_QueuedHandicaps[PlayerId] = [HandicapType => HandicapValue];
-	else G_QueuedHandicaps[PlayerId][HandicapType] = HandicapValue;
+Void Private_HandicapQueueSet(Ident _PlayerId, Text _HandicapType, K_HandicapValue _HandicapValue) {
+	if (G_QueuedHandicaps.existskey(_PlayerId)) {
+		G_QueuedHandicaps[_PlayerId][_HandicapType] = _HandicapValue;
+	} else {
+		G_QueuedHandicaps[_PlayerId] = [_HandicapType => _HandicapValue];
+	}
 }
 
-Void Queue_Fragile(CSmPlayer Player, Boolean Active) {
-	Private_HandicapQueueSet(Player.Id, C_Type_Fragile, K_HandicapValue{ ValueBoolean = Active });
+Void Queue_Fragile(CSmPlayer _Player, Boolean _Active) {
+	Private_HandicapQueueSet(_Player.Id, C_Type_Fragile, K_HandicapValue{ ValueBoolean = _Active });
 }
 
-Void Queue_AccelCoef(CSmPlayer Player, Real Value) {
-	Private_HandicapQueueSet(Player.Id, C_Type_AccelCoef, K_HandicapValue{ ValueReal = Value });
+Void Queue_AccelCoef(CSmPlayer _Player, Real _Value) {
+	Private_HandicapQueueSet(_Player.Id, C_Type_AccelCoef, K_HandicapValue{ ValueReal = _Value });
 }
 
-Void Queue_AdherenceCoef(CSmPlayer Player, Real Value) {
-	Private_HandicapQueueSet(Player.Id, C_Type_AdherenceCoef, K_HandicapValue{ ValueReal = Value });
+Void Queue_AdherenceCoef(CSmPlayer _Player, Real _Value) {
+	Private_HandicapQueueSet(_Player.Id, C_Type_AdherenceCoef, K_HandicapValue{ ValueReal = _Value });
 }
 
-Void Queue_ControlCoef(CSmPlayer Player, Real Value) {
-	Private_HandicapQueueSet(Player.Id, C_Type_ControlCoef, K_HandicapValue{ ValueReal = Value });
+Void Queue_ControlCoef(CSmPlayer _Player, Real _Value) {
+	Private_HandicapQueueSet(_Player.Id, C_Type_ControlCoef, K_HandicapValue{ ValueReal = _Value });
 }
 
-Void Queue_Reset(CSmPlayer Player) {
-	if (!G_QueuedResets.exists(Player.Id)) G_QueuedResets.add(Player.Id);
-	G_QueuedHandicaps.removekey(Player.Id);
+Void Queue_Reset(CSmPlayer _Player) {
+	if (!G_QueuedResets.exists(_Player.Id)) G_QueuedResets.add(_Player.Id);
+	G_QueuedHandicaps.removekey(_Player.Id);
 }
 
 Void ClearQueue() {
@@ -110,6 +113,14 @@ Void Private_TryApplyHandicaps() {
 	foreach (PlayerId in PlayersEmptyQueueOrNotFound) {
 		G_QueuedHandicaps.removekey(PlayerId);
 	}
+}
+
+Void Unload() {
+	ClearQueue();
+}
+
+Void Load() {
+	Unload();
 }
 
 /**

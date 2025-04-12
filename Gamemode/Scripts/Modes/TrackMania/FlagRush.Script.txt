@@ -40,7 +40,7 @@
 // #Include "Libs/FlagRush/Core/FlagRush_Teams.Script.txt"									as FlagRush_Teams
 // #Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"							as FlagRush_XmlRpc
 #Include "Libs/FlagRush/Core/Flag.Script.txt"																as Flag
-#Include "Libs/FlagRush/Core/FlagRush_Handicaps.Script.txt"									as FlagRush_Handicaps
+#Include "Libs/FlagRush/Core/HandicapQueue.Script.txt"									as HandicapQueue
 #Include "Libs/FlagRush/Core/FlagRush_Vehicle.Script.txt"										as FlagRush_Vehicle
 
 // #Include "Libs/FlagRush/UI/FlagRush_UI.Script.txt"									as FlagRush_UI
@@ -175,7 +175,7 @@ foreach (Player in Players) {
 ***
 Flag::SetUnspawned();
 FlagMarker::Update();
-FlagRush_Handicaps::ClearQueue();
+HandicapQueue::ClearQueue();
 ***
 
 ***AfterEndTurn***
@@ -358,7 +358,7 @@ foreach (Player in Players) {
 
 ***Yield***
 ***
-FlagRush_Handicaps::Yield();
+HandicapQueue::Yield();
 
 // Handle mode script updates
 declare Boolean RestartTurn = False;
@@ -523,9 +523,9 @@ Boolean Player_IsDead(CSmPlayer Player) {
 
 Void Player_ApplyVehicleTuning(CSmPlayer _Player) {
 	declare FlagRush_Vehicle::K_Tuning Tuning = FlagRush_Vehicle::GetTuning(_Player.ForceModelId);
-	FlagRush_Handicaps::Queue_AccelCoef(_Player, Tuning.Acceleration);
-	FlagRush_Handicaps::Queue_AdherenceCoef(_Player, Tuning.Adherence);
-	FlagRush_Handicaps::Queue_ControlCoef(_Player, Tuning.Control);
+	HandicapQueue::Queue_AccelCoef(_Player, Tuning.Acceleration);
+	HandicapQueue::Queue_AdherenceCoef(_Player, Tuning.Adherence);
+	HandicapQueue::Queue_ControlCoef(_Player, Tuning.Control);
 }
 
 Void Player_Initialize(CSmPlayer Player) {
@@ -567,15 +567,15 @@ Void Player_Unspawn(CSmPlayer Player) {
 
 Void Player_ApplyHandicaps(CSmPlayer Player) {
 	declare FlagRush_Vehicle::K_Tuning Tuning = FlagRush_Vehicle::GetTuning(Player.ForceModelId);
-	if (S_FlagCarrierFragile) FlagRush_Handicaps::Queue_Fragile(Player, True);
-	FlagRush_Handicaps::Queue_AccelCoef(Player, Tuning.Acceleration * S_FlagCarrierAcceleration);
-	FlagRush_Handicaps::Queue_ControlCoef(Player, Tuning.Control * S_FlagCarrierControl);
-	FlagRush_Handicaps::Queue_AdherenceCoef(Player, Tuning.Adherence * S_FlagCarrierAdherence);
+	if (S_FlagCarrierFragile) HandicapQueue::Queue_Fragile(Player, True);
+	HandicapQueue::Queue_AccelCoef(Player, Tuning.Acceleration * S_FlagCarrierAcceleration);
+	HandicapQueue::Queue_ControlCoef(Player, Tuning.Control * S_FlagCarrierControl);
+	HandicapQueue::Queue_AdherenceCoef(Player, Tuning.Adherence * S_FlagCarrierAdherence);
 	Player.ForceLightTrail = S_UseLightTrails;
 }
 
 Void Player_ResetHandicaps(CSmPlayer Player) {
-	FlagRush_Handicaps::Queue_Reset(Player);
+	HandicapQueue::Queue_Reset(Player);
 	Player_ApplyVehicleTuning(Player);
 	Player.ForceLightTrail = False;
 }

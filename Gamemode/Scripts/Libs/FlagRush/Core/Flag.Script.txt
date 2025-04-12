@@ -291,10 +291,8 @@ Void RemoveDropTimer() {
 	Net_Update();
 }
 
-Void Reset() {
-	G_Flag = K_Flag{};
-	SetUnspawned();
-	Net_Update();
+Void InvalidateLastSafePosition() {
+	G_Flag.Location.LastSafePosition = C_Position_Invalid;
 }
 
 // Lifecycle
@@ -312,7 +310,7 @@ Void Yield() {
 }
 
 Void Unload() {
-	Reset();
+	G_Flag = K_Flag{};
 }
 
 Void Load() {

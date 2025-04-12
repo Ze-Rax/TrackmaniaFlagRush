@@ -160,8 +160,8 @@ FlagRush_VehicleSelection::SetEnabledVehicles(Vehicle_GetEnabled());
 ***StartTurn***
 ***
 declare CMapLandmark FlagSpawn = FlagRush_Map::GetDefaultFlagSpawn();
-Flag::Reset();
 Flag::SetAtLandmark(FlagSpawn);
+Flag::InvalidateLastSafePosition();
 FlagMarker::Update();
 
 foreach (Player in Players) {
@@ -496,8 +496,8 @@ CSmPlayer GetFirstCollidingPlayer_OpponentPriority(CSmPlayer ReferencePlayer) {
 Void Flag_Reset(Boolean Silent) {
 	if (!Silent) Messages::FlagReset(Durations::C_Duration_EventMessage);
 
-	Flag::Reset();
 	Flag::SetAtLandmark(FlagRush_Map::GetRandomFlagSpawn());
+	Flag::InvalidateLastSafePosition();
 	FlagMarker::Update();
 	FlagRush_XmlRpc::Send_FlagReset();
 }

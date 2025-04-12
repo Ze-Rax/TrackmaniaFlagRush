@@ -31,9 +31,10 @@
 #Include "Libs/FlagRush/Core/FlagRush_MatchEvaluation.Script.txt"			as FlagRush_MatchEvaluation
 #Include "Libs/FlagRush/Core/FlagRush_Teams.Script.txt"								as FlagRush_Teams
 #Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"						as FlagRush_XmlRpc
-#Include "Libs/FlagRush/Core/CommandUtils.Script.txt"									as CommandUtils
 #Include "Libs/FlagRush/Core/ModeUtils.Script.txt"										as ModeUtils
 #Include "Libs/FlagRush/Core/ModeEvents.Script.txt"										as ModeEvents
+
+#Include "Libs/FlagRush/Util/Command.Script.txt"									as Command
 
 #Include "Libs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI
 #Include "Libs/FlagRush/UI/Messages.Script.txt"									as Messages
@@ -654,7 +655,7 @@ if (ModeCommandsAdminLoginsCsvChanged) {
 
 ***Private_Yield_HandleProgressionsCommands***
 ***
-declare CommandUtils::K_Command[] PendingCommands;
+declare Command::K_Command[] PendingCommands;
 
 // XmlRpc
 foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
@@ -662,8 +663,8 @@ foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
 		case CXmlRpcEvent::EType::CallbackArray: {
 			switch (XmlRpcEvent.ParamArray1) {
 				case "Trackmania.ForceEndRound": {
-					declare CommandUtils::K_Source Source = CommandUtils::K_Source{ Type = CommandUtils::C_SourceType_XmlRpc, Name = CommandUtils::C_SourceType_XmlRpc };
-					PendingCommands.add(CommandUtils::FromNameAndParams(C_Command_SkipRound, [], Source));
+					declare Command::K_Source Source = Command::K_Source{ Type = Command::C_SourceType_XmlRpc, Name = Command::C_SourceType_XmlRpc };
+					PendingCommands.add(Command::FromNameAndParams(C_Command_SkipRound, [], Source));
 				}
 			}
 		}
@@ -673,7 +674,7 @@ foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
 // Mode commands
 foreach (Event in PendingEvents) {
 	if (Event.Type == CSmModeEvent::EType::OnCommand) {
-		PendingCommands.add(CommandUtils::FromEvent(Event));
+		PendingCommands.add(Command::FromEvent(Event));
 	}
 }
 
@@ -776,7 +777,7 @@ foreach (Command in PendingCommands) {
 		default: return;
 	}
 
-	declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ Command.Source.Name }}}.""";
+	declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, Command::C_CommandPrefix, "") }}}" by {{{ Command.Source.Name }}}.""";
 	if (CommandText != "") Message ^= " " ^ CommandText;
 	UIManager.UIAll.SendChat(Message);
 }

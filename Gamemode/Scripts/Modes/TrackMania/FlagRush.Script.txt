@@ -24,7 +24,7 @@
 
 // #Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"													as EventFeed
 // #Include "Libs/FlagRush/UI/Modules/ModeCommands.Script.txt"							as ModeCommands
-// #Include "Libs/FlagRush/Core/CommandUtils.Script.txt"							as CommandUtils
+// #Include "Libs/FlagRush/Util/Command/.Script.txt"							as Command
 // #Include "Libs/FlagRush/Core/ModeUtils.Script.txt"													as ModeUtils
 // #Include "Libs/FlagRush/Core/ModeEvents.Script.txt"												as ModeEvents
 // #Include "Libs/FlagRush/WarmUpReadyUp/WarmUpReadyUp.Script.txt"				as WarmUpReadyUp
@@ -292,7 +292,7 @@ foreach (Event in PendingEvents) {
 			// Player might have left in the same server frame, causing Player to be Null
 			if (Event.Player != Null) OnPlayerRequestsRespawn(Event.Player);
 		}
-		case CSmModeEvent::EType::OnCommand: OnGameplayCommand(CommandUtils::FromEvent(Event)); // Commands from Mode (Settings or XmlRpc)
+		case CSmModeEvent::EType::OnCommand: OnGameplayCommand(Command::FromEvent(Event)); // Commands from Mode (Settings or XmlRpc)
 	}
 }
 
@@ -744,7 +744,7 @@ Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {
 	}
 }
 
-Void OnGameplayCommand(CommandUtils::K_Command Command) {
+Void OnGameplayCommand(Command::K_Command Command) {
 	declare Text CommandText;
 	switch (Command.Name) {
 		case C_Command_ResetFlag: {
@@ -753,7 +753,7 @@ Void OnGameplayCommand(CommandUtils::K_Command Command) {
 		}
 		default: return;
 	}
-	declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, CommandUtils::C_CommandPrefix, "") }}}" by {{{ Command.Source.Name }}}.""";
+	declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, Command::C_CommandPrefix, "") }}}" by {{{ Command.Source.Name }}}.""";
 	if (CommandText != "") Message ^= " " ^ CommandText;
 	UIManager.UIAll.SendChat(Message);
 }

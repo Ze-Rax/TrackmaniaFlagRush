@@ -1,7 +1,7 @@
 #Include "TextLib" as TL
 
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
-#Include "Libs/FlagRush/Core/CommandUtils.Script.txt" as CommandUtils
+#Include "Libs/FlagRush/Util/Command.Script.txt" as Command
 
 #Const C_LayerName	"ModeCommands"
 
@@ -13,7 +13,7 @@
 #Const C_PermissionLevel_Admin				2 // Can add Users
 #Const C_PermissionLevel_SuperAdmin		3 // Can add Admins
 
-#Struct CommandUtils::K_Command as K_Command
+#Struct Command::K_Command as K_Command
 
 #Const C_InternalCommand_SetPermissionLevel		"PermitUser" // Requires target permission level < Caller
 #Const C_InternalCommand_RemoveUser						"RemoveUser" // Requires target user permission level < Caller
@@ -110,7 +110,7 @@ Void ToggleMenu() {
 Void OnSendCommand() {
 	declare Text[] CommandSplit = TL::Split(" ", TextEditCustomCommand.Value);
 	if(CommandSplit.count >= 1) {
-		declare Text CommandName = "{{{ CommandUtils::C_CommandPrefix }}}" ^ CommandSplit[0];
+		declare Text CommandName = "{{{ Command::C_CommandPrefix }}}" ^ CommandSplit[0];
 		declare Text[] CommandParams = CommandSplit.slice(1, CommandSplit.count - 1);
 		if (CommandParams.count > 10) CommandParams = [TL::Join(" ", CommandParams)]; // Cannot send more than 10 params
 		SendCustomEvent(CommandName, CommandParams);
@@ -146,7 +146,7 @@ main() {
 							OnSendCommand();
 						} else {
 							if(Event.Control is CMlQuad && QuickCommands.existskey(Event.Control as CMlQuad)) {
-								declare Text CommandName = "{{{ CommandUtils::C_CommandPrefix }}}" ^ QuickCommands[Event.Control as CMlQuad].Value;
+								declare Text CommandName = "{{{ Command::C_CommandPrefix }}}" ^ QuickCommands[Event.Control as CMlQuad].Value;
 								SendCustomEvent(CommandName, []);
 							}
 						}
@@ -244,7 +244,7 @@ Void Private_HandleInternalCommand_SetPermissionLevel(K_Command _Command) {
 
 	declare Text TargetLogin = _Command.Params[0];
 	declare Integer TargetPermissionLevel = TL::ToInteger(_Command.Params[1]);
-	if (_Command.Source.Type == CommandUtils::C_SourceType_Player && !HasPermissionLevel(_Command.Source.Login, TargetPermissionLevel + 1)) {
+	if (_Command.Source.Type == Command::C_SourceType_Player && !HasPermissionLevel(_Command.Source.Login, TargetPermissionLevel + 1)) {
 		return;
 	}
 	SetUserPermissionLevel(TargetLogin, TargetPermissionLevel);
@@ -252,7 +252,7 @@ Void Private_HandleInternalCommand_SetPermissionLevel(K_Command _Command) {
 
 Void Private_HandleInternalCommand_RemoveUser(K_Command _Command) {
 	declare Text TargetLogin = _Command.ValueText;
-	if (_Command.Source.Type == CommandUtils::C_SourceType_Player) {
+	if (_Command.Source.Type == Command::C_SourceType_Player) {
 		declare Integer TargetPermissionLevel = GetUserPermissionLevel(TargetLogin);
 		if (!HasPermissionLevel(_Command.Source.Login, TargetPermissionLevel + 1)) {
 			return;
@@ -262,7 +262,7 @@ Void Private_HandleInternalCommand_RemoveUser(K_Command _Command) {
 }
 
 Void Private_HandleInternalCommand_ListUsers(K_Command _Command) {
-	if (_Command.Source.Type != CommandUtils::C_SourceType_Player) {
+	if (_Command.Source.Type != Command::C_SourceType_Player) {
 		return;
 	}
 
@@ -337,8 +337,8 @@ Void Yield() {
 
 	// Check UI Events for Commands
 	foreach (Event in UIManager.PendingEvents) {
-		if (TL::StartsWith(CommandUtils::C_CommandPrefix, Event.CustomEventType)) {
-			declare K_Command Command = CommandUtils::FromEvent(Event);
+		if (TL::StartsWith(Command::C_CommandPrefix, Event.CustomEventType)) {
+			declare K_Command Command = Command::FromEvent(Event);
 			declare Boolean IsInternalCommand = TL::StartsWith(C_InternalCommandPrefix, Command.Name);
 			if (IsInternalCommand && HasPermissionLevel(Command.Source.Login, C_PermissionLevel_Admin)) {
 				Private_HandleInternalCommand(Command);

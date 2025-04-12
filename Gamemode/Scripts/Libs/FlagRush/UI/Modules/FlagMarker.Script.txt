@@ -1,7 +1,7 @@
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
-#Include "Libs/FlagRush/Core/FlagRush_Vehicle.Script.txt" as Vehicles
+#Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
 #Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as Shared
 
 #Const C_LayerName "FlagRush_FlagMarker"

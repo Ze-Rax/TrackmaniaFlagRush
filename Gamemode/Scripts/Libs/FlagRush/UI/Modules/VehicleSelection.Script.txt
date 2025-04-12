@@ -2,13 +2,13 @@
 
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
-#Include "Libs/FlagRush/Core/FlagRush_Vehicle.Script.txt" as FlagRush_Vehicle
+#Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
 #Include "Libs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 #Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
 
 #Const C_LayerName "FlagRush_VehicleSelection"
 
-declare FlagRush_Vehicle::K_Vehicle[] G_EnabledVehicles;
+declare Vehicles::K_Vehicle[] G_EnabledVehicles;
 
 Text GetManialink() {
 	declare Text VehicleFrameInstances;
@@ -158,7 +158,7 @@ Text GetManialink() {
 	""";
 }
 
-FlagRush_Vehicle::K_Vehicle GetSlectedVehicle(CSmPlayer Player) {
+Vehicles::K_Vehicle GetSlectedVehicle(CSmPlayer Player) {
 	declare CUIConfig UI = UIManager.GetUI(Player);
 	declare netread Text Net_FlagRush_SelectedVehicleId for UI = "";
 	foreach (Vehicle in G_EnabledVehicles) {
@@ -166,11 +166,11 @@ FlagRush_Vehicle::K_Vehicle GetSlectedVehicle(CSmPlayer Player) {
 			return Vehicle;
 		}
 	}
-	return FlagRush_Vehicle::C_Vehicle_Invalid;
+	return Vehicles::C_Vehicle_Invalid;
 }
 
-Void SetEnabledVehicles(FlagRush_Vehicle::K_Vehicle[] Vehicles) {
-	G_EnabledVehicles = FlagRush_Vehicle::Sort(Vehicles);
+Void SetEnabledVehicles(Vehicles::K_Vehicle[] Vehicles) {
+	G_EnabledVehicles = Vehicles::Sort(Vehicles);
 	Layers::Update(C_LayerName, GetManialink());
 }
 

@@ -40,7 +40,7 @@
 // #Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"							as FlagRush_XmlRpc
 #Include "Libs/FlagRush/Core/Flag.Script.txt"																as Flag
 #Include "Libs/FlagRush/Core/HandicapQueue.Script.txt"									as HandicapQueue
-#Include "Libs/FlagRush/Core/FlagRush_Vehicle.Script.txt"										as FlagRush_Vehicle
+#Include "Libs/FlagRush/Core/Vehicles.Script.txt"										as Vehicles
 
 // #Include "Libs/FlagRush/UI/FlagRush_UI.Script.txt"									as FlagRush_UI
 // #Include "Libs/FlagRush/UI/Messages.Script.txt"											as Messages
@@ -64,10 +64,10 @@
 #Const C_FlagDropPositionMode_PreviousPosition	"FlagDropPositionMode_PreviousPosition"
 #Const C_FlagDropPositionMode_LastSafePosition	"FlagDropPositionMode_LastSafePosition"
 
-#Const FlagRush_Vehicle::C_Vehicle_Stadium as C_Vehicle_Stadium
-#Const FlagRush_Vehicle::C_Vehicle_Snow as C_Vehicle_Snow
-#Const FlagRush_Vehicle::C_Vehicle_Rally as C_Vehicle_Rally
-#Const FlagRush_Vehicle::C_Vehicle_Desert as C_Vehicle_Desert
+#Const Vehicles::C_Vehicle_Stadium as C_Vehicle_Stadium
+#Const Vehicles::C_Vehicle_Snow as C_Vehicle_Snow
+#Const Vehicles::C_Vehicle_Rally as C_Vehicle_Rally
+#Const Vehicles::C_Vehicle_Desert as C_Vehicle_Desert
 
 // ======== //
 // Settings //
@@ -144,7 +144,7 @@ FlagPossessionIndicator::Load();
 
 ***LoadItems***
 ***
-FlagRush_Vehicle::LoadItems();
+Vehicles::LoadItems();
 ***
 
 // ~~~~~~~~~~ Map ~~~~~~~~~~ //
@@ -367,16 +367,16 @@ if (FlagRush_PreviousSettings_ForceEnabledVehiclesCsv != S_ForceEnabledVehiclesC
 	FlagRush_PreviousSettings_ForceEnabledVehiclesCsv = S_ForceEnabledVehiclesCsv;
 
 	// Note: Cannot use functions like Vehicle_GetEnabled or globals in Yield due to ordering after compilation
-	declare FlagRush_Vehicle::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
+	declare Vehicles::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
 	FlagRush_ForceEnabledVehicles.clear();
 	foreach (CsvEntry in TL::Split(",", S_ForceEnabledVehiclesCsv)) {
 		declare Text VehicleId = TL::ToLowerCase(TL::Trim(CsvEntry));
-		if (FlagRush_Vehicle::IsValid(VehicleId)) {
-			FlagRush_ForceEnabledVehicles.add(FlagRush_Vehicle::Get(VehicleId));
+		if (Vehicles::IsValid(VehicleId)) {
+			FlagRush_ForceEnabledVehicles.add(Vehicles::Get(VehicleId));
 		}
 	}
 
-	declare FlagRush_Vehicle::K_Vehicle[] EnabledVehicles;
+	declare Vehicles::K_Vehicle[] EnabledVehicles;
 	if (FlagRush_ForceEnabledVehicles.count > 0) {
 		EnabledVehicles = FlagRush_ForceEnabledVehicles;
 	} else {
@@ -409,29 +409,29 @@ VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_Tuni
 VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningRallyAdherence,				"S_TuningRallyAdherence");
 VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningRallyControl,					"S_TuningRallyControl");
 if (VehicleTuningChanged) {
-	declare FlagRush_Vehicle::K_Tuning StadiumTuning = FlagRush_Vehicle::C_Tuning_Default;
+	declare Vehicles::K_Tuning StadiumTuning = Vehicles::C_Tuning_Default;
 	StadiumTuning.Acceleration =	S_TuningStadiumAcceleration;
 	StadiumTuning.Adherence =			S_TuningStadiumAdherence;
 	StadiumTuning.Control =				S_TuningStadiumControl;
-	FlagRush_Vehicle::SetTuning(C_Vehicle_Stadium.Id, StadiumTuning);
+	Vehicles::SetTuning(C_Vehicle_Stadium.Id, StadiumTuning);
 
-	declare FlagRush_Vehicle::K_Tuning SnowTuning = FlagRush_Vehicle::C_Tuning_Default;
+	declare Vehicles::K_Tuning SnowTuning = Vehicles::C_Tuning_Default;
 	SnowTuning.Acceleration =			S_TuningSnowAcceleration;
 	SnowTuning.Adherence =				S_TuningSnowAdherence;
 	SnowTuning.Control =					S_TuningSnowControl;
-	FlagRush_Vehicle::SetTuning(C_Vehicle_Snow.Id, SnowTuning);
+	Vehicles::SetTuning(C_Vehicle_Snow.Id, SnowTuning);
 
-	declare FlagRush_Vehicle::K_Tuning RallyTuning = FlagRush_Vehicle::C_Tuning_Default;
+	declare Vehicles::K_Tuning RallyTuning = Vehicles::C_Tuning_Default;
 	RallyTuning.Acceleration =		S_TuningRallyAcceleration;
 	RallyTuning.Adherence =				S_TuningRallyAdherence;
 	RallyTuning.Control =					S_TuningRallyControl;
-	FlagRush_Vehicle::SetTuning(C_Vehicle_Rally.Id, RallyTuning);
+	Vehicles::SetTuning(C_Vehicle_Rally.Id, RallyTuning);
 
-	declare FlagRush_Vehicle::K_Tuning DesertTuning = FlagRush_Vehicle::C_Tuning_Default;
+	declare Vehicles::K_Tuning DesertTuning = Vehicles::C_Tuning_Default;
 	DesertTuning.Acceleration =		S_TuningDesertAcceleration;
 	DesertTuning.Adherence =			S_TuningDesertAdherence;
 	DesertTuning.Control =				S_TuningDesertControl;
-	FlagRush_Vehicle::SetTuning(C_Vehicle_Desert.Id, DesertTuning);
+	Vehicles::SetTuning(C_Vehicle_Desert.Id, DesertTuning);
 
 	RestartTurn = True;
 }
@@ -446,16 +446,16 @@ if (RestartTurn && MB_TurnIsRunning()) {
 // Functions //
 // ========= //
 
-FlagRush_Vehicle::K_Vehicle[] Vehicle_GetEnabled() {
-	declare FlagRush_Vehicle::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
+Vehicles::K_Vehicle[] Vehicle_GetEnabled() {
+	declare Vehicles::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
 	if (FlagRush_ForceEnabledVehicles.count > 0) {
 		return FlagRush_ForceEnabledVehicles;
 	}
 	return FlagRushMap::GetEnabledVehicles();
 }
 
-Boolean Vehicle_IsEnabled(FlagRush_Vehicle::K_Vehicle Vehicle) {
-	declare FlagRush_Vehicle::K_Vehicle[] Vehicles = Vehicle_GetEnabled();
+Boolean Vehicle_IsEnabled(Vehicles::K_Vehicle Vehicle) {
+	declare Vehicles::K_Vehicle[] Vehicles = Vehicle_GetEnabled();
 	foreach (EnabledVehicle in Vehicles) {
 		if (Vehicle.Id == EnabledVehicle.Id) {
 			return True;
@@ -464,8 +464,8 @@ Boolean Vehicle_IsEnabled(FlagRush_Vehicle::K_Vehicle Vehicle) {
 	return False;
 }
 
-FlagRush_Vehicle::K_Vehicle Vehicle_GetSelected(CSmPlayer Player) {
-	declare FlagRush_Vehicle::K_Vehicle SelectedVehicle = FlagRush_VehicleSelection::GetSlectedVehicle(Player);
+Vehicles::K_Vehicle Vehicle_GetSelected(CSmPlayer Player) {
+	declare Vehicles::K_Vehicle SelectedVehicle = FlagRush_VehicleSelection::GetSlectedVehicle(Player);
 	if (Vehicle_IsEnabled(SelectedVehicle)) {
 		return SelectedVehicle;
 	}
@@ -473,11 +473,11 @@ FlagRush_Vehicle::K_Vehicle Vehicle_GetSelected(CSmPlayer Player) {
 }
 
 Ident Vehicle_GetModelId(CSmPlayer Player) {
-	declare FlagRush_Vehicle::K_Vehicle Vehicle = Vehicle_GetSelected(Player);
+	declare Vehicles::K_Vehicle Vehicle = Vehicle_GetSelected(Player);
 	if (Vehicle.Id == C_Vehicle_Stadium.Id) {
 		return Teams::GetSkinModelIdForTeam(Player.RequestedClan);
 	}
-	return FlagRush_Vehicle::GetItemId(Vehicle.Id);
+	return Vehicles::GetItemId(Vehicle.Id);
 }
 
 CSmPlayer GetFirstCollidingPlayer_OpponentPriority(CSmPlayer ReferencePlayer) {
@@ -521,7 +521,7 @@ Boolean Player_IsDead(CSmPlayer Player) {
 }
 
 Void Player_ApplyVehicleTuning(CSmPlayer _Player) {
-	declare FlagRush_Vehicle::K_Tuning Tuning = FlagRush_Vehicle::GetTuning(_Player.ForceModelId);
+	declare Vehicles::K_Tuning Tuning = Vehicles::GetTuning(_Player.ForceModelId);
 	HandicapQueue::Queue_AccelCoef(_Player, Tuning.Acceleration);
 	HandicapQueue::Queue_AdherenceCoef(_Player, Tuning.Adherence);
 	HandicapQueue::Queue_ControlCoef(_Player, Tuning.Control);
@@ -565,7 +565,7 @@ Void Player_Unspawn(CSmPlayer Player) {
 }
 
 Void Player_ApplyHandicaps(CSmPlayer Player) {
-	declare FlagRush_Vehicle::K_Tuning Tuning = FlagRush_Vehicle::GetTuning(Player.ForceModelId);
+	declare Vehicles::K_Tuning Tuning = Vehicles::GetTuning(Player.ForceModelId);
 	if (S_FlagCarrierFragile) HandicapQueue::Queue_Fragile(Player, True);
 	HandicapQueue::Queue_AccelCoef(Player, Tuning.Acceleration * S_FlagCarrierAcceleration);
 	HandicapQueue::Queue_ControlCoef(Player, Tuning.Control * S_FlagCarrierControl);

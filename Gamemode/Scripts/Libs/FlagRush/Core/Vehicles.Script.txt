@@ -27,14 +27,14 @@ declare K_Tuning[Text] G_VehicleTunings;
 /**
  * Returns a sorted version of the input array. Elements are sorted using Vehicle.Order.
  */
-K_Vehicle[] Sort(K_Vehicle[] Vehicles) {
-	declare K_Vehicle[Integer] VehicleMap;
-	foreach (Vehicle in Vehicles) {
-		VehicleMap[Vehicle.Order] = Vehicle;
+K_Vehicle[] Sort(K_Vehicle[] _Vehicles) {
+	declare Integer[K_Vehicle] VehicleMap;
+	foreach (Vehicle in _Vehicles) {
+		VehicleMap[Vehicle] = Vehicle.Order;
 	}
-	VehicleMap = VehicleMap.sortkey();
+	VehicleMap = VehicleMap.sort();
 	declare K_Vehicle[] SortedVehicles;
-	foreach (Order => Vehicle in VehicleMap) {
+	foreach (Vehicle => Order in VehicleMap) {
 		SortedVehicles.add(Vehicle);
 	}
 	return SortedVehicles;
@@ -50,9 +50,9 @@ K_Vehicle[] GetAll() {
 /**
  * Gets the Vehicle struct for a given VehicleId.
  */
-K_Vehicle Get(Text VehicleId) {
+K_Vehicle Get(Text _VehicleId) {
 	foreach (Vehicle in GetAll()) {
-		if (Vehicle.Id == VehicleId) {
+		if (Vehicle.Id == _VehicleId) {
 			return Vehicle;
 		}
 	}
@@ -71,9 +71,9 @@ K_Vehicle Get(Ident _ModelId) {
 /**
  * Check if a the given VehicleId is valid (known).
  */
-Boolean IsValid(Text VehicleId) {
+Boolean IsValid(Text _VehicleId) {
 	foreach (Vehicle in GetAll()) {
-		if (Vehicle.Id == VehicleId) {
+		if (Vehicle.Id == _VehicleId) {
 			return True;
 		}
 	}
@@ -127,8 +127,8 @@ Void SetControl(Text _VehicleId, Real _Control) {
  * Gets the item id for a given vehicle id.
  * Returns NullId for invalid or unloaded items, as well as for the stadium car.
  */
-Ident GetItemId(Text VehicleId) {
-	return G_VehicleItems.get(VehicleId, NullId);
+Ident GetItemId(Text _VehicleId) {
+	return G_VehicleItems.get(_VehicleId, NullId);
 }
 
 /**

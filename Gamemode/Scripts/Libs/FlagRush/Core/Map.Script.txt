@@ -1,6 +1,6 @@
 #Include "MathLib" as ML
 #Include "Libs/FlagRush/Core/Log.Script.txt" as Log
-#Include "Libs/FlagRush/Core/FlagRush_Vehicle.Script.txt" as FlagRush_Vehicle
+#Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
 
 #Const C_LandmarkTag_SpawnTeam1					"SpawnTeam1"
 #Const C_LandmarkTag_SpawnTeam2					"SpawnTeam2"
@@ -70,20 +70,20 @@ CMapLandmark GetRandomFlagSpawn() {
  * Returns a list of all vehicles that have been enabled by the mapper.
  * If the mapper did not explciitly enable any vehicles, all vehicles will be considered enabled.
  */
-FlagRush_Vehicle::K_Vehicle[] GetEnabledVehicles() {
+Vehicles::K_Vehicle[] GetEnabledVehicles() {
 	declare metadata Text[] FlagRush_Meta_Vehicles for Map = [];
-	declare FlagRush_Vehicle::K_Vehicle[] EnabledVehicles;
+	declare Vehicles::K_Vehicle[] EnabledVehicles;
 
 	foreach (VehicleId in FlagRush_Meta_Vehicles) {
-		if (FlagRush_Vehicle::IsValid(VehicleId)) {
-			EnabledVehicles.add(FlagRush_Vehicle::Get(VehicleId));
+		if (Vehicles::IsValid(VehicleId)) {
+			EnabledVehicles.add(Vehicles::Get(VehicleId));
 		}
 	}
 
 	if (EnabledVehicles.count > 0) {
 		return EnabledVehicles;
 	}
-	return FlagRush_Vehicle::GetAll();
+	return Vehicles::GetAll();
 }
 
 /**

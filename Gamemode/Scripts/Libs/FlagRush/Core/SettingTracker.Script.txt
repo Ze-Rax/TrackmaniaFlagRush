@@ -1,0 +1,50 @@
+/**
+ * Helper library to track changes in Settings
+ */
+
+declare Text[Text] G_SettingsText;
+declare Integer[Text] G_SettingsInteger;
+declare Real[Text] G_SettingsReal;
+declare Boolean[Text] G_SettingsBoolean;
+
+Void Private_Clear() {
+	G_SettingsText.clear();
+	G_SettingsInteger.clear();
+	G_SettingsReal.clear();
+	G_SettingsBoolean.clear();
+}
+
+/**
+ * Checks if the setting with the given name has changed since the last time it was chacked.
+ */
+Boolean HasChanged(Text _SettingValue, Text _SettingName) {
+	declare Boolean HasChanged = !G_SettingsText.existskey(_SettingName) || G_SettingsText.get(_SettingName) != _SettingValue;
+	G_SettingsText[_SettingName] = _SettingValue;
+	return HasChanged;
+}
+
+Boolean HasChanged(Integer _SettingValue, Text _SettingName) {
+	declare Boolean HasChanged = !G_SettingsInteger.existskey(_SettingName) || G_SettingsInteger.get(_SettingName) != _SettingValue;
+	G_SettingsInteger[_SettingName] = _SettingValue;
+	return HasChanged;
+}
+
+Boolean HasChanged(Real _SettingValue, Text _SettingName) {
+	declare Boolean HasChanged = !G_SettingsReal.existskey(_SettingName) || G_SettingsReal.get(_SettingName) != _SettingValue;
+	G_SettingsReal[_SettingName] = _SettingValue;
+	return HasChanged;
+}
+
+Boolean HasChanged(Boolean _SettingValue, Text _SettingName) {
+	declare Boolean HasChanged = !G_SettingsBoolean.existskey(_SettingName) || G_SettingsBoolean.get(_SettingName) != _SettingValue;
+	G_SettingsBoolean[_SettingName] = _SettingValue;
+	return HasChanged;
+}
+
+Void Unload() {
+	Private_Clear();
+}
+
+Void Load() {
+	Private_Clear();
+}

@@ -1,0 +1,30 @@
+/**
+ * Gets the score for a user with given login.
+ * Returns null if there is no score for the given login.
+ */
+ CSmScore GetScore(Text Login) {
+	foreach(Score in Scores) {
+		if(Score.User.Login == Login) return Score;
+	}
+	return Null;
+}
+
+/**
+ * Gets the user for a given login.
+ * Returns null if there is no user for the given login.
+ */
+CUser GetUser(Text Login) {
+	foreach (User in Users) {
+		if(User.Login == Login) return User;
+	}
+	return Null;
+}
+
+/**
+ * Sets the EndTime but also sends it to the clients over netwrite
+ */
+ Void SetEndTime(Integer _EndTime) {
+	EndTime = _EndTime;
+	declare netwrite Integer Net_EndTime for Teams[0];
+	Net_EndTime = EndTime;
+}

@@ -33,22 +33,22 @@ CMapLandmark[] GetFlagSpawns() {
 /**
  * Gets the spawn for a specific clan.
  */
-CMapLandmark GetSpawn(Integer Clan) {
-	return G_Spawns.get(Clan, Null);
+CMapLandmark GetSpawn(Integer _Clan) {
+	return G_Spawns.get(_Clan, Null);
 }
 
 /**
  * Gets the spawn for a specific player.
  */
-CMapLandmark GetSpawn(CSmPlayer Player) {
-	return G_Spawns.get(Player.CurrentClan, Null);
+CMapLandmark GetSpawn(CSmPlayer _Player) {
+	return G_Spawns.get(_Player.CurrentClan, Null);
 }
 
 /**
  * Gets the bases for a specific clan.
  */
-CMapLandmark[] GetBases(Integer Clan) {
-	return G_Bases.get(Clan, []);
+CMapLandmark[] GetBases(Integer _Clan) {
+	return G_Bases.get(_Clan, []);
 }
 
 /**
@@ -90,9 +90,9 @@ FlagRush_Vehicle::K_Vehicle[] GetEnabledVehicles() {
  * Checks if the vehicle with the given id is enabled by the mapper
  * @see GetEnabledVehiclew
  */
-Boolean IsVehicleEnabled(Text VehicleId) {
+Boolean IsVehicleEnabled(Text _VehicleId) {
 	foreach (Vehicle in GetEnabledVehicles()) {
-		if (Vehicle.Id == VehicleId) {
+		if (Vehicle.Id == _VehicleId) {
 			return True;
 		}
 	}
@@ -102,8 +102,8 @@ Boolean IsVehicleEnabled(Text VehicleId) {
 /**
  * Checks whether a landmark is a flag reset trigger.
  */
-Boolean IsOutOfBoundsTrigger(CMapLandmark Landmark) {
-	return Landmark.Tag == C_LandmarkTag_OutOfBoundsTrigger || Landmark.Tag == C_LandmarkTag_OutOfBoundsTrigger_Deprecated;
+Boolean IsOutOfBoundsTrigger(CMapLandmark _Landmark) {
+	return _Landmark.Tag == C_LandmarkTag_OutOfBoundsTrigger || _Landmark.Tag == C_LandmarkTag_OutOfBoundsTrigger_Deprecated;
 }
 
 /**
@@ -130,27 +130,27 @@ Boolean InitLandmarks() {
 		}
 	}
 
-	declare FoundSpawnTeam1 = G_Spawns[1] != Null;
-	declare FoundSpawnTeam2 = G_Spawns[2] != Null;
-	declare FoundBaseTeam1 = G_Bases[1].count > 0;
-	declare FoundBaseTeam2 = G_Bases[2].count > 0;
-	declare FoundFlagSpawn = G_FlagSpawns.count > 0;
-	declare FoundDefaultFlagSpawn = G_DefaultFlagSpawn != Null;
-	declare SameAmountBases = G_Bases[1].count == G_Bases[2].count;
+	declare Boolean FoundSpawnTeam1 = G_Spawns[1] != Null;
+	declare Boolean FoundSpawnTeam2 = G_Spawns[2] != Null;
+	declare Boolean FoundBaseTeam1 = G_Bases[1].count > 0;
+	declare Boolean FoundBaseTeam2 = G_Bases[2].count > 0;
+	declare Boolean FoundFlagSpawn = G_FlagSpawns.count > 0;
+	declare Boolean FoundDefaultFlagSpawn = G_DefaultFlagSpawn != Null;
+	declare Boolean SameAmountBases = G_Bases[1].count == G_Bases[2].count;
 
-	declare Valid = FoundSpawnTeam1 && FoundSpawnTeam2 && FoundBaseTeam1 && FoundBaseTeam2 && FoundFlagSpawn && FoundDefaultFlagSpawn && SameAmountBases;
+	declare Boolean Valid = FoundSpawnTeam1 && FoundSpawnTeam2 && FoundBaseTeam1 && FoundBaseTeam2 && FoundFlagSpawn && FoundDefaultFlagSpawn && SameAmountBases;
 
-	declare Boolean FlagRush_Debug for This;
+	declare Boolean FlagRush_Debug for This = False;
 	if (FlagRush_Debug) {
 		assert(Valid,
 """Couldn't init all landmarks!
-	{{{"\t"}}}{{{C_LandmarkTag_SpawnTeam1}}}: {{{FoundSpawnTeam1}}}
-	{{{"\t"}}}{{{C_LandmarkTag_SpawnTeam2}}}: {{{FoundSpawnTeam2}}}
-	{{{"\t"}}}{{{C_LandmarkTag_BaseTeam1}}} : {{{FoundBaseTeam1}}}
-	{{{"\t"}}}{{{C_LandmarkTag_BaseTeam2}}} : {{{FoundBaseTeam2}}}
-	{{{"\t"}}}{{{C_LandmarkTag_FlagSpawn}}} : {{{FoundFlagSpawn}}}
-	{{{"\t"}}}{{{C_LandmarkTag_DefaultFlagSpawn}}} : {{{FoundDefaultFlagSpawn}}}
-	{{{"\t"}}}Same amount of bases per team: {{{SameAmountBases}}}"""
+	{{{ "\t" }}}{{{ C_LandmarkTag_SpawnTeam1 }}}: {{{ FoundSpawnTeam1 }}}
+	{{{ "\t" }}}{{{ C_LandmarkTag_SpawnTeam2 }}}: {{{ FoundSpawnTeam2 }}}
+	{{{ "\t" }}}{{{ C_LandmarkTag_BaseTeam1 }}} : {{{ FoundBaseTeam1 }}}
+	{{{ "\t" }}}{{{ C_LandmarkTag_BaseTeam2 }}} : {{{ FoundBaseTeam2 }}}
+	{{{ "\t" }}}{{{ C_LandmarkTag_FlagSpawn }}} : {{{ FoundFlagSpawn }}}
+	{{{ "\t" }}}{{{ C_LandmarkTag_DefaultFlagSpawn }}} : {{{ FoundDefaultFlagSpawn }}}
+	{{{ "\t" }}}Same amount of bases per team: {{{ SameAmountBases }}}"""
 		);
 	}
 

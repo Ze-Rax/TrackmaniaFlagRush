@@ -34,7 +34,7 @@
 // #Include "Libs/FlagRush/Const/Durations.Script.txt"											as Durations
 
 // #Include "Libs/FlagRush/Core/Log.Script.txt"															as Log
-// #Include "Libs/FlagRush/Core/FlagRush_Map.Script.txt"										as FlagRush_Map
+// #Include "Libs/FlagRush/Core/Map.Script.txt"										as FlagRushMap
 // #Include "Libs/FlagRush/Core/Scores.Script.txt"													as Scores
 // #Include "Libs/FlagRush/Core/FlagRush_MatchEvaluation.Script.txt"				as FlagRush_MatchEvaluation
 // #Include "Libs/FlagRush/Core/FlagRush_Teams.Script.txt"									as FlagRush_Teams
@@ -159,7 +159,7 @@ FlagRush_VehicleSelection::SetEnabledVehicles(Vehicle_GetEnabled());
 
 ***StartTurn***
 ***
-declare CMapLandmark FlagSpawn = FlagRush_Map::GetDefaultFlagSpawn();
+declare CMapLandmark FlagSpawn = FlagRushMap::GetDefaultFlagSpawn();
 Flag::SetAtLandmark(FlagSpawn);
 Flag::InvalidateLastSafePosition();
 FlagMarker::Update();
@@ -269,7 +269,7 @@ if (FlagCarrier != Null) {
 		foreach (Event in PendingEvents) {
 			declare Boolean IsFlagCarrierEvent = Event.Player == FlagCarrier;
 			declare Integer TargetBaseClan = 3 - FlagCarrier.CurrentClan;
-			declare Boolean IsOpponentBaseEvent = Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint && FlagRush_Map::IsBase(Event.Landmark, TargetBaseClan);
+			declare Boolean IsOpponentBaseEvent = Event.Type == CSmModeEvent::EType::OnPlayerTriggersWaypoint && FlagRushMap::IsBase(Event.Landmark, TargetBaseClan);
 			if (IsFlagCarrierEvent && IsOpponentBaseEvent) {
 				IsTryingToScore = True;
 				break;
@@ -338,7 +338,7 @@ foreach (Event in PendingEvents) {
 		}
 		case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 			// Player might have left in the same server frame, causing Player to be Null
-			if (Event.Player != Null && FlagRush_Map::IsOutOfBoundsTrigger(Event.Landmark) && Event.Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
+			if (Event.Player != Null && FlagRushMap::IsOutOfBoundsTrigger(Event.Landmark) && Event.Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
 				Messages::PlayerOutOfBounds(Event.Player);
 				UnspawnPlayer(Event.Player);
 				declare Integer FlagRush_Warmup_UnspawnDate for Event.Player = Now;
@@ -381,7 +381,7 @@ if (FlagRush_PreviousSettings_ForceEnabledVehiclesCsv != S_ForceEnabledVehiclesC
 	if (FlagRush_ForceEnabledVehicles.count > 0) {
 		EnabledVehicles = FlagRush_ForceEnabledVehicles;
 	} else {
-		EnabledVehicles = FlagRush_Map::GetEnabledVehicles();
+		EnabledVehicles = FlagRushMap::GetEnabledVehicles();
 	}
 	FlagRush_VehicleSelection::SetEnabledVehicles(EnabledVehicles);
 	RestartTurn = True;
@@ -452,7 +452,7 @@ FlagRush_Vehicle::K_Vehicle[] Vehicle_GetEnabled() {
 	if (FlagRush_ForceEnabledVehicles.count > 0) {
 		return FlagRush_ForceEnabledVehicles;
 	}
-	return FlagRush_Map::GetEnabledVehicles();
+	return FlagRushMap::GetEnabledVehicles();
 }
 
 Boolean Vehicle_IsEnabled(FlagRush_Vehicle::K_Vehicle Vehicle) {
@@ -496,7 +496,7 @@ CSmPlayer GetFirstCollidingPlayer_OpponentPriority(CSmPlayer ReferencePlayer) {
 Void Flag_Reset(Boolean Silent) {
 	if (!Silent) Messages::FlagReset(Durations::C_Duration_EventMessage);
 
-	Flag::SetAtLandmark(FlagRush_Map::GetRandomFlagSpawn());
+	Flag::SetAtLandmark(FlagRushMap::GetRandomFlagSpawn());
 	Flag::InvalidateLastSafePosition();
 	FlagMarker::Update();
 	FlagRush_XmlRpc::Send_FlagReset();
@@ -551,7 +551,7 @@ Void Player_Spawn(CSmPlayer Player) {
 		Scores::OnPlayerChangesVehicle(Player.Score);
 	}
 	Player_Initialize(Player);
-	declare CMapLandmark SpawnLandmark = FlagRush_Map::GetSpawn(Player);
+	declare CMapLandmark SpawnLandmark = FlagRushMap::GetSpawn(Player);
 	if (SpawnLandmark != Null) {
 		SpawnPlayer(Player, Player.CurrentClan, 1, SpawnLandmark.PlayerSpawn, Now + Durations::C_SpawnAnimDuration);
 		Player_ApplyVehicleTuning(Player);
@@ -731,14 +731,14 @@ Void OnPlayerOutOfBound(CSmPlayer Player) {
 }
 
 Void OnPlayerTriggersWaypoint(CSmPlayer Player, CMapLandmark Landmark) {
-	if (FlagRush_Map::IsOutOfBoundsTrigger(Landmark)) {
+	if (FlagRushMap::IsOutOfBoundsTrigger(Landmark)) {
 		OnPlayerOutOfBound(Player);
 	} else if (Flag::Get().Location.LandmarkId == Landmark.Id && !Flag::IsLockedForPlayer(Player)) {
 		Player_PickUpFlag(Player);
 		Scores::OnPlayerPicksUpFlagFromLandmark(Player.Score);
 	} else if (Player == Flag::GetPlayer()){
 		declare Integer TargetBaseClan = 3 - Player.CurrentClan;
-		if (FlagRush_Map::IsBase(Landmark, TargetBaseClan)) {
+		if (FlagRushMap::IsBase(Landmark, TargetBaseClan)) {
 			FlagCarrier_ScoreFlag();
 		}
 	}

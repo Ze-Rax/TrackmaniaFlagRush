@@ -6,7 +6,7 @@
 #Include "Libs/FlagRush/Core/ModeUtils.Script.txt"								as ModeUtils
 #Include "Libs/FlagRush/Core/Flag.Script.txt"										as Flag
 #Include "Libs/FlagRush/Core/Scores.Script.txt"									as Scores
-#Include "Libs/FlagRush/Core/FlagRush_Map.Script.txt"						as FlagRush_Map
+#Include "Libs/FlagRush/Core/Map.Script.txt"						as FlagRushMap
 
 // XMLRPC events
 #Const		C_Event_Flag_Pass																"FlagRush.Flag.Pass"
@@ -257,9 +257,9 @@ K_Rpc_Map CurrentMapToRpcMap() {
 		if (Map == Null) return K_Rpc_Map{};
 	}
 
-	declare K_Rpc_Landmark DefaultFlagSpawn = LandmarkToRpcLandmark(FlagRush_Map::GetDefaultFlagSpawn());
+	declare K_Rpc_Landmark DefaultFlagSpawn = LandmarkToRpcLandmark(FlagRushMap::GetDefaultFlagSpawn());
 	declare K_Rpc_Landmark[] FlagSpawns;
-	foreach (FlagSpawn in FlagRush_Map::GetFlagSpawns()) {
+	foreach (FlagSpawn in FlagRushMap::GetFlagSpawns()) {
 		FlagSpawns.add(LandmarkToRpcLandmark(FlagSpawn));
 	}
 

@@ -23,7 +23,8 @@
 
 // FlagRush Libs
 #Include "Libs/FlagRush/Const/Durations.Script.txt"										as Durations
-#Include "Libs/FlagRUsh/Const/SettingNames.Script.txt"				as SettingNames
+#Include "Libs/FlagRush/Const/SettingNames.Script.txt"				as SettingNames
+#Include "Libs/FlagRush/Const/CommandNames.Script.txt"				as CommandNames
 
 #Include "Libs/FlagRush/Core/Map.Script.txt"									as FlagRushMap
 #Include "Libs/FlagRush/Core/Scores.Script.txt"												as Scores
@@ -79,54 +80,24 @@
 // Commands //
 //////////////
 
-// Constants are used for Commands from other sources, like UI Events.
-// Constants value has to be the same as the name of the respective command without the Command_ prefix.
-// The Parameter for the Command has to be sent with the Event in the Params array.
-// In case of Vec2/Vec3/Int2/Int3 commands, X, Y & Z each take a seperate entry in the params array.
+// KEEP SETTINGS IN SYNC WITH "Const/CommandNames.Script.txt"
+
 #Command	Command_PauseRound							(Boolean) as		"Pause round"
-#Const		C_Command_Pause																	"PauseRound"
-
 #Command	Command_EndWarmup								(Boolean) as 		"End warmup"
-#Const		C_Command_EndWarmup															"EndWarmup"
-
 #Command	Command_SkipRound								(Boolean) as		"Skip round"
-#Const		C_Command_SkipRound															"SkipRound"
-
 // #Command	Command_SkipMap									(Boolean) as				"Skip map"
-#Const		C_Command_SkipMap																"SkipMap"
-
 #Command	Command_SetTeam1RoundScore			(Integer) as		"Set Team 1 Round Score"
-#Const		C_Command_SetTeam1RoundScore										"SetTeam1RoundScore"
-
 #Command	Command_SetTeam2RoundScore			(Integer) as		"Set Team 2 Round Score"
-#Const		C_Command_SetTeam2RoundScore										"SetTeam2RoundScore"
-
 #Command	Command_SetTeam1MapScore				(Integer) as		"Set Team 1 Map Score"
-#Const		C_Command_SetTeam1MapScore											"SetTeam1MapScore"
-
 #Command	Command_SetTeam2MapScore				(Integer) as		"Set Team 2 Map Score"
-#Const		C_Command_SetTeam2MapScore											"SetTeam2MapScore"
-
 #Command	Command_SetTeam1MatchScore			(Integer) as		"Set Team 1 Match Score"
-#Const		C_Command_SetTeam1MatchScore										"SetTeam1MatchScore"
-
 #Command	Command_SetTeam2MatchScore			(Integer) as		"Set Team 2 Match Score"
-#Const		C_Command_SetTeam2MatchScore										"SetTeam2MatchScore"
-
 #Command	Command_ClearScores							(Boolean) as		"Clear all scores"
-#Const		C_Command_ClearScores														"ClearScores"
-
 // #Command	Command_Announce								(Text)		as		"Show big anouncement message"
-#Const		C_Command_Announce															"Announce"
-
 // #Command	Command_BalanceTeams						(Boolean) as		"Balance Teams"
-#Const		C_Command_BalanceTeams													"BalanceTeams"
-
 #Command	Command_ApproveWarmUpEnd				(Boolean) as		"<hidden>"
-#Const		C_Command_ApproveWarmUpEnd											"ApproveWarmUpEnd"
-
-#Const		C_Command_SetBots																"SetBots"
-#Const		C_Command_SetTimeLeft														"SetTimeLeft"
+// #Command Command_SetBots									(Integer) as 		"<hidden>"
+// #Command Command_SetTimeLeft 						(Integer) as 		"<hidden>" 
 
 //////////////////////
 // Global Variables //
@@ -229,10 +200,10 @@ FlagRush_UI::Load();
 FlagMarker::Load();
 MapMarkers::Load();
 PodiumStatistics::Load();
-ModeCommands::AddQuickCommand(C_Command_EndWarmup, "UICommon64_1", "Play_light");
-ModeCommands::AddQuickCommand(C_Command_Pause, "UICommon64_1", "Pause_light");
-ModeCommands::AddQuickCommand(C_Command_SkipRound, "UICommon64_1", "FastForward_light");
-ModeCommands::AddQuickCommand(C_Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
+ModeCommands::AddQuickCommand(CommandNames::Command_EndWarmup, "UICommon64_1", "Play_light");
+ModeCommands::AddQuickCommand(CommandNames::Command_Pause, "UICommon64_1", "Pause_light");
+ModeCommands::AddQuickCommand(CommandNames::Command_SkipRound, "UICommon64_1", "FastForward_light");
+ModeCommands::AddQuickCommand(CommandNames::Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
 ModeCommands::Load();
 ***
 
@@ -689,7 +660,7 @@ foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
 			switch (XmlRpcEvent.ParamArray1) {
 				case "Trackmania.ForceEndRound": {
 					declare Command::K_Source Source = Command::K_Source{ Type = Command::C_SourceType_XmlRpc, Name = Command::C_SourceType_XmlRpc };
-					PendingCommands.add(Command::FromNameAndParams(C_Command_SkipRound, [], Source));
+					PendingCommands.add(Command::FromNameAndParams(CommandNames::Command_SkipRound, [], Source));
 				}
 			}
 		}
@@ -714,79 +685,79 @@ foreach (Command in PendingCommands) {
 
 	// Handle the command
 	switch(Command.Name) {
-		case C_Command_EndWarmup: {
+		case CommandNames::Command_EndWarmup: {
 			WarmUpReadyUp::Stop();
 			CommandText = "The warmup was ended.";
 		}
-		case C_Command_Pause: {
+		case CommandNames::Command_Pause: {
 			declare Boolean Progression_PauseRequested for This;
 			Progression_PauseRequested = True;
 			CommandText = "The round was paused.";
 		}
-		case C_Command_SkipRound: {
+		case CommandNames::Command_SkipRound: {
 			declare Boolean Progression_RoundEndRequested for This;
 			Progression_RoundEndRequested = True;
 			CommandText = "The round was skipped.";
 		}
-		case C_Command_SkipMap: {
+		case CommandNames::Command_SkipMap: {
 			MatchEndRequested = True;
 			CommandText = "The map was skipped.";
 		}
-		case C_Command_SetTeam1RoundScore: {
+		case CommandNames::Command_SetTeam1RoundScore: {
 			declare Integer Value = ML::Max(Command.ValueInteger, 0);
 			Scores::SetClanRoundPoints(1, Value);
 			Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[0].Name }}} round score to {{{ Value }}}.""";
 		}
-		case C_Command_SetTeam2RoundScore: {
+		case CommandNames::Command_SetTeam2RoundScore: {
 			declare Integer Value = ML::Max(Command.ValueInteger, 0);
 			Scores::SetClanRoundPoints(2, Value);
 			Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[1].Name }}} round score to {{{ Value }}}.""";
 		}
-		case C_Command_SetTeam1MapScore: {
+		case CommandNames::Command_SetTeam1MapScore: {
 			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbRoundsToWinMap);
 			Scores::SetClanMapPoints(1, Value);
 			Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[0].Name }}} map score to {{{ Value }}}.""";
 		}
-		case C_Command_SetTeam2MapScore: {
+		case CommandNames::Command_SetTeam2MapScore: {
 			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbRoundsToWinMap);
 			Scores::SetClanMapPoints(2, Value);
 			Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[1].Name }}} map score to {{{ Value }}}.""";
 		}
-		case C_Command_SetTeam1MatchScore: {
+		case CommandNames::Command_SetTeam1MatchScore: {
 			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbMapsToWinMatch);
 			Scores::SetClanMatchPoints(1, Value);
 			Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[0].Name }}} match score to {{{ Value }}}.""";
 		}
-		case C_Command_SetTeam2MatchScore: {
+		case CommandNames::Command_SetTeam2MatchScore: {
 			declare Integer Value = ML::Clamp(Command.ValueInteger, 0, S_NbMapsToWinMatch);
 			Scores::SetClanMatchPoints(2, Value);
 			Scores::Net_SendTeamScores();
 			CommandText = """Set {{{ Teams[1].Name }}} match score to {{{ Value }}}.""";
 		}
-		case C_Command_ClearScores: {
+		case CommandNames::Command_ClearScores: {
 			Scores::Clear();
 			CommandText = "Cleared all scores.";
 		}
-		case C_Command_BalanceTeams: {
+		case CommandNames::Command_BalanceTeams: {
 			ServerAdmin.AutoTeamBalance();
 			CommandText = "The teams were balanced.";
 		}
-		case C_Command_SetBots: {
+		case CommandNames::Command_SetBots: {
 			declare Integer Amount = ML::Max(Command.ValueInteger, 0);
 			Users_SetNbFakeUsers(Amount, Amount);
 			CommandText = """Set {{{ Amount }}} bots.""";
 		}
-		case C_Command_SetTimeLeft: {
+		case CommandNames::Command_SetTimeLeft: {
 			if (!MB_TurnIsRunning()) return;
 			ModeUtils::SetEndTime(Now + Command.ValueInteger * 1000);
 			CommandText = """Set time limit to {{{ Command.ValueInteger }}} seconds remaining.""";
 		}
-		case C_Command_ApproveWarmUpEnd: {
+		case CommandNames::Command_ApproveWarmUpEnd: {
 			WarmUpReadyUp::SetWarmUpEndApproval(Command.ValueBoolean);
 			if (Command.ValueBoolean) {
 				Messages::WarmUpApproved();
@@ -795,7 +766,7 @@ foreach (Command in PendingCommands) {
 			}
 			CommandText = """Approvel given: {{{ Command.ValueBoolean }}}.""";
 		}
-		case C_Command_Announce: {
+		case CommandNames::Command_Announce: {
 			UIManager.UIAll.QueueMessage(3000, Messages::C_MessagePriority_Default, CUIConfig::EMessageDisplay::Big, Command.ValueText, CUIConfig::EUISound::Default, 1);
 			CommandText = """Message: $<{{{ Command.ValueText }}}$>""";
 		}

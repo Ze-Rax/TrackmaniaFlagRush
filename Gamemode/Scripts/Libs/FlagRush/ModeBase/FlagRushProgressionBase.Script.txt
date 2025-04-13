@@ -29,10 +29,10 @@
 #Include "Libs/FlagRush/Core/Scores.Script.txt"												as Scores
 #Include "Libs/FlagRush/Core/Teams.Script.txt"								as Teams
 #Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"						as FlagRush_XmlRpc
-#Include "Libs/FlagRush/Core/ModeUtils.Script.txt"										as ModeUtils
 #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt"										as PlayerLifecycleEvents
 
 #Include "Libs/FlagRush/Util/Log.Script.txt"													as Log
+#Include "Libs/FlagRush/Util/ModeUtils.Script.txt"										as ModeUtils
 #Include "Libs/FlagRush/Util/Command.Script.txt"									as Command
 
 #Include "Libs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI

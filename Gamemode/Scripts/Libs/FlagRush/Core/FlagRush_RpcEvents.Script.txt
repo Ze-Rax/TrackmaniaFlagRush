@@ -3,7 +3,7 @@
 #Include "TextLib" as TL
 
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2.Script.txt"						as XmlRpc
-#Include "Libs/FlagRush/Core/ModeUtils.Script.txt"								as ModeUtils
+#Include "Libs/FlagRush/Util/ModeUtils.Script.txt"								as ModeUtils
 #Include "Libs/FlagRush/Core/Flag.Script.txt"										as Flag
 #Include "Libs/FlagRush/Core/Scores.Script.txt"									as Scores
 #Include "Libs/FlagRush/Core/Map.Script.txt"						as FlagRushMap

@@ -25,7 +25,7 @@
 // #Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"													as EventFeed
 // #Include "Libs/FlagRush/UI/Modules/ModeCommands.Script.txt"							as ModeCommands
 // #Include "Libs/FlagRush/Util/Command/.Script.txt"							as Command
-// #Include "Libs/FlagRush/Core/ModeUtils.Script.txt"													as ModeUtils
+// #Include "Libs/FlagRush/Util/ModeUtils.Script.txt"													as ModeUtils
 // #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt"												as PlayerLifecycleEvents
 // #Include "Libs/FlagRush/WarmUpReadyUp/WarmUpReadyUp.Script.txt"				as WarmUpReadyUp
 #Include "Libs/FlagRush/External/Rx/Hitbox.Script.txt"																as Hitbox

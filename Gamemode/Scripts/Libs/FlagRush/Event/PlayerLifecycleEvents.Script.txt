@@ -14,20 +14,20 @@
 	Integer PreviousClan; ///< For Multiclan usage
 }
 
-declare K_PlayerLifecycleEvent[] G_PendingPlayerLifecycleEvents;
+declare K_PlayerLifecycleEvent[] G_PendingEvents;
 
 /**
- * Get all pending events. Pending events are flushed and collected by ModeEvents::Yield().
+ * Get all pending events. Pending events are flushed and collected by PlayerLifecycleEvents::Yield().
  */
-K_PlayerLifecycleEvent[] PendingPlayerLifecycleEvents() {
-	return G_PendingPlayerLifecycleEvents;
+K_PlayerLifecycleEvent[] GetPendingEvents() {
+	return G_PendingEvents;
 }
 
 /**
  * Checks player states (spectator state, join, leave) and fills the event array
  */
 Void Private_UpdatePlayerEvents() {
-	G_PendingPlayerLifecycleEvents.clear();
+	G_PendingEvents.clear();
 
 	// Check default mode events for join and leave
 	foreach (Event in PendingEvents) {
@@ -42,7 +42,7 @@ Void Private_UpdatePlayerEvents() {
 				ModeEvents_Private_PrevRequestedClan = Event.Player.RequestedClan;
 				ModeEvents_Private_PrevClan = Event.Player.CurrentClan;
 
-				G_PendingPlayerLifecycleEvents.add(K_PlayerLifecycleEvent{
+				G_PendingEvents.add(K_PlayerLifecycleEvent{
 					Type = C_PlayerLifecycle_PlayerAdded,
 					Player = Event.Player,
 					User = User,
@@ -54,7 +54,7 @@ Void Private_UpdatePlayerEvents() {
 			case CSmModeEvent::EType::OnPlayerRemoved: {
 				declare Boolean ModeEvents_Private_WasSpectator for Event.User;
 				declare Integer ModeEvents_Private_PrevClan for Event.User;
-				G_PendingPlayerLifecycleEvents.add(K_PlayerLifecycleEvent{
+				G_PendingEvents.add(K_PlayerLifecycleEvent{
 					Type = C_PlayerLifecycle_PlayerRemoved,
 					Player = Event.Player,
 					User = Event.User,
@@ -74,7 +74,7 @@ Void Private_UpdatePlayerEvents() {
 		// Check spectators that switched to player
 		if (ModeEvents_Private_WasSpectator) {
 			ModeEvents_Private_WasSpectator = False;
-			G_PendingPlayerLifecycleEvents.add(K_PlayerLifecycleEvent{
+			G_PendingEvents.add(K_PlayerLifecycleEvent{
 				Type = C_PlayerLifecycle_SpectatorToPlayer,
 				Player = Player,
 				User = Player.User,
@@ -86,7 +86,7 @@ Void Private_UpdatePlayerEvents() {
 
 		// Check clan change requests
 		if (ModeEvents_Private_PrevRequestedClan != Player.RequestedClan) {
-			G_PendingPlayerLifecycleEvents.add(K_PlayerLifecycleEvent{
+			G_PendingEvents.add(K_PlayerLifecycleEvent{
 				Type = C_PlayerLifecycle_PlayerClanChangeRequest,
 				Player = Player,
 				User = Player.User,
@@ -100,7 +100,7 @@ Void Private_UpdatePlayerEvents() {
 
 		// Check actual clan changes
 		if (ModeEvents_Private_PrevClan != Player.CurrentClan) {
-			G_PendingPlayerLifecycleEvents.add(K_PlayerLifecycleEvent{
+			G_PendingEvents.add(K_PlayerLifecycleEvent{
 				Type = C_PlayerLifecycle_PlayerClanChange,
 				Player = Player,
 				User = Player.User,
@@ -120,7 +120,7 @@ Void Private_UpdatePlayerEvents() {
 
 		if (!ModeEvents_Private_WasSpectator) {
 			ModeEvents_Private_WasSpectator = True;
-			G_PendingPlayerLifecycleEvents.add(K_PlayerLifecycleEvent{
+			G_PendingEvents.add(K_PlayerLifecycleEvent{
 				Type = C_PlayerLifecycle_PlayerToSpectator,
 				Player = Spectator,
 				User = Spectator.User,

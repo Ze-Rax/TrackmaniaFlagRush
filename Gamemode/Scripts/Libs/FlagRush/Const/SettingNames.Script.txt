@@ -1,0 +1,55 @@
+
+// MARK: Progression
+#Const S_NbMapsToWinMatch "S_NbMapsToWinMatch"
+#Const S_NbRoundsToWinMap "S_NbRoundsToWinMap"
+#Const S_NbFlagsToWinRound "S_NbFlagsToWinRound"
+#Const S_RoundTimeLimitSeconds "S_RoundTimeLimitSeconds"
+#Const S_UseOvertime "S_UseOvertime"
+#Const S_UseWarmUp "S_UseWarmUp"
+#Const S_WarmUpWaitForApproval "S_WarmUpWaitForApproval"
+
+// MARK: Teams
+#Const S_Team1Name "S_Team1Name"
+#Const S_Team1Hue "S_Team1Hue"
+#Const S_Team2Name "S_Team2Name"
+#Const S_Team2Hue "S_Team2Hue"
+#Const S_UseClubTags "S_UseClubTags"
+#Const S_UseTeamSkins "S_UseTeamSkins"
+
+// Gameplay
+#Const S_FlagDropStateDurationSeconds "S_FlagDropStateDurationSeconds"
+#Const S_FlagStealResistDurationSeconds "S_FlagStealResistDurationSeconds"
+#Const S_FlagSameTeamSteal "S_FlagSameTeamSteal"
+#Const S_FlagStealResistanceOnTeamPass "S_FlagStealResistanceOnTeamPass"
+#Const S_FlagCarrierFragile "S_FlagCarrierFragile"
+#Const S_FlagCarrierAcceleration "S_FlagCarrierAcceleration"
+#Const S_FlagCarrierControl "S_FlagCarrierControl"
+#Const S_FlagCarrierAdherence "S_FlagCarrierAdherence"
+#Const S_RespawnSpeedLimitKmh "S_RespawnSpeedLimitKmh"
+#Const S_RespawnDelayPerPlayer "S_RespawnDelayPerPlayer"
+#Const S_DropFlagPickupPenalty "S_DropFlagPickupPenalty"
+#Const S_TeleportDetectionThreshold "S_TeleportDetectionThreshold"
+#Const S_UseCollisions "S_UseCollisions"
+#Const S_UseLightTrails "S_UseLightTrails"
+
+// Vehicles
+#Const S_ForceEnabledVehiclesCsv "S_ForceEnabledVehiclesCsv"
+#Const S_TuningStadiumAcceleration "S_TuningStadiumAcceleration"
+#Const S_TuningStadiumAdherence "S_TuningStadiumAdherence"
+#Const S_TuningStadiumControl "S_TuningStadiumControl"
+#Const S_TuningSnowAcceleration "S_TuningSnowAcceleration"
+#Const S_TuningSnowAdherence "S_TuningSnowAdherence"
+#Const S_TuningSnowControl "S_TuningSnowControl"
+#Const S_TuningRallyAcceleration "S_TuningRallyAcceleration"
+#Const S_TuningRallyAdherence "S_TuningRallyAdherence"
+#Const S_TuningRallyControl "S_TuningRallyControl"
+#Const S_TuningDesertAcceleration "S_TuningDesertAcceleration"
+#Const S_TuningDesertAdherence "S_TuningDesertAdherence"
+#Const S_TuningDesertControl "S_TuningDesertControl"
+
+// MARK: Other
+#Const S_SkipMatchOnLastPlayerLeave "S_SkipMatchOnLastPlayerLeave"
+#Const S_ModeCommands_AdminLoginsCsv "S_ModeCommands_AdminLoginsCsv"
+#Const S_UseCrudeExtrapolation "S_UseCrudeExtrapolation"
+#Const S_TrustClientSimu "S_TrustClientSimu"
+#Const S_Debug "S_Debug"

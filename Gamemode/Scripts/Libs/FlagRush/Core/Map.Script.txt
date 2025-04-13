@@ -71,6 +71,10 @@ CMapLandmark GetRandomFlagSpawn() {
  * If the mapper did not explciitly enable any vehicles, all vehicles will be considered enabled.
  */
 Vehicles::K_Vehicle[] GetEnabledVehicles() {
+	if (Map == Null) {
+		return Vehicles::GetAll();
+	}
+
 	declare metadata Text[] FlagRush_Meta_Vehicles for Map = [];
 	declare Vehicles::K_Vehicle[] EnabledVehicles;
 

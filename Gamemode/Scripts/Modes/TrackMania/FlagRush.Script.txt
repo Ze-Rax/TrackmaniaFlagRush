@@ -73,6 +73,8 @@
 // Settings //
 // ======== //
 
+// KEEP SETTINGS IN SYNC WITH "Const/SettingNames.Script.txt" AND UPDATE IN ***UpdateModeSettings***
+
 #Setting S_UseCrudeExtrapolation						True		as "<hidden>"
 #Setting S_TrustClientSimu									True		as "<hidden>"
 
@@ -124,10 +126,43 @@
 
 ***Settings***
 ***
-declare Boolean FlagRush_Debug for This;
+declare Boolean FlagRush_Debug for This = False;
 FlagRush_Debug = C_Debug;
 
 UsePvPCollisions = S_UseCollisions;
+***
+
+***UpdateModeSettings***
+***
+Settings::Update(SettingNames::S_UseCrudeExtrapolation, S_UseCrudeExtrapolation);
+Settings::Update(SettingNames::S_TrustClientSimu, S_TrustClientSimu);
+Settings::Update(SettingNames::S_FlagDropStateDurationSeconds, S_FlagDropStateDurationSeconds);
+Settings::Update(SettingNames::S_FlagStealResistDurationSeconds, S_FlagStealResistDurationSeconds);
+Settings::Update(SettingNames::S_FlagSameTeamSteal, S_FlagSameTeamSteal);
+Settings::Update(SettingNames::S_FlagStealResistanceOnTeamPass, S_FlagStealResistanceOnTeamPass);
+Settings::Update(SettingNames::S_FlagCarrierFragile, S_FlagCarrierFragile);
+Settings::Update(SettingNames::S_FlagCarrierAcceleration, S_FlagCarrierAcceleration);
+Settings::Update(SettingNames::S_FlagCarrierControl, S_FlagCarrierControl);
+Settings::Update(SettingNames::S_FlagCarrierAdherence, S_FlagCarrierAdherence);
+Settings::Update(SettingNames::S_RespawnSpeedLimitKmh, S_RespawnSpeedLimitKmh);
+Settings::Update(SettingNames::S_RespawnDelayPerPlayer, S_RespawnDelayPerPlayer);
+Settings::Update(SettingNames::S_DropFlagPickupPenalty, S_DropFlagPickupPenalty);
+Settings::Update(SettingNames::S_TeleportDetectionThreshold, S_TeleportDetectionThreshold);
+Settings::Update(SettingNames::S_UseCollisions, S_UseCollisions);
+Settings::Update(SettingNames::S_UseLightTrails, S_UseLightTrails);
+Settings::Update(SettingNames::S_ForceEnabledVehiclesCsv, S_ForceEnabledVehiclesCsv);
+Settings::Update(SettingNames::S_TuningStadiumAcceleration, S_TuningStadiumAcceleration);
+Settings::Update(SettingNames::S_TuningStadiumAdherence, S_TuningStadiumAdherence);
+Settings::Update(SettingNames::S_TuningStadiumControl, S_TuningStadiumControl);
+Settings::Update(SettingNames::S_TuningSnowAcceleration, S_TuningSnowAcceleration);
+Settings::Update(SettingNames::S_TuningSnowAdherence, S_TuningSnowAdherence);
+Settings::Update(SettingNames::S_TuningSnowControl, S_TuningSnowControl);
+Settings::Update(SettingNames::S_TuningRallyAcceleration, S_TuningRallyAcceleration);
+Settings::Update(SettingNames::S_TuningRallyAdherence, S_TuningRallyAdherence);
+Settings::Update(SettingNames::S_TuningRallyControl, S_TuningRallyControl);
+Settings::Update(SettingNames::S_TuningDesertAcceleration, S_TuningDesertAcceleration);
+Settings::Update(SettingNames::S_TuningDesertAdherence, S_TuningDesertAdherence);
+Settings::Update(SettingNames::S_TuningDesertControl, S_TuningDesertControl);
 ***
 
 ***LoadLibraries***
@@ -361,54 +396,50 @@ HandicapQueue::Yield();
 
 // Handle mode script updates
 declare Boolean RestartTurn = False;
+declare Boolean UpdateVehicleTunings = False;
+foreach (Event in Settings::GetPendingEvents()) {
+	switch (Event.Name) {
+		case SettingNames::S_TrustClientSimu, SettingNames::S_UseCrudeExtrapolation: {
+			RestartTurn = True;
+		}
+		// Collision
+		case SettingNames::S_UseCollisions: {
+			UsePvPCollisions = S_UseCollisions;
+			RestartTurn = True;
+		}
+		// Vehicle Tunings
+		case SettingNames::S_TuningStadiumAcceleration, SettingNames::S_TuningStadiumAdherence, SettingNames::S_TuningStadiumControl,
+					SettingNames::S_TuningSnowAcceleration, SettingNames::S_TuningSnowAdherence, SettingNames::S_TuningSnowControl, 
+					SettingNames::S_TuningRallyAcceleration, SettingNames::S_TuningRallyAdherence, SettingNames::S_TuningRallyControl,
+					SettingNames::S_TuningDesertAcceleration, SettingNames::S_TuningDesertAdherence, SettingNames::S_TuningDesertControl: {
+			UpdateVehicleTunings = True;
+			RestartTurn = True;
+		}
+		// Forced Vehicles
+		case SettingNames::S_ForceEnabledVehiclesCsv: {
+			// Note: Cannot use functions like Vehicle_GetEnabled or globals in Yield due to ordering after compilation
+			declare Vehicles::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
+			FlagRush_ForceEnabledVehicles.clear();
+			foreach (CsvEntry in TL::Split(",", S_ForceEnabledVehiclesCsv)) {
+				declare Text VehicleId = TL::ToLowerCase(TL::Trim(CsvEntry));
+				if (Vehicles::IsValid(VehicleId)) {
+					FlagRush_ForceEnabledVehicles.add(Vehicles::Get(VehicleId));
+				}
+			}
 
-declare Text FlagRush_PreviousSettings_ForceEnabledVehiclesCsv for This = "";
-if (FlagRush_PreviousSettings_ForceEnabledVehiclesCsv != S_ForceEnabledVehiclesCsv) {
-	FlagRush_PreviousSettings_ForceEnabledVehiclesCsv = S_ForceEnabledVehiclesCsv;
-
-	// Note: Cannot use functions like Vehicle_GetEnabled or globals in Yield due to ordering after compilation
-	declare Vehicles::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
-	FlagRush_ForceEnabledVehicles.clear();
-	foreach (CsvEntry in TL::Split(",", S_ForceEnabledVehiclesCsv)) {
-		declare Text VehicleId = TL::ToLowerCase(TL::Trim(CsvEntry));
-		if (Vehicles::IsValid(VehicleId)) {
-			FlagRush_ForceEnabledVehicles.add(Vehicles::Get(VehicleId));
+			declare Vehicles::K_Vehicle[] EnabledVehicles;
+			if (FlagRush_ForceEnabledVehicles.count > 0) {
+				EnabledVehicles = FlagRush_ForceEnabledVehicles;
+			} else {
+				EnabledVehicles = FlagRushMap::GetEnabledVehicles();
+			}
+			FlagRush_VehicleSelection::SetEnabledVehicles(EnabledVehicles);
+			RestartTurn = True;
 		}
 	}
-
-	declare Vehicles::K_Vehicle[] EnabledVehicles;
-	if (FlagRush_ForceEnabledVehicles.count > 0) {
-		EnabledVehicles = FlagRush_ForceEnabledVehicles;
-	} else {
-		EnabledVehicles = FlagRushMap::GetEnabledVehicles();
-	}
-	FlagRush_VehicleSelection::SetEnabledVehicles(EnabledVehicles);
-	RestartTurn = True;
 }
 
-declare Boolean TrustClientSimuChanged = SettingTracker::HasChanged(S_TrustClientSimu, "S_TrustClientSimu");
-declare Boolean UseCrudeExtrapolationChanged = SettingTracker::HasChanged(S_UseCrudeExtrapolation, "S_UseCrudeExtrapolation");
-if (TrustClientSimuChanged || UseCrudeExtrapolationChanged) {
-	RestartTurn = True;
-}
-
-declare Boolean UseCollisionsChanged = SettingTracker::HasChanged(S_UseCollisions, "S_UseCollisions");
-if (UseCollisionsChanged) {
-	UsePvPCollisions = S_UseCollisions;
-	RestartTurn = True;
-}
-
-declare Boolean VehicleTuningChanged = False;
-VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningStadiumAcceleration,	"S_TuningStadiumAcceleration");
-VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningStadiumAdherence,			"S_TuningStadiumAdherence");
-VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningStadiumControl,				"S_TuningStadiumControl");
-VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningSnowAcceleration,			"S_TuningSnowAcceleration");
-VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningSnowAdherence,				"S_TuningSnowAdherence");
-VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningSnowControl,					"S_TuningSnowControl");
-VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningRallyAcceleration,		"S_TuningRallyAcceleration");
-VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningRallyAdherence,				"S_TuningRallyAdherence");
-VehicleTuningChanged = VehicleTuningChanged || SettingTracker::HasChanged(S_TuningRallyControl,					"S_TuningRallyControl");
-if (VehicleTuningChanged) {
+if (UpdateVehicleTunings) {
 	declare Vehicles::K_Tuning StadiumTuning = Vehicles::C_Tuning_Default;
 	StadiumTuning.Acceleration =	S_TuningStadiumAcceleration;
 	StadiumTuning.Adherence =			S_TuningStadiumAdherence;
@@ -432,8 +463,6 @@ if (VehicleTuningChanged) {
 	DesertTuning.Adherence =			S_TuningDesertAdherence;
 	DesertTuning.Control =				S_TuningDesertControl;
 	Vehicles::SetTuning(C_Vehicle_Desert.Id, DesertTuning);
-
-	RestartTurn = True;
 }
 
 if (RestartTurn && MB_TurnIsRunning()) {

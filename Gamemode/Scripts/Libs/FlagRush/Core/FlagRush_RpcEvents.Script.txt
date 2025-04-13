@@ -219,7 +219,6 @@ K_Rpc_Player UserToRpcPlayer(CUser User) {
 }
 
 K_Rpc_Landmark LandmarkToRpcLandmark(CMapLandmark Landmark) {
-	log(Landmark);
 	return K_Rpc_Landmark {
 		LandmarkId = TL::ToInteger(TL::Replace("" ^ Landmark.Id, "#", "")),
 		Position = Landmark.Position

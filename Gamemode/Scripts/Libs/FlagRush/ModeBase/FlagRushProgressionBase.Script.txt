@@ -23,13 +23,15 @@
 
 // FlagRush Libs
 #Include "Libs/FlagRush/Const/Durations.Script.txt"										as Durations
+#Include "Libs/FlagRUsh/Const/SettingNames.Script.txt"				as SettingNames
 
-#Include "Libs/FlagRush/Core/SettingTracker.Script.txt"								as SettingTracker
 #Include "Libs/FlagRush/Core/Map.Script.txt"									as FlagRushMap
 #Include "Libs/FlagRush/Core/Scores.Script.txt"												as Scores
 #Include "Libs/FlagRush/Core/Teams.Script.txt"								as Teams
 #Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"						as FlagRush_XmlRpc
+
 #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt"										as PlayerLifecycleEvents
+#Include "Libs/FlagRush/Event/Settings.Script.txt"								as Settings
 
 #Include "Libs/FlagRush/Util/Log.Script.txt"													as Log
 #Include "Libs/FlagRush/Util/ModeUtils.Script.txt"										as ModeUtils
@@ -51,6 +53,8 @@
 //////////////
 // Settings //
 //////////////
+
+// KEEP SETTINGS IN SYNC WITH "Const/SettingNames.Script.txt" AND UPDATE IN ***UpdateModeSettings***
 
 #Setting S_NbMapsToWinMatch									1 			as "Number of maps to win a match"
 #Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"
@@ -174,8 +178,25 @@ ReadonlyLaunchedCheckpoints = False;
 UseProtectClanmates = False;
 UseAllies = False;
 CrudeExtrapolation_AllowDelay = False;
+***
 
-FlagRush_UI::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
+***UpdateModeSettings***
+***
+Settings::Update(SettingNames::S_NbMapsToWinMatch, S_NbMapsToWinMatch);
+Settings::Update(SettingNames::S_NbRoundsToWinMap, S_NbRoundsToWinMap);
+Settings::Update(SettingNames::S_NbFlagsToWinRound, S_NbFlagsToWinRound);
+Settings::Update(SettingNames::S_RoundTimeLimitSeconds, S_RoundTimeLimitSeconds);
+Settings::Update(SettingNames::S_UseOvertime, S_UseOvertime);
+Settings::Update(SettingNames::S_UseWarmUp, S_UseWarmUp);
+Settings::Update(SettingNames::S_WarmUpWaitForApproval, S_WarmUpWaitForApproval);
+Settings::Update(SettingNames::S_Team1Name, S_Team1Name);
+Settings::Update(SettingNames::S_Team1Hue, S_Team1Hue);
+Settings::Update(SettingNames::S_Team2Name, S_Team2Name);
+Settings::Update(SettingNames::S_Team2Hue, S_Team2Hue);
+Settings::Update(SettingNames::S_UseClubTags, S_UseClubTags);
+Settings::Update(SettingNames::S_UseTeamSkins, S_UseTeamSkins);
+Settings::Update(SettingNames::S_SkipMatchOnLastPlayerLeave, S_SkipMatchOnLastPlayerLeave);
+Settings::Update(SettingNames::S_ModeCommands_AdminLoginsCsv, S_ModeCommands_AdminLoginsCsv);
 ***
 
 ***LoadLibraries***
@@ -191,7 +212,7 @@ Teams::SetTeam2HueOverride(S_Team2Hue);
 Teams::UseClubTags(S_UseClubTags);
 Teams::Init();
 
-SettingTracker::Load();
+Settings::Load();
 ***
 
 ***UnloadLibraries***
@@ -199,7 +220,7 @@ SettingTracker::Load();
 FlagRush_XmlRpc::Unload();
 Messages::Unload();
 Scores::Unload();
-SettingTracker::Unload();
+Settings::Unload();
 ***
 
 ***LoadHud***
@@ -563,7 +584,10 @@ FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 // TODO: Find a way to work around this. It hurts.
 ***Yield***
 ***
-PlayerLifecycleEvents::Yield(); // Keep as first in yield
+Settings::Yield();
+{ +++UpdateModeSettings+++ }
+PlayerLifecycleEvents::Yield();
+
 ModeCommands::Yield();
 Messages::Yield();
 Scores::Yield();
@@ -616,37 +640,41 @@ if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted && Map != 
 
 ***Private_Yield_HandleCriticalModeScriptSettingsUpdates***
 ***
-// Point limit settings
-declare Boolean NbMapsToWinMatchChanged = SettingTracker::HasChanged(S_NbMapsToWinMatch, "S_NbMapsToWinMatch");
-declare Boolean NbRoundsToWinMapChanged = SettingTracker::HasChanged(S_NbRoundsToWinMap, "S_NbRoundsToWinMap");
-declare Boolean NbFlagsToWinRoundChanged = SettingTracker::HasChanged(S_NbFlagsToWinRound, "S_NbFlagsToWinRound");
-if (NbMapsToWinMatchChanged || NbRoundsToWinMapChanged || NbFlagsToWinRoundChanged) {
+declare Boolean SendProgressionSettingsToClient = False;
+declare Boolean ReinitTeamsConfig = False;
+foreach(Event in Settings::GetPendingEvents()) {
+	switch (Event.Name) {
+		// Point limits
+		case SettingNames::S_NbMapsToWinMatch, SettingNames::S_NbRoundsToWinMap, SettingNames::S_NbFlagsToWinRound : {
+			SendProgressionSettingsToClient = True;
+		}
+		// Team Configs
+		case SettingNames::S_UseClubTags, SettingNames::S_Team1Name, SettingNames::S_Team1Hue, SettingNames::S_Team2Name, SettingNames::S_Team2Hue: {
+			ReinitTeamsConfig = True;
+		}
+		// ModeCommands admins
+		case SettingNames::S_ModeCommands_AdminLoginsCsv: {
+			ModeCommands::RemoveAllUserPermissions();
+			declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
+			foreach(Login in ModeCommandsAdminLogins) {
+				ModeCommands::SetSuperAdmin(Login);
+			}
+		}
+	}
+}
+
+
+if (SendProgressionSettingsToClient) {
 	FlagRush_UI::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
 }
 
-// Team configs
-declare Boolean UseClubTagsChanged = SettingTracker::HasChanged(S_UseClubTags, "S_UseClubTags");
-declare Boolean Team1NameChanged = SettingTracker::HasChanged(S_Team1Name, "S_Team1Name");
-declare Boolean Team1HueChanged = SettingTracker::HasChanged(S_Team1Hue, "S_Team1Hue");
-declare Boolean Team2NameChanged = SettingTracker::HasChanged(S_Team2Name, "S_Team2Name");
-declare Boolean Team2HueChanged = SettingTracker::HasChanged(S_Team2Hue, "S_Team2Hue");
-if (UseClubTagsChanged || Team1NameChanged || Team1HueChanged || Team2NameChanged || Team2HueChanged) {
+if (ReinitTeamsConfig) {
 	Teams::UseClubTags(S_UseClubTags);
 	Teams::SetTeam1NameOverride(S_Team1Name);
 	Teams::SetTeam2NameOverride(S_Team2Name);
 	Teams::SetTeam1HueOverride(S_Team1Hue);
 	Teams::SetTeam2HueOverride(S_Team2Hue);
 	Teams::Init();
-}
-
-// Mode commands
-declare Boolean ModeCommandsAdminLoginsCsvChanged = SettingTracker::HasChanged(S_ModeCommands_AdminLoginsCsv, "S_ModeCommands_AdminLoginsCsv");
-if (ModeCommandsAdminLoginsCsvChanged) {
-	ModeCommands::RemoveAllUserPermissions();
-	declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
-	foreach(Login in ModeCommandsAdminLogins) {
-		ModeCommands::SetSuperAdmin(Login);
-	}
 }
 ***
 

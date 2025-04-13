@@ -51,7 +51,7 @@
 	Integer StartTime;
 }
 
-declare K_WarmUpReadyUpEvent[] PendingEvents;
+declare K_WarmUpReadyUpEvent[] G_PendingEvents;
 
 declare Boolean G_WarmUpShouldStop;
 declare Boolean[Text] G_PlayersReady;
@@ -68,10 +68,10 @@ Boolean WarmUpShouldStop() {
 }
 
 /**
- * Getter for PendingEvents
+ * Getter for G_PendingEvents
  */
 K_WarmUpReadyUpEvent[] GetPendingEvents() {
-	return PendingEvents;
+	return G_PendingEvents;
 }
 
 /**
@@ -81,35 +81,35 @@ Boolean[Text] GetPlayersReadyStates() {
 	return G_PlayersReady;
 }
 
-Void SetWarmUpEndApproval(Boolean Approved) {
-	G_Approval = Approved;
+Void SetWarmUpEndApproval(Boolean _Approved) {
+	G_Approval = _Approved;
 }
 
 /**
- * Adds an Event to the PendingEvents
+ * Adds an Event to the G_PendingEvents
  */
-Void Private_AddEvent(Text Type, Text[] Params) {
-	declare K_WarmUpReadyUpEvent Event = K_WarmUpReadyUpEvent{Type = Type, Params = Params};
-	PendingEvents.add(Event);
+Void Private_AddEvent(Text _Type, Text[] _Params) {
+	declare K_WarmUpReadyUpEvent Event = K_WarmUpReadyUpEvent{Type = _Type, Params = _Params};
+	G_PendingEvents.add(Event);
 }
 
 /**
  * Start the timeout
  */
-Void Private_StartTimeout(Integer State, Integer Timeout) {
-	G_TimeoutState.State = State;
+Void Private_StartTimeout(Integer _State, Integer _Timeout) {
+	G_TimeoutState.State = _State;
 	G_TimeoutState.StartTime = Now;
-	EndTime = Now + Timeout;
-	Private_AddEvent(C_Event_Type_TimeoutStart, [TL::ToText(Timeout)]);
+	EndTime = Now + _Timeout;
+	Private_AddEvent(C_Event_Type_TimeoutStart, [TL::ToText(_Timeout)]);
 }
 
 /**
  * Update the Timeout
  */
-Void Private_UpdateTimeout(Integer State, Integer RemainingTime) {
-	G_TimeoutState.State = State;
-	EndTime = Now + RemainingTime;
-	Private_AddEvent(C_Event_Type_TimeoutUpdate, [TL::ToText(RemainingTime)]);
+Void Private_UpdateTimeout(Integer _State, Integer _RemainingTime) {
+	G_TimeoutState.State = _State;
+	EndTime = Now + _RemainingTime;
+	Private_AddEvent(C_Event_Type_TimeoutUpdate, [TL::ToText(_RemainingTime)]);
 }
 
 /**
@@ -132,14 +132,14 @@ Void Private_AbortTimeout() {
  * If the timeout was started when all players where ready but now only one player in each team is ready,
  * 	then extend the timer to the remaining time.
  */
-Void Private_UpdateWarmUpEndTime(Boolean AllClansAtLeastOnePlayerReady, Boolean AllClansAllPlayersReady) {
-	if (AllClansAllPlayersReady) {
+Void Private_UpdateWarmUpEndTime(Boolean _AllClansAtLeastOnePlayerReady, Boolean _AllClansAllPlayersReady) {
+	if (_AllClansAllPlayersReady) {
 		if (G_TimeoutState.State == C_Timeout_State_NotStarted) {
 			Private_StartTimeout(C_Timeout_State_AllPlayersReady, C_Timeout_AllPlayersReady);
 		} else if (G_TimeoutState.State == C_Timeout_State_OnePlayerReady) {
 			Private_UpdateTimeout(C_Timeout_State_AllPlayersReady, C_Timeout_AllPlayersReady);
 		}
-	} else if (AllClansAtLeastOnePlayerReady) {
+	} else if (_AllClansAtLeastOnePlayerReady) {
 		if (G_TimeoutState.State == C_Timeout_State_NotStarted) {
 			Private_StartTimeout(C_Timeout_State_OnePlayerReady, C_Timeout_AtLeastOnePlayerReady);
 		} else if (G_TimeoutState.State == C_Timeout_State_AllPlayersReady) {
@@ -197,7 +197,7 @@ Boolean Private_MatchCanStart() {
 	// Check if all or at least one players are ready in all clans
 	declare Boolean AllClansAtLeastOnePlayerReady = True;
 	declare Boolean AllClansAllPlayersReady = True;
-	foreach (Clan => ReadyState in ClanReadyStates) {
+	foreach (ReadyState in ClanReadyStates) {
 		AllClansAtLeastOnePlayerReady = AllClansAtLeastOnePlayerReady && (ReadyState.NbPlayersReady >= 1);
 		AllClansAllPlayersReady = AllClansAllPlayersReady && (ReadyState.NbPlayersReady == ReadyState.NbPlayers);
 	}
@@ -214,7 +214,7 @@ Boolean Private_MatchCanStart() {
 	Private_UpdateWarmUpEndTime(AllClansAtLeastOnePlayerReady, AllClansAllPlayersReady);
 
 	// Check if the timeout ended
-	declare TimeoutEnded = G_TimeoutState.State != C_Timeout_State_NotStarted && Now > EndTime;
+	declare Boolean TimeoutEnded = G_TimeoutState.State != C_Timeout_State_NotStarted && Now > EndTime;
 	if(TimeoutEnded) {
 		Private_AddEvent(C_Event_Type_TimeoutEnd, []);
 	}
@@ -226,7 +226,7 @@ Boolean Private_MatchCanStart() {
  * This should already be called automatically when a player changes his state.
  */
  Void Net_SendPlayerReadyStates() {
-	declare netwrite Boolean[Text] Net_WarmUpReadyUp_ReadyStates for Teams[0];
+	declare netwrite Boolean[Text] Net_WarmUpReadyUp_ReadyStates for Teams[0] = [];
 	Net_WarmUpReadyUp_ReadyStates = G_PlayersReady;
 }
 
@@ -234,13 +234,13 @@ Boolean Private_MatchCanStart() {
  * Starts the warmup.
  * @param WaitForConfirmation: If true, waits for the mode to confirm that the warmup can end, no matter how many players are ready.
  */
-Void Start(Boolean WaitForApproval) {
+Void Start(Boolean _WaitForApproval) {
 	G_WarmUpShouldStop = False;
-	PendingEvents = [];
-	G_PlayersReady = [];
+	G_PendingEvents.clear();
+	G_PlayersReady.clear();
 	G_TimeoutState = K_TimeoutState{};
 	G_Approval = False;
-	G_WaitForApproval = WaitForApproval;
+	G_WaitForApproval = _WaitForApproval;
 	Net_SendPlayerReadyStates();
 
 	Layers::Create(WarmUpReadyUp_UI::C_ManialinkName, WarmUpReadyUp_UI::GetManialink());
@@ -258,7 +258,7 @@ Void Start() {
  */
 Void Stop() {
 	G_WarmUpShouldStop = True;
-	PendingEvents = [];
+	G_PendingEvents.clear();
 	Layers::Destroy(WarmUpReadyUp_UI::C_ManialinkName);
 }
 
@@ -305,7 +305,7 @@ Void Private_HandleUIEvents() {
  * Does everything necessary during a frame of the script. Does not yield the mode!
  */
 Void Yield() {
-	PendingEvents = [];
+	G_PendingEvents.clear();
 
 	Private_HandleXmlRpcEvents();
 	Private_HandleUIEvents();

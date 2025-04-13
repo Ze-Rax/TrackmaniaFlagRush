@@ -40,9 +40,9 @@ Text GetManialink() {
 			return TransformColor(_Color, <-.0194, 0., -.37>);
 		}
 
-		Void SetReady(Boolean IsReady) {
-			if(Ready != IsReady) {
-				Ready = IsReady;
+		Void SetReady(Boolean _IsReady) {
+			if(Ready != _IsReady) {
+				Ready = _IsReady;
 				SendCustomEvent("{{{C_ReadyEvent_Type}}}", [TL::ToText(Ready)]);
 			}
 		}

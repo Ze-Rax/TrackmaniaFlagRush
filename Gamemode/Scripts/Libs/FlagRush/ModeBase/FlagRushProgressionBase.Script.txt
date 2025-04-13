@@ -575,27 +575,25 @@ FlagRush_UI::Yield();
 
 ***Private_Yield_HandlePlayerLifecycleEvents***
 ***
-declare Boolean ReinitTeamNames;
-declare Boolean LastPlayerLeft;
+declare Boolean ReinitTeamNames = False;
+declare Boolean LastPlayerLeft = False;
 foreach (Event in PlayerLifecycleEvents::GetPendingEvents()) {
-	if (Event.Type == PlayerLifecycleEvents::C_PlayerLifecycle_PlayerAdded) {
-		declare Boolean WelcomeMessageWasSent for Event.Player.User; // Players are removed and added during map load
-		if (!WelcomeMessageWasSent){
-			Messages::Welcome(Event.Player, Version);
-			WelcomeMessageWasSent = True;
+	if (Event.Type == PlayerLifecycleEvents::C_EventType_PlayerAdded) {
+		declare CSmPlayer Player <=> AllPlayers.get(Event.Player.PlayerId, Null);
+		if (Player != Null) {
+			Messages::Welcome(Player, Version);
 		}
 	}
 
 	// Check if player event requires team reinitialization
-	declare Boolean PlayerAdded = Event.Type == PlayerLifecycleEvents::C_PlayerLifecycle_PlayerAdded && !Event.IsSpectator;
-	declare Boolean PlayerRemoved = Event.Type == PlayerLifecycleEvents::C_PlayerLifecycle_PlayerRemoved && !Event.IsSpectator;
-	declare Boolean PlayerClanChange = Event.Type == PlayerLifecycleEvents::C_PlayerLifecycle_PlayerClanChange;
-	declare Boolean PlayerSpectatorChange = Event.Type == PlayerLifecycleEvents::C_PlayerLifecycle_PlayerToSpectator
-			|| Event.Type == PlayerLifecycleEvents::C_PlayerLifecycle_SpectatorToPlayer;
+	declare Boolean PlayerAdded = Event.Type == PlayerLifecycleEvents::C_EventType_PlayerAdded && Players.existskey(Event.Player.PlayerId);
+	declare Boolean PlayerRemoved = Event.Type == PlayerLifecycleEvents::C_EventType_PlayerRemoved && !Event.Player.Previously.WasSpectator;
+	declare Boolean PlayerClanChange = Event.Type == PlayerLifecycleEvents::C_EventType_PlayerClanChange;
+	declare Boolean PlayerSpectatorChange = Event.Type == PlayerLifecycleEvents::C_EventType_PlayerToSpectator || Event.Type == PlayerLifecycleEvents::C_EventType_SpectatorToPlayer;
 	ReinitTeamNames = ReinitTeamNames || PlayerAdded || PlayerRemoved || PlayerClanChange || PlayerSpectatorChange;
 
 	// Skip match if no player is left after player left or moved to spectator
-	LastPlayerLeft = LastPlayerLeft || Players.count == 0 && (PlayerRemoved || Event.Type == PlayerLifecycleEvents::C_PlayerLifecycle_PlayerToSpectator);
+	LastPlayerLeft = LastPlayerLeft || Players.count == 0 && (PlayerRemoved || Event.Type == PlayerLifecycleEvents::C_EventType_PlayerToSpectator);
 }
 
 if (ReinitTeamNames) {

@@ -1,5 +1,5 @@
 #Include "MathLib" as ML
-#Include "Libs/FlagRush/Core/Log.Script.txt" as Log
+#Include "Libs/FlagRush/Util/Log.Script.txt" as Log
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
 
 #Const C_LandmarkTag_SpawnTeam1					"SpawnTeam1"

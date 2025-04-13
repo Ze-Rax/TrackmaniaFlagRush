@@ -33,7 +33,7 @@
 // FlagRush Libs
 // #Include "Libs/FlagRush/Const/Durations.Script.txt"											as Durations
 
-// #Include "Libs/FlagRush/Core/Log.Script.txt"															as Log
+// #Include "Libs/FlagRush/Util/Log.Script.txt"															as Log
 // #Include "Libs/FlagRush/Core/Map.Script.txt"										as FlagRushMap
 // #Include "Libs/FlagRush/Core/Scores.Script.txt"													as Scores
 // #Include "Libs/FlagRush/Core/Teams.Script.txt"									as Teams

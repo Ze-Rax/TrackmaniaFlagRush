@@ -24,7 +24,6 @@
 // FlagRush Libs
 #Include "Libs/FlagRush/Const/Durations.Script.txt"										as Durations
 
-#Include "Libs/FlagRush/Core/Log.Script.txt"													as Log
 #Include "Libs/FlagRush/Core/SettingTracker.Script.txt"								as SettingTracker
 #Include "Libs/FlagRush/Core/Map.Script.txt"									as FlagRushMap
 #Include "Libs/FlagRush/Core/Scores.Script.txt"												as Scores
@@ -33,6 +32,7 @@
 #Include "Libs/FlagRush/Core/ModeUtils.Script.txt"										as ModeUtils
 #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt"										as PlayerLifecycleEvents
 
+#Include "Libs/FlagRush/Util/Log.Script.txt"													as Log
 #Include "Libs/FlagRush/Util/Command.Script.txt"									as Command
 
 #Include "Libs/FlagRush/UI/FlagRush_UI.Script.txt"							as FlagRush_UI

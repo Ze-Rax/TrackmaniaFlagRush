@@ -5,7 +5,7 @@
 #Const C_PlayerLifecycle_PlayerClanChangeRequest "PlayerClanChangeRequest"
 #Const C_PlayerLifecycle_PlayerClanChange "PlayerClanChange"
 
-#Struct K_PlayerLifecycleEvent {
+#Struct K_Event {
 	Text Type;
 	CSmPlayer Player;
 	CUser User;
@@ -14,19 +14,20 @@
 	Integer PreviousClan; ///< For Multiclan usage
 }
 
-declare K_PlayerLifecycleEvent[] G_PendingEvents;
+declare K_Event[] G_PendingEvents;
 
 /**
  * Get all pending events. Pending events are flushed and collected by PlayerLifecycleEvents::Yield().
  */
-K_PlayerLifecycleEvent[] GetPendingEvents() {
+K_Event[] GetPendingEvents() {
 	return G_PendingEvents;
 }
 
 /**
- * Checks player states (spectator state, join, leave) and fills the event array
+ * Flushes the old event arrays and collects new events.
+ * Should be called in ***MB_Yield***.
  */
-Void Private_UpdatePlayerEvents() {
+Void Yield() {
 	G_PendingEvents.clear();
 
 	// Check default mode events for join and leave
@@ -35,107 +36,107 @@ Void Private_UpdatePlayerEvents() {
 			case CSmModeEvent::EType::OnPlayerAdded: {
 				// Initilize player
 				declare CUser User = Event.Player.User; // Event.User is Null
-				declare Boolean ModeEvents_Private_WasSpectator for User;
-				declare Integer ModeEvents_Private_PrevRequestedClan for User;
-				declare Integer ModeEvents_Private_PrevClan for User;
-				ModeEvents_Private_WasSpectator = Spectators.existskey(Event.Player.Id); // Do not set in one line as it could be reconnect and user was already present
-				ModeEvents_Private_PrevRequestedClan = Event.Player.RequestedClan;
-				ModeEvents_Private_PrevClan = Event.Player.CurrentClan;
+				declare Boolean PlayerLifecycleEvents_WasSpectator for User = False;
+				declare Integer PlayerLifecycleEvents_PrevRequestedClan for User = 0;
+				declare Integer PlayerLifecycleEvents_PrevClan for User = 0;
+				PlayerLifecycleEvents_WasSpectator = Spectators.existskey(Event.Player.Id); // Do not set in one line as it could be reconnect and user was already present
+				PlayerLifecycleEvents_PrevRequestedClan = Event.Player.RequestedClan;
+				PlayerLifecycleEvents_PrevClan = Event.Player.CurrentClan;
 
-				G_PendingEvents.add(K_PlayerLifecycleEvent{
+				G_PendingEvents.add(K_Event{
 					Type = C_PlayerLifecycle_PlayerAdded,
 					Player = Event.Player,
 					User = User,
-					IsSpectator = ModeEvents_Private_WasSpectator,
+					IsSpectator = PlayerLifecycleEvents_WasSpectator,
 					Clan = Event.Player.CurrentClan,
 					PreviousClan = -1 // Invalid value; He just joined
 				});
 			}
 			case CSmModeEvent::EType::OnPlayerRemoved: {
-				declare Boolean ModeEvents_Private_WasSpectator for Event.User;
-				declare Integer ModeEvents_Private_PrevClan for Event.User;
-				G_PendingEvents.add(K_PlayerLifecycleEvent{
+				declare Boolean PlayerLifecycleEvents_WasSpectator for Event.User = False;
+				declare Integer PlayerLifecycleEvents_PrevClan for Event.User = 0;
+				G_PendingEvents.add(K_Event{
 					Type = C_PlayerLifecycle_PlayerRemoved,
 					Player = Event.Player,
 					User = Event.User,
-					IsSpectator = ModeEvents_Private_WasSpectator,
-					Clan = ModeEvents_Private_PrevClan,
-					PreviousClan = ModeEvents_Private_PrevClan
+					IsSpectator = PlayerLifecycleEvents_WasSpectator,
+					Clan = PlayerLifecycleEvents_PrevClan,
+					PreviousClan = PlayerLifecycleEvents_PrevClan
 				});
 			}
 		}
 	}
 
 	foreach (Player in Players) {
-		declare Boolean ModeEvents_Private_WasSpectator for Player.User;
-		declare Integer ModeEvents_Private_PrevRequestedClan for Player.User;
-		declare Integer ModeEvents_Private_PrevClan for Player.User;
+		declare Boolean PlayerLifecycleEvents_WasSpectator for Player.User = False;
+		declare Integer PlayerLifecycleEvents_PrevRequestedClan for Player.User = 0;
+		declare Integer PlayerLifecycleEvents_PrevClan for Player.User = 0;
 
 		// Check spectators that switched to player
-		if (ModeEvents_Private_WasSpectator) {
-			ModeEvents_Private_WasSpectator = False;
-			G_PendingEvents.add(K_PlayerLifecycleEvent{
+		if (PlayerLifecycleEvents_WasSpectator) {
+			PlayerLifecycleEvents_WasSpectator = False;
+			G_PendingEvents.add(K_Event{
 				Type = C_PlayerLifecycle_SpectatorToPlayer,
 				Player = Player,
 				User = Player.User,
 				IsSpectator = False,
 				Clan = Player.CurrentClan,
-				PreviousClan = ModeEvents_Private_PrevClan
+				PreviousClan = PlayerLifecycleEvents_PrevClan
 			});
 		}
 
 		// Check clan change requests
-		if (ModeEvents_Private_PrevRequestedClan != Player.RequestedClan) {
-			G_PendingEvents.add(K_PlayerLifecycleEvent{
+		if (PlayerLifecycleEvents_PrevRequestedClan != Player.RequestedClan) {
+			G_PendingEvents.add(K_Event{
 				Type = C_PlayerLifecycle_PlayerClanChangeRequest,
 				Player = Player,
 				User = Player.User,
 				IsSpectator = False,
 				Clan = Player.RequestedClan,
-				PreviousClan = ModeEvents_Private_PrevRequestedClan
+				PreviousClan = PlayerLifecycleEvents_PrevRequestedClan
 			});
 			// Update after event creation to provide the previous value as well
-			ModeEvents_Private_PrevRequestedClan = Player.RequestedClan;
+			PlayerLifecycleEvents_PrevRequestedClan = Player.RequestedClan;
 		}
 
 		// Check actual clan changes
-		if (ModeEvents_Private_PrevClan != Player.CurrentClan) {
-			G_PendingEvents.add(K_PlayerLifecycleEvent{
+		if (PlayerLifecycleEvents_PrevClan != Player.CurrentClan) {
+			G_PendingEvents.add(K_Event{
 				Type = C_PlayerLifecycle_PlayerClanChange,
 				Player = Player,
 				User = Player.User,
 				IsSpectator = False,
 				Clan = Player.CurrentClan,
-				PreviousClan = ModeEvents_Private_PrevClan
+				PreviousClan = PlayerLifecycleEvents_PrevClan
 			});
 			// Update after event creation to provide the previous value as well
-			ModeEvents_Private_PrevClan = Player.CurrentClan;
+			PlayerLifecycleEvents_PrevClan = Player.CurrentClan;
 		}
 	}
 
 	// Check players that switched to spectator
 	foreach (Spectator in Spectators) {
-		declare Boolean ModeEvents_Private_WasSpectator for Spectator.User;
-		declare Integer ModeEvents_Private_PrevClan for Spectator.User;
+		declare Boolean PlayerLifecycleEvents_WasSpectator for Spectator.User = False;
+		declare Integer PlayerLifecycleEvents_PrevClan for Spectator.User = 0;
 
-		if (!ModeEvents_Private_WasSpectator) {
-			ModeEvents_Private_WasSpectator = True;
-			G_PendingEvents.add(K_PlayerLifecycleEvent{
+		if (!PlayerLifecycleEvents_WasSpectator) {
+			PlayerLifecycleEvents_WasSpectator = True;
+			G_PendingEvents.add(K_Event{
 				Type = C_PlayerLifecycle_PlayerToSpectator,
 				Player = Spectator,
 				User = Spectator.User,
 				IsSpectator = True,
 				Clan = Spectator.CurrentClan, // Should be 0 for spectators
-				PreviousClan = ModeEvents_Private_PrevClan
+				PreviousClan = PlayerLifecycleEvents_PrevClan
 			});
 		}
 	}
 }
 
-/**
- * Flushes the old event arrays and collects new events.
- * Should be called in ***MB_Yield***.
- */
-Void Yield() {
-	Private_UpdatePlayerEvents();
+Void Unload() {
+	G_PendingEvents.clear();
+}
+
+Void Load() {
+	Unload();
 }

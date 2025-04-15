@@ -2,13 +2,13 @@
 
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 #Include "Libs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
-#Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
+#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_ScoresHeader">
-	{{{ FlagRush_UIShared::GetGradientFramemodel() }}}
+	{{{ UIShared::GetGradientFramemodel() }}}
 
 	<frame id="main" pos="0 82.5">
 		<frame id="team0" z-index="1">
@@ -83,7 +83,7 @@ Text GetManialink() {
 	declare K_Timer Timer;
 	declare K_Carrier Carrier;
 
-	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 
 	/**
 	 * Assigns all needed MlControl references.

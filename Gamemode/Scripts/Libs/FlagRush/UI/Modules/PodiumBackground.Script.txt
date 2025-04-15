@@ -2,7 +2,7 @@
 #Include "Libs/FlagRush/CommonLibs/PlayerStatistics.Script.txt" as PlayerStatistics
 
 #Include "Libs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
-#Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
+#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 #Struct K_PodiumPlaceConfig {
 	Boolean Present;
@@ -52,7 +52,7 @@ Text GetManialink() {
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="FlagRush_PodiumBackground">
-	{{{ FlagRush_UIShared::GetGradientFramemodel() }}}
+	{{{ UIShared::GetGradientFramemodel() }}}
 
 	<framemodel id="statistic">
 		<label id="name" pos="0 0" z-index="0" size="50 5" text="$iStatistic:" valign="center2" textfont="GameFontSemiBold" halign="right" textsize="6" textemboss="1"/>
@@ -144,7 +144,7 @@ Text GetManialink() {
 
 	declare K_Player[] G_Players;
 
-	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 
 	Vec3 PlacementToTextColor(Integer Placement) {
 		switch (Placement) {

@@ -2,7 +2,7 @@
 
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 
-#Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as Shared
+#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 #Const C_LayerName "FlagRush_CarrierSelfIndicator"
 
@@ -28,7 +28,7 @@ Text GetManialink() {
 
 declare K_Indicator G_Indicator;
 
-{{{ Shared::GetTeamColorNetreadFunctions() }}}
+{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 
 CMlQuad[] GetQuads() {
 	return [G_Indicator.TopBar, G_Indicator.BottomBar];

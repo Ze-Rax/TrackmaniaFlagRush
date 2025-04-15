@@ -3,7 +3,7 @@
 #Include "ColorLib" as CL
 #Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
 #Include "Libs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
-#Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
+#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 #Const C_PlayersPerPage 5
 #Const C_PlayerCard_NameDefaultPosition <-37.5, 0.>
@@ -15,8 +15,8 @@ Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_ScoresTable">
-	{{{ FlagRush_UIShared::GetLogoTransparentFramemodel() }}}
-	{{{ FlagRush_UIShared::GetGradientFramemodel() }}}
+	{{{ UIShared::GetLogoTransparentFramemodel() }}}
+	{{{ UIShared::GetGradientFramemodel() }}}
 
 	<!-- The playercard is supposed to be transparent; Hard to do with our usual gradients; Instead use specific gradient without base and 100% gradient width -->
 	<framemodel id="playercard-gradient">
@@ -208,7 +208,7 @@ Text GetManialink() {
 	declare K_TeamScoreboard[] TeamScoreboards;
 	declare K_Footer Footer;
 
-	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 
 	/**
 	 * Gets the player object for a given login.

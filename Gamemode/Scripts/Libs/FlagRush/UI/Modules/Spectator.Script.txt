@@ -4,7 +4,7 @@
 
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 
-#Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as UIShared
+#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 #Include "Libs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 
 Text GetManialink() {

@@ -2,7 +2,7 @@
 
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
-#Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as Shared
+#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 #Const C_LayerName "FlagRush_FlagMarker"
 #Const C_FrameId "FlagRush_Marker_Flag"
@@ -130,7 +130,7 @@ Text GetManialink() {
 declare K_FlagMarker G_FlagMarker;
 declare CMlFrame G_FlagMarkerVisibilityMarker;
 
-{{{ Shared::GetTeamColorNetreadFunctions() }}}
+{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 
 Real Lerp01(Integer _From, Integer _To, Integer _T) {
 	if (_From == _To) {

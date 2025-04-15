@@ -4,8 +4,8 @@
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
 #Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
-#Include "Libs/FlagRush/Core/PlayerStatistics.Script.txt" as PlayerStatistics
-#Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as Shared
+#Include "Libs/FlagRush/CommonLibs/PlayerStatistics.Script.txt" as PlayerStatistics
+#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 #Const C_LayerName "FlagRush_PodiumStatistics"
 
@@ -128,7 +128,7 @@ Text GetManialink() {
 
 declare K_Statistics G_Statistics;
 
-{{{ Shared::GetTeamColorNetreadFunctions() }}}
+{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 
 Void Init() {
 	G_Statistics.Frame = (Page.GetFirstChild("statistics") as CMlFrame);

@@ -1,6 +1,6 @@
 //#RequireContext CSmMlScriptIngame
 #Include "Libs/FlagRush/Const/Durations.Script.txt" as Durations
-#Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as UIShared
+#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 Text GetManialink() {
 	return """

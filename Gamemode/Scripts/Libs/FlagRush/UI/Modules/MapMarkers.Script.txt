@@ -3,7 +3,7 @@
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
 #Include "Libs/FlagRush/Core/Map.Script.txt" as FlagRushMap
-#Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
+#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 #Const C_LayerName "FlagRushMapMarkers"
 
@@ -80,7 +80,7 @@ Text GetManialink() {
 		declare K_FlagSpawnMarker[] G_FlagSpawnMarkers;
 		declare K_FlagSpawnMarker G_DefaultFlagSpawnMarker;
 
-		{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
+		{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 
 		Void Init() {
 			// Team bases

@@ -4,7 +4,7 @@
 
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
 #Include "Libs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
-#Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared
+#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 #Const C_LayerName "FlagRush_VehicleSelection"
 
@@ -53,7 +53,7 @@ Text GetManialink() {
 	declare CMlFrame G_VehicleSelectionFrame;
 	declare K_VehicleOption[] G_VehicleOptions;
 
-	{{{ FlagRush_UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 
 	Void Init() {
 		G_VehicleSelectionFrame = (Page.GetFirstChild("vehicle-selection") as CMlFrame);

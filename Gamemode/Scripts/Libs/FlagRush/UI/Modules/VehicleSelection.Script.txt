@@ -3,7 +3,7 @@
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
-#Include "Libs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
+#Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 #Const C_LayerName "FlagRush_VehicleSelection"
@@ -20,9 +20,9 @@ Text GetManialink() {
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="{{{ C_LayerName }}}">
 	<framemodel id="vehicle-option">
-		<quad id="background" size="12 12" halign="center" valign="center" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}" bgcolor="{{{ CL::RgbToHex3(Colors::C_NeutralDark) }}}"/>
-		<label id="icon" size="8 8" pos="0 2" halign="center" valign="center" text="?" textfont="GameFontSemiBold" textsize="7" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}"/>
-		<label id="name" size="13 4" pos="0 -4" halign="center" valign="center" text="<VEHICLE NAME>" textfont="GameFontSemiBold" textsize="1" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}"/>
+		<quad id="background" size="12 12" halign="center" valign="center" opacity="{{{ Stylesheet::C_TransparentBackgroundOpacity }}}" bgcolor="{{{ CL::RgbToHex3(Stylesheet::C_NeutralDark) }}}"/>
+		<label id="icon" size="8 8" pos="0 2" halign="center" valign="center" text="?" textfont="GameFontSemiBold" textsize="7" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}"/>
+		<label id="name" size="13 4" pos="0 -4" halign="center" valign="center" text="<VEHICLE NAME>" textfont="GameFontSemiBold" textsize="1" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}"/>
 		<quad id="activator" size="15 15" halign="center" valign="center" opacity="0" scriptevents="1"/>
 	</framemodel>
 
@@ -102,7 +102,7 @@ Text GetManialink() {
 			if (Index == SelectedVehicleIndex && InputPlayer != Null) {
 				Option.Controls.Background.BgColor = GetTeamDarkColor(InputPlayer.RequestedClan);
 			} else {
-				Option.Controls.Background.BgColor = {{{ Colors::C_NeutralDark }}};
+				Option.Controls.Background.BgColor = {{{ Stylesheet::C_NeutralDark }}};
 			}
 		}
 	}

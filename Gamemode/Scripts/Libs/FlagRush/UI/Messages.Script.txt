@@ -14,7 +14,7 @@
 
 #Include "Libs/FlagRush/Util/ModeUtils.Script.txt"						as ModeUtils
 
-#Include "Libs/FlagRush/UI/FlagRush_ColorPalette.Script.txt"	as FlagRush_Colors
+#Include "Libs/FlagRush/UI/Stylesheet.Script.txt"	as Stylesheet
 #Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"			as EventFeed
 #Include "Libs/FlagRush/UI/Modules/Sound.Script.txt"					as FlagRush_Sound
 
@@ -118,41 +118,41 @@ Void RoundSkip(Integer _Duration) {
 }
 
 Void OvertimeStart(Integer _Duration) {
-	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}Overtime$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}Overtime$>""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void WarmUpStart(Integer _Duration) {
-	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}WarmUp$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}WarmUp$>""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void WarmUpEnd(Integer _Duration) {
-	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}WarmUp end$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}WarmUp end$>""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void WarmUpWaitForApproval() {
-	declare Text Message = """$<${{{CL::RgbToHex3(FlagRush_Colors::C_Warning)}}}Waiting for admin confirmation to start the match.$>""";
+	declare Text Message = """$<${{{CL::RgbToHex3(Stylesheet::C_Warning)}}}Waiting for admin confirmation to start the match.$>""";
 	Private_SendChat(Message);
 }
 
 Void WarmUpApproved() {
-	declare Text Message = """$<${{{CL::RgbToHex3(FlagRush_Colors::C_Success)}}}The match can start.$>""";
+	declare Text Message = """$<${{{CL::RgbToHex3(Stylesheet::C_Success)}}}The match can start.$>""";
 	Private_SendChat(Message);
 }
 
 Void PauseStart(Integer _Duration) {
-	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}The round was paused$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}The round was paused$>""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
 
 Void PauseEnd(Integer _Duration) {
-	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}The round continues$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}The round continues$>""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
 }
@@ -205,7 +205,7 @@ Void PlayerRespawn(CSmPlayer _Player) {
 }
 
 Void TimeLimitSecondsRemaining(Integer _SecondsRemaining, Integer _Duration) {
-	declare Text Message ="""$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}{{{ _SecondsRemaining }}} seconds remaining$>""";
+	declare Text Message ="""$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}{{{ _SecondsRemaining }}} seconds remaining$>""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Event, CUIConfig::EUISound::TiePoint);
 	EventFeed::SendMessage(Message, EventFeed::C_IconName_Chrono);
 }
@@ -222,17 +222,17 @@ Void Welcome(CSmPlayer _Player, Text _Version) {
 }
 
 Void CriticalSettingUpdate_RestartTurn() {
-	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}A critical setting was updated! Restarting the the current turn...$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}A critical setting was updated! Restarting the the current turn...$>""";
 	Private_SendChat(Message);
 }
 
 Void InvalidMap() {
-	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Error) }}}The map does not conform to the FlagRush map specification. Skipping...$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Error) }}}The map does not conform to the FlagRush map specification. Skipping...$>""";
 	Private_SendChat(Message);
 }
 
 Void AllPlayersLeft_SkipMatch() {
-	declare Text Message = """$<${{{ CL::RgbToHex3(FlagRush_Colors::C_Warning) }}}All players left, skipping match...$>""";
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}All players left, skipping match...$>""";
 	Private_SendChat(Message);
 }
 

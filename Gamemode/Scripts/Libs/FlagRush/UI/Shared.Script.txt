@@ -2,7 +2,7 @@
  * A collection of shared functionality to be used in UI Layers.
  */
 
-#Include	"Libs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
+#Include	"Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 
 #Const C_FlagMarkerHeightIndicatorThreshold	7.
 
@@ -12,35 +12,35 @@
 Text GetTeamColorNetreadFunctions() {
 	return """
 		Vec3 GetTeamLightColor(CTeam Team) {
-			if (Team == Null) return {{{ Colors::C_NeutralLight }}};
+			if (Team == Null) return {{{ Stylesheet::C_NeutralLight }}};
 			declare netread Vec3 Net_FlagRush_LightColor for Team;
 			return Net_FlagRush_LightColor;
 		}
 
 		Vec3 GetTeamLightColor(Integer Clan) {
-			if (Clan <= 0 || Clan > Teams.count) return {{{ Colors::C_NeutralLight }}};
+			if (Clan <= 0 || Clan > Teams.count) return {{{ Stylesheet::C_NeutralLight }}};
 			return GetTeamLightColor(Teams[Clan-1]);
 		}
 
 		Vec3 GetTeamMidColor(CTeam Team) {
-			if (Team == Null) return {{{ Colors::C_TeamNeutral }}};
+			if (Team == Null) return {{{ Stylesheet::C_TeamNeutral }}};
 			declare netread Vec3 Net_FlagRush_MidColor for Team;
 			return Net_FlagRush_MidColor;
 		}
 
 		Vec3 GetTeamMidColor(Integer Clan) {
-			if (Clan <= 0 || Clan > Teams.count) return {{{ Colors::C_TeamNeutral }}};
+			if (Clan <= 0 || Clan > Teams.count) return {{{ Stylesheet::C_TeamNeutral }}};
 			return GetTeamMidColor(Teams[Clan-1]);
 		}
 
 		Vec3 GetTeamDarkColor(CTeam Team) {
-			if (Team == Null) return {{{ Colors::C_NeutralDark }}};
+			if (Team == Null) return {{{ Stylesheet::C_NeutralDark }}};
 			declare netread Vec3 Net_FlagRush_DarkColor for Team;
 			return Net_FlagRush_DarkColor;
 		}
 
 		Vec3 GetTeamDarkColor(Integer Clan) {
-			if (Clan <= 0 || Clan > Teams.count) return {{{ Colors::C_NeutralDark }}};
+			if (Clan <= 0 || Clan > Teams.count) return {{{ Stylesheet::C_NeutralDark }}};
 			return GetTeamDarkColor(Teams[Clan-1]);
 		}
 

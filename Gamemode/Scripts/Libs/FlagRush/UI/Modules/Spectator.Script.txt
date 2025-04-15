@@ -5,17 +5,17 @@
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
-#Include "Libs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
+#Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 
 Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 	<manialink version="3" name="FlagRush_SpectatorUI">
 	<frame id="spectatorbutton" pos="135 -40" scale="0.75">
-		<quad size="50 10" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" colorize="{{{ CL::RgbToHex6(Colors::C_NeutralDark) }}}" opacity="{{{ Colors::C_TransparentBackgroundOpacity }}}"/>
+		<quad size="50 10" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" colorize="{{{ CL::RgbToHex6(Stylesheet::C_NeutralDark) }}}" opacity="{{{ Stylesheet::C_TransparentBackgroundOpacity }}}"/>
 		<quad pos="20 0" z-index="1" size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" id="buttonstate-background"/>
-		<label pos="20 0" z-index="2" size="10 10" halign="center" valign="center" text="" id="buttonstate-icon" textsize="4" textfont="GameFontBlack" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}"/>
-		<label pos="-4 0" z-index="2" size="40 8" halign="center" valign="center" text="Follow Flag Carrier" textsize="2" textfont="GameFontSemiBold" textcolor="{{{ CL::RgbToHex6(Colors::C_NeutralLight) }}}"/>
+		<label pos="20 0" z-index="2" size="10 10" halign="center" valign="center" text="" id="buttonstate-icon" textsize="4" textfont="GameFontBlack" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}"/>
+		<label pos="-4 0" z-index="2" size="40 8" halign="center" valign="center" text="Follow Flag Carrier" textsize="2" textfont="GameFontSemiBold" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}"/>
 
 		<quad pos="-2.5 0" z-index="5" size="50 10" id="button-activator" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" opacity="0" scriptevents="1"/>
 	</frame>
@@ -25,8 +25,8 @@ Text GetManialink() {
 	#Include "MathLib" as ML
 	#Include "ColorLib" as CL
 
-	#Const C_Color_Follow {{{ Colors::C_Enabled }}}
-	#Const C_Color_NoFollow {{{ Colors::C_Disabled }}}
+	#Const C_Color_Follow {{{ Stylesheet::C_Enabled }}}
+	#Const C_Color_NoFollow {{{ Stylesheet::C_Disabled }}}
 
 	#Const C_LabelIcon_Follow ""
 	#Const C_LabelIcon_NoFollow ""

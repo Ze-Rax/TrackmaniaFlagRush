@@ -1,7 +1,7 @@
 #Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
 #Include "Libs/FlagRush/CommonLibs/PlayerStatistics.Script.txt" as PlayerStatistics
 
-#Include "Libs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
+#Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 #Struct K_PodiumPlaceConfig {
@@ -148,11 +148,11 @@ Text GetManialink() {
 
 	Vec3 PlacementToTextColor(Integer Placement) {
 		switch (Placement) {
-			case 1: return {{{ FlagRush_Colors::C_Gold }}};
-			case 2: return {{{ FlagRush_Colors::C_Silver }}};
-			case 3: return {{{ FlagRush_Colors::C_Bronze }}};
+			case 1: return {{{ Stylesheet::C_Gold }}};
+			case 2: return {{{ Stylesheet::C_Silver }}};
+			case 3: return {{{ Stylesheet::C_Bronze }}};
 		}
-		return {{{ FlagRush_Colors::C_NeutralLight }}};
+		return {{{ Stylesheet::C_NeutralLight }}};
 	}
 
 	Void InitMlControls() {

@@ -1,3 +1,9 @@
+/**
+ * A unified facade for player scores, team points progression and player statistics.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "Libs/Nadeo/TMGame/Modes/Scores.Script.txt" as Scores
 #Include "Libs/FlagRush/CommonLibs/PlayerStatistics.Script.txt" as PlayerStatistics
 #Include "Libs/FlagRush/CommonLibs/TeamPointsProgression.Script.txt" as TeamPointsProgression

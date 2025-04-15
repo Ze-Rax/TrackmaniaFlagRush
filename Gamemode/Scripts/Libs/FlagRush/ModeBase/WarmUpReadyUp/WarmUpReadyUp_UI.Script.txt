@@ -1,4 +1,8 @@
-// #RequireContext CSmMlScriptIngame
+/**
+ * Manialink layer Text for the WarmUpReadyUp feature.
+ *
+ * #RequireContext CSmMlScriptIngame
+ */
 
 #Const C_ReadyEvent_Type	"ready"
 #Const C_ManialinkName		"WarmUpReadyUp"

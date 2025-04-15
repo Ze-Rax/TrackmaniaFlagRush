@@ -1,3 +1,9 @@
+/**
+ * Extracts relevant information from a FlagRush map, as landmarks (Spawns, Bases, FlagSpawn), allowed vehicles and default team hues.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "MathLib" as ML
 #Include "Libs/FlagRush/Util/Log.Script.txt" as Log
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles

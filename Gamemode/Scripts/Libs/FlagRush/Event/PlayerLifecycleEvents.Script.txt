@@ -1,6 +1,10 @@
 /**
  * Tracks Changes in the Players, Spectators and AllPlayers arrays and produces events accordingly.
+ *
+ * Produces events when a player joins or leaves the server, requests a clan change or clan is changed or if a player switches between being a player and a spectator.
  * Should be Loaded and Unloaded in ModeBase LoadLibraries and UnloadLibraries, as well as being yielded in Yield plugs.
+ *
+ * #RequireContext CSmMode
  */
 
 #Const C_EventType_PlayerAdded 1

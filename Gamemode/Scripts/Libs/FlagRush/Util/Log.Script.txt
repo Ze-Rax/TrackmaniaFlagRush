@@ -1,3 +1,9 @@
+/**
+ * Simple prefixed logging for FlagRush.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Const C_Prefix "FlagRush"
 
 #Const C_Info "INFO"

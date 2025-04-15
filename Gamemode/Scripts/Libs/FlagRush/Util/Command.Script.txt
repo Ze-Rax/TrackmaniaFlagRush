@@ -1,3 +1,9 @@
+/**
+ * Utility library to unify handling of commands from different sources, like ModeScriptCommands, UI commands or other sources.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "TextLib" as TL
 
 #Const C_CommandPrefix			"Command_"

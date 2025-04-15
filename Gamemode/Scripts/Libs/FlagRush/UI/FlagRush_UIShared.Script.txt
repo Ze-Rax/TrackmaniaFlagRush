@@ -1,3 +1,7 @@
+/**
+ * A collection of shared functionality to be used in UI Layers.
+ */
+
 #Include	"Libs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as Colors
 
 #Const C_FlagMarkerHeightIndicatorThreshold	7.

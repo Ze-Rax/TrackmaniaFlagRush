@@ -1,3 +1,16 @@
+/**
+ * Library used to track changes in gamemode settings.
+ *
+ * If the value of the setting changed compared to the last yield, then the library will create an event.
+ * Events can be retrieved with GetPendingEvents().
+ *
+ * Every yield, the gamemode should send it's current value using Uppdate(SettingName, SettingValue).
+ * No setting with the given name is registered yet, then it will be registered with that name. First registrations will also create an event.
+ * Registrations contain the name and type of the settings. Trying to update a registered setting with a different type will raise an assertion error.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Const C_Type_Integer 1
 #Const C_Type_Real 2
 #Const C_Type_Boolean 3

@@ -1,3 +1,12 @@
+/**
+ * Handles safe applying of effects using the engine SetPlayer_Delayed functions.
+ *
+ * The engine limit the amount of effects that can be applied at a given time, see SetPlayer_DelayedIsFull.
+ * This libray aims to record a queue of effects to apply, and if the limit is reached, it defers the applying to following yields on a per-player basis.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Const C_Type_Fragile "Fragile"
 #Const C_Type_AccelCoef "AccelCoef"
 #Const C_Type_AdherenceCoef "AdherenceCoef"

@@ -1,3 +1,12 @@
+/**
+ * Manages vehicles used in FlagRush
+ *
+ * Contains a list for all the vehicles usable in FlagRush. Also contains tunings (acceleration, ...) for balancing purposes.
+ * On server start, when the item list is created, this library's LoadItems function should be called.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Struct K_Vehicle {
 	Text Id;
 	Integer Order;

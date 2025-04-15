@@ -1,5 +1,7 @@
 /**
- *	For tracking Match Score/Points Progression throughout a multiround/-map match
+ * Library for tracking Match Score/Points Progression throughout a multiround/-map match.
+ *
+ * #RequireContext CSmMode
  */
 
 #Include "Libs/Nadeo/TMGame/Modes/Scores.Script.txt" as Scores // Only used for aliasing reset levels

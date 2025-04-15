@@ -1,4 +1,10 @@
 /**
+ * A rather random collection of useful or convenience functions.
+ *
+ * #RequireContext CSmMode
+ */
+
+/**
  * Gets the score for a user with given login.
  * Returns null if there is no score for the given login.
  */

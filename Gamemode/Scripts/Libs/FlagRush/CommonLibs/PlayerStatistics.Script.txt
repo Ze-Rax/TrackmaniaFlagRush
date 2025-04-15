@@ -1,5 +1,7 @@
 /**
- *	Library to keep track of players activity in gamemodes; Inspired by Scores library
+ * Library to keep track of players activity in gamemodes; Inspired by Scores library.
+ *
+ * #RequireContext CSmMode
  */
 
 #Include "MathLib" as ML

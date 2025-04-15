@@ -209,7 +209,7 @@ ModeCommands::Load();
 
 ***LoadItems***
 ***
-Teams::LoadSkins();
+Teams::LoadItems();
 ***
 
 // ~~~~~~~~~~ Server ~~~~~~~~~~ //

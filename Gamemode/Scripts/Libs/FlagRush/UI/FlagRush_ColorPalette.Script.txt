@@ -1,3 +1,7 @@
+/**
+ * Definitions for a common color palatte for FlagRush.
+ */
+
 // FlagRush team colors
 #Const C_TeamRed <0.8, 0., 0.133>
 #Const C_TeamBlue <0.09, 0.09, 0.898>

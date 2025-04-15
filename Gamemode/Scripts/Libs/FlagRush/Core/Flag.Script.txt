@@ -1,3 +1,12 @@
+/**
+ * Manages the state of the Flag in FlagRush.
+ *
+ * Records state like position, holder (player, landmark) and more.
+ * Also records important state transitions, like passes or steals, as well as the last safe (ground) position.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Const C_Position_Invalid <-1., -1., -1.>
 
 #Struct K_Player {

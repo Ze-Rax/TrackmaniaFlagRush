@@ -1,4 +1,8 @@
-#Const	C_SpawnAnimDuration 1500
+/**
+ * Constants for several durations for delays, message displayed and more, both progression and main gamemode settings.
+ */
+
+#Const C_SpawnAnimDuration      1500
 
 #Const C_Duration_Podium				15000
 #Const C_Duration_MatchEnd			5000

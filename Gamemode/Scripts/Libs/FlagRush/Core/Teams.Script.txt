@@ -1,3 +1,12 @@
+/**
+ * Manages the configuration for the teams in FlagRush.
+ * 
+ * Determines properties like Team name and Hue depending on the FlagRush Map and team members.
+ * To use skins of the appropriate team color, this library's LoadItems function should be called on server start when the item list is created.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "MathLib" as ML
 #Include "TextLib" as TL
 
@@ -82,12 +91,6 @@ Void SetTeam2HueOverride(Integer _Hue) {
 
 Void UseClubTags(Boolean _UseClubTags) {
 	G_UseClubTags = _UseClubTags;
-}
-
-Void LoadSkins() {
-	foreach (Index => TeamColor in C_HueToTeamPresetLut) {
-		G_SkinIds[Index] = ItemList_AddWithSkin("CarSport", TeamColor.SkinName);
-	}
 }
 
 Ident GetSkinModelIdForTeam(Integer _Clan) {
@@ -204,4 +207,10 @@ Void Init() {
 	if (G_UseClubTags) Private_SetTeamNamesFromClubTags();
 	Private_OverrideForcedOrEmptyFields();
 	Private_ApplyToTeams();
+}
+
+Void LoadItems() {
+	foreach (Index => TeamColor in C_HueToTeamPresetLut) {
+		G_SkinIds[Index] = ItemList_AddWithSkin("CarSport", TeamColor.SkinName);
+	}
 }

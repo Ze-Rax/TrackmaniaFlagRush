@@ -1,5 +1,4 @@
-// #RequireContext CSmMode
-/*
+/**
  * WarmUp Library with infinite time and ready up mechanic.
  *
  * Players need to ready up before the warmup end.
@@ -16,6 +15,8 @@
  *		// Your code to execute during warmup; Can contains WarmUpReadyUp::Stop()
  *	}
  *	// Your code to do after warmup
+ *
+ * #RequireContext CSmMode
  */
 
 #Include "TextLib" as TL

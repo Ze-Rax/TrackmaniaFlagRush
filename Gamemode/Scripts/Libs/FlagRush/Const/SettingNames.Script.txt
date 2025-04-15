@@ -1,4 +1,8 @@
 
+/**
+ * Constants for all the available FlagRush settings, both progression and main gamemode settings.
+ */
+
 // MARK: Progression
 #Const S_NbMapsToWinMatch "S_NbMapsToWinMatch"
 #Const S_NbRoundsToWinMap "S_NbRoundsToWinMap"

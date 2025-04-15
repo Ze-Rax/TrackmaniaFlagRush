@@ -1,3 +1,13 @@
+/**
+ * A Facade with functions for constructing and displaying FlagRush related messages in different parts of the UI:
+ * - BigMessage
+ * - Event Feed
+ * - Chat
+ * - Sounds
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "ColorLib" as CL
 
 #Include "Libs/FlagRush/CommonLibs/Nadeo/Message.Script.txt"		as Message

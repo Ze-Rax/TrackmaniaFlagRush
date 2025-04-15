@@ -1,5 +1,5 @@
 #Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
-#Include "Libs/FlagRush/Core/PlayerStatistics.Script.txt" as PlayerStatistics
+#Include "Libs/FlagRush/CommonLibs/PlayerStatistics.Script.txt" as PlayerStatistics
 
 #Include "Libs/FlagRush/UI/FlagRush_ColorPalette.Script.txt" as FlagRush_Colors
 #Include "Libs/FlagRush/UI/FlagRush_UIShared.Script.txt" as FlagRush_UIShared

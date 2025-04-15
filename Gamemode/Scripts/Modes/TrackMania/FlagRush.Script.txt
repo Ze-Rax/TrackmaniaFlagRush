@@ -28,7 +28,7 @@
 // #Include "Libs/FlagRush/Util/ModeUtils.Script.txt"													as ModeUtils
 // #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt"												as PlayerLifecycleEvents
 // #Include "Libs/FlagRush/WarmUpReadyUp/WarmUpReadyUp.Script.txt"				as WarmUpReadyUp
-#Include "Libs/FlagRush/External/Rx/Hitbox.Script.txt"																as Hitbox
+#Include "Libs/FlagRush/CommonLibs/Rx/Hitbox.Script.txt"																as Hitbox
 
 // FlagRush Libs
 // #Include "Libs/FlagRush/Const/Durations.Script.txt"										as Durations

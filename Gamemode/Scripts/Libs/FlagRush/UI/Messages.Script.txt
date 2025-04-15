@@ -1,6 +1,6 @@
 #Include "ColorLib" as CL
 
-#Include "Libs/FlagRush/External/Nadeo/Message.Script.txt"		as Message
+#Include "Libs/FlagRush/CommonLibs/Nadeo/Message.Script.txt"		as Message
 
 #Include "Libs/FlagRush/Util/ModeUtils.Script.txt"						as ModeUtils
 

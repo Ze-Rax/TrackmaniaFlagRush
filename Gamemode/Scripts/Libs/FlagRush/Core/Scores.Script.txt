@@ -1,6 +1,6 @@
 #Include "Libs/Nadeo/TMGame/Modes/Scores.Script.txt" as Scores
-#Include "Libs/FlagRush/Core/PlayerStatistics.Script.txt" as PlayerStatistics
-#Include "Libs/FlagRush/Core/TeamPointsProgression.Script.txt" as TeamPointsProgression
+#Include "Libs/FlagRush/CommonLibs/PlayerStatistics.Script.txt" as PlayerStatistics
+#Include "Libs/FlagRush/CommonLibs/TeamPointsProgression.Script.txt" as TeamPointsProgression
 
 #Const C_PointsValue_ScoreFlag				3
 #Const C_PointsValue_StealFlag				1

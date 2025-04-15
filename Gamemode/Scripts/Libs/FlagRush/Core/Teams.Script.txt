@@ -1,7 +1,7 @@
 #Include "MathLib" as ML
 #Include "TextLib" as TL
 
-#Include "Libs/FlagRush/External/Rx/NiceColors.Script.txt"	as NCL
+#Include "Libs/FlagRush/CommonLibs/Rx/NiceColors.Script.txt"	as NCL
 
 #Const C_Hue_UseDefault			-1
 #Const C_DefaultTeamHue			120

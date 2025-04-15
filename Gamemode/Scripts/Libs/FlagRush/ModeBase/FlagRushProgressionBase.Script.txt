@@ -19,7 +19,7 @@
 // #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"										as XmlRpc
 // #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt"							as XmlRpc_Base
 
-#Include "Libs/FlagRush/WarmUpReadyUp/WarmUpReadyUp.Script.txt"		as WarmUpReadyUp
+#Include "Libs/FlagRush/ModeBase/WarmUpReadyUp/WarmUpReadyUp.Script.txt"		as WarmUpReadyUp
 
 // FlagRush Libs
 #Include "Libs/FlagRush/Const/Durations.Script.txt"										as Durations

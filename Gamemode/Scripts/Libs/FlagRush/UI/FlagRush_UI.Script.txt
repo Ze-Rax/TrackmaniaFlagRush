@@ -32,30 +32,6 @@
 
 declare Integer G_PreviousPlayersCount;
 
-Void Private_LoadUIAll() {
-	UIManager.UIAll.DisableZoomTransitions = False; // Spawn animation (camera-overview-to-car zoom effect)
-
-	UIManager.UIAll.OverlayHideNotices = True;
-	UIManager.UIAll.OverlayHideMapInfo = True;
-	UIManager.UIAll.OverlayHideChat = False;
-	UIManager.UIAll.OverlayHideCountdown = True;
-	UIManager.UIAll.OverlayHideCrosshair = True;
-	UIManager.UIAll.OverlayHideGauges = True;
-	UIManager.UIAll.OverlayHideConsumables = True;
-	UIManager.UIAll.OverlayHide321Go = True;
-	UIManager.UIAll.OverlayMute321Go = False;
-	UIManager.UIAll.OverlayHideEndMapLadderRecap = True;
-	UIManager.UIAll.OverlayHideSpectatorInfos = True;
-
-	UIManager.UIAll.ScoreTableOnlyManialink = True; // Hide default simple score board
-
-	UIManager.UIAll.TeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
-	UIManager.UIAll.TeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenInFrustum;
-	UIManager.UIAll.OpposingTeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
-	UIManager.UIAll.OpposingTeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenVisible;
-	UIManager.UIAll.LabelsVisibility = CUIConfig::EHudVisibility::Everything;
-}
-
 Void Private_LoadModules() {
 	declare FlagRush_UIRadar::K_Config Config = FlagRush_UIRadar::K_Config {
 		Scale = 0.35,
@@ -172,7 +148,6 @@ Void Load() {
 
 	G_PreviousPlayersCount = Players.count;
 
-	Private_LoadUIAll();
 	Private_LoadModules();
 	Private_AttachModules();
 }

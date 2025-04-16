@@ -93,7 +93,7 @@ Integer GetInteger(Text _Name) {
     return G_IntegerSettings.get(_Name, C_Default_Integer);
 }
 
-Void Update(Text _Name, Integer _Value) {
+Void Track(Text _Name, Integer _Value) {
     declare Boolean NewRegisteration = Private_RegisterIfNotPresent(_Name, C_Type_Integer);
     Private_AssertType(_Name, C_Type_Integer);
     if (!NewRegisteration && G_IntegerSettings[_Name] == _Value) {
@@ -116,7 +116,7 @@ Real GetReal(Text _Name) {
     return G_RealSettings.get(_Name, C_Default_Real);
 }
 
-Void Update(Text _Name, Real _Value) {
+Void Track(Text _Name, Real _Value) {
     declare Boolean NewRegisteration = Private_RegisterIfNotPresent(_Name, C_Type_Real);
     Private_AssertType(_Name, C_Type_Real);
     if (!NewRegisteration && G_RealSettings[_Name] == _Value) {
@@ -139,7 +139,7 @@ Boolean GetBoolean(Text _Name) {
     return G_BooleanSettings.get(_Name, C_Default_Boolean);
 }
 
-Void Update(Text _Name, Boolean _Value) {
+Void Track(Text _Name, Boolean _Value) {
     declare Boolean NewRegisteration = Private_RegisterIfNotPresent(_Name, C_Type_Boolean);
     Private_AssertType(_Name, C_Type_Boolean);
     if (!NewRegisteration && G_BooleanSettings[_Name] == _Value) {
@@ -162,7 +162,7 @@ Text GetText(Text _Name) {
     return G_TextSettings.get(_Name, C_Default_Text);
 }
 
-Void Update(Text _Name, Text _Value) {
+Void Track(Text _Name, Text _Value) {
     declare Boolean NewRegisteration = Private_RegisterIfNotPresent(_Name, C_Type_Text);
     Private_AssertType(_Name, C_Type_Text);
     if (!NewRegisteration && G_TextSettings[_Name] == _Value) {

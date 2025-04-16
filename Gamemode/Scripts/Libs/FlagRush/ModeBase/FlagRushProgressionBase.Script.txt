@@ -153,23 +153,23 @@ UseAllies = False;
 CrudeExtrapolation_AllowDelay = False;
 ***
 
-***UpdateModeSettings***
+***TrackModeSettings***
 ***
-Settings::Update(SettingNames::S_NbMapsToWinMatch, S_NbMapsToWinMatch);
-Settings::Update(SettingNames::S_NbRoundsToWinMap, S_NbRoundsToWinMap);
-Settings::Update(SettingNames::S_NbFlagsToWinRound, S_NbFlagsToWinRound);
-Settings::Update(SettingNames::S_RoundTimeLimitSeconds, S_RoundTimeLimitSeconds);
-Settings::Update(SettingNames::S_UseOvertime, S_UseOvertime);
-Settings::Update(SettingNames::S_UseWarmUp, S_UseWarmUp);
-Settings::Update(SettingNames::S_WarmUpWaitForApproval, S_WarmUpWaitForApproval);
-Settings::Update(SettingNames::S_Team1Name, S_Team1Name);
-Settings::Update(SettingNames::S_Team1Hue, S_Team1Hue);
-Settings::Update(SettingNames::S_Team2Name, S_Team2Name);
-Settings::Update(SettingNames::S_Team2Hue, S_Team2Hue);
-Settings::Update(SettingNames::S_UseClubTags, S_UseClubTags);
-Settings::Update(SettingNames::S_UseTeamSkins, S_UseTeamSkins);
-Settings::Update(SettingNames::S_SkipMatchOnLastPlayerLeave, S_SkipMatchOnLastPlayerLeave);
-Settings::Update(SettingNames::S_ModeCommands_AdminLoginsCsv, S_ModeCommands_AdminLoginsCsv);
+Settings::Track(SettingNames::S_NbMapsToWinMatch, S_NbMapsToWinMatch);
+Settings::Track(SettingNames::S_NbRoundsToWinMap, S_NbRoundsToWinMap);
+Settings::Track(SettingNames::S_NbFlagsToWinRound, S_NbFlagsToWinRound);
+Settings::Track(SettingNames::S_RoundTimeLimitSeconds, S_RoundTimeLimitSeconds);
+Settings::Track(SettingNames::S_UseOvertime, S_UseOvertime);
+Settings::Track(SettingNames::S_UseWarmUp, S_UseWarmUp);
+Settings::Track(SettingNames::S_WarmUpWaitForApproval, S_WarmUpWaitForApproval);
+Settings::Track(SettingNames::S_Team1Name, S_Team1Name);
+Settings::Track(SettingNames::S_Team1Hue, S_Team1Hue);
+Settings::Track(SettingNames::S_Team2Name, S_Team2Name);
+Settings::Track(SettingNames::S_Team2Hue, S_Team2Hue);
+Settings::Track(SettingNames::S_UseClubTags, S_UseClubTags);
+Settings::Track(SettingNames::S_UseTeamSkins, S_UseTeamSkins);
+Settings::Track(SettingNames::S_SkipMatchOnLastPlayerLeave, S_SkipMatchOnLastPlayerLeave);
+Settings::Track(SettingNames::S_ModeCommands_AdminLoginsCsv, S_ModeCommands_AdminLoginsCsv);
 ***
 
 ***LoadLibraries***
@@ -612,7 +612,7 @@ FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 ***
 // Trackm modesettings after Settings::Yield, else events would be cleared instantly.
 Settings::Yield();
-{ +++UpdateModeSettings+++ }
+{ +++TrackModeSettings+++ }
 ProgressionEvents::Yield();
 PlayerLifecycleEvents::Yield();
 

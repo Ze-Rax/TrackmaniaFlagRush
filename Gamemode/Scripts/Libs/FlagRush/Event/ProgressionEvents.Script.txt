@@ -1,0 +1,71 @@
+/**
+ * Events for the general progression of the FlagRush mode.
+ * 
+ * Provides events for begin and end of different segments, like warmup, maps, matches, etc.
+ * Consuming scripts should only access the pending using the GetPendingEvents function.
+ * Events are published from the respective mode using the Mode_PublishEvent function. They should not be used by consuming scripts.
+ * This script therefore only serves as a point that is accessible to libraries, as they cannot access members from the mode files.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Const C_Type_SegmentStart 1
+#Const C_Type_SegmentEnd 2
+
+#Const C_Segment_Match 1
+#Const C_Segment_Map 2
+#Const C_Segment_Round 3
+#Const C_Segment_Turn 4
+#Const C_Segment_WarmUp 5
+#Const C_Segment_Overtime 6
+
+#Const C_EventTypeNames [
+	1 => "SegmentStart",
+	2 => "SegmentEnd"
+]
+
+#Const C_SegmentNames [
+  1 => "Match",
+  2 => "Map",
+  3 => "Round",
+  4 => "Turn",
+  5 => "WarmUp",
+  6 => "Overtime"
+]
+
+#Struct K_Event {
+  Integer Type;
+  Integer Segment;
+}
+
+// Need a separate buffer for events before publishing.
+// If events are added to pending events directly, then during yield they would be cleared before other libraries could see them.
+// This way it is guaranteed that they are visible for exactly one yield, no matter if other libraries yield before or after this library.
+declare K_Event[] G_EventsAggregationBuffer;
+declare K_Event[] G_PendingEvents;
+
+K_Event[] GetPendingEvents() {
+  return G_PendingEvents;
+}
+
+/**
+ * Only the Mode should call this funcion to publish mode segment events.
+ */
+Void Mode_PublishEvent(K_Event _Event) {
+  G_EventsAggregationBuffer.add(_Event);
+}
+
+Void Yield() {
+  G_PendingEvents = G_EventsAggregationBuffer;
+  G_EventsAggregationBuffer.clear();
+}
+
+Void Unload() {
+  G_PendingEvents.clear();
+  G_EventsAggregationBuffer.clear();
+}
+
+Void Load() {
+  Unload();
+}
+ 

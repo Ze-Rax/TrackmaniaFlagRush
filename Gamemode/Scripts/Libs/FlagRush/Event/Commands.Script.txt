@@ -1,0 +1,56 @@
+/**
+ * Aggregator for commands from different sources.
+ *
+ * Collects and manages commands from different sources, like CSmModeEvents, XmlRpc or the ModeCommandsUI.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "Libs/FlagRush/Const/CommandNames.Script.txt" as CommandNames
+#Include "Libs/FlagRush/Util/Command.Script.txt" as Command
+// TODO: I would prefer this to not depend on a UI Module
+#Include "Libs/FlagRush/UI/Modules/ModeCommands.Script.txt" as UIModule_ModeCommands
+
+declare Command::K_Command[] G_PendingEvents;
+
+Command::K_Command[] GetPendingEvents() {
+  return G_PendingEvents;
+}
+
+Void Unload() {
+  G_PendingEvents.clear();
+}
+
+Void Load() {
+  Unload();
+}
+
+Void Yield() {
+  G_PendingEvents.clear();
+
+  // XmlRpc
+  foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
+  	switch (XmlRpcEvent.Type) {
+  		case CXmlRpcEvent::EType::CallbackArray: {
+  			switch (XmlRpcEvent.ParamArray1) {
+  				case "Trackmania.ForceEndRound": {
+  					declare Command::K_Source Source = Command::K_Source{ Type = Command::C_SourceType_XmlRpc, Name = Command::C_SourceType_XmlRpc };
+  					G_PendingEvents.add(Command::FromNameAndParams(CommandNames::Command_SkipRound, [], Source));
+  				}
+  			}
+  		}
+  	}
+  }
+
+  // CSmModeEvent Commands
+  foreach (Event in PendingEvents) {
+  	if (Event.Type == CSmModeEvent::EType::OnCommand) {
+  		G_PendingEvents.add(Command::FromEvent(Event));
+  	}
+  }
+
+  // ModeCommandsUi
+  foreach (Command in UIModule_ModeCommands::GetPendingCommands()) {
+  	G_PendingEvents.add(Command);
+  }
+}

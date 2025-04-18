@@ -329,11 +329,12 @@ foreach (Event in PendingEvents) {
 			// Player might have left in the same server frame, causing Player to be Null
 			if (Event.Player != Null) OnPlayerRequestsRespawn(Event.Player);
 		}
-		case CSmModeEvent::EType::OnCommand: OnGameplayCommand(Command::FromEvent(Event)); // Commands from Mode (Settings or XmlRpc)
 	}
 }
 
-foreach(Command in ModeCommands::GetPendingCommands()) OnGameplayCommand(Command); // Commands from ModeCommandsUI
+foreach (Command in Commands::GetPendingEvents()) {
+	OnGameplayCommand(Command);
+}
 
 foreach (Player in Players) {
 	if (Player_RequestsClanChange(Player)) OnPlayerRequestsClanChange(Player);

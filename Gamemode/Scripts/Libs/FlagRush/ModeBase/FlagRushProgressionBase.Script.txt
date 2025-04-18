@@ -33,6 +33,7 @@
 
 #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt"		as PlayerLifecycleEvents
 #Include "Libs/FlagRush/Event/Settings.Script.txt"								as Settings
+#Include "Libs/FlagRush/Event/Commands.Script.txt"								as Commands
 #Include "Libs/FlagRush/Event/ProgressionEvents.Script.txt"				as ProgressionEvents
 
 #Include "Libs/FlagRush/Util/Log.Script.txt"											as Log
@@ -186,6 +187,7 @@ Teams::UseClubTags(S_UseClubTags);
 Teams::Init();
 
 Settings::Load();
+Commands::Load();
 ProgressionEvents::Load();
 ***
 
@@ -195,6 +197,7 @@ FlagRush_XmlRpc::Unload();
 Messages::Unload();
 Scores::Unload();
 Settings::Unload();
+Commands::Unload();
 ProgressionEvents::Unload();
 ***
 
@@ -610,9 +613,10 @@ FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 // TODO: Find a way to work around this. It hurts.
 ***Yield***
 ***
-// Trackm modesettings after Settings::Yield, else events would be cleared instantly.
+// Track modesettings after Settings::Yield, else events would be cleared instantly.
 Settings::Yield();
 { +++TrackModeSettings+++ }
+Commands::Yield();
 ProgressionEvents::Yield();
 PlayerLifecycleEvents::Yield();
 
@@ -708,35 +712,7 @@ if (ReinitTeamsConfig) {
 
 ***Private_Yield_HandleProgressionsCommands***
 ***
-declare Command::K_Command[] PendingCommands;
-
-// XmlRpc
-foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
-	switch (XmlRpcEvent.Type) {
-		case CXmlRpcEvent::EType::CallbackArray: {
-			switch (XmlRpcEvent.ParamArray1) {
-				case "Trackmania.ForceEndRound": {
-					declare Command::K_Source Source = Command::K_Source{ Type = Command::C_SourceType_XmlRpc, Name = Command::C_SourceType_XmlRpc };
-					PendingCommands.add(Command::FromNameAndParams(CommandNames::Command_SkipRound, [], Source));
-				}
-			}
-		}
-	}
-}
-
-// Mode commands
-foreach (Event in PendingEvents) {
-	if (Event.Type == CSmModeEvent::EType::OnCommand) {
-		PendingCommands.add(Command::FromEvent(Event));
-	}
-}
-
-// ModeCommandsUi
-foreach (Command in ModeCommands::GetPendingCommands()) {
-	PendingCommands.add(Command);
-}
-
-foreach (Command in PendingCommands) {
+foreach (Command in Commands::GetPendingEvents()) {
 	// Display a message in chat
 	declare Text CommandText;
 
@@ -747,12 +723,12 @@ foreach (Command in PendingCommands) {
 			CommandText = "The warmup was ended.";
 		}
 		case CommandNames::Command_Pause: {
-			declare Boolean Progression_PauseRequested for This;
+			declare Boolean Progression_PauseRequested for This = False;
 			Progression_PauseRequested = True;
 			CommandText = "The round was paused.";
 		}
 		case CommandNames::Command_SkipRound: {
-			declare Boolean Progression_RoundEndRequested for This;
+			declare Boolean Progression_RoundEndRequested for This = False;
 			Progression_RoundEndRequested = True;
 			CommandText = "The round was skipped.";
 		}
@@ -810,7 +786,9 @@ foreach (Command in PendingCommands) {
 			CommandText = """Set {{{ Amount }}} bots.""";
 		}
 		case CommandNames::Command_SetTimeLeft: {
-			if (!MB_TurnIsRunning()) return;
+			if (!MB_TurnIsRunning()) {
+				break;
+			}
 			ModeUtils::SetEndTime(Now + Command.ValueInteger * 1000);
 			CommandText = """Set time limit to {{{ Command.ValueInteger }}} seconds remaining.""";
 		}
@@ -831,7 +809,9 @@ foreach (Command in PendingCommands) {
 	}
 
 	declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, Command::C_CommandPrefix, "") }}}" by {{{ Command.Source.Name }}}.""";
-	if (CommandText != "") Message ^= " " ^ CommandText;
+	if (CommandText != "") {
+		Message ^= " " ^ CommandText;
+	}
 	UIManager.UIAll.SendChat(Message);
 }
 ***

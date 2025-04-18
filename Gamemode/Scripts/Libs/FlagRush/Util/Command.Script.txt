@@ -6,13 +6,21 @@
 
 #Include "TextLib" as TL
 
-#Const C_CommandPrefix			"Command_"
-#Const C_SourceType_Mode		"CSmModeEvent"
-#Const C_SourceType_Player	"Player"
-#Const C_SourceType_XmlRpc	"XmlRpc"
+#Const C_CommandPrefix "Command_"
+
+#Const C_SourceType_Gamemode 1
+#Const C_SourceType_XmlRpc 2
+#Const C_SourceType_Player 3
+
+#Const C_SourceNameByType [
+	1 => "Gamemode",
+	2 => "XmlRpc",
+	3 => "Player"
+]
+#Const C_SourceName_UnknownPlayer "Unknown Player"
 
 #Struct K_Source {
-	Text Type;
+	Integer Type;
 	Text Name;
 	Text Login;
 }
@@ -83,9 +91,8 @@ K_Command FromText(Text _CommandText, K_Source _Source) {
  * Transforms a CSmModeEvent into a Command struct. Command_ prefix is removed if present.
  */
 K_Command FromEvent(CSmModeEvent _Event) {
-	declare Text UnprefixedName = TL::RegexReplace("""^{{{ C_CommandPrefix }}}""", _Event.CommandName, "", "");
 	return K_Command {
-		Name					= UnprefixedName,
+		Name					= _Event.CommandName,
 		ValueBoolean	= _Event.CommandValueBoolean,
 		ValueInteger	= _Event.CommandValueInteger,
 		ValueReal			= _Event.CommandValueReal,
@@ -94,7 +101,7 @@ K_Command FromEvent(CSmModeEvent _Event) {
 		ValueVec3			= _Event.CommandValueVec3,
 		ValueInt2			= _Event.CommandValueInt2,
 		ValueInt3			= _Event.CommandValueInt3,
-		Source				= K_Source{ Type = C_SourceType_Mode, Name = C_SourceType_Mode }
+		Source				= K_Source{ Type = C_SourceType_Gamemode, Name = C_SourceNameByType[C_SourceType_Gamemode] }
 	};
 }
 
@@ -104,6 +111,7 @@ K_Command FromEvent(CSmModeEvent _Event) {
 K_Command FromEvent(CUIConfigEvent _Event) {
 	declare K_Source Source;
 	Source.Type = C_SourceType_Player;
+	Source.Name = C_SourceName_UnknownPlayer;
 	if(_Event.UI != Null) {
 		declare CSmPlayer Player = GetPlayer(_Event.UI);
 		if (Player != Null) {
@@ -111,6 +119,5 @@ K_Command FromEvent(CUIConfigEvent _Event) {
 			Source.Name = Player.User.Name;
 		}
 	}
-	declare Text UnprefixedName = TL::RegexReplace("""^{{{ C_CommandPrefix }}}""", _Event.CustomEventType, "", "");
-	return FromNameAndParams(UnprefixedName, _Event.CustomEventData, Source);
+	return FromNameAndParams(_Event.CustomEventType, _Event.CustomEventData, Source);
 }

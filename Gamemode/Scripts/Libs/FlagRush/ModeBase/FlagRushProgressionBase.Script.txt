@@ -808,7 +808,8 @@ foreach (Command in Commands::GetPendingEvents()) {
 		default: return;
 	}
 
-	declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ TL::Replace(Command.Name, Command::C_CommandPrefix, "") }}}" by {{{ Command.Source.Name }}}.""";
+	declare Text UnprefixedCommandName = TL::Replace(Command.Name, Command::C_CommandPrefix, "");
+	declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ UnprefixedCommandName }}}" by {{{ Command.Source.Name }}}.""";
 	if (CommandText != "") {
 		Message ^= " " ^ CommandText;
 	}

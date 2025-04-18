@@ -11,6 +11,9 @@
 // TODO: I would prefer this to not depend on a UI Module
 #Include "Libs/FlagRush/UI/Modules/ModeCommands.Script.txt" as UIModule_ModeCommands
 
+// Need to alias associative arrays of library, else accessing by index causes compilation error
+#Const Command::C_SourceNameByType as C_SourceNameByType
+
 declare Command::K_Command[] G_PendingEvents;
 
 Command::K_Command[] GetPendingEvents() {
@@ -34,7 +37,10 @@ Void Yield() {
   		case CXmlRpcEvent::EType::CallbackArray: {
   			switch (XmlRpcEvent.ParamArray1) {
   				case "Trackmania.ForceEndRound": {
-  					declare Command::K_Source Source = Command::K_Source{ Type = Command::C_SourceType_XmlRpc, Name = Command::C_SourceType_XmlRpc };
+  					declare Command::K_Source Source = Command::K_Source{ 
+              Type = Command::C_SourceType_XmlRpc, 
+              Name = C_SourceNameByType[Command::C_SourceType_XmlRpc] 
+            };
   					G_PendingEvents.add(Command::FromNameAndParams(CommandNames::Command_SkipRound, [], Source));
   				}
   			}

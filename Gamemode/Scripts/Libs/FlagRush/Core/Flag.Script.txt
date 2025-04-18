@@ -306,7 +306,10 @@ Void InvalidateLastSafePosition() {
 
 // Lifecycle
 
-Void Yield() {
+/**
+ * Update should only be called from the playloop, not every yield
+ */
+Void Update() {
 	// Update position when carried by player
 	if (IsPlayerConnected()) {
 		declare CSmPlayer Player = GetPlayer();
@@ -316,6 +319,10 @@ Void Yield() {
 		}
 		Net_Update();
 	}
+}
+
+Void Yield() {
+	
 }
 
 Void Unload() {

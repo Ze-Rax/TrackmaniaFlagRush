@@ -75,7 +75,7 @@
 // Settings //
 // ======== //
 
-// KEEP SETTINGS IN SYNC WITH "Const/SettingNames.Script.txt" AND UPDATE IN ***UpdateModeSettings***
+// KEEP SETTINGS IN SYNC WITH "Const/SettingNames.Script.txt" AND UPDATE IN ***TracjModeSettings***
 
 #Setting S_UseCrudeExtrapolation						True		as "<hidden>"
 #Setting S_TrustClientSimu									True		as "<hidden>"

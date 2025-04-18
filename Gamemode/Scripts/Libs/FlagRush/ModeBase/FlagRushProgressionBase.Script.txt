@@ -58,7 +58,7 @@
 // Settings //
 //////////////
 
-// KEEP SETTINGS IN SYNC WITH "Const/SettingNames.Script.txt" AND UPDATE IN ***UpdateModeSettings***
+// KEEP SETTINGS IN SYNC WITH "Const/SettingNames.Script.txt" AND UPDATE IN ***TrackModeSettings***
 
 #Setting S_NbMapsToWinMatch									1 			as "Number of maps to win a match"
 #Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"

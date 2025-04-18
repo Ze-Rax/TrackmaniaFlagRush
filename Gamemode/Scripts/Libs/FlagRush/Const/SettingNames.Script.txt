@@ -3,7 +3,7 @@
  * Constants for all the available FlagRush settings, both progression and main gamemode settings.
  */
 
-// MARK: Progression
+// Progression
 #Const S_NbMapsToWinMatch "S_NbMapsToWinMatch"
 #Const S_NbRoundsToWinMap "S_NbRoundsToWinMap"
 #Const S_NbFlagsToWinRound "S_NbFlagsToWinRound"
@@ -11,8 +11,9 @@
 #Const S_UseOvertime "S_UseOvertime"
 #Const S_UseWarmUp "S_UseWarmUp"
 #Const S_WarmUpWaitForApproval "S_WarmUpWaitForApproval"
+#Const S_SkipMatchOnLastPlayerLeave "S_SkipMatchOnLastPlayerLeave"
 
-// MARK: Teams
+// Teams
 #Const S_Team1Name "S_Team1Name"
 #Const S_Team1Hue "S_Team1Hue"
 #Const S_Team2Name "S_Team2Name"
@@ -51,9 +52,7 @@
 #Const S_TuningDesertAdherence "S_TuningDesertAdherence"
 #Const S_TuningDesertControl "S_TuningDesertControl"
 
-// MARK: Other
-#Const S_SkipMatchOnLastPlayerLeave "S_SkipMatchOnLastPlayerLeave"
-#Const S_ModeCommands_AdminLoginsCsv "S_ModeCommands_AdminLoginsCsv"
+// Misc
 #Const S_UseCrudeExtrapolation "S_UseCrudeExtrapolation"
 #Const S_TrustClientSimu "S_TrustClientSimu"
-#Const S_Debug "S_Debug"
+#Const S_ModeCommands_AdminLoginsCsv "S_ModeCommands_AdminLoginsCsv"

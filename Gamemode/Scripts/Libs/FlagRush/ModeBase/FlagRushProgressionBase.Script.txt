@@ -1,11 +1,19 @@
 /**
- * Modebase for FlagRush that handles the general match progression (when a round ends, when a map ends, show respective messages, ...)
- * This modebase extends a modified version of Nadeos lowest level mode base, which contains the main server loop. The Match_ prefix of plugs has been dropped.
+ * FlagRush
+ *
+ * Gamemode by Ze-Rax, Reaby, Geekid & Rxelux.
+ *
+ * This mode extends a modified version of Nadeos lowest level mode base, which contains the main server loop.
+ * The Match_ prefix of plugs has been dropped!
  *
  * #RequireContext CSmMode
  */
 
 #Extends "Libs/FlagRush/ModeBase/ModeBase.Script.txt"
+
+#Const	CompatibleMapTypes	"Trackmania\\FlagRushArena,FlagRushArena"
+#Const	Version							"1.7.0"
+#Const	ScriptName					"Modes/TrackMania/FlagRush.Script.txt"
 
 ///////////////
 // Libraries //
@@ -15,44 +23,61 @@
 #Include "TextLib" as TL
 #Include "MathLib" as ML
 
-// From mode base:
-// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"										as XmlRpc
-// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt"							as XmlRpc_Base
+// From mode base
+// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"								as XmlRpc
+// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt"					as XmlRpc_Base
 
 // FlagRush Libs
-#Include "Libs/FlagRush/ModeBase/WarmUpReadyUp/WarmUpReadyUp.Script.txt"		as WarmUpReadyUp
+#Include "Libs/FlagRush/ModeBase/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
+#Include "Libs/FlagRush/ModeBase/Playloop.Script.txt" 										as Playloop
 
-#Include "Libs/FlagRush/Const/Durations.Script.txt"								as Durations
-#Include "Libs/FlagRush/Const/SettingNames.Script.txt"						as SettingNames
-#Include "Libs/FlagRush/Const/CommandNames.Script.txt"						as CommandNames
+#Include "Libs/FlagRush/Const/Durations.Script.txt"												as Durations
+#Include "Libs/FlagRush/Const/SettingNames.Script.txt"										as SettingNames
+#Include "Libs/FlagRush/Const/CommandNames.Script.txt"										as CommandNames
 
-#Include "Libs/FlagRush/Core/Map.Script.txt"											as FlagRushMap
-#Include "Libs/FlagRush/Core/Scores.Script.txt"										as Scores
-#Include "Libs/FlagRush/Core/Teams.Script.txt"										as Teams
-#Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"				as FlagRush_XmlRpc
+#Include "Libs/FlagRush/Core/Map.Script.txt"															as FlagRushMap
+#Include "Libs/FlagRush/Core/Scores.Script.txt"														as Scores
+#Include "Libs/FlagRush/Core/Teams.Script.txt"														as Teams
+#Include "Libs/FlagRush/Core/Flag.Script.txt"															as Flag
+#Include "Libs/FlagRush/Core/HandicapQueue.Script.txt"										as HandicapQueue
+#Include "Libs/FlagRush/Core/Vehicles.Script.txt"													as Vehicles
+#Include "Libs/FlagRush/CommonLibs/Rx/Hitbox.Script.txt"									as Hitbox
 
-#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt"		as PlayerLifecycleEvents
-#Include "Libs/FlagRush/Event/Settings.Script.txt"								as Settings
-#Include "Libs/FlagRush/Event/Commands.Script.txt"								as Commands
-#Include "Libs/FlagRush/Event/ProgressionEvents.Script.txt"				as ProgressionEvents
+#Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"								as FlagRush_XmlRpc
 
-#Include "Libs/FlagRush/Util/Log.Script.txt"											as Log
-#Include "Libs/FlagRush/Util/ModeUtils.Script.txt"								as ModeUtils
-#Include "Libs/FlagRush/Util/Command.Script.txt"									as Command
+#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt"						as PlayerLifecycleEvents
+#Include "Libs/FlagRush/Event/Settings.Script.txt"												as Settings
+#Include "Libs/FlagRush/Event/Commands.Script.txt"												as Commands
+#Include "Libs/FlagRush/Event/ProgressionEvents.Script.txt"								as ProgressionEvents
 
-#Include "Libs/FlagRush/UI/UIConfig.Script.txt"										as UIConfig
-#Include "Libs/FlagRush/UI/FlagRush_UI.Script.txt"								as FlagRush_UI
-#Include "Libs/FlagRush/UI/Messages.Script.txt"										as Messages
-#Include "Libs/FlagRush/UI/Modules/MapMarkers.Script.txt"					as MapMarkers
-#Include "Libs/FlagRush/UI/Modules/PodiumStatistics.Script.txt"		as PodiumStatistics
-#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"					as EventFeed
-#Include "Libs/FlagRush/UI/Modules/ModeCommands.Script.txt"				as ModeCommands
+#Include "Libs/FlagRush/Util/Log.Script.txt"															as Log
+#Include "Libs/FlagRush/Util/ModeUtils.Script.txt"												as ModeUtils
+#Include "Libs/FlagRush/Util/Command.Script.txt"													as Command
+
+#Include "Libs/FlagRush/UI/UIConfig.Script.txt"														as UIConfig
+#Include "Libs/FlagRush/UI/FlagRush_UI.Script.txt"												as FlagRush_UI
+#Include "Libs/FlagRush/UI/Messages.Script.txt"														as Messages
+#Include "Libs/FlagRush/UI/Modules/MapMarkers.Script.txt"									as MapMarkers
+#Include "Libs/FlagRush/UI/Modules/PodiumStatistics.Script.txt"						as PodiumStatistics
+#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"									as EventFeed
+#Include "Libs/FlagRush/UI/Modules/ModeCommands.Script.txt"								as ModeCommands
+#Include "Libs/FlagRush/UI/Modules/Flash.Script.txt"											as FlagRush_Flash
+#Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt"						as FlagRush_VehicleSelection
+#Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt"									as FlagMarker
+#Include "Libs/FlagRush/UI/Modules/FlagPossessionIndicator.Script.txt"		as FlagPossessionIndicator
 
 ///////////////
 // Constants //
 ///////////////
 
+#Const C_Debug False
+
 #Const C_TimeLimitWarning_Seconds [60, 30]
+
+#Const Vehicles::C_Vehicle_Stadium as C_Vehicle_Stadium
+#Const Vehicles::C_Vehicle_Snow as C_Vehicle_Snow
+#Const Vehicles::C_Vehicle_Rally as C_Vehicle_Rally
+#Const Vehicles::C_Vehicle_Desert as C_Vehicle_Desert
 
 //////////////
 // Settings //
@@ -60,6 +85,7 @@
 
 // KEEP SETTINGS IN SYNC WITH "Const/SettingNames.Script.txt" AND UPDATE IN ***TrackModeSettings***
 
+// Progression
 #Setting S_NbMapsToWinMatch									1 			as "Number of maps to win a match"
 #Setting S_NbRoundsToWinMap									2 			as "Number of rounds to win a map"
 #Setting S_NbFlagsToWinRound								3				as "Number of flags scored to win a round"
@@ -67,6 +93,7 @@
 #Setting S_UseOvertime											True 		as "Use overtime when round is tied"
 #Setting S_UseWarmUp												True		as "Use warm up"
 #Setting S_WarmUpWaitForApproval						False		as "<hidden>" // Wait for admin approval in warmup to continue (for competition situations)
+#Setting S_SkipMatchOnLastPlayerLeave				True		as "<hidden>" // Skip the running match if the last player leaves or goes to spectator
 
 // Teams
 #Setting S_Team1Name 												"" 			as "Force Team 1 Name"
@@ -76,7 +103,40 @@
 #Setting S_UseClubTags											True		as "Use club tags for team names"
 #Setting S_UseTeamSkins											True		as "Use colored skins for teams"
 
-#Setting S_SkipMatchOnLastPlayerLeave				True		as "<hidden>" // Skip the running match if the last player leaves or goes to spectator
+// Gameplay
+#Setting S_FlagDropStateDurationSeconds			8. 			as "<hidden>" // Flag drop state duration (seconds)
+#Setting S_FlagStealResistDurationSeconds		1. 			as "<hidden>" // Flag steal resistance (seconds)
+#Setting S_FlagSameTeamSteal								True		as "<hidden>" // Team flag steal
+#Setting S_FlagStealResistanceOnTeamPass    False   as "<hidden>" // Flag steal resistance on passes between players in same team
+#Setting S_FlagCarrierFragile								True		as "Flag carrier becomes fragile"
+#Setting S_FlagCarrierAcceleration					0.66 		as "Flag carrier acceleration (0.0 - 1.0)"
+#Setting S_FlagCarrierControl								1.0 		as "<hidden>" // Flag carrier steering control (0.0 - 1.0)
+#Setting S_FlagCarrierAdherence							0.9 		as "<hidden>" // Flag carrier adherence (0.0 - 1.0)
+#Setting S_RespawnSpeedLimitKmh							30.			as "<hidden>" // Speed limit for player to respawn
+#Setting S_RespawnDelayPerPlayer						1.0 		as "Respawn delay (seconds) per player in a team"
+#Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
+#Setting S_TeleportDetectionThreshold				8.			as "<hidden>" // Maximum allowed distance (meters) to teleport (lag) before dropping the flag
+#Setting S_UseCollisions										False		as "Use collisions (experimental)"
+#Setting S_UseLightTrails										True		as "<hidden>" // Use light trails for the flag carrier
+
+// Vehicles
+#Setting S_ForceEnabledVehiclesCsv					""			as "Force enabled vehicles (Comma separated; Options: \"stadium\", \"snow\", \"rally\")"
+#Setting S_TuningStadiumAcceleration				1.0 		as "<hidden>"
+#Setting S_TuningStadiumAdherence						1.0 		as "<hidden>"
+#Setting S_TuningStadiumControl							1.0 		as "<hidden>"
+#Setting S_TuningSnowAcceleration						1.0 		as "<hidden>"
+#Setting S_TuningSnowAdherence							1.0 		as "<hidden>"
+#Setting S_TuningSnowControl								1.0 		as "<hidden>"
+#Setting S_TuningRallyAcceleration					0.7 		as "<hidden>"
+#Setting S_TuningRallyAdherence							1.0 		as "<hidden>"
+#Setting S_TuningRallyControl								1.0 		as "<hidden>"
+#Setting S_TuningDesertAcceleration					0.66 		as "<hidden>"
+#Setting S_TuningDesertAdherence						1.0 		as "<hidden>"
+#Setting S_TuningDesertControl							1.0 		as "<hidden>"
+
+// Misc
+#Setting S_UseCrudeExtrapolation						True		as "<hidden>"
+#Setting S_TrustClientSimu									True		as "<hidden>"
 #Setting S_ModeCommands_AdminLoginsCsv 			"W2ZNWNzVQV6z3hXuNgRMRg" 			as "<hidden>" // Admin logins for the mode commands ui // TODO: Remove own login
 
 //////////////
@@ -85,22 +145,30 @@
 
 // KEEP SETTINGS IN SYNC WITH "Const/CommandNames.Script.txt"
 
-#Command	Command_PauseRound							(Boolean) as		"Pause round"
-#Command	Command_EndWarmup								(Boolean) as 		"End warmup"
-#Command	Command_SkipRound								(Boolean) as		"Skip round"
-// #Command	Command_SkipMap									(Boolean) as				"Skip map"
-#Command	Command_SetTeam1RoundScore			(Integer) as		"Set Team 1 Round Score"
-#Command	Command_SetTeam2RoundScore			(Integer) as		"Set Team 2 Round Score"
-#Command	Command_SetTeam1MapScore				(Integer) as		"Set Team 1 Map Score"
-#Command	Command_SetTeam2MapScore				(Integer) as		"Set Team 2 Map Score"
-#Command	Command_SetTeam1MatchScore			(Integer) as		"Set Team 1 Match Score"
-#Command	Command_SetTeam2MatchScore			(Integer) as		"Set Team 2 Match Score"
-#Command	Command_ClearScores							(Boolean) as		"Clear all scores"
-// #Command	Command_Announce								(Text)		as		"Show big anouncement message"
-// #Command	Command_BalanceTeams						(Boolean) as		"Balance Teams"
-#Command	Command_ApproveWarmUpEnd				(Boolean) as		"<hidden>"
-// #Command Command_SetBots									(Integer) as 		"<hidden>"
-// #Command Command_SetTimeLeft 						(Integer) as 		"<hidden>" 
+// Progression
+#Command Command_PauseRound							(Boolean) as		"Pause round"
+#Command Command_EndWarmup							(Boolean) as 		"End warmup"
+#Command Command_SkipRound							(Boolean) as		"Skip round"
+// #Command Command_SkipMap							(Boolean) as		"Skip map"
+#Command Command_ApproveWarmUpEnd				(Boolean) as		"<hidden>"
+// #Command Command_SetTimeLeft 				(Integer) as 		"<hidden>" 
+
+// Scores
+#Command Command_SetTeam1RoundScore			(Integer) as		"Set Team 1 Round Score"
+#Command Command_SetTeam2RoundScore			(Integer) as		"Set Team 2 Round Score"
+#Command Command_SetTeam1MapScore				(Integer) as		"Set Team 1 Map Score"
+#Command Command_SetTeam2MapScore				(Integer) as		"Set Team 2 Map Score"
+#Command Command_SetTeam1MatchScore			(Integer) as		"Set Team 1 Match Score"
+#Command Command_SetTeam2MatchScore			(Integer) as		"Set Team 2 Match Score"
+#Command Command_ClearScores						(Boolean) as		"Clear all scores"
+
+// Gameplay
+#Command Command_ResetFlag							(Boolean) as		"Reset flag"
+
+// Misc
+// #Command Command_Announce						(Text)		as		"Show big anouncement message"
+// #Command Command_BalanceTeams				(Boolean) as		"Balance Teams"
+// #Command Command_SetBots							(Integer) as 		"<hidden>"
 
 //////////////////////
 // Global Variables //
@@ -152,10 +220,15 @@ ReadonlyLaunchedCheckpoints = False;
 UseProtectClanmates = False;
 UseAllies = False;
 CrudeExtrapolation_AllowDelay = False;
+UsePvPCollisions = S_UseCollisions;
+
+declare Boolean FlagRush_Debug for This = False;
+FlagRush_Debug = C_Debug;
 ***
 
 ***TrackModeSettings***
 ***
+// Progression
 Settings::Track(SettingNames::S_NbMapsToWinMatch, S_NbMapsToWinMatch);
 Settings::Track(SettingNames::S_NbRoundsToWinMap, S_NbRoundsToWinMap);
 Settings::Track(SettingNames::S_NbFlagsToWinRound, S_NbFlagsToWinRound);
@@ -163,14 +236,52 @@ Settings::Track(SettingNames::S_RoundTimeLimitSeconds, S_RoundTimeLimitSeconds);
 Settings::Track(SettingNames::S_UseOvertime, S_UseOvertime);
 Settings::Track(SettingNames::S_UseWarmUp, S_UseWarmUp);
 Settings::Track(SettingNames::S_WarmUpWaitForApproval, S_WarmUpWaitForApproval);
+Settings::Track(SettingNames::S_SkipMatchOnLastPlayerLeave, S_SkipMatchOnLastPlayerLeave);
+
+// Teams
 Settings::Track(SettingNames::S_Team1Name, S_Team1Name);
 Settings::Track(SettingNames::S_Team1Hue, S_Team1Hue);
 Settings::Track(SettingNames::S_Team2Name, S_Team2Name);
 Settings::Track(SettingNames::S_Team2Hue, S_Team2Hue);
 Settings::Track(SettingNames::S_UseClubTags, S_UseClubTags);
 Settings::Track(SettingNames::S_UseTeamSkins, S_UseTeamSkins);
-Settings::Track(SettingNames::S_SkipMatchOnLastPlayerLeave, S_SkipMatchOnLastPlayerLeave);
+
+// Gameplay
+Settings::Track(SettingNames::S_FlagDropStateDurationSeconds, S_FlagDropStateDurationSeconds);
+Settings::Track(SettingNames::S_FlagStealResistDurationSeconds, S_FlagStealResistDurationSeconds);
+Settings::Track(SettingNames::S_FlagSameTeamSteal, S_FlagSameTeamSteal);
+Settings::Track(SettingNames::S_FlagStealResistanceOnTeamPass, S_FlagStealResistanceOnTeamPass);
+Settings::Track(SettingNames::S_FlagCarrierFragile, S_FlagCarrierFragile);
+Settings::Track(SettingNames::S_FlagCarrierAcceleration, S_FlagCarrierAcceleration);
+Settings::Track(SettingNames::S_FlagCarrierControl, S_FlagCarrierControl);
+Settings::Track(SettingNames::S_FlagCarrierAdherence, S_FlagCarrierAdherence);
+Settings::Track(SettingNames::S_RespawnSpeedLimitKmh, S_RespawnSpeedLimitKmh);
+Settings::Track(SettingNames::S_RespawnDelayPerPlayer, S_RespawnDelayPerPlayer);
+Settings::Track(SettingNames::S_DropFlagPickupPenalty, S_DropFlagPickupPenalty);
+Settings::Track(SettingNames::S_TeleportDetectionThreshold, S_TeleportDetectionThreshold);
+Settings::Track(SettingNames::S_UseCollisions, S_UseCollisions);
+Settings::Track(SettingNames::S_UseLightTrails, S_UseLightTrails);
+
+// Vehicles
+Settings::Track(SettingNames::S_ForceEnabledVehiclesCsv, S_ForceEnabledVehiclesCsv);
+Settings::Track(SettingNames::S_TuningStadiumAcceleration, S_TuningStadiumAcceleration);
+Settings::Track(SettingNames::S_TuningStadiumAdherence, S_TuningStadiumAdherence);
+Settings::Track(SettingNames::S_TuningStadiumControl, S_TuningStadiumControl);
+Settings::Track(SettingNames::S_TuningSnowAcceleration, S_TuningSnowAcceleration);
+Settings::Track(SettingNames::S_TuningSnowAdherence, S_TuningSnowAdherence);
+Settings::Track(SettingNames::S_TuningSnowControl, S_TuningSnowControl);
+Settings::Track(SettingNames::S_TuningRallyAcceleration, S_TuningRallyAcceleration);
+Settings::Track(SettingNames::S_TuningRallyAdherence, S_TuningRallyAdherence);
+Settings::Track(SettingNames::S_TuningRallyControl, S_TuningRallyControl);
+Settings::Track(SettingNames::S_TuningDesertAcceleration, S_TuningDesertAcceleration);
+Settings::Track(SettingNames::S_TuningDesertAdherence, S_TuningDesertAdherence);
+Settings::Track(SettingNames::S_TuningDesertControl, S_TuningDesertControl);
+
+// Misc
+Settings::Track(SettingNames::S_UseCrudeExtrapolation, S_UseCrudeExtrapolation);
+Settings::Track(SettingNames::S_TrustClientSimu, S_TrustClientSimu);
 Settings::Track(SettingNames::S_ModeCommands_AdminLoginsCsv, S_ModeCommands_AdminLoginsCsv);
+
 ***
 
 ***LoadLibraries***
@@ -186,6 +297,9 @@ Teams::SetTeam2HueOverride(S_Team2Hue);
 Teams::UseClubTags(S_UseClubTags);
 Teams::Init();
 
+Flag::Load();
+Playloop::Load();
+
 Settings::Load();
 Commands::Load();
 ProgressionEvents::Load();
@@ -196,6 +310,10 @@ ProgressionEvents::Load();
 FlagRush_XmlRpc::Unload();
 Messages::Unload();
 Scores::Unload();
+
+Flag::Unload();
+Playloop::Unload();
+
 Settings::Unload();
 Commands::Unload();
 ProgressionEvents::Unload();
@@ -208,16 +326,20 @@ FlagRush_UI::Load();
 FlagMarker::Load();
 MapMarkers::Load();
 PodiumStatistics::Load();
+FlagRush_VehicleSelection::Load();
+FlagPossessionIndicator::Load();
 ModeCommands::AddQuickCommand(CommandNames::Command_EndWarmup, "UICommon64_1", "Play_light");
 ModeCommands::AddQuickCommand(CommandNames::Command_Pause, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(CommandNames::Command_SkipRound, "UICommon64_1", "FastForward_light");
 ModeCommands::AddQuickCommand(CommandNames::Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
+ModeCommands::AddQuickCommand(CommandNames::Command_ResetFlag, "UICommon64_1", "Flag_light");
 ModeCommands::Load();
 ***
 
 ***LoadItems***
 ***
 Teams::LoadItems();
+Vehicles::LoadItems();
 ***
 
 // ~~~~~~~~~~ Server ~~~~~~~~~~ //
@@ -279,6 +401,7 @@ if (!MapValid) {
 FlagRush_XmlRpc::Send_MapStart();
 MapMarkers::Update();
 Teams::Init();
+FlagRush_VehicleSelection::SetEnabledVehicles(Vehicle_GetEnabled());
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 MB_Synchro();
 ***
@@ -436,31 +559,55 @@ ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{
 ***
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
 MB_Sleep(Durations::C_Duration_TurnEnd);
+
+foreach (Player in Players) {
+	UnspawnPlayer(Player);
+}
 ***
 
 // ~~~~~~~~~~ PlayLoop ~~~~~~~~~~ //
 
+***InitPlayLoop***
+***
+Playloop::Init();
+***
+
+***StartPlayLoop***
+***
+Playloop::Start();
+***
+
 ***PlayLoop***
 ***
+Playloop::Loop();
+
 // Round skip (Map skip handled by base mode)
-declare Boolean Progression_RoundEndRequested for This;
-if (Progression_RoundEndRequested) MB_StopRound();
+declare Boolean Progression_RoundEndRequested for This = False;
+if (Progression_RoundEndRequested) {
+	MB_StopRound();
+}
 
 // Round end & overtime conditions
 if(Progression_OvertimeIsRunning()) {
 	if (!Progression_RoundIsTied()) {
 		MB_StopRound();
 	}
-} else {
-	if (Progression_FlagLimitReached()) {
+} else if (Progression_FlagLimitReached()) {
+	MB_StopRound();
+} else if (Progression_TimeLimitReached()) {
+	if (Progression_RoundIsTied() && S_UseOvertime) {
+		ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{ 
+			Type = ProgressionEvents::C_Type_SegmentStart,
+			Segment = ProgressionEvents::C_Segment_Overtime
+		});
+		FlagRush_XmlRpc::Send_Overtime();
+		Private_OvertimeIsRunning = True;
+		declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
+		FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
+		Messages::OvertimeStart(Durations::C_Duration_Overtime);
+	} else {
+		Messages::TimeLimitEnd(Durations::C_Duration_EventMessage);
 		MB_StopRound();
-	} else if (Progression_TimeLimitReached()) {
-		if (Progression_RoundIsTied() && S_UseOvertime) {
-			+++StartOvertime+++
-		} else {
-			Messages::TimeLimitEnd(Durations::C_Duration_EventMessage);
-			MB_StopRound();
-		}
 	}
 }
 
@@ -474,23 +621,15 @@ foreach (WarningSeonds => Enabled in Private_TimeLimitWarningsEnabled) {
 }
 
 // Pause handling (Request reaction, execution on StartTurn)
-declare Boolean Progression_PauseRequested for This;
+declare Boolean Progression_PauseRequested for This = False;
 if (Progression_PauseRequested) {
 	MB_StopTurn();
 }
 ***
 
-***StartOvertime***
+***EndPlayLoop***
 ***
-ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{ 
-	Type = ProgressionEvents::C_Type_SegmentStart,
-	Segment = ProgressionEvents::C_Segment_Overtime
-});
-FlagRush_XmlRpc::Send_Overtime();
-Private_OvertimeIsRunning = True;
-declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
-FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
-Messages::OvertimeStart(Durations::C_Duration_Overtime);
+Playloop::End();
 ***
 
 // ~~~~~~~~~~ Podium (Match end MVP) ~~~~~~~~~~ //
@@ -588,10 +727,22 @@ ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{
 });
 ***
 
+***WarmUpLoop***
+***
+Playloop::WarmUpLoop();
+***
+
+***EndWarmUp***
+***
+foreach (Player in Players) {
+	UnspawnPlayer(Player);
+}
+***
+
 ***Private_Pause***
 ***
 Private_PauseIsRunning = True;
-declare netwrite Boolean FlagRush_Net_PauseIsRunning for Teams[0];
+declare netwrite Boolean FlagRush_Net_PauseIsRunning for Teams[0] = False;
 FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 ModeUtils::SetEndTime(-1);
 Messages::PauseStart(Durations::C_Duration_PauseStart);
@@ -606,24 +757,25 @@ FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 ***
 
 // ~~~~~~~~~~ Yield ~~~~~~~~~~ //
-
 // Cannot use non-library functions or globales in here, as this is executed during MB_Yield() in the modebase,
 // which is defined before any function or globale that could be defined in any extend.
 // Only code directly or plugs which don't contain non-library functions or non ModeBase globales themselves.
 // TODO: Find a way to work around this. It hurts.
 ***Yield***
 ***
-// Track modesettings after Settings::Yield, else events would be cleared instantly.
+// Collect events in Event libraries first
 Settings::Yield();
-{ +++TrackModeSettings+++ }
+{ +++TrackModeSettings+++ } // Track modesettings after Settings::Yield, else events would be cleared instantly.
 Commands::Yield();
 ProgressionEvents::Yield();
 PlayerLifecycleEvents::Yield();
 
+// Now update all libs that might require events produced above
 ModeCommands::Yield();
 Messages::Yield();
 Scores::Yield();
 FlagRush_UI::Yield();
+HandicapQueue::Yield();
 { +++Private_Yield_HandleProgressionsCommands+++ }
 { +++Private_Yield_HandleCriticalModeScriptSettingsUpdates+++ }
 { +++Private_Yield_HandlePlayerLifecycleEvents+++ }
@@ -674,6 +826,8 @@ if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted && Map != 
 ***
 declare Boolean SendProgressionSettingsToClient = False;
 declare Boolean ReinitTeamsConfig = False;
+declare Boolean UpdateVehicleTunings = False;
+declare Boolean RestartTurn = False;
 foreach(Event in Settings::GetPendingEvents()) {
 	switch (Event.Name) {
 		// Point limits
@@ -692,9 +846,46 @@ foreach(Event in Settings::GetPendingEvents()) {
 				ModeCommands::SetSuperAdmin(Login);
 			}
 		}
+		// Collision
+		case SettingNames::S_UseCollisions: {
+			UsePvPCollisions = S_UseCollisions;
+			RestartTurn = True;
+		}
+		// Vehicle Tunings
+		case SettingNames::S_TuningStadiumAcceleration, SettingNames::S_TuningStadiumAdherence, SettingNames::S_TuningStadiumControl,
+					SettingNames::S_TuningSnowAcceleration, SettingNames::S_TuningSnowAdherence, SettingNames::S_TuningSnowControl, 
+					SettingNames::S_TuningRallyAcceleration, SettingNames::S_TuningRallyAdherence, SettingNames::S_TuningRallyControl,
+					SettingNames::S_TuningDesertAcceleration, SettingNames::S_TuningDesertAdherence, SettingNames::S_TuningDesertControl: {
+			UpdateVehicleTunings = True;
+			RestartTurn = True;
+		}
+		// Forced Vehicles
+		case SettingNames::S_ForceEnabledVehiclesCsv: {
+			// Note: Cannot use functions like Vehicle_GetEnabled or globals in Yield due to ordering after compilation
+			declare Vehicles::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
+			FlagRush_ForceEnabledVehicles.clear();
+			foreach (CsvEntry in TL::Split(",", S_ForceEnabledVehiclesCsv)) {
+				declare Text VehicleId = TL::ToLowerCase(TL::Trim(CsvEntry));
+				if (Vehicles::IsValid(VehicleId)) {
+					FlagRush_ForceEnabledVehicles.add(Vehicles::Get(VehicleId));
+				}
+			}
+
+			declare Vehicles::K_Vehicle[] EnabledVehicles;
+			if (FlagRush_ForceEnabledVehicles.count > 0) {
+				EnabledVehicles = FlagRush_ForceEnabledVehicles;
+			} else {
+				EnabledVehicles = FlagRushMap::GetEnabledVehicles();
+			}
+			FlagRush_VehicleSelection::SetEnabledVehicles(EnabledVehicles);
+			RestartTurn = True;
+		}
+		// Physics simulation
+		case SettingNames::S_TrustClientSimu, SettingNames::S_UseCrudeExtrapolation: {
+			RestartTurn = True;
+		}
 	}
 }
-
 
 if (SendProgressionSettingsToClient) {
 	FlagRush_UI::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
@@ -707,6 +898,37 @@ if (ReinitTeamsConfig) {
 	Teams::SetTeam1HueOverride(S_Team1Hue);
 	Teams::SetTeam2HueOverride(S_Team2Hue);
 	Teams::Init();
+}
+
+if (UpdateVehicleTunings) {
+	declare Vehicles::K_Tuning StadiumTuning = Vehicles::C_Tuning_Default;
+	StadiumTuning.Acceleration =	S_TuningStadiumAcceleration;
+	StadiumTuning.Adherence =			S_TuningStadiumAdherence;
+	StadiumTuning.Control =				S_TuningStadiumControl;
+	Vehicles::SetTuning(C_Vehicle_Stadium.Id, StadiumTuning);
+
+	declare Vehicles::K_Tuning SnowTuning = Vehicles::C_Tuning_Default;
+	SnowTuning.Acceleration =			S_TuningSnowAcceleration;
+	SnowTuning.Adherence =				S_TuningSnowAdherence;
+	SnowTuning.Control =					S_TuningSnowControl;
+	Vehicles::SetTuning(C_Vehicle_Snow.Id, SnowTuning);
+
+	declare Vehicles::K_Tuning RallyTuning = Vehicles::C_Tuning_Default;
+	RallyTuning.Acceleration =		S_TuningRallyAcceleration;
+	RallyTuning.Adherence =				S_TuningRallyAdherence;
+	RallyTuning.Control =					S_TuningRallyControl;
+	Vehicles::SetTuning(C_Vehicle_Rally.Id, RallyTuning);
+
+	declare Vehicles::K_Tuning DesertTuning = Vehicles::C_Tuning_Default;
+	DesertTuning.Acceleration =		S_TuningDesertAcceleration;
+	DesertTuning.Adherence =			S_TuningDesertAdherence;
+	DesertTuning.Control =				S_TuningDesertControl;
+	Vehicles::SetTuning(C_Vehicle_Desert.Id, DesertTuning);
+}
+
+if (RestartTurn && MB_TurnIsRunning()) {
+	Messages::CriticalSettingUpdate_RestartTurn();
+	MB_StopTurn();
 }
 ***
 

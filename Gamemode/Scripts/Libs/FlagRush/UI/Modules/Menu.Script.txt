@@ -2,6 +2,9 @@
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 
+#Const C_LayerName "FlagRush_Menu"
+#Const C_LayerType CUILayer::EUILayerType::InGameMenu
+
 #Const C_MenuPage_MainMenu "mainmenu"
 #Const C_MenuPage_TeamsMenu "teamsmenu"
 #Const C_MenuPage_CallvotesMenu "callvotesmenu"
@@ -24,7 +27,7 @@
 Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-	<manialink version="3" name="FlagRush_Menu">
+	<manialink version="3" name="{{{ C_LayerName }}}">
 	<framemodel id="menu-button">
 		<quad size="50 8" id="background" style="Bgs1InRace" substyle="BgColorContour" halign="center" valign="center2" />
 		<label size="49 7" id="label" text="Button Text" textsize="1.2" halign="center" valign="center2" focusareacolor1="0000" focusareacolor2="fff8" textemboss="1" scriptevents="1"/>
@@ -546,4 +549,14 @@ Text GetManialink() {
 	--></script>
 </manialink>
 	""";
+}
+
+// MARK: Lifecycle
+
+Void Unload() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void Load() {
+	Unload();
 }

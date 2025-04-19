@@ -14,12 +14,13 @@
 #Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt"									as UIModule_FlagMarker
 #Include "Libs/FlagRush/UI/Modules/FlagPossessionIndicator.Script.txt"		as UIModule_FlagPossessionIndicator
 
+#Include "Libs/FlagRush/UI/Modules/ScoresHeader.Script.txt"								as UIModule_ScoresHeader
+
 #Include "Libs/FlagRush/UI/Modules/Menu.Script.txt"								as UIModule_Menu
 #Include "Libs/FlagRush/UI/Modules/PodiumBackground.Script.txt"		as UIModule_PodiumBackground
 #Include "Libs/FlagRush/UI/Modules/Radar.Script.txt"							as UIModule_Radar
 #Include "Libs/FlagRush/UI/Modules/RespawnFlash.Script.txt"				as UIModule_RespawnFlash
 #Include "Libs/FlagRush/UI/Modules/RespawnTimer.Script.txt"				as UIModule_RespawnTimer
-#Include "Libs/FlagRush/UI/Modules/Header.Script.txt"							as UIModule_ScoresHeader
 #Include "Libs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as UIModule_ScoresTable
 #Include "Libs/FlagRush/UI/Modules/Sound.Script.txt"							as UIModule_Sounds
 #Include "Libs/FlagRush/UI/Modules/Spectator.Script.txt"					as UIModule_SpectatorControls
@@ -52,12 +53,15 @@ Void Private_LoadModules() {
 	UIModule_EventFeed::Load();
 	UIModule_FlagMarker::Load();
 	UIModule_FlagPossessionIndicator::Load();
+
+	UIModule_ScoresHeader::Load();
+
+
 	// UIModule_Menu::Load();
 	// UIModule_PodiumBackground::Load();
 	// UIModule_Radar::Load();
 	// UIModule_RespawnFlash::Load();
 	// UIModule_RespawnTimer::Load();
-	// UIModule_ScoresHeader::Load();
 	// UIModule_ScoresTable::Load();
 	// UIModule_Sounds::Load();
 	// UIModule_SpectatorControls::Load();
@@ -68,6 +72,8 @@ Void Private_UnloadModules() {
 	UIModule_EventFeed::Unload();
 	UIModule_FlagMarker::Unload();
 	UIModule_FlagPossessionIndicator::Unload();
+
+	UIModule_ScoresHeader::Unload();
 }
 
 Void Private_CreateModuleLayers() {
@@ -86,10 +92,12 @@ Void Private_CreateModuleLayers() {
 	Layers::SetType(UIModule_FlagPossessionIndicator::C_LayerName, UIModule_FlagPossessionIndicator::C_LayerType);
 	Layers::Attach(UIModule_FlagPossessionIndicator::C_LayerName);
 
+
+
 	// Scores header
-	Layers::Create(C_LayerName_ScoresHeader, UIModule_ScoresHeader::GetManialink());
-	Layers::SetType(C_LayerName_ScoresHeader, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName_ScoresHeader);
+	Layers::Create(UIModule_ScoresHeader::C_LayerName, UIModule_ScoresHeader::GetManialink());
+	Layers::SetType(UIModule_ScoresHeader::C_LayerName, UIModule_ScoresHeader::C_LayerType);
+	Layers::Attach(UIModule_ScoresHeader::C_LayerName);
 
 	// Scores table
 	Layers::Create(C_LayerName_ScoresTable, UIModule_ScoresTable::GetManialink());
@@ -138,6 +146,9 @@ Void Private_DestroyModuleLayers() {
 	Layers::Destroy(UIModule_EventFeed::C_LayerName);
 	Layers::Destroy(UIModule_FlagMarker::C_LayerName);
 	Layers::Destroy(UIModule_FlagPossessionIndicator::C_LayerName);
+
+	Layers::Destroy(UIModule_ScoresHeader::C_LayerName);
+
 	Layers::Destroy(C_LayerName_ScoresHeader);
 	Layers::Destroy(C_LayerName_ScoresTable);
 	Layers::Destroy(C_LayerName_Sound);

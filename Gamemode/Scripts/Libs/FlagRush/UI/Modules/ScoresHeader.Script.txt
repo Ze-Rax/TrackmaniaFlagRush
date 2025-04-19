@@ -4,10 +4,13 @@
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
+#Const C_LayerName "FlagRush_ScoresHeader"
+#Const C_LayerType CUILayer::EUILayerType::Normal
+
 Text GetManialink() {
 	return """
-	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-	<manialink version="3" name="FlagRush_ScoresHeader">
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="{{{ C_LayerName }}}">
 	{{{ UIShared::GetGradientFramemodel() }}}
 
 	<frame id="main" pos="0 82.5">
@@ -235,6 +238,16 @@ Text GetManialink() {
 		}
 	}
 	--></script>
-	</manialink>
+</manialink>
 	""";
+}
+
+// MARK: Lifecycle
+
+Void Unload() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void Load() {
+	Unload();
 }

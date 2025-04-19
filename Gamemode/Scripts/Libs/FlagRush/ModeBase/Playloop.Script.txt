@@ -18,7 +18,7 @@
 
 #Include "Libs/FlagRush/Event/Settings.Script.txt" as Settings
 #Include "Libs/FlagRush/Event/Commands.Script.txt" as Commands
-#Include "Libs/FlagRUsh/Event/ProgressionEvents.Script.txt" as ProgressionEvents
+#Include "Libs/FlagRush/Event/Progression.Script.txt" as Progression
 
 #Include "Libs/FlagRush/UI/Messages.Script.txt" as Messages
 #Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt" as UIModule_FlagMarker

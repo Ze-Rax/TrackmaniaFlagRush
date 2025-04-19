@@ -49,7 +49,7 @@
 #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt"						as PlayerLifecycleEvents
 #Include "Libs/FlagRush/Event/Settings.Script.txt"												as Settings
 #Include "Libs/FlagRush/Event/Commands.Script.txt"												as Commands
-#Include "Libs/FlagRush/Event/ProgressionEvents.Script.txt"								as ProgressionEvents
+#Include "Libs/FlagRush/Event/Progression.Script.txt"											as Progression
 
 #Include "Libs/FlagRush/Util/Log.Script.txt"															as Log
 #Include "Libs/FlagRush/Util/ModeUtils.Script.txt"												as ModeUtils
@@ -303,7 +303,7 @@ Playloop::Load();
 
 Settings::Load();
 Commands::Load();
-ProgressionEvents::Load();
+Progression::Load();
 ***
 
 ***UnloadLibraries***
@@ -317,7 +317,7 @@ Playloop::Unload();
 
 Settings::Unload();
 Commands::Unload();
-ProgressionEvents::Unload();
+Progression::Unload();
 ***
 
 ***LoadHud***
@@ -369,18 +369,12 @@ FlagRush_XmlRpc::Send_MatchStart();
 
 ***StartMatch***
 ***
-ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{ 
-	Type = ProgressionEvents::C_Type_SegmentStart,
-	Segment = ProgressionEvents::C_Segment_Match
-});
+Progression::StartMatch();
 ***
 
 ***EndMatch***
 ***
-ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{ 
-	Type = ProgressionEvents::C_Type_SegmentEnd,
-	Segment = ProgressionEvents::C_Segment_Match
-});
+Progression::EndMatch();
 FlagRush_XmlRpc::Send_MatchEnd(MatchEndRequested);
 ***
 
@@ -409,10 +403,7 @@ MB_Synchro();
 
 ***StartMap***
 ***
-ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{ 
-	Type = ProgressionEvents::C_Type_SegmentStart,
-	Segment = ProgressionEvents::C_Segment_Map
-});
+Progression::StartMap();
 MB_Sleep(Durations::C_Duration_MapStart);
 
 StartTime = Now; // Start time has to be set otherwise cannot spawn players
@@ -449,10 +440,7 @@ if (Progression_MatchPointLimitReached()) {
 	MB_SkipPodiumSequence(); // Podium == Match end MVP
 }
 
-ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{ 
-	Type = ProgressionEvents::C_Type_SegmentEnd,
-	Segment = ProgressionEvents::C_Segment_Map
-});
+Progression::EndMap();
 ***
 
 // ~~~~~~~~~~ Round ~~~~~~~~~~ //
@@ -468,10 +456,7 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 
 ***StartRound***
 ***
-ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{ 
-	Type = ProgressionEvents::C_Type_SegmentStart,
-	Segment = ProgressionEvents::C_Segment_Round
-});
+Progression::StartRound();
 Messages::RoundStart(MB_GetRoundCount(), Durations::C_Duration_RoundStart);
 MB_Sleep(Durations::C_Duration_RoundStart);
 StartTime = Now;
@@ -489,10 +474,7 @@ foreach (WarningSeonds in C_TimeLimitWarning_Seconds) {
 Private_OvertimeIsRunning = False;
 declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
 FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
-ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{ 
-	Type = ProgressionEvents::C_Type_SegmentEnd,
-	Segment = ProgressionEvents::C_Segment_Round
-});
+Progression::EndRound();
 ***
 
 ***AfterEndRound***
@@ -526,10 +508,7 @@ if (Progression_MapPointLimitReached()) MB_StopMap();
 
 ***StartTurn***
 ***
-ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{ 
-	Type = ProgressionEvents::C_Type_SegmentStart,
-	Segment = ProgressionEvents::C_Segment_Turn
-});
+Progression::StartTurn();
 
 // Pause handling (Execution)
 declare Boolean Progression_PauseRequested for This;
@@ -550,10 +529,7 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 ***
 Private_Progression_RoundTimeRemaining = EndTime - Now;
 ModeUtils::SetEndTime(-1);
-ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{ 
-	Type = ProgressionEvents::C_Type_SegmentEnd,
-	Segment = ProgressionEvents::C_Segment_Turn
-});
+Porgression::EndTurn();
 ***
 
 ***AfterEndTurn***
@@ -597,10 +573,7 @@ if(Progression_OvertimeIsRunning()) {
 	MB_StopRound();
 } else if (Progression_TimeLimitReached()) {
 	if (Progression_RoundIsTied() && S_UseOvertime) {
-		ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{ 
-			Type = ProgressionEvents::C_Type_SegmentStart,
-			Segment = ProgressionEvents::C_Segment_Overtime
-		});
+		Progression::StartOvertime();
 		FlagRush_XmlRpc::Send_Overtime();
 		Private_OvertimeIsRunning = True;
 		declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
@@ -680,10 +653,7 @@ if (HasPodium) {
 
 ***Private_WarmUp***
 ***
-ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{ 
-	Type = ProgressionEvents::C_Type_SegmentStart,
-	Segment = ProgressionEvents::C_Segment_WarmUp
-});
+Progression::StartWarmUp();
 FlagRush_XmlRpc::Send_WarmUpStart();
 Private_WarmUpIsRunning = True;
 declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
@@ -722,10 +692,7 @@ Private_WarmUpIsRunning = False;
 FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
 MapMarkers::HideFlagSpawnMarkers();
 FlagRush_XmlRpc::Send_WarmUpEnd();
-ProgressionEvents::Mode_PublishEvent(ProgressionEvents::K_Event{ 
-	Type = ProgressionEvents::C_Type_SegmentEnd,
-	Segment = ProgressionEvents::C_Segment_WarmUp
-});
+Progression::EndWarmUp();
 ***
 
 ***WarmUpLoop***
@@ -768,7 +735,7 @@ FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 Settings::Yield();
 { +++TrackModeSettings+++ } // Track modesettings after Settings::Yield, else events would be cleared instantly.
 Commands::Yield();
-ProgressionEvents::Yield();
+Progression::Yield();
 PlayerLifecycleEvents::Yield();
 
 // Now update all libs that might require events produced above

@@ -1,0 +1,214 @@
+/**
+ * Events for the general progression of the FlagRush mode.
+ * 
+ * Provides events for begin and end of different segments, like warmup, maps, matches, etc.
+ * Consuming scripts should only access the pending using the GetPendingEvents function.
+ * Events are published from the respective mode using the Mode_PublishEvent function. They should not be used by consuming scripts.
+ * This script therefore only serves as a point that is accessible to libraries, as they cannot access members from the main mode file.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Const C_Type_SegmentStart 1
+#Const C_Type_SegmentEnd 2
+
+#Const C_Segment_Match 1
+#Const C_Segment_Map 2
+#Const C_Segment_Round 3
+#Const C_Segment_Turn 4
+#Const C_Segment_Overtime 5
+#Const C_Segment_WarmUp 6
+
+#Const C_EventTypeNames [
+	1 => "SegmentStart",
+	2 => "SegmentEnd"
+]
+
+#Const C_SegmentNames [
+  1 => "Match",
+  2 => "Map",
+  3 => "Round",
+  4 => "Turn",
+  5 => "Overtime",
+  6 => "WarmUp"
+]
+
+#Struct K_Event {
+  Integer Type;
+  Integer Segment;
+}
+
+declare Boolean G_MatchIsRunning;
+declare Boolean G_MapIsRunning;
+declare Boolean G_RoundIsRunning;
+declare Boolean G_TurnIsRunning;
+declare Boolean G_OvertimeIsRunning;
+declare Boolean G_WarmUpIsRunning;
+
+
+// MARK: API
+
+// Need a separate buffer for events before publishing.
+// If events are added to pending events directly, then during yield they would be cleared before other libraries could see them.
+// This way it is guaranteed that they are visible for exactly one yield, no matter if other libraries yield before or after this library.
+declare K_Event[] G_EventsAggregationBuffer;
+declare K_Event[] G_PendingEvents;
+
+K_Event[] GetPendingEvents() {
+  return G_PendingEvents;
+}
+
+Boolean MatchIsRunning() {
+  return G_MatchIsRunning;
+}
+
+Boolean MapIsRunning() {
+  return G_MapIsRunning;
+}
+
+Boolean RoundIsRunning() {
+  return G_RoundIsRunning;
+}
+
+Boolean TurnIsRunning() {
+  return G_TurnIsRunning;
+}
+
+Boolean OvertimeIsRunning() {
+  return G_OvertimeIsRunning;
+}
+
+Boolean WarmUpIsRunning() {
+  return G_WarmUpIsRunning;
+}
+
+Boolean SegmentIsRunning(Integer _Segment) {
+  switch(_Segment) {
+    case C_Segment_Match: return MatchIsRunning();
+    case C_Segment_Map: return MapIsRunning();
+    case C_Segment_Round: return RoundIsRunning();
+    case C_Segment_Turn: return TurnIsRunning();
+    case C_Segment_Overtime: return OvertimeIsRunning();
+    case C_Segment_WarmUp: return WarmUpIsRunning();
+  }
+  return False;
+}
+
+// MARK: Lifecycle
+
+Void StartMatch() {
+  G_MatchIsRunning = True;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_Type_SegmentStart,
+    Segment = C_Segment_Match
+  });
+}
+
+Void EndMatch() {
+  G_MatchIsRunning = False;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_Type_SegmentEnd,
+    Segment = C_Segment_Match
+  });
+}
+
+Void StartMap() {
+  G_MapIsRunning = True;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_Type_SegmentStart,
+    Segment = C_Segment_Map
+  });
+}
+
+Void EndMap() {
+  G_MapIsRunning = False;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_Type_SegmentEnd,
+    Segment = C_Segment_Map
+  });
+}
+
+Void StartRound() {
+  G_RoundIsRunning = True;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_Type_SegmentStart,
+    Segment = C_Segment_Round
+  });
+}
+
+Void EndRound() {
+  if (G_OvertimeIsRunning) {
+    G_OvertimeIsRunning = False;
+    G_EventsAggregationBuffer.add(K_Event{
+      Type = C_Type_SegmentEnd,
+      Segment = C_Segment_Overtime
+    });
+  }
+
+  G_RoundIsRunning = False;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_Type_SegmentEnd,
+    Segment = C_Segment_Round
+  });
+}
+
+Void StartTurn() {
+  G_TurnIsRunning = True;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_Type_SegmentStart,
+    Segment = C_Segment_Turn
+  });
+}
+
+Void EndTurn() {
+  G_TurnIsRunning = False;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_Type_SegmentEnd,
+    Segment = C_Segment_Turn
+  });
+}
+
+Void StartOvertime() {
+  G_OvertimeIsRunning = True;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_Type_SegmentStart,
+    Segment = C_Segment_Overtime
+  });
+}
+
+Void StartWarmUp() {
+  G_WarmUpIsRunning = True;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_Type_SegmentStart,
+    Segment = C_Segment_WarmUp
+  });
+}
+
+Void EndWarmUp() {
+  G_WarmUpIsRunning = False;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_Type_SegmentEnd,
+    Segment = C_Segment_WarmUp
+  });
+}
+
+Void Yield() {
+  G_PendingEvents = G_EventsAggregationBuffer;
+  G_EventsAggregationBuffer.clear();
+}
+
+Void Unload() {
+  G_PendingEvents.clear();
+  G_EventsAggregationBuffer.clear();
+  G_MatchIsRunning = False;
+  G_MapIsRunning = False;
+  G_RoundIsRunning = False;
+  G_TurnIsRunning = False;
+  G_OvertimeIsRunning = False;
+  G_WarmUpIsRunning = False;
+}
+
+Void Load() {
+  Unload();
+}
+ 

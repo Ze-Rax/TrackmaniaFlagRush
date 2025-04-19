@@ -351,6 +351,7 @@ Void Unload() {
 }
 
 Void Load() {
+	Unload();
 	Scores::Load();
 	PlayerStatistics::Load();
 	PlayerStatistics::Register(

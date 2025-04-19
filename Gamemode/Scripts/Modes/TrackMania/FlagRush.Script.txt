@@ -281,15 +281,14 @@ Settings::Track(SettingNames::S_TuningDesertControl, S_TuningDesertControl);
 Settings::Track(SettingNames::S_UseCrudeExtrapolation, S_UseCrudeExtrapolation);
 Settings::Track(SettingNames::S_TrustClientSimu, S_TrustClientSimu);
 Settings::Track(SettingNames::S_ModeCommands_AdminLoginsCsv, S_ModeCommands_AdminLoginsCsv);
-
 ***
 
 ***LoadLibraries***
 ***
-FlagRush_XmlRpc::Load();
-Messages::Load();
+// Core
+Flag::Load();
+HandicapQueue::Load();
 Scores::Load();
-
 Teams::SetTeam1NameOverride(S_Team1Name);
 Teams::SetTeam1HueOverride(S_Team1Hue);
 Teams::SetTeam2NameOverride(S_Team2Name);
@@ -297,28 +296,39 @@ Teams::SetTeam2HueOverride(S_Team2Hue);
 Teams::UseClubTags(S_UseClubTags);
 Teams::Init();
 
-Flag::Load();
-
+// Events
 Settings::Load();
 Commands::Load();
 Progression::Load();
 PlayerLifecycleEvents::Load();
 EnabledVehicles::Load();
+
+// UI
+Messages::Load();
+
+// Misc
+FlagRush_XmlRpc::Load();
 ***
 
 ***UnloadLibraries***
 ***
-FlagRush_XmlRpc::Unload();
-Messages::Unload();
+// Core
+Flag::Unload();
+HandicapQueue::Unload();
 Scores::Unload();
 
-Flag::Unload();
-
+// Events
 Settings::Unload();
 Commands::Unload();
 Progression::Unload();
 PlayerLifecycleEvents::Unload();
 EnabledVehicles::Unload();
+
+// UI
+Messages::Unload();
+
+// Misc
+FlagRush_XmlRpc::Unload();
 ***
 
 ***LoadHud***
@@ -668,7 +678,7 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 { +++StartWarmUp+++ }
 while(!WarmUpReadyUp::WarmUpShouldStop()) {
 	MB_Yield();
-	WarmUpReadyUp::Yield();
+	WarmUpReadyUp::Update();
 	foreach (WuruEvent in WarmUpReadyUp::GetPendingEvents()) {
 		switch (WuruEvent.Type) {
 			case WarmUpReadyUp::C_Event_Type_TimeoutStart,
@@ -740,12 +750,15 @@ Progression::Yield();
 PlayerLifecycleEvents::Yield();
 EnabledVehicles::Yield();
 
-// Now update all libs that might require events produced above
-UIModule_ModeCommands::Yield();
-Messages::Yield();
-Scores::Yield();
-FlagRush_UI::Yield();
+// Now update all other libs
+Flag::Yield();
 HandicapQueue::Yield();
+Scores::Yield();
+
+FlagRush_UI::Yield();
+Messages::Yield();
+UIModule_ModeCommands::Yield();
+
 { +++Private_Yield_HandleProgressionsCommands+++ }
 { +++Private_Yield_HandleCriticalModeScriptSettingsUpdates+++ }
 { +++Private_Yield_HandlePlayerLifecycleEvents+++ }

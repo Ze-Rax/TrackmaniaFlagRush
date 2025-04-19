@@ -209,6 +209,8 @@ Void Init() {
 	Private_ApplyToTeams();
 }
 
+// MARK: Lifecycle
+
 Void LoadItems() {
 	foreach (Index => TeamColor in C_HueToTeamPresetLut) {
 		G_SkinIds[Index] = ItemList_AddWithSkin("CarSport", TeamColor.SkinName);

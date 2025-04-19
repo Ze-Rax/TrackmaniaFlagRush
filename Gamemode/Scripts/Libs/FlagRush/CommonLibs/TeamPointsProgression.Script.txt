@@ -68,7 +68,7 @@ Void StartMatch() {
 	Clear(C_Level_Match);
 }
 
-Void EndMatch() {
+Void EndMatch() { // @mslint-disable-line no-empty -- Kept for consistency
 
 }
 
@@ -76,7 +76,7 @@ Void StartMap() {
 	Clear(C_Level_Map);
 }
 
-Void EndMap() {
+Void EndMap() { // @mslint-disable-line no-empty -- Kept for consistency
 
 }
 
@@ -84,6 +84,6 @@ Void StartRound() {
 	Clear(C_Level_Round);
 }
 
-Void EndRound() {
+Void EndRound() { // @mslint-disable-line no-empty -- Kept for consistency
 
 }

@@ -11,7 +11,7 @@
  *	WarmUpReadyUp::Start();
  *	while(!WarmUpReadyUp::WarmUpShouldStop()) {
  *		MB_Yield();
- *		WarmUpReadyUp::Yield();
+ *		WarmUpReadyUp::Update();
  *		// Your code to execute during warmup; Can contains WarmUpReadyUp::Stop()
  *	}
  *	// Your code to do after warmup
@@ -303,9 +303,9 @@ Void Private_HandleUIEvents() {
 }
 
 /**
- * Does everything necessary during a frame of the script. Does not yield the mode!
+ * Should only be called in the warmup loop, not every yield
  */
-Void Yield() {
+Void Update() {
 	G_PendingEvents.clear();
 
 	Private_HandleXmlRpcEvents();

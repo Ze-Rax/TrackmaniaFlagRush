@@ -109,7 +109,7 @@ Void Yield() {
 			CurrentConnectedPlayersByUserId[Player.User.Id].Previously.Clan = Player.CurrentClan;
 		}
 	}
-	
+
 	// Check for Players becoming Spectators
 	foreach (Spectator in Spectators) {
 		if (!CurrentConnectedPlayersByUserId[Spectator.User.Id].Previously.WasSpectator) {

@@ -101,7 +101,12 @@ declare K_Flag G_Flag;
 
 K_Player Private_ToPlayerStruct(CSmPlayer _Player) {
 	assert(_Player != Null);
-	return K_Player{ Id = _Player.Id, ScoreId = _Player.Score.Id, UserId = _Player.User.Id, Clan = _Player.CurrentClan };
+	return K_Player{
+		Id = _Player.Id,
+		ScoreId = _Player.Score.Id,
+		UserId = _Player.User.Id,
+		Clan = _Player.CurrentClan
+	};
 }
 
 K_Net_Flag_Player Private_ToNetFlagPlayer(K_Player _Player) {
@@ -238,7 +243,10 @@ Void SetUnspawned() {
 }
 
 Void SetAtPosition(Vec3 _Position) {
-	G_Flag.Location = K_Location{ Position = _Position, LastSafePosition = G_Flag.Location.LastSafePosition };
+	G_Flag.Location = K_Location{
+		Position = _Position,
+		LastSafePosition = G_Flag.Location.LastSafePosition
+	};
 	Net_Update();
 }
 
@@ -254,13 +262,22 @@ Void SetAtPlayer(CSmPlayer _Player) {
 		};
 	}
 
-	G_Flag.Location = K_Location{ Player = Private_ToPlayerStruct(_Player), Position = _Player.Position, LastSafePosition = G_Flag.Location.LastSafePosition };
+	G_Flag.Location = K_Location{
+		Player = Private_ToPlayerStruct(_Player),
+		Position = _Player.Position,
+		LastSafePosition = G_Flag.Location.LastSafePosition
+	};
 	Net_Update();
 }
 
 Void SetAtLandmark(CMapLandmark _Landmark) {
 	assert(_Landmark != Null);
-	G_Flag.Location = K_Location{ LandmarkId = _Landmark.Id, Position = _Landmark.Position, LastSafePosition = G_Flag.Location.LastSafePosition };
+	G_Flag.Location = K_Location{
+		LandmarkId = _Landmark.Id,
+		Position = _Landmark.Position,
+		LastSafePosition =
+		G_Flag.Location.LastSafePosition
+	};
 	Net_Update();
 }
 
@@ -321,8 +338,7 @@ Void Update() {
 	}
 }
 
-Void Yield() {
-	
+Void Yield() { // @mslint-disable-line no-empty -- Kept for consistency
 }
 
 Void Unload() {

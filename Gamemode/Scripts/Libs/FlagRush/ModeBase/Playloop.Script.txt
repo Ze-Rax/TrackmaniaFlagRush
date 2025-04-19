@@ -366,12 +366,12 @@ Void Private_UpdatePlayerStatistics() {
       Scores::OnPlayerLandedJump(Player.Score, FlagRush_PreviousFlyingDuration / 2); // Flying duration is in units on 0.5ms for some reason
     }
     FlagRush_PreviousFlyingDuration = Player.FlyingDuration;
-  
+
     // Track distance driven
     if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned) {
       continue;
     }
-  
+
     declare Vec3 FlagRush_PreviousPosition for Player = Player.Position;
     if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
       declare Real Distance = ML::Distance(Player.Position, FlagRush_PreviousPosition);
@@ -380,7 +380,7 @@ Void Private_UpdatePlayerStatistics() {
       }
     }
     FlagRush_PreviousPosition = Player.Position;
-  
+
     // Track speed
     Scores::OnPlayerHasSpeed(Player.Score, Player.Speed);
   }
@@ -502,15 +502,15 @@ Void Private_UpdatePlayers() {
     if (Private_Player_RequestsClanChange(Player)) {
       Private_OnPlayerRequestsClanChange(Player);
     }
-    
+
     if (Private_Player_IsDead(Player)) {
       Private_OnPlayerDeath(Player);
     }
-    
+
     if (Private_Player_CanSpawn(Player)) {
       Private_Player_Spawn(Player);
     }
-  
+
     Private_Player_Net_SendPosition(Player);
   }
 }
@@ -523,7 +523,7 @@ Void Start() {
   Flag::SetAtLandmark(FlagSpawn);
   Flag::InvalidateLastSafePosition();
   UIModule_FlagMarker::Update();
-  
+
   foreach (Player in Players) {
     declare netwrite Integer Net_SpawnDate for Player = -1;
     Net_SpawnDate = -1;
@@ -552,14 +552,14 @@ Void WarmUpLoop() {
 			FlagRush_Warmup_UnspawnDate = Now;
 			SetPlayerClan(Player, Player.RequestedClan);
 		}
-	
+
 		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && Now - FlagRush_Warmup_UnspawnDate > C_RespawnDelayMin) {
 			Private_Player_Spawn(Player);
 		}
-	
+
 		Private_Player_Net_SendPosition(Player);
 	}
-	
+
 	foreach (Event in PendingEvents) {
 		switch (Event.Type) {
 			case CSmModeEvent::EType::OnPlayerRequestRespawn: {

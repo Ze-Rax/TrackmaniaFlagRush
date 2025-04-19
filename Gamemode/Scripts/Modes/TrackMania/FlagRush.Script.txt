@@ -825,7 +825,7 @@ foreach(Event in Settings::GetPendingEvents()) {
 		}
 		// Vehicle Tunings
 		case SettingNames::S_TuningStadiumAcceleration, SettingNames::S_TuningStadiumAdherence, SettingNames::S_TuningStadiumControl,
-					SettingNames::S_TuningSnowAcceleration, SettingNames::S_TuningSnowAdherence, SettingNames::S_TuningSnowControl, 
+					SettingNames::S_TuningSnowAcceleration, SettingNames::S_TuningSnowAdherence, SettingNames::S_TuningSnowControl,
 					SettingNames::S_TuningRallyAcceleration, SettingNames::S_TuningRallyAdherence, SettingNames::S_TuningRallyControl,
 					SettingNames::S_TuningDesertAcceleration, SettingNames::S_TuningDesertAdherence, SettingNames::S_TuningDesertControl: {
 			UpdateVehicleTunings = True;

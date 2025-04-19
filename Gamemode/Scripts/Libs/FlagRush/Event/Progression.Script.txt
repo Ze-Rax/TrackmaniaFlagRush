@@ -1,6 +1,6 @@
 /**
  * Events for the general progression of the FlagRush mode.
- * 
+ *
  * Provides events for begin and end of different segments, like warmup, maps, matches, etc.
  * Consuming scripts should only access the pending using the GetPendingEvents function.
  * Events are published from the respective mode using the Mode_PublishEvent function. They should not be used by consuming scripts.
@@ -211,4 +211,3 @@ Void Unload() {
 Void Load() {
   Unload();
 }
- 

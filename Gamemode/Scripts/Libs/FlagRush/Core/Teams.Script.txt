@@ -1,6 +1,6 @@
 /**
  * Manages the configuration for the teams in FlagRush.
- * 
+ *
  * Determines properties like Team name and Hue depending on the FlagRush Map and team members.
  * To use skins of the appropriate team color, this library's LoadItems function should be called on server start when the item list is created.
  *

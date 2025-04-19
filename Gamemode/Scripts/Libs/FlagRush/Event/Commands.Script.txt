@@ -37,9 +37,9 @@ Void Yield() {
   		case CXmlRpcEvent::EType::CallbackArray: {
   			switch (XmlRpcEvent.ParamArray1) {
   				case "Trackmania.ForceEndRound": {
-  					declare Command::K_Source Source = Command::K_Source{ 
-              Type = Command::C_SourceType_XmlRpc, 
-              Name = C_SourceNameByType[Command::C_SourceType_XmlRpc] 
+  					declare Command::K_Source Source = Command::K_Source{
+              Type = Command::C_SourceType_XmlRpc,
+              Name = C_SourceNameByType[Command::C_SourceType_XmlRpc]
             };
   					G_PendingEvents.add(Command::FromNameAndParams(CommandNames::Command_SkipRound, [], Source));
   				}

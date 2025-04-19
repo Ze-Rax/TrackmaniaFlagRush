@@ -17,7 +17,7 @@
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
 #Include "Libs/FlagRush/Core/HandicapQueue.Script.txt" as HandicapQueue
 #Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
-#Include "Libs/FlagRush/CommonLibs/Rx/Hitbox.Script.txt" as Hitbox
+#Include "Libs/FlagRush/Core/Hitbox.Script.txt" as Hitbox
 #Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt" as FlagRush_XmlRpc
 
 #Include "Libs/FlagRush/Event/Settings.Script.txt" as Settings

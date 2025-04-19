@@ -614,16 +614,7 @@ UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
 // Actual podium phase
 if (HasPodium) {
-	declare CSmScore[] PodiumPlayerScores;
-	declare Text[] PodiumPlayerLogins;
-	for (I, 0, 2) {
-		if (!Scores.existskey(I)) break;
-		PodiumPlayerScores.add(Scores[I]);
-		PodiumPlayerLogins.add(Scores[I].User.Login);
-	}
 	Progression::StartPodium();
-	UILayers::AttachPodiumBackground(PodiumPlayerScores);
-	UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
 	MB_Sleep(ML::NearestInteger(Durations::C_Duration_Podium * 0.33));
 	UIModule_PodiumStatistics::Update();
@@ -631,7 +622,6 @@ if (HasPodium) {
 	MB_Sleep(ML::NearestInteger(Durations::C_Duration_Podium * 0.67));
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 	UIModule_PodiumStatistics::Detach();
-	UILayers::DetachPodiumBackground();
 	Progression::EndPodium();
 }
 ***

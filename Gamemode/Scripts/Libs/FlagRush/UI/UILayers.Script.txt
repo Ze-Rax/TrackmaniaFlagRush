@@ -23,10 +23,10 @@
 #Include "Libs/FlagRush/UI/Modules/MapMarkers.Script.txt"									as UIModule_MapMarkers
 #Include "Libs/FlagRush/UI/Modules/Menu.Script.txt"												as UIModule_Menu
 #Include "Libs/FlagRush/UI/Modules/ModeCommands.Script.txt"								as UIModule_ModeCommands
+#Include "Libs/FlagRush/UI/Modules/PodiumBackground.Script.txt"						as UIModule_PodiumBackground
 
 #Include "Libs/FlagRush/UI/Modules/ScoresHeader.Script.txt"								as UIModule_ScoresHeader
 
-#Include "Libs/FlagRush/UI/Modules/PodiumBackground.Script.txt"		as UIModule_PodiumBackground
 #Include "Libs/FlagRush/UI/Modules/Radar.Script.txt"							as UIModule_Radar
 #Include "Libs/FlagRush/UI/Modules/RespawnFlash.Script.txt"				as UIModule_RespawnFlash
 #Include "Libs/FlagRush/UI/Modules/RespawnTimer.Script.txt"				as UIModule_RespawnTimer
@@ -70,12 +70,11 @@ Void Private_LoadModules() {
 	UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_SkipRound, "UICommon64_1", "FastForward_light");
 	UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
 	UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_ResetFlag, "UICommon64_1", "Flag_light");
+	UIModule_PodiumBackground::Load();
 
 	UIModule_ScoresHeader::Load();
 
 
-	// UIModule_Menu::Load();
-	// UIModule_PodiumBackground::Load();
 	// UIModule_Radar::Load();
 	// UIModule_RespawnFlash::Load();
 	// UIModule_RespawnTimer::Load();
@@ -92,6 +91,7 @@ Void Private_UnloadModules() {
 	UIModule_MapMarkers::Unload();
 	UIModule_Menu::Unload();
 	UIModule_ModeCommands::Unload();
+	UIModule_PodiumBackground::Unload();
 
 	UIModule_ScoresHeader::Unload();
 }
@@ -127,6 +127,12 @@ Void Private_CreateModuleLayers() {
 	Layers::SetType(UIModule_ModeCommands::C_LayerName, UIModule_ModeCommands::C_LayerType);
 	Layers::Attach(UIModule_ModeCommands::C_LayerName);
 
+	// Podium background
+	Layers::Create(UIModule_PodiumBackground::C_LayerName, UIModule_PodiumBackground::GetManialink());
+	Layers::SetType(UIModule_PodiumBackground::C_LayerName, UIModule_PodiumBackground::C_LayerType);
+	Layers::Get(UIModule_PodiumBackground::C_LayerName).AttachId = C_AttachId_Podium;
+	// Don't attach yet; only explicitly during podium
+
 
 
 	// Scores header
@@ -161,12 +167,6 @@ Void Private_CreateModuleLayers() {
 	Layers::SetType(C_LayerName_Flash, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Flash);
 
-	// Podium background
-	Layers::Create(C_LayerName_Podium, UIModule_PodiumBackground::GetManialink());
-	Layers::SetType(C_LayerName_Podium, CUILayer::EUILayerType::ScreenIn3d);
-	Layers::Get(C_LayerName_Podium).AttachId = C_AttachId_Podium;
-	// Don't attach yet; only explicitly during podium
-
 	// Spectator controls
 	Layers::Create(C_LayerName_Spectator, UIModule_SpectatorControls::GetManialink());
 	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
@@ -180,6 +180,7 @@ Void Private_DestroyModuleLayers() {
 	Layers::Destroy(UIModule_MapMarkers::C_LayerName);
 	Layers::Destroy(UIModule_Menu::C_LayerName);
 	Layers::Destroy(UIModule_ModeCommands::C_LayerName);
+	Layers::Destroy(UIModule_PodiumBackground::C_LayerName);
 
 	Layers::Destroy(UIModule_ScoresHeader::C_LayerName);
 
@@ -187,15 +188,6 @@ Void Private_DestroyModuleLayers() {
 	Layers::Destroy(C_LayerName_ScoresTable);
 	Layers::Destroy(C_LayerName_Sound);
 	Layers::Destroy(C_LayerName_Menu);
-}
-
-Void AttachPodiumBackground(CSmScore[] PodiumPlayerScores) {
-	UIModule_PodiumBackground::SetContent(PodiumPlayerScores);
-	Layers::Attach(C_LayerName_Podium);
-}
-
-Void DetachPodiumBackground() {
-	Layers::Detach(C_LayerName_Podium);
 }
 
 /**
@@ -280,8 +272,21 @@ Void Yield() {
 			UIModule_MapMarkers::HideFlagSpawnMarkers();
 		} else if (Event.Type == Progression::C_EventType_SegmentStart && Event.Segment == Progression::C_Segment_Podium) {
 			UIModule_MapMarkers::Hide();
+			declare CSmScore[] PodiumPlayerScores;
+			declare Text[] PodiumPlayerLogins;
+			for (I, 0, 2) {
+				if (!Scores.existskey(I)) {
+					break;
+				}
+				PodiumPlayerScores.add(Scores[I]);
+				PodiumPlayerLogins.add(Scores[I].User.Login);
+			}
+			UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
+			UIModule_PodiumBackground::SetContent(PodiumPlayerScores);
+			Layers::Attach(UIModule_PodiumBackground::C_LayerName);
 		} else if (Event.Type == Progression::C_EventType_SegmentEnd && Event.Segment == Progression::C_Segment_Podium) {
 			UIModule_MapMarkers::Show();
+			Layers::Detach(UIModule_PodiumBackground::C_LayerName);
 		} else if (Event.Type == Progression::C_EventType_SegmentEnd && Event.Segment == Progression::C_Segment_Turn) {
 			UIModule_FlagMarker::Update();
 		}

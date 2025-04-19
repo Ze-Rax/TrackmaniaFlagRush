@@ -152,7 +152,7 @@
 #Command Command_SkipRound							(Boolean) as		"Skip round"
 // #Command Command_SkipMap							(Boolean) as		"Skip map"
 #Command Command_ApproveWarmUpEnd				(Boolean) as		"<hidden>"
-// #Command Command_SetTimeLeft 				(Integer) as 		"<hidden>" 
+// #Command Command_SetTimeLeft 				(Integer) as 		"<hidden>"
 
 // Scores
 #Command Command_SetTeam1RoundScore			(Integer) as		"Set Team 1 Round Score"
@@ -330,7 +330,7 @@ PodiumStatistics::Load();
 FlagRush_VehicleSelection::Load();
 FlagPossessionIndicator::Load();
 ModeCommands::AddQuickCommand(CommandNames::Command_EndWarmup, "UICommon64_1", "Play_light");
-ModeCommands::AddQuickCommand(CommandNames::Command_Pause, "UICommon64_1", "Pause_light");
+ModeCommands::AddQuickCommand(CommandNames::Command_PauseRound, "UICommon64_1", "Pause_light");
 ModeCommands::AddQuickCommand(CommandNames::Command_SkipRound, "UICommon64_1", "FastForward_light");
 ModeCommands::AddQuickCommand(CommandNames::Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
 ModeCommands::AddQuickCommand(CommandNames::Command_ResetFlag, "UICommon64_1", "Flag_light");
@@ -529,7 +529,7 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 ***
 Private_Progression_RoundTimeRemaining = EndTime - Now;
 ModeUtils::SetEndTime(-1);
-Porgression::EndTurn();
+Progression::EndTurn();
 ***
 
 ***AfterEndTurn***
@@ -543,11 +543,6 @@ foreach (Player in Players) {
 ***
 
 // ~~~~~~~~~~ PlayLoop ~~~~~~~~~~ //
-
-***InitPlayLoop***
-***
-Playloop::Init();
-***
 
 ***StartPlayLoop***
 ***
@@ -895,7 +890,7 @@ foreach (Command in Commands::GetPendingEvents()) {
 			WarmUpReadyUp::Stop();
 			CommandText = "The warmup was ended.";
 		}
-		case CommandNames::Command_Pause: {
+		case CommandNames::Command_PauseRound: {
 			declare Boolean Progression_PauseRequested for This = False;
 			Progression_PauseRequested = True;
 			CommandText = "The round was paused.";

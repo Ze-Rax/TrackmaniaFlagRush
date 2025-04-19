@@ -4,7 +4,11 @@
  * #RequireContext CSmMode
  */
 
+#Include "MathLib" as ML
+#Include "TextLib" as TL
+
 #Include "Libs/FlagRush/Const/SettingNames.Script.txt" as SettingNames
+#Include "Libs/FlagRush/Const/CommandNames.Script.txt" as CommandNames
 #Include "Libs/FlagRush/Const/Durations.Script.txt" as Durations
 
 #Include "Libs/FlagRush/Core/Map.Script.txt" as Map
@@ -19,6 +23,8 @@
 #Include "Libs/FlagRush/Event/Settings.Script.txt" as Settings
 #Include "Libs/FlagRush/Event/Commands.Script.txt" as Commands
 #Include "Libs/FlagRush/Event/Progression.Script.txt" as Progression
+
+#Include "Libs/FlagRush/Util/Command.Script.txt" as Command
 
 #Include "Libs/FlagRush/UI/Messages.Script.txt" as Messages
 #Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt" as UIModule_FlagMarker
@@ -157,14 +163,14 @@ Void Private_Player_Initialize(CSmPlayer _Player) {
 
 Void Private_Player_Spawn(CSmPlayer _Player) {
 	declare Boolean FlagRush_WasInitializedBefore for _Player = False;
-	if (MB_TurnIsRunning() && !Progression_WarmUpIsRunning() && FlagRush_WasInitializedBefore && _Player.ForceModelId != Private_Player_GetSelectedVehicleModelId(_Player)) {
+	if (Progression::TurnIsRunning() && !Progression::WarmUpIsRunning() && FlagRush_WasInitializedBefore && _Player.ForceModelId != Private_Player_GetSelectedVehicleModelId(_Player)) {
 		Scores::OnPlayerChangesVehicle(_Player.Score);
 	}
 	Private_Player_Initialize(_Player);
 	declare CMapLandmark SpawnLandmark = Map::GetSpawn(_Player);
 	if (SpawnLandmark != Null) {
 		SpawnPlayer(_Player, _Player.CurrentClan, 1, SpawnLandmark.PlayerSpawn, Now + Durations::C_SpawnAnimDuration);
-		Player_ApplyVehicleTuning(_Player);
+		Private_Player_ApplyVehicleTuning(_Player);
 	}
 }
 
@@ -182,7 +188,7 @@ Void Private_Player_Unspawn(CSmPlayer _Player) {
 Void Private_Player_Net_SendPosition(CSmPlayer _Player) {
 	declare netwrite Vec3 Net_Position for _Player = <0., 0., 0.>;
 	Net_Position = _Player.Position;
-	declare netwrite Real Net_Yaw for _Player = <0., 0., 0.>;
+	declare netwrite Real Net_Yaw for _Player = 0.;
 	Net_Yaw = _Player.AimYaw;
 }
 
@@ -200,7 +206,7 @@ Void Private_Player_PickUpFlag(CSmPlayer _Player) {
 	Flag::SetAtPlayer(_Player);
 	Flag::RemoveDropTimer();
 	Flag::Lock(StealResistanceEndDate);
-	FlagMarker::Update();
+	UIModule_FlagMarker::Update();
 	Private_Player_ApplyHandicaps(_Player);
 	FlagRush_XmlRpc::Send_FlagPickup();
 }
@@ -219,12 +225,12 @@ Void Private_FlagCarrier_PassFlag(CSmPlayer _ToPlayer) {
 	Messages::FlagPickUp(_ToPlayer, Durations::C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_FlagStealResistDurationSeconds) * 1000);
 	Flag::SetAtPlayer(_ToPlayer);
-	if (IsPassToOpponent || Settings::GetBoolean(SettingsNames::S_FlagStealResistanceOnTeamPass)) {
+	if (IsPassToOpponent || Settings::GetBoolean(SettingNames::S_FlagStealResistanceOnTeamPass)) {
 		Flag::Lock(StealResistanceEndDate);
 	} else {
 		Flag::LockForClan(StealResistanceEndDate, _ToPlayer.CurrentClan);
 	}
-	FlagMarker::Update();
+	UIModule_FlagMarker::Update();
 	Private_Player_ApplyHandicaps(_ToPlayer);
 	FlagRush_XmlRpc::Send_FlagPass(OldCarrier);
 }
@@ -255,7 +261,7 @@ Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
 	declare Integer DropStateEndDate = Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_FlagDropStateDurationSeconds) * 1000);
 	Flag::SetDropTimer(DropStateEndDate);
 	Flag::SetAtPosition(_Position);
-	FlagMarker::Update();
+	UIModule_FlagMarker::Update();
 	Messages::FlagDropped(OldCarrierUser, Durations::C_Duration_EventMessage);
 	FlagRush_XmlRpc::Send_FlagDrop(OldCarrierUser);
 }
@@ -285,13 +291,6 @@ Void Private_FlagCarrier_ScoreFlag() {
 
 // MARK: Event handlers
 
-/**
- * Drops the flag on the current position.
- */
-Void Private_OnFlagCarrierDropsFlag() {
-	Private_FlagCarrier_DropFlag(Flag::Get().Location.Position);
-}
-
 Void Private_OnFlagCarrierDisconnected() {
   Private_FlagCarrier_DropFlag(Flag::Get().Location.Position);
 }
@@ -305,8 +304,8 @@ Void Private_OnFlagDropTimeoutExpired() {
   Private_Flag_Reset();
 }
 
-Void Private_OnPlayerPicksUpFlag() {
-  Private_Player_PickUpFlag(NewCarrier);
+Void Private_OnPlayerPicksUpFlag(CSmPlayer _Player) {
+  Private_Player_PickUpFlag(_Player);
 }
 
 Void Private_OnPlayerOutOfBound(CSmPlayer _Player) {
@@ -339,7 +338,7 @@ Void Private_OnPlayerTriggersWaypoint(CSmPlayer _Player, CMapLandmark _Landmark)
 
 Void Private_OnPlayerRequestsRespawn(CSmPlayer _Player) {
 	if (_Player == Flag::GetPlayer()) {
-		Private_FlagCarrier_DropFlag();
+		Private_FlagCarrier_DropFlag(Flag::Get().Location.Position);
 		return;
 	}
 
@@ -359,14 +358,14 @@ Void Private_OnPlayerRequestsRespawn(CSmPlayer _Player) {
 
 Void Private_OnPlayerRequestsClanChange(CSmPlayer _Player) {
 	if (_Player == Flag::GetPlayer()) {
-		Private_FlagCarrier_DropFlag();
+		Private_FlagCarrier_DropFlag(Flag::Get().Location.Position);
 	}
 	Private_Player_Unspawn(_Player);
 	SetPlayerClan(_Player, _Player.RequestedClan);
 }
 
 Void Private_OnPlayerDeath(CSmPlayer _Player) {
-	if (Player == Flag::GetPlayer()) {
+	if (_Player == Flag::GetPlayer()) {
 		Private_FlagCarrier_DropFlag(Flag::Get().Location.LastSafePosition);
 	}
 	FlagRush_XmlRpc::Send_PlayerDeath(_Player);
@@ -461,7 +460,7 @@ Void Private_UpdateFlag() {
   // Try pass flag
   declare CSmPlayer FlagCarrier = Flag::GetPlayer();
   if (FlagCarrier != Null) {
-  	declare CSmPlayer FlagReceiver = GetFirstCollidingPlayer_OpponentPriority(FlagCarrier);
+  	declare CSmPlayer FlagReceiver = Private_GetFirstCollidingPlayer_OpponentPriority(FlagCarrier);
   	if (FlagReceiver != Null) {
   		declare Boolean IsLocked = Flag::IsLockedForPlayer(FlagReceiver);
   		declare Boolean IsOpponent = FlagCarrier.CurrentClan != FlagReceiver.CurrentClan;
@@ -505,7 +504,7 @@ Void Private_HandleCommands() {
     declare Text CommandText;
 	  switch (Command.Name) {
 	  	case CommandNames::Command_ResetFlag: {
-	  		Private_Flag_Reset(_Command.ValueBoolean);
+	  		Private_Flag_Reset(Command.ValueBoolean);
 	  		CommandText = "The flag was reset.";
 	  	}
 	  	default: continue;
@@ -538,15 +537,11 @@ Void Private_UpdatePlayers() {
 
 // MARK: Lifecycle
 
-Void Init() {
-
-}
-
 Void Start() {
   declare CMapLandmark FlagSpawn = Map::GetDefaultFlagSpawn();
   Flag::SetAtLandmark(FlagSpawn);
   Flag::InvalidateLastSafePosition();
-  FlagMarker::Update();
+  UIModule_FlagMarker::Update();
   
   foreach (Player in Players) {
     declare netwrite Integer Net_SpawnDate for Player = -1;
@@ -564,14 +559,14 @@ Void Loop() {
 
 Void End() {
   Flag::SetUnspawned();
-	FlagMarker::Update();
+	UIModule_FlagMarker::Update();
 	HandicapQueue::ClearQueue();
 }
 
 Void WarmUpLoop() {
 	foreach (Player in Players) {
 		declare Integer FlagRush_Warmup_UnspawnDate for Player = Now;
-		if (Player_RequestsClanChange(Player) || Player_IsDead(Player)) {
+		if (Private_Player_RequestsClanChange(Player) || Private_Player_IsDead(Player)) {
 			UnspawnPlayer(Player);
 			FlagRush_Warmup_UnspawnDate = Now;
 			SetPlayerClan(Player, Player.RequestedClan);
@@ -612,7 +607,7 @@ Void Yield() {
 		switch (Event.Name) {
 			case SettingNames::S_ForceEnabledVehiclesCsv: {
 				G_ForceEnabledVehicles.clear();
-				foreach (CsvEntry in TL::Split(",", S_ForceEnabledVehiclesCsv)) {
+				foreach (CsvEntry in TL::Split(",", Settings::GetText(SettingNames::S_ForceEnabledVehiclesCsv))) {
 					declare Text VehicleId = TL::ToLowerCase(TL::Trim(CsvEntry));
 					if (Vehicles::IsValid(VehicleId)) {
 						G_ForceEnabledVehicles.add(Vehicles::Get(VehicleId));

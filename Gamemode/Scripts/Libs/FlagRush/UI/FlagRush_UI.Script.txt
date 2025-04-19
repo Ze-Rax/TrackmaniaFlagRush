@@ -1,20 +1,20 @@
 /**
- * This library just manages all the layers and their lifecycle, including updating them when needed or requested.
+ * This library manages all the layers and their lifecycle, including updating them when needed or requested.
  */
 
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
 // Modules
-#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"					as EventFeed
-#Include "Libs/FlagRush/UI/Modules/Header.Script.txt"							as FlagRush_UIScoresHeader
-#Include "Libs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as FlagRush_UIScoresTable
-#Include "Libs/FlagRush/UI/Modules/Menu.Script.txt"								as FlagRush_UIMenu
-#Include "Libs/FlagRush/UI/Modules/Sound.Script.txt"							as FlagRush_UISound
-#Include "Libs/FlagRush/UI/Modules/Respawn.Script.txt"						as FlagRush_UIRespawn
-#Include "Libs/FlagRush/UI/Modules/Spectator.Script.txt"					as FlagRush_UISpectator
-#Include "Libs/FlagRush/UI/Modules/Flash.Script.txt"							as FlagRush_UIFlash
-#Include "Libs/FlagRush/UI/Modules/Radar.Script.txt"							as FlagRush_UIRadar
-#Include "Libs/FlagRush/UI/Modules/PodiumBackground.Script.txt"		as FlagRush_Podium
+#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"					as UIModule_EventFeed
+#Include "Libs/FlagRush/UI/Modules/Menu.Script.txt"								as UIModule_Menu
+#Include "Libs/FlagRush/UI/Modules/PodiumBackground.Script.txt"		as UIModule_PodiumBackground
+#Include "Libs/FlagRush/UI/Modules/Radar.Script.txt"							as UIModule_Radar
+#Include "Libs/FlagRush/UI/Modules/RespawnFlash.Script.txt"				as UIModule_RespawnFlash
+#Include "Libs/FlagRush/UI/Modules/RespawnTimer.Script.txt"				as UIModule_RespawnTimer
+#Include "Libs/FlagRush/UI/Modules/Header.Script.txt"							as UIModule_ScoresHeader
+#Include "Libs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as UIModule_ScoresTable
+#Include "Libs/FlagRush/UI/Modules/Sound.Script.txt"							as UIModule_Sounds
+#Include "Libs/FlagRush/UI/Modules/Spectator.Script.txt"					as UIModule_SpectatorControls
 
 
 #Const C_AttachId_Podium							"16x9_StadiumSmall"
@@ -28,12 +28,12 @@
 #Const C_LayerName_Spectator					"Layer_FlagRush_Spectator"
 #Const C_LayerName_Respawn						"Layer_FlagRush_Respawn"
 #Const C_LayerName_Radar							"Layer_FlagRush_Radar"
-#Const C_LayerName_Podium							"Layer_FlagRush_Podium"
+#Const C_LayerName_Podium							"Layer_UIModule_PodiumBackground"
 
 declare Integer G_PreviousPlayersCount;
 
 Void Private_LoadModules() {
-	declare FlagRush_UIRadar::K_Config Config = FlagRush_UIRadar::K_Config {
+	declare UIModule_Radar::K_Config Config = UIModule_Radar::K_Config {
 		Scale = 0.35,
 		MarkerScale = 1.5,
 		Position = <135., -65.>,
@@ -41,66 +41,66 @@ Void Private_LoadModules() {
 		BackgroundOpacity = 0.7,
 		DetailOpacity = 0.1
 	};
-	FlagRush_UIRadar::SetConfig(Config);
+	UIModule_Radar::SetConfig(Config);
 
-	EventFeed::ClearMessages();
+	UIModule_EventFeed::ClearMessages();
 }
 
 Void Private_AttachModules() {
 	// Scores header
-	Layers::Create(C_LayerName_ScoresHeader, FlagRush_UIScoresHeader::GetManialink());
+	Layers::Create(C_LayerName_ScoresHeader, UIModule_ScoresHeader::GetManialink());
 	Layers::SetType(C_LayerName_ScoresHeader, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_ScoresHeader);
 
 	// Scores table
-	Layers::Create(C_LayerName_ScoresTable, FlagRush_UIScoresTable::GetManialink());
+	Layers::Create(C_LayerName_ScoresTable, UIModule_ScoresTable::GetManialink());
 	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
 	Layers::Attach(C_LayerName_ScoresTable);
 
 	// Sound
-	Layers::Create(C_LayerName_Sound, FlagRush_UISound::GetManialink());
+	Layers::Create(C_LayerName_Sound, UIModule_Sounds::GetManialink());
 	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Sound);
 
 	// Menu
-	Layers::Create(C_LayerName_Menu, FlagRush_UIMenu::GetManialink());
+	Layers::Create(C_LayerName_Menu, UIModule_Menu::GetManialink());
 	Layers::SetType(C_LayerName_Menu, CUILayer::EUILayerType::InGameMenu);
 	Layers::Attach(C_LayerName_Menu);
 
 	// Event Feed
-	Layers::Create(C_LayerName_Feed, EventFeed::GetManialink(10));
+	Layers::Create(C_LayerName_Feed, UIModule_EventFeed::GetManialink(10));
 	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Feed);
 
 	// Respawn Bar
-	Layers::Create(C_LayerName_Respawn, FlagRush_UIRespawn::GetManialink());
+	Layers::Create(C_LayerName_Respawn, UIModule_RespawnTimer::GetManialink());
 	Layers::SetType(C_LayerName_Respawn, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Respawn);
 
 	// Radar
-	Layers::Create(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());
+	Layers::Create(C_LayerName_Radar, UIModule_Radar::GetManialink());
 	Layers::SetType(C_LayerName_Radar, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Radar);
 
 	// Flash
-	Layers::Create(C_LayerName_Flash, FlagRush_UIFlash::GetManialink());
+	Layers::Create(C_LayerName_Flash, UIModule_RespawnFlash::GetManialink());
 	Layers::SetType(C_LayerName_Flash, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Flash);
 
 	// Podium background
-	Layers::Create(C_LayerName_Podium, FlagRush_Podium::GetManialink());
+	Layers::Create(C_LayerName_Podium, UIModule_PodiumBackground::GetManialink());
 	Layers::SetType(C_LayerName_Podium, CUILayer::EUILayerType::ScreenIn3d);
 	Layers::Get(C_LayerName_Podium).AttachId = C_AttachId_Podium;
 	// Don't attach yet; only explicitly during podium
 
 	// Spectator controls
-	Layers::Create(C_LayerName_Spectator, FlagRush_UISpectator::GetManialink());
+	Layers::Create(C_LayerName_Spectator, UIModule_SpectatorControls::GetManialink());
 	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Spectator);
 }
 
 Void AttachPodiumBackground(CSmScore[] PodiumPlayerScores) {
-	FlagRush_Podium::SetContent(PodiumPlayerScores);
+	UIModule_PodiumBackground::SetContent(PodiumPlayerScores);
 	Layers::Attach(C_LayerName_Podium);
 }
 
@@ -135,7 +135,7 @@ Void Net_SendModeScriptProgressionSettings(Integer NbMapsToWinMatch, Integer NbR
 Void Yield() {
 	if (G_PreviousPlayersCount != Players.count) {
 		G_PreviousPlayersCount = Players.count;
-		Layers::Update(C_LayerName_Radar, FlagRush_UIRadar::GetManialink());
+		Layers::Update(C_LayerName_Radar, UIModule_Radar::GetManialink());
 	}
 }
 

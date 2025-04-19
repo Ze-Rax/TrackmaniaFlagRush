@@ -10,13 +10,13 @@
 
 #Include "ColorLib" as CL
 
-#Include "Libs/FlagRush/CommonLibs/Nadeo/Message.Script.txt"		as Message
+#Include "Libs/FlagRush/CommonLibs/Nadeo/Message.Script.txt"				as Message
 
-#Include "Libs/FlagRush/Util/ModeUtils.Script.txt"						as ModeUtils
+#Include "Libs/FlagRush/Util/ModeUtils.Script.txt"									as ModeUtils
 
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt"	as Stylesheet
-#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"			as EventFeed
-#Include "Libs/FlagRush/UI/Modules/Sound.Script.txt"					as FlagRush_Sound
+#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"		as UIModule_EventFeed
+#Include "Libs/FlagRush/UI/Modules/Sound.Script.txt"								as UIModule_Sound
 
 #Const C_ChatPrefix		"[FlagRush]"
 
@@ -66,73 +66,73 @@ Void Private_SendChat(Text _Message) {
 Void MatchWin(Integer _WinnerClan, Integer _Duration) {
 	declare Text Message = """{{{ Private_GetColoredTeamName(_WinnerClan) }}} won the match""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void MatchDraw(Integer _Duration) {
 	declare Text Message = """Match draw""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void MapWin(Integer _WinnerClan, Integer _Duration) {
 	declare Text Message = """{{{ Private_GetColoredTeamName(_WinnerClan) }}} won the map""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void MapDraw(Integer _Duration) {
 	declare Text Message = "Map draw";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void MapSkip(Integer _Duration) {
 	declare Text Message = "Map skipped";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void RoundStart(Integer _NbRound, Integer _Duration) {
 	declare Text Message = """Round {{{ _NbRound }}} start""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void RoundWin(Integer _WinnerClan, Integer _Duration)  {
 	declare Text Message = """{{{ Private_GetColoredTeamName(_WinnerClan) }}} won the round""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void RoundDraw(Integer _Duration) {
 	declare Text Message = "Round draw";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void RoundSkip(Integer _Duration) {
 	declare Text Message = "Round skipped";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OvertimeStart(Integer _Duration) {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}Overtime$>""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void WarmUpStart(Integer _Duration) {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}WarmUp$>""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void WarmUpEnd(Integer _Duration) {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}WarmUp end$>""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void WarmUpWaitForApproval() {
@@ -148,28 +148,28 @@ Void WarmUpApproved() {
 Void PauseStart(Integer _Duration) {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}The round was paused$>""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void PauseEnd(Integer _Duration) {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}The round continues$>""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void FlagPickUp(CSmPlayer _Player, Integer _Duration) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(_Player) }}} has the $<{{{ Private_GetTeamColorCode(_Player.CurrentClan) }}}flag$>""";
 	declare Vec3 TeamColor = Private_GetTeamColor(_Player.CurrentClan);
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag, TeamColor);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag, TeamColor);
 }
 
 Void FlagScored(CSmPlayer _Scorer, Integer _Duration) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(_Scorer) }}} scored for {{{ Private_GetColoredTeamName(_Scorer.CurrentClan) }}}""";
 	declare Vec3 TeamColor = Private_GetTeamColor(_Scorer.CurrentClan);
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Event, CUIConfig::EUISound::Finish);
-	FlagRush_Sound::Play(["file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/KnockOutPlayer_01.wav", "file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/ShowWinners.wav"]);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag, TeamColor);
+	UIModule_Sound::Play(["file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/KnockOutPlayer_01.wav", "file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/ShowWinners.wav"]);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag, TeamColor);
 }
 
 Void FlagDropped(CUser _OldCarrierUser, Integer _Duration) {
@@ -177,23 +177,23 @@ Void FlagDropped(CUser _OldCarrierUser, Integer _Duration) {
 	declare Text PlayerName = """$<{{{ Private_GetTeamColorCode(OldCarrierScore.TeamNum) }}}{{{ OldCarrierScore.User.Name }}}$>""";
 	declare Text Message = """{{{ PlayerName }}} dropped the flag$>""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag);
 }
 
 Void FlagReset(Integer _Duration) {
 	declare Text Message = "The flag was reset";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Event, CUIConfig::EUISound::Warning);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Flag);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag);
 }
 
 Void FlagCarrierTeleport() {
 	declare Text Message = "Flag carrier teleported!";
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Info);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void PlayerOutOfBounds(CSmPlayer _Player) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(_Player) }}} went out of bounds""";
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Error);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Error);
 	// Play a Sound for the dead player
 	declare CUIConfig UI = UIManager.GetUI(_Player);
 	if (UI != Null) UI.QueueMessage(2000, 1, CUIConfig::EMessageDisplay::Small, "", CUIConfig::EUISound::Capture, 1);
@@ -201,19 +201,19 @@ Void PlayerOutOfBounds(CSmPlayer _Player) {
 
 Void PlayerRespawn(CSmPlayer _Player) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(_Player) }}} respawned""";
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Reload);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Reload);
 }
 
 Void TimeLimitSecondsRemaining(Integer _SecondsRemaining, Integer _Duration) {
 	declare Text Message ="""$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}{{{ _SecondsRemaining }}} seconds remaining$>""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Event, CUIConfig::EUISound::TiePoint);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Chrono);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Chrono);
 }
 
 Void TimeLimitEnd(Integer _Duration) {
 	declare Text Message = """Time is up""";
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::VictoryPoint);
-	EventFeed::SendMessage(Message, EventFeed::C_IconName_Chrono);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Chrono);
 }
 
 Void Welcome(CSmPlayer _Player, Text _Version) {

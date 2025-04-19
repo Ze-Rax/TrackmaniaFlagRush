@@ -29,7 +29,7 @@
 
 #Include "Libs/FlagRush/UI/Messages.Script.txt" as Messages
 #Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt" as UIModule_FlagMarker
-#Include "Libs/FlagRush/UI/Modules/Flash.Script.txt" as UIModule_RespawnFlash
+#Include "Libs/FlagRush/UI/Modules/RespawnFlash.Script.txt" as UIModule_RespawnFlash
 #Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt" as UIModule_VehicleSelection
 
 

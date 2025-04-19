@@ -8,17 +8,24 @@
 
 #Include "Libs/FlagRush/Const/CommandNames.Script.txt" as CommandNames
 #Include "Libs/FlagRush/Util/Command.Script.txt" as Command
-// TODO: I would prefer this to not depend on a UI Module
-#Include "Libs/FlagRush/UI/Modules/ModeCommands.Script.txt" as UIModule_ModeCommands
 
 // Need to alias associative arrays of library, else accessing by index causes compilation error
 #Const Command::C_SourceNameByType as C_SourceNameByType
 
 declare Command::K_Command[] G_PendingEvents;
+declare Command::K_Command[] G_EventAggregationBuffer;
+
+// MARK: API
 
 Command::K_Command[] GetPendingEvents() {
   return G_PendingEvents;
 }
+
+Void Publish(Command::K_Command _Command) {
+  G_EventAggregationBuffer.add(_Command);
+}
+
+// MARK: Lifecycle
 
 Void Unload() {
   G_PendingEvents.clear();
@@ -30,6 +37,8 @@ Void Load() {
 
 Void Yield() {
   G_PendingEvents.clear();
+  G_PendingEvents = G_EventAggregationBuffer;
+  G_EventAggregationBuffer.clear();
 
   // XmlRpc
   foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
@@ -53,10 +62,5 @@ Void Yield() {
   	if (Event.Type == CSmModeEvent::EType::OnCommand) {
   		G_PendingEvents.add(Command::FromEvent(Event));
   	}
-  }
-
-  // ModeCommandsUi
-  foreach (Command in UIModule_ModeCommands::GetPendingCommands()) {
-  	G_PendingEvents.add(Command);
   }
 }

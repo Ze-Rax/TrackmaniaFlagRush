@@ -4,6 +4,8 @@
 #Include "Libs/FlagRush/Util/Command.Script.txt" as Command
 
 #Const C_LayerName	"ModeCommands"
+#Const C_LayerType CUILayer::EUILayerType::Normal
+
 
 #Const C_UIPosition_Y							50.
 #Const C_InternalCommandPrefix		"MC:"
@@ -55,7 +57,7 @@ Text GetManialink() {
 
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<manialink version="3" name="ModeCommands">
+<manialink version="3" name="{{{ C_LayerName }}}">
 <framemodel id="model-quick-command">
 	<quad pos="0 0" z-index="0" size="10 10" bgcolor="000" halign="center" valign="center" opacity="0.5"/>
 	<quad pos="0 0" z-index="1" size="10 10" bgcolor="FFF" halign="center" valign="center" style="Icons64x64_1" substyle="Add" scriptevents="1" id="icon"/>
@@ -176,6 +178,15 @@ main() {
 	""";
 }
 
+// MARK: API
+
+/**
+ * Gets a list of all pending Commands.
+ */
+ K_Command[] GetPendingCommands() {
+	return G_PendingCommands;
+}
+
 /**
  * Adds a new quick command button with given icon style and substyle.
  * Command Name should be without the "Command_" prefix.
@@ -188,7 +199,9 @@ Void AddQuickCommand(Text _Name, Text _IconStyle, Text _IconSubstyle) {
 		IconSubstyle = _IconSubstyle
 	};
 	G_QuickCommands.add(Command);
-	Layers::Update(C_LayerName, GetManialink());
+	if (Layers::Exists(C_LayerName)) {
+		Layers::Update(C_LayerName, GetManialink());
+	}
 }
 
 /**
@@ -196,7 +209,9 @@ Void AddQuickCommand(Text _Name, Text _IconStyle, Text _IconSubstyle) {
  */
 Void ClearQuickCommands() {
 	G_QuickCommands.clear();
-	Layers::Update(C_LayerName, GetManialink());
+	if (Layers::Exists(C_LayerName)) {
+		Layers::Update(C_LayerName, GetManialink());
+	}
 }
 
 Boolean HasPermissionLevel(Text _Login, Integer _PermissionLevel) {
@@ -235,12 +250,7 @@ Void SetSuperAdmin(Text _Login) {
 	SetUserPermissionLevel(_Login, C_PermissionLevel_SuperAdmin);
 }
 
-/**
- * Gets a list of all pending Commands.
- */
-K_Command[] GetPendingCommands() {
-	return G_PendingCommands;
-}
+// MARK: Helper Functions
 
 Void Private_HandleInternalCommand_SetPermissionLevel(K_Command _Command) {
 	if (_Command.Params.count < 2) {
@@ -314,13 +324,16 @@ Void Private_HandleInternalCommand(K_Command _Command) {
 	}
 }
 
-Void Load() {
-	Layers::Create(C_LayerName, GetManialink());
-	Layers::SetType(C_LayerName, CUILayer::EUILayerType::Normal);
-}
+// MARK: Lifecycle
 
 Void Unload() {
-	Layers::Destroy(C_LayerName);
+	G_QuickCommands.clear();
+	G_Users.clear();
+	G_PendingCommands.clear();
+}
+
+Void Load() {
+	Unload();
 }
 
 /**

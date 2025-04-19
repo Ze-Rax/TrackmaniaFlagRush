@@ -60,7 +60,6 @@
 #Include "Libs/FlagRush/UI/UILayers.Script.txt"														as UILayers
 #Include "Libs/FlagRush/UI/Messages.Script.txt"														as Messages
 #Include "Libs/FlagRush/UI/Modules/PodiumStatistics.Script.txt"						as UIModule_PodiumStatistics
-#Include "Libs/FlagRush/UI/Modules/ModeCommands.Script.txt"								as UIModule_ModeCommands
 #Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt"						as UIModule_VehicleSelection
 
 // ===============
@@ -337,12 +336,6 @@ UIConfig::LoadHud();
 UILayers::LoadHud();
 UIModule_PodiumStatistics::Load();
 UIModule_VehicleSelection::Load();
-UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_EndWarmup, "UICommon64_1", "Play_light");
-UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_PauseRound, "UICommon64_1", "Pause_light");
-UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_SkipRound, "UICommon64_1", "FastForward_light");
-UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
-UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_ResetFlag, "UICommon64_1", "Flag_light");
-UIModule_ModeCommands::Load();
 ***
 
 ***LoadItems***
@@ -745,7 +738,6 @@ Scores::Yield();
 
 UILayers::Yield();
 Messages::Yield();
-UIModule_ModeCommands::Yield();
 
 { +++Private_Yield_HandleProgressionsCommands+++ }
 { +++Private_Yield_HandleCriticalModeScriptSettingsUpdates+++ }
@@ -808,14 +800,6 @@ foreach(Event in Settings::GetPendingEvents()) {
 		// Team Configs
 		case SettingNames::S_UseClubTags, SettingNames::S_Team1Name, SettingNames::S_Team1Hue, SettingNames::S_Team2Name, SettingNames::S_Team2Hue: {
 			ReinitTeamsConfig = True;
-		}
-		// ModeCommands admins
-		case SettingNames::S_ModeCommands_AdminLoginsCsv: {
-			UIModule_ModeCommands::RemoveAllUserPermissions();
-			declare Text[] ModeCommandsAdminLogins = TL::Split(",", S_ModeCommands_AdminLoginsCsv);
-			foreach(Login in ModeCommandsAdminLogins) {
-				UIModule_ModeCommands::SetSuperAdmin(Login);
-			}
 		}
 		// Collision
 		case SettingNames::S_UseCollisions: {

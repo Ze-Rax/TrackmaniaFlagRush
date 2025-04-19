@@ -33,6 +33,8 @@
 declare Ident[Text] G_VehicleItems;
 declare K_Tuning[Text] G_VehicleTunings;
 
+// MARK: API
+
 /**
  * Returns a sorted version of the input array. Elements are sorted using Vehicle.Order.
  */
@@ -139,6 +141,8 @@ Void SetControl(Text _VehicleId, Real _Control) {
 Ident GetItemId(Text _VehicleId) {
 	return G_VehicleItems.get(_VehicleId, NullId);
 }
+
+// MARK: Lifecycle
 
 /**
  * Loads the vehicle items in the item list.

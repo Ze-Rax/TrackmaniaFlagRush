@@ -36,7 +36,7 @@
 #Include "Libs/FlagRush/Const/SettingNames.Script.txt"										as SettingNames
 #Include "Libs/FlagRush/Const/CommandNames.Script.txt"										as CommandNames
 
-#Include "Libs/FlagRush/Core/Map.Script.txt"															as FlagRushMap
+#Include "Libs/FlagRush/Core/Map.Script.txt"															as Map
 #Include "Libs/FlagRush/Core/Scores.Script.txt"														as Scores
 #Include "Libs/FlagRush/Core/Teams.Script.txt"														as Teams
 #Include "Libs/FlagRush/Core/Flag.Script.txt"															as Flag
@@ -50,6 +50,7 @@
 #Include "Libs/FlagRush/Event/Settings.Script.txt"												as Settings
 #Include "Libs/FlagRush/Event/Commands.Script.txt"												as Commands
 #Include "Libs/FlagRush/Event/Progression.Script.txt"											as Progression
+#Include "Libs/FlagRush/Event/EnabledVehicles.Script.txt"									as EnabledVehicles
 
 #Include "Libs/FlagRush/Util/Log.Script.txt"															as Log
 #Include "Libs/FlagRush/Util/ModeUtils.Script.txt"												as ModeUtils
@@ -63,7 +64,7 @@
 #Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"									as EventFeed
 #Include "Libs/FlagRush/UI/Modules/ModeCommands.Script.txt"								as ModeCommands
 #Include "Libs/FlagRush/UI/Modules/Flash.Script.txt"											as FlagRush_Flash
-#Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt"						as FlagRush_VehicleSelection
+#Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt"						as UIModule_VehicleSelection
 #Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt"									as FlagMarker
 #Include "Libs/FlagRush/UI/Modules/FlagPossessionIndicator.Script.txt"		as FlagPossessionIndicator
 
@@ -299,11 +300,12 @@ Teams::UseClubTags(S_UseClubTags);
 Teams::Init();
 
 Flag::Load();
-Playloop::Load();
 
 Settings::Load();
 Commands::Load();
 Progression::Load();
+PlayerLifecycleEvents::Load();
+EnabledVehicles::Load();
 ***
 
 ***UnloadLibraries***
@@ -313,11 +315,12 @@ Messages::Unload();
 Scores::Unload();
 
 Flag::Unload();
-Playloop::Unload();
 
 Settings::Unload();
 Commands::Unload();
 Progression::Unload();
+PlayerLifecycleEvents::Unload();
+EnabledVehicles::Unload();
 ***
 
 ***LoadHud***
@@ -327,7 +330,7 @@ FlagRush_UI::Load();
 FlagMarker::Load();
 MapMarkers::Load();
 PodiumStatistics::Load();
-FlagRush_VehicleSelection::Load();
+UIModule_VehicleSelection::Load();
 FlagPossessionIndicator::Load();
 ModeCommands::AddQuickCommand(CommandNames::Command_EndWarmup, "UICommon64_1", "Play_light");
 ModeCommands::AddQuickCommand(CommandNames::Command_PauseRound, "UICommon64_1", "Pause_light");
@@ -388,15 +391,16 @@ Scores::EndMatch();
 ***InitMap***
 ***
 Scores::StartMap();
-declare Boolean MapValid = FlagRushMap::InitLandmarks();
+declare Boolean MapValid = Map::InitLandmarks();
 if (!MapValid) {
 	MatchEndRequested = True;
 	Messages::InvalidMap();
 }
+EnabledVehicles::Mode_SetMapEnabledVehicles(Map::GetEnabledVehicles());
+UIModule_VehicleSelection::SetEnabledVehicles(EnabledVehicles::Get()); // TODO: This should be from an EnabledVehicles-Event
 FlagRush_XmlRpc::Send_MapStart();
 MapMarkers::Update();
 Teams::Init();
-FlagRush_VehicleSelection::SetEnabledVehicles(Vehicle_GetEnabled());
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 MB_Synchro();
 ***
@@ -501,7 +505,9 @@ Scores::EndRound();
 MB_Sleep(Durations::C_Duration_RoundEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
-if (Progression_MapPointLimitReached()) MB_StopMap();
+if (Progression_MapPointLimitReached()) {
+	MB_StopMap();
+}
 ***
 
 // ~~~~~~~~~~ Turn ~~~~~~~~~~ //
@@ -720,18 +726,21 @@ FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
 ***
 
 // ~~~~~~~~~~ Yield ~~~~~~~~~~ //
-// Cannot use non-library functions or globales in here, as this is executed during MB_Yield() in the modebase,
+
+// NOTE: Cannot use non-library functions or globales in here, as this is executed during MB_Yield() in the modebase,
 // which is defined before any function or globale that could be defined in any extend.
 // Only code directly or plugs which don't contain non-library functions or non ModeBase globales themselves.
-// TODO: Find a way to work around this. It hurts.
+
 ***Yield***
 ***
 // Collect events in Event libraries first
+// Event libraries should be yielded first
 Settings::Yield();
 { +++TrackModeSettings+++ } // Track modesettings after Settings::Yield, else events would be cleared instantly.
 Commands::Yield();
 Progression::Yield();
 PlayerLifecycleEvents::Yield();
+EnabledVehicles::Yield();
 
 // Now update all libs that might require events produced above
 ModeCommands::Yield();
@@ -824,7 +833,19 @@ foreach(Event in Settings::GetPendingEvents()) {
 		}
 		// Forced Vehicles
 		case SettingNames::S_ForceEnabledVehiclesCsv: {
+			declare Vehicles::K_Vehicle[] ForcedEnabledVehicles;
+			foreach (CsvEntry in TL::Split(",", Settings::GetText(SettingNames::S_ForceEnabledVehiclesCsv))) {
+				declare Text VehicleId = TL::ToLowerCase(TL::Trim(CsvEntry));
+				if (Vehicles::IsValid(VehicleId)) {
+					ForcedEnabledVehicles.add(Vehicles::Get(VehicleId));
+				}
+			}
+			EnabledVehicles::Mode_ForceEnabledVehicles(ForcedEnabledVehicles);
 			RestartTurn = True; // Respawn players with disallowed vehicles; this is easier
+
+			// Update UI
+			// TODO: This should be handled as a consequence onf the EnabledVehicles Event
+			UIModule_VehicleSelection::SetEnabledVehicles(EnabledVehicles::Get());
 		}
 		// Physics simulation
 		case SettingNames::S_TrustClientSimu, SettingNames::S_UseCrudeExtrapolation: {

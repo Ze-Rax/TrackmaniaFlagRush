@@ -23,6 +23,7 @@
 #Include "Libs/FlagRush/Event/Settings.Script.txt" as Settings
 #Include "Libs/FlagRush/Event/Commands.Script.txt" as Commands
 #Include "Libs/FlagRush/Event/Progression.Script.txt" as Progression
+#Include "Libs/FlagRush/Event/EnabledVehicles.Script.txt" as EnabledVehicles
 
 #Include "Libs/FlagRush/Util/Command.Script.txt" as Command
 
@@ -42,29 +43,8 @@
 #Const Vehicles::C_Vehicle_Desert as C_Vehicle_Desert
 
 declare Flag::K_Flag G_PreviousFlag;
-declare Vehicles::K_Vehicle[] G_ForceEnabledVehicles;
 
 // MARK: Helper functions
-
-/**
- * Either forced vehicles (by mode settings) or configured in map. Always at least one.
- */
-Vehicles::K_Vehicle[] Private_Vehicle_GetEnabled() {
-	if (G_ForceEnabledVehicles.count > 0) {
-		return G_ForceEnabledVehicles;
-	}
-	return Map::GetEnabledVehicles();
-}
-
-Boolean Private_Vehicle_IsEnabled(Vehicles::K_Vehicle _Vehicle) {
-	declare Vehicles::K_Vehicle[] Vehicles = Private_Vehicle_GetEnabled();
-	foreach (EnabledVehicle in Vehicles) {
-		if (_Vehicle.Id == EnabledVehicle.Id) {
-			return True;
-		}
-	}
-	return False;
-}
 
 CSmPlayer Private_GetFirstCollidingPlayer_OpponentPriority(CSmPlayer _ReferencePlayer) {
 	declare CSmPlayer FirstCollidingPlayer;
@@ -102,10 +82,10 @@ Void Private_Flag_Reset() {
 
 Vehicles::K_Vehicle Private_Player_GetSelectedVehicle(CSmPlayer _Player) {
 	declare Vehicles::K_Vehicle SelectedVehicle = UIModule_VehicleSelection::GetSlectedVehicle(_Player);
-	if (Private_Vehicle_IsEnabled(SelectedVehicle)) {
+	if (EnabledVehicles::IsEnabled(SelectedVehicle)) {
 		return SelectedVehicle;
 	}
-	return Private_Vehicle_GetEnabled()[0];
+	return EnabledVehicles::Get()[0];
 }
 
 Ident Private_Player_GetSelectedVehicleModelId(CSmPlayer _Player) {
@@ -475,6 +455,7 @@ Void Private_UpdateFlag() {
   			}
   		}
 
+			log("""IsLocked: {{{IsLocked}}}, IsOpponent: {{{IsOpponent}}}, SameTeamFlagSteal: {{{Settings::GetBoolean(SettingNames::S_FlagSameTeamSteal)}}}, IsTryingToScore: {{{IsTryingToScore}}}""");
   		if (!IsLocked && (IsOpponent || (Settings::GetBoolean(SettingNames::S_FlagSameTeamSteal) && !IsTryingToScore))) {
   			Private_FlagCarrier_PassFlag(FlagReceiver);
   		}
@@ -538,6 +519,7 @@ Void Private_UpdatePlayers() {
 // MARK: Lifecycle
 
 Void Start() {
+	G_PreviousFlag = Flag::K_Flag{};
   declare CMapLandmark FlagSpawn = Map::GetDefaultFlagSpawn();
   Flag::SetAtLandmark(FlagSpawn);
   Flag::InvalidateLastSafePosition();
@@ -600,36 +582,4 @@ Void WarmUpLoop() {
 			}
 		}
 	}
-}
-
-Void Yield() {
-	foreach (Event in Settings::GetPendingEvents()) {
-		switch (Event.Name) {
-			case SettingNames::S_ForceEnabledVehiclesCsv: {
-				G_ForceEnabledVehicles.clear();
-				foreach (CsvEntry in TL::Split(",", Settings::GetText(SettingNames::S_ForceEnabledVehiclesCsv))) {
-					declare Text VehicleId = TL::ToLowerCase(TL::Trim(CsvEntry));
-					if (Vehicles::IsValid(VehicleId)) {
-						G_ForceEnabledVehicles.add(Vehicles::Get(VehicleId));
-					}
-				}
-
-				declare Vehicles::K_Vehicle[] EnabledVehicles;
-				if (G_ForceEnabledVehicles.count > 0) {
-					EnabledVehicles = G_ForceEnabledVehicles;
-				} else {
-					EnabledVehicles = Map::GetEnabledVehicles();
-				}
-				UIModule_VehicleSelection::SetEnabledVehicles(EnabledVehicles);
-				}
-		}
-	}
-}
-
-Void Unload() {
-	G_ForceEnabledVehicles.clear();
-}
-
-Void Load() {
-	Unload();
 }

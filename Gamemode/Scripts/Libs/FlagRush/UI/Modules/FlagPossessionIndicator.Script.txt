@@ -4,7 +4,8 @@
 
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
-#Const C_LayerName "FlagRush_CarrierSelfIndicator"
+#Const C_LayerName "FlagRush_FlagPossessionIndicator"
+#Const C_LayerType CUILayer::EUILayerType::Normal
 
 Text GetManialink() {
 	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>

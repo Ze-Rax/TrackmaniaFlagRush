@@ -63,7 +63,6 @@
 #Include "Libs/FlagRush/UI/Modules/PodiumStatistics.Script.txt"						as UIModule_PodiumStatistics
 #Include "Libs/FlagRush/UI/Modules/ModeCommands.Script.txt"								as UIModule_ModeCommands
 #Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt"						as UIModule_VehicleSelection
-#Include "Libs/FlagRush/UI/Modules/FlagPossessionIndicator.Script.txt"		as UIModule_FlagPossessionIndicator
 
 // ===============
 // MARK: Constants
@@ -340,7 +339,6 @@ UILayers::LoadHud();
 UIModule_MapMarkers::Load();
 UIModule_PodiumStatistics::Load();
 UIModule_VehicleSelection::Load();
-UIModule_FlagPossessionIndicator::Load();
 UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_EndWarmup, "UICommon64_1", "Play_light");
 UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_PauseRound, "UICommon64_1", "Pause_light");
 UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_SkipRound, "UICommon64_1", "FastForward_light");

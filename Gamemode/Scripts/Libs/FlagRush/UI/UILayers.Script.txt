@@ -2,16 +2,17 @@
  * This library manages all the layers and their lifecycle, including updating them when needed or requested.
  */
 
-#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" 			as Layers
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" 							as Layers
 
-#Include "Libs/FlagRush/ModeBase/Playloop.Script.txt" 						as Playloop
+#Include "Libs/FlagRush/ModeBase/Playloop.Script.txt" 										as Playloop
 
-#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" 	as PlayerLifecycleEvents
-#Include "Libs/FlagRush/Event/Progression.Script.txt"							as Progression
+#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" 					as PlayerLifecycleEvents
+#Include "Libs/FlagRush/Event/Progression.Script.txt"											as Progression
 
 // Modules
-#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"					as UIModule_EventFeed
-#Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt"					as UIModule_FlagMarker
+#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"									as UIModule_EventFeed
+#Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt"									as UIModule_FlagMarker
+#Include "Libs/FlagRush/UI/Modules/FlagPossessionIndicator.Script.txt"		as UIModule_FlagPossessionIndicator
 
 #Include "Libs/FlagRush/UI/Modules/Menu.Script.txt"								as UIModule_Menu
 #Include "Libs/FlagRush/UI/Modules/PodiumBackground.Script.txt"		as UIModule_PodiumBackground
@@ -50,6 +51,7 @@ Void Private_LoadModules() {
 
 	UIModule_EventFeed::Load();
 	UIModule_FlagMarker::Load();
+	UIModule_FlagPossessionIndicator::Load();
 	// UIModule_Menu::Load();
 	// UIModule_PodiumBackground::Load();
 	// UIModule_Radar::Load();
@@ -65,6 +67,7 @@ Void Private_LoadModules() {
 Void Private_UnloadModules() {
 	UIModule_EventFeed::Unload();
 	UIModule_FlagMarker::Unload();
+	UIModule_FlagPossessionIndicator::Unload();
 }
 
 Void Private_CreateModuleLayers() {
@@ -77,6 +80,11 @@ Void Private_CreateModuleLayers() {
 	Layers::Create(UIModule_FlagMarker::C_LayerName, UIModule_FlagMarker::GetManialink());
 	Layers::SetType(UIModule_FlagMarker::C_LayerName, UIModule_FlagMarker::C_LayerType);
 	Layers::Attach(UIModule_FlagMarker::C_LayerName);
+
+	// Flag Possession Indicator
+	Layers::Create(UIModule_FlagPossessionIndicator::C_LayerName, UIModule_FlagPossessionIndicator::GetManialink());
+	Layers::SetType(UIModule_FlagPossessionIndicator::C_LayerName, UIModule_FlagPossessionIndicator::C_LayerType);
+	Layers::Attach(UIModule_FlagPossessionIndicator::C_LayerName);
 
 	// Scores header
 	Layers::Create(C_LayerName_ScoresHeader, UIModule_ScoresHeader::GetManialink());
@@ -126,6 +134,16 @@ Void Private_CreateModuleLayers() {
 	Layers::Attach(C_LayerName_Spectator);
 }
 
+Void Private_DestroyModuleLayers() {
+	Layers::Destroy(UIModule_EventFeed::C_LayerName);
+	Layers::Destroy(UIModule_FlagMarker::C_LayerName);
+	Layers::Destroy(UIModule_FlagPossessionIndicator::C_LayerName);
+	Layers::Destroy(C_LayerName_ScoresHeader);
+	Layers::Destroy(C_LayerName_ScoresTable);
+	Layers::Destroy(C_LayerName_Sound);
+	Layers::Destroy(C_LayerName_Menu);
+}
+
 Void AttachPodiumBackground(CSmScore[] PodiumPlayerScores) {
 	UIModule_PodiumBackground::SetContent(PodiumPlayerScores);
 	Layers::Attach(C_LayerName_Podium);
@@ -133,15 +151,6 @@ Void AttachPodiumBackground(CSmScore[] PodiumPlayerScores) {
 
 Void DetachPodiumBackground() {
 	Layers::Detach(C_LayerName_Podium);
-}
-
-Void Private_DestroyModuleLayers() {
-	Layers::Destroy(UIModule_EventFeed::C_LayerName);
-	Layers::Destroy(UIModule_FlagMarker::C_LayerName);
-	Layers::Destroy(C_LayerName_ScoresHeader);
-	Layers::Destroy(C_LayerName_ScoresTable);
-	Layers::Destroy(C_LayerName_Sound);
-	Layers::Destroy(C_LayerName_Menu);
 }
 
 /**

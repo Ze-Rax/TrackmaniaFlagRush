@@ -70,8 +70,6 @@
 // Constants //
 ///////////////
 
-#Const C_Debug False
-
 #Const C_TimeLimitWarning_Seconds [60, 30]
 
 #Const Vehicles::C_Vehicle_Stadium as C_Vehicle_Stadium
@@ -138,6 +136,7 @@
 #Setting S_UseCrudeExtrapolation						True		as "<hidden>"
 #Setting S_TrustClientSimu									True		as "<hidden>"
 #Setting S_ModeCommands_AdminLoginsCsv 			"W2ZNWNzVQV6z3hXuNgRMRg" 			as "<hidden>" // Admin logins for the mode commands ui // TODO: Remove own login
+#Setting S_Debug														True		as "<hidden>"
 
 //////////////
 // Commands //
@@ -221,9 +220,6 @@ UseProtectClanmates = False;
 UseAllies = False;
 CrudeExtrapolation_AllowDelay = False;
 UsePvPCollisions = S_UseCollisions;
-
-declare Boolean FlagRush_Debug for This = False;
-FlagRush_Debug = C_Debug;
 ***
 
 ***TrackModeSettings***
@@ -308,6 +304,12 @@ Messages::Load();
 
 // Misc
 FlagRush_XmlRpc::Load();
+Log::Load();
+if (S_Debug) {
+	Log::SetLevel(Log::C_Level_Debug);
+} else {
+	Log::SetLevel(Log::C_Level_Info);
+}
 ***
 
 ***UnloadLibraries***
@@ -329,6 +331,7 @@ Messages::Unload();
 
 // Misc
 FlagRush_XmlRpc::Unload();
+Log::Unload();
 ***
 
 ***LoadHud***
@@ -461,8 +464,6 @@ Progression::EndMap();
 ***
 Scores::StartRound();
 FlagRush_XmlRpc::Send_RoundStart();
-declare Boolean Progression_RoundEndRequested for This;
-Progression_RoundEndRequested = False;
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 ***
 
@@ -525,9 +526,7 @@ if (Progression_MapPointLimitReached()) {
 Progression::StartTurn();
 
 // Pause handling (Execution)
-declare Boolean Progression_PauseRequested for This;
-if (Progression_PauseRequested) {
-	Progression_PauseRequested = False;
+if (Progression::RoundPauseRequested()) {
 	+++Private_Pause+++
 }
 
@@ -568,8 +567,7 @@ Playloop::Start();
 Playloop::Loop();
 
 // Round skip (Map skip handled by base mode)
-declare Boolean Progression_RoundEndRequested for This = False;
-if (Progression_RoundEndRequested) {
+if (Progression::RoundEndRequested()) {
 	MB_StopRound();
 }
 
@@ -603,9 +601,8 @@ foreach (WarningSeonds => Enabled in Private_TimeLimitWarningsEnabled) {
 	Messages::TimeLimitSecondsRemaining(WarningSeonds, Durations::C_Duration_EventMessage);
 }
 
-// Pause handling (Request reaction, execution on StartTurn)
-declare Boolean Progression_PauseRequested for This = False;
-if (Progression_PauseRequested) {
+// Pause handling (Request reaction, actual pause on StartTurn)
+if (Progression::RoundPauseRequested()) {
 	MB_StopTurn();
 }
 ***
@@ -862,6 +859,14 @@ foreach(Event in Settings::GetPendingEvents()) {
 		case SettingNames::S_TrustClientSimu, SettingNames::S_UseCrudeExtrapolation: {
 			RestartTurn = True; // Respawn all players; this is easier
 		}
+		// Debug
+		case SettingNames::S_Debug: {
+			if (S_Debug) {
+				Log::SetLevel(Log::C_Level_Debug);
+			} else {
+				Log::SetLevel(Log::C_Level_Info);
+			}
+		}
 	}
 }
 
@@ -923,13 +928,11 @@ foreach (Command in Commands::GetPendingEvents()) {
 			CommandText = "The warmup was ended.";
 		}
 		case CommandNames::Command_PauseRound: {
-			declare Boolean Progression_PauseRequested for This = False;
-			Progression_PauseRequested = True;
+			Progression::RequestRoundPause();
 			CommandText = "The round was paused.";
 		}
 		case CommandNames::Command_SkipRound: {
-			declare Boolean Progression_RoundEndRequested for This = False;
-			Progression_RoundEndRequested = True;
+			Progression::RequestRoundEnd();
 			CommandText = "The round was skipped.";
 		}
 		case CommandNames::Command_SkipMap: {
@@ -1062,6 +1065,5 @@ Boolean Progression_MapIsValid() {
 }
 
 Boolean Progression_RoundIsValid() {
-	declare Boolean Progression_RoundEndRequested for This;
-	return Progression_MapIsValid() && !Progression_RoundEndRequested;
+	return Progression_MapIsValid() && !Progression::RoundEndRequested();
 }

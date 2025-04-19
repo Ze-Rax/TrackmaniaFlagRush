@@ -56,3 +56,4 @@
 #Const S_UseCrudeExtrapolation "S_UseCrudeExtrapolation"
 #Const S_TrustClientSimu "S_TrustClientSimu"
 #Const S_ModeCommands_AdminLoginsCsv "S_ModeCommands_AdminLoginsCsv"
+#Const S_Debug "S_Debug"

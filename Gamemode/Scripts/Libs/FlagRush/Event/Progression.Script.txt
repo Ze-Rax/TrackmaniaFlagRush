@@ -45,14 +45,16 @@ declare Boolean G_TurnIsRunning;
 declare Boolean G_OvertimeIsRunning;
 declare Boolean G_WarmUpIsRunning;
 
-
-// MARK: API
+declare Boolean G_RoundPauseRequested;
+declare Boolean G_RoundEndRequested;
 
 // Need a separate buffer for events before publishing.
 // If events are added to pending events directly, then during yield they would be cleared before other libraries could see them.
 // This way it is guaranteed that they are visible for exactly one yield, no matter if other libraries yield before or after this library.
 declare K_Event[] G_EventsAggregationBuffer;
 declare K_Event[] G_PendingEvents;
+
+// MARK: API
 
 K_Event[] GetPendingEvents() {
   return G_PendingEvents;
@@ -94,6 +96,22 @@ Boolean SegmentIsRunning(Integer _Segment) {
   return False;
 }
 
+Boolean RoundPauseRequested() {
+  return G_RoundPauseRequested;
+}
+
+Void RequestRoundPause() {
+  G_RoundPauseRequested = True;
+}
+
+Boolean RoundEndRequested() {
+  return G_RoundEndRequested;
+}
+
+Void RequestRoundEnd() {
+  G_RoundEndRequested = True;
+}
+
 // MARK: Lifecycle
 
 Void StartMatch() {
@@ -129,6 +147,7 @@ Void EndMap() {
 }
 
 Void StartRound() {
+  G_RoundEndRequested = False;
   G_RoundIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_Type_SegmentStart,
@@ -186,6 +205,7 @@ Void StartWarmUp() {
 
 Void EndWarmUp() {
   G_WarmUpIsRunning = False;
+  G_RoundPauseRequested = False;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_Type_SegmentEnd,
     Segment = C_Segment_WarmUp
@@ -206,6 +226,8 @@ Void Unload() {
   G_TurnIsRunning = False;
   G_OvertimeIsRunning = False;
   G_WarmUpIsRunning = False;
+  G_RoundEndRequested = False;
+  G_RoundPauseRequested = False;
 }
 
 Void Load() {

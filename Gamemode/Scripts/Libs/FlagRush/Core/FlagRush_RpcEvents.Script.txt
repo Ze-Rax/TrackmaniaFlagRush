@@ -249,11 +249,8 @@ K_Rpc_Flag CurrentFlagStateToRpcFlag() {
 }
 
 K_Rpc_Map CurrentMapToRpcMap() {
-	declare Boolean FlagRush_Debug for This;
-	if (FlagRush_Debug) {
-		assert(Map != Null, "Cannot send map data when no map is loaded.");
-	} else {
-		if (Map == Null) return K_Rpc_Map{};
+	if (Map == Null) {
+		return K_Rpc_Map{};
 	}
 
 	declare K_Rpc_Landmark DefaultFlagSpawn = LandmarkToRpcLandmark(FlagRushMap::GetDefaultFlagSpawn());

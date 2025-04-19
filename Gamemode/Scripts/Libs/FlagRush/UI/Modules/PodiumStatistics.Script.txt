@@ -1,13 +1,13 @@
 #Include "MathLib" as ML
 #Include "TextLib" as TL
 
-#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
-
-#Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
 #Include "Libs/FlagRush/CommonLibs/PlayerStatistics.Script.txt" as PlayerStatistics
+#Include "Libs/FlagRUsh/Const/Durations.Script.txt" as Durations
+#Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 #Const C_LayerName "FlagRush_PodiumStatistics"
+#Const C_LayerType CUILayer::EUILayerType::Normal
 
 #Const C_PlayerStatisticCount 5
 
@@ -20,7 +20,7 @@
 
 #Const C_Definition_MostFlagsScored K_StatisticDefinition { Title = "the Unstoppable", DescriptionFormat = "Scored a total of %1 flag(s)", MinValue = 1.0, Factor = 1.0 }
 #Const Scores::C_PlayerStatisticsKey_FlagsScored as C_Key_MostFlagsScored
-#Const C_Definition_MostFlagsStolen K_StatisticDefinition { Title = "the Thieve", DescriptionFormat = "Stole a total of %1 flag(s)", MinValue = 1.0, Factor = 1.0 }
+#Const C_Definition_MostFlagsStolen K_StatisticDefinition { Title = "the Thief", DescriptionFormat = "Stole a total of %1 flag(s)", MinValue = 1.0, Factor = 1.0 }
 #Const Scores::C_PlayerStatisticsKey_FlagsStolen as C_Key_MostFlagsStolen
 #Const C_Definition_MostDistanceDriven K_StatisticDefinition{ Title = "the Explorer", DescriptionFormat = "Drove a total of %1km", MinValue = 1.0, Factor = 0.001}
 #Const Scores::C_PlayerStatisticsKey_DistanceDriven as C_Key_MostDistanceDriven
@@ -101,7 +101,7 @@ Text GetManialink() {
 
 #Const C_ElementAnimDuration 500
 #Const C_ElementAnimStartTimeOffset 100
-#Const C_ElementAnimPosXOffset 30.
+#Const C_ElementAnimPosXOffset 60.
 #Const C_PlayerStatisticsPosYOffset 15.
 
 #Struct K_PlayerStatistic {
@@ -190,7 +190,6 @@ Void UpdateContent() {
 }
 
 Void AnimateIn() {
-	ResetControls();
 	AnimMgr.Add(G_Statistics.Frame, "<elem pos=\"130 0\" />", C_ElementAnimDuration, CAnimManager::EAnimManagerEasing::ExpOut);
 	AnimMgr.Add(G_Statistics.Divider.Frame, "<elem pos=\"0 0\" />", Now + C_ElementAnimStartTimeOffset, C_ElementAnimDuration, CAnimManager::EAnimManagerEasing::ExpOut);
 	AnimMgr.Add(G_Statistics.Divider.Label, "<elem opacity=\"1\" />", Now + C_ElementAnimStartTimeOffset, C_ElementAnimDuration, CAnimManager::EAnimManagerEasing::ExpOut);
@@ -212,6 +211,12 @@ Void AnimateIn() {
 
 main() {
 	Init();
+	ResetControls();
+
+	// Wait for the podium camera to stop moving
+	declare Integer DelayEnd = Now + {{{ Durations::C_PodiumCameraDuration }}};
+	wait(Now >= DelayEnd);
+
 	AnimateIn();
 	while(True) {
 		yield;
@@ -221,6 +226,8 @@ main() {
 	--></script>
 </manialink>""";
 }
+
+// MARK: Helper Functions
 
 K_StatisticDefinition[Text] Private_GetDefinitions() {
 	return [
@@ -338,6 +345,8 @@ K_Net_PlayerStatisticDescription[][Integer] Private_DeterminePlayerStatistics(CS
 	return Descriptions;
 }
 
+// MARK: API
+
 Void Update() {
 	declare CSmScore[][Integer] ScoresByClan = Private_SortScoresByClan();
 	declare K_Net_PlayerStatisticDescription[][Integer] PlayerStatisticDescriptions = Private_DeterminePlayerStatistics(ScoresByClan);
@@ -345,20 +354,12 @@ Void Update() {
 	Net_FlagRush_PodiumStatistics = PlayerStatisticDescriptions;
 }
 
-Void Attach() {
-	Layers::Attach(C_LayerName);
-}
+// MARK: Lifecycle
 
-Void Detach() {
-	Layers::Detach(C_LayerName);
-}
+Void Unload() { // @mslint-disable-line no-empty -- Kept for consistency
 
-Void Unload() {
-	Layers::Destroy(C_LayerName);
 }
 
 Void Load() {
 	Unload();
-	Layers::Create(C_LayerName, GetManialink());
-	Layers::SetType(C_LayerName, CUILayer::EUILayerType::Normal);
 }

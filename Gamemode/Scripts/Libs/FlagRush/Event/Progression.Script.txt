@@ -88,6 +88,10 @@ Boolean WarmUpIsRunning() {
   return G_WarmUpIsRunning;
 }
 
+Boolean PodiumIsRunning() {
+  return G_PodiumIsRunning;
+}
+
 Boolean SegmentIsRunning(Integer _Segment) {
   switch(_Segment) {
     case C_Segment_Match: return MatchIsRunning();
@@ -96,6 +100,7 @@ Boolean SegmentIsRunning(Integer _Segment) {
     case C_Segment_Turn: return TurnIsRunning();
     case C_Segment_Overtime: return OvertimeIsRunning();
     case C_Segment_WarmUp: return WarmUpIsRunning();
+    case C_Segment_Podium: return PodiumIsRunning();
   }
   return False;
 }

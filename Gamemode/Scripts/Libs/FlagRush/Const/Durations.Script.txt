@@ -3,6 +3,7 @@
  */
 
 #Const C_SpawnAnimDuration      1500
+#Const C_PodiumCameraDuration   5000
 
 #Const C_Duration_Podium				15000
 #Const C_Duration_MatchEnd			5000

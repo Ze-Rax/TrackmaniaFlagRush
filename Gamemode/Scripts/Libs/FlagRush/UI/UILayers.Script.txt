@@ -2,9 +2,12 @@
  * This library manages all the layers and their lifecycle, including updating them when needed or requested.
  */
 
-#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" 			as Layers
 
-#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" as PlayerLifecycleEvents
+#Include "Libs/FlagRush/ModeBase/Playloop.Script.txt" 						as Playloop
+
+#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" 	as PlayerLifecycleEvents
+#Include "Libs/FlagRush/Event/Progression.Script.txt"							as Progression
 
 // Modules
 #Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"					as UIModule_EventFeed
@@ -157,8 +160,26 @@ Void Net_SendModeScriptProgressionSettings(Integer NbMapsToWinMatch, Integer NbR
 
 /* Lifecycle */
 
-Void Yield() {
+Void BeforeYield() {
+	foreach (Event in Playloop::GetPendingEvents()) {
+		switch (Event.Type) {
+			case Playloop::C_EventType_FlagReset: {
+				UIModule_FlagMarker::Update();
+			}
+			case Playloop::C_EventType_PlayerPickedUpFlag: {
+				UIModule_FlagMarker::Update();
+			}
+			case Playloop::C_EventType_PlayerPassedFlag: {
+				UIModule_FlagMarker::Update();
+			}
+			case Playloop::C_EventType_PlayerDroppedFlag: {
+				UIModule_FlagMarker::Update();
+			}
+		}
+	}
+}
 
+Void Yield() {
 	declare Boolean UpdateRadar = False;
 	foreach (Event in PlayerLifecycleEvents::GetPendingEvents()) {
 		switch (Event.Type) {

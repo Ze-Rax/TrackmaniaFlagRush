@@ -274,6 +274,8 @@ Settings::Track(SettingNames::S_ModeCommands_AdminLoginsCsv, S_ModeCommands_Admi
 
 ***LoadLibraries***
 ***
+Playloop::Load();
+
 // Core
 Flag::Load();
 HandicapQueue::Load();
@@ -308,6 +310,8 @@ if (S_Debug) {
 
 ***UnloadLibraries***
 ***
+Playloop::Unload();
+
 // Core
 Flag::Unload();
 HandicapQueue::Unload();
@@ -721,6 +725,13 @@ FlagRush_Net_PauseIsRunning = False;
 // which is defined before any function or globale that could be defined in any extend.
 // Only code directly or plugs which don't contain non-library functions or non ModeBase globales themselves.
 
+***BeforeYield***
+***
+// Playloop produces events that are only guaranteed to be valid in the current yield, due to for example player references.
+// React to those events before API array are updated on yield.
+UILayers::BeforeYield();
+***
+
 ***Yield***
 ***
 // Collect events in Event libraries first
@@ -731,6 +742,8 @@ Commands::Yield();
 Progression::Yield();
 PlayerLifecycleEvents::Yield();
 EnabledVehicles::Yield();
+
+Playloop::Yield();
 
 // Now update all other libs
 Flag::Yield();

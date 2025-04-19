@@ -28,10 +28,8 @@
 #Include "Libs/FlagRush/Util/Command.Script.txt" as Command
 
 #Include "Libs/FlagRush/UI/Messages.Script.txt" as Messages
-#Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt" as UIModule_FlagMarker
 #Include "Libs/FlagRush/UI/Modules/RespawnFlash.Script.txt" as UIModule_RespawnFlash
 #Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt" as UIModule_VehicleSelection
-
 
 #Const C_Epsilon_Distance 0.001
 #Const C_AssistTimeThreshold 5000
@@ -42,7 +40,20 @@
 #Const Vehicles::C_Vehicle_Rally as C_Vehicle_Rally
 #Const Vehicles::C_Vehicle_Desert as C_Vehicle_Desert
 
+#Const C_EventType_FlagReset 1
+#Const C_EventType_PlayerPickedUpFlag 2
+#Const C_EventType_PlayerPassedFlag 3
+#Const C_EventType_PlayerDroppedFlag 4
+
+#Struct K_Event {
+	Integer Type;
+	CSmPlayer Player; ///< Can be Null. Meaning depending on event type.
+	CSmPlayer RelatedPlayer; ///< Can be Null. Meaning depending on event type.
+	CMapLandmark Landmark; ///< Can be Null. Meaning depends on the event type.
+}
+
 declare Flag::K_Flag G_PreviousFlag;
+declare K_Event[] G_PendingEvents;
 
 // MARK: Helper functions
 
@@ -70,9 +81,14 @@ Void Private_Flag_Reset(Boolean _Silent) {
     Messages::FlagReset(Durations::C_Duration_EventMessage);
   }
 
-	Flag::SetAtLandmark(Map::GetRandomFlagSpawn());
+	declare CMapLandmark FlagSpawn = Map::GetRandomFlagSpawn();
+	Flag::SetAtLandmark(FlagSpawn);
 	Flag::InvalidateLastSafePosition();
-	UIModule_FlagMarker::Update();
+
+	G_PendingEvents.add(K_Event {
+		Type = C_EventType_FlagReset,
+		Landmark = FlagSpawn
+	});
 	FlagRush_XmlRpc::Send_FlagReset();
 }
 
@@ -186,8 +202,12 @@ Void Private_Player_PickUpFlag(CSmPlayer _Player) {
 	Flag::SetAtPlayer(_Player);
 	Flag::RemoveDropTimer();
 	Flag::Lock(StealResistanceEndDate);
-	UIModule_FlagMarker::Update();
 	Private_Player_ApplyHandicaps(_Player);
+
+	G_PendingEvents.add(K_Event{
+		Type = C_EventType_PlayerPickedUpFlag,
+		Player = _Player
+	});
 	FlagRush_XmlRpc::Send_FlagPickup();
 }
 
@@ -210,8 +230,13 @@ Void Private_FlagCarrier_PassFlag(CSmPlayer _ToPlayer) {
 	} else {
 		Flag::LockForClan(StealResistanceEndDate, _ToPlayer.CurrentClan);
 	}
-	UIModule_FlagMarker::Update();
 	Private_Player_ApplyHandicaps(_ToPlayer);
+
+	G_PendingEvents.add(K_Event{
+		Type = C_EventType_PlayerPassedFlag,
+		Player = OldCarrier,
+		RelatedPlayer = _ToPlayer
+	});
 	FlagRush_XmlRpc::Send_FlagPass(OldCarrier);
 }
 
@@ -241,7 +266,11 @@ Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
 	declare Integer DropStateEndDate = Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_FlagDropStateDurationSeconds) * 1000);
 	Flag::SetDropTimer(DropStateEndDate);
 	Flag::SetAtPosition(_Position);
-	UIModule_FlagMarker::Update();
+
+	G_PendingEvents.add(K_Event{
+		Type = C_EventType_PlayerDroppedFlag,
+		Player = OldCarrierPlayer
+	});
 	Messages::FlagDropped(OldCarrierUser, Durations::C_Duration_EventMessage);
 	FlagRush_XmlRpc::Send_FlagDrop(OldCarrierUser);
 }
@@ -515,6 +544,12 @@ Void Private_UpdatePlayers() {
   }
 }
 
+// MARK: API
+
+K_Event[] GetPendingEvents() {
+	return G_PendingEvents;
+}
+
 // MARK: Lifecycle
 
 Void Start() {
@@ -522,7 +557,10 @@ Void Start() {
   declare CMapLandmark FlagSpawn = Map::GetDefaultFlagSpawn();
   Flag::SetAtLandmark(FlagSpawn);
   Flag::InvalidateLastSafePosition();
-  UIModule_FlagMarker::Update();
+	G_PendingEvents.add(K_Event{
+		Type = C_EventType_FlagReset,
+		Landmark = FlagSpawn
+	});
 
   foreach (Player in Players) {
     declare netwrite Integer Net_SpawnDate for Player = -1;
@@ -540,7 +578,6 @@ Void Loop() {
 
 Void End() {
   Flag::SetUnspawned();
-	UIModule_FlagMarker::Update();
 	HandicapQueue::ClearQueue();
 }
 
@@ -581,4 +618,17 @@ Void WarmUpLoop() {
 			}
 		}
 	}
+}
+
+Void Unload() {
+	G_PendingEvents.clear();
+	G_PreviousFlag = Flag::K_Flag{};
+}
+
+Void Load() {
+	Unload();
+}
+
+Void Yield() {
+	G_PendingEvents.clear();
 }

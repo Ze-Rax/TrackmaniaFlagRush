@@ -8,60 +8,56 @@
 #Include "Libs/FlagRush/Const/Durations.Script.txt" as Durations
 
 #Include "Libs/FlagRush/Core/Map.Script.txt" as Map
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
 #Include "Libs/FlagRush/Core/HandicapQueue.Script.txt" as HandicapQueue
 #Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
+#Include "Libs/FlagRush/CommonLibs/Rx/Hitbox.Script.txt" as Hitbox
+#Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt" as FlagRush_XmlRpc
 
 #Include "Libs/FlagRush/Event/Settings.Script.txt" as Settings
 #Include "Libs/FlagRush/Event/Commands.Script.txt" as Commands
+#Include "Libs/FlagRUsh/Event/ProgressionEvents.Script.txt" as ProgressionEvents
 
 #Include "Libs/FlagRush/UI/Messages.Script.txt" as Messages
 #Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt" as UIModule_FlagMarker
 #Include "Libs/FlagRush/UI/Modules/Flash.Script.txt" as UIModule_RespawnFlash
+#Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt" as UIModule_VehicleSelection
 
-#Include "Libs/FlagRush/CommonLibs/Rx/Hitbox.Script.txt" as Hitbox
 
 #Const C_Epsilon_Distance 0.001
 #Const C_AssistTimeThreshold 5000
 #Const C_RespawnDelayMin 1000 // Player needs to be unspawned for a few (?) yields before respawning, else physics with different vehicles do not apply correctly
 
+#Const Vehicles::C_Vehicle_Stadium as C_Vehicle_Stadium
+#Const Vehicles::C_Vehicle_Snow as C_Vehicle_Snow
+#Const Vehicles::C_Vehicle_Rally as C_Vehicle_Rally
+#Const Vehicles::C_Vehicle_Desert as C_Vehicle_Desert
+
 declare Flag::K_Flag G_PreviousFlag;
+declare Vehicles::K_Vehicle[] G_ForceEnabledVehicles;
 
 // MARK: Helper functions
 
+/**
+ * Either forced vehicles (by mode settings) or configured in map. Always at least one.
+ */
 Vehicles::K_Vehicle[] Private_Vehicle_GetEnabled() {
-	declare Vehicles::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
-	if (FlagRush_ForceEnabledVehicles.count > 0) {
-		return FlagRush_ForceEnabledVehicles;
+	if (G_ForceEnabledVehicles.count > 0) {
+		return G_ForceEnabledVehicles;
 	}
-	return FlagRushMap::GetEnabledVehicles();
+	return Map::GetEnabledVehicles();
 }
 
 Boolean Private_Vehicle_IsEnabled(Vehicles::K_Vehicle _Vehicle) {
-	declare Vehicles::K_Vehicle[] Vehicles = Vehicle_GetEnabled();
+	declare Vehicles::K_Vehicle[] Vehicles = Private_Vehicle_GetEnabled();
 	foreach (EnabledVehicle in Vehicles) {
 		if (_Vehicle.Id == EnabledVehicle.Id) {
 			return True;
 		}
 	}
 	return False;
-}
-
-Vehicles::K_Vehicle Private_Vehicle_GetSelected(CSmPlayer _Player) {
-	declare Vehicles::K_Vehicle SelectedVehicle = FlagRush_VehicleSelection::GetSlectedVehicle(_Player);
-	if (Private_Vehicle_IsEnabled(SelectedVehicle)) {
-		return SelectedVehicle;
-	}
-	return Private_Vehicle_GetEnabled()[0];
-}
-
-Ident Private_Vehicle_GetModelId(CSmPlayer _Player) {
-	declare Vehicles::K_Vehicle Vehicle = Vehicle_GetSelected(_Player);
-	if (Vehicle.Id == C_Vehicle_Stadium.Id) {
-		return Teams::GetSkinModelIdForTeam(_Player.RequestedClan);
-	}
-	return Vehicles::GetItemId(Vehicle.Id);
 }
 
 CSmPlayer Private_GetFirstCollidingPlayer_OpponentPriority(CSmPlayer _ReferencePlayer) {
@@ -98,6 +94,22 @@ Void Private_Flag_Reset() {
 	Private_Flag_Reset(False);
 }
 
+Vehicles::K_Vehicle Private_Player_GetSelectedVehicle(CSmPlayer _Player) {
+	declare Vehicles::K_Vehicle SelectedVehicle = UIModule_VehicleSelection::GetSlectedVehicle(_Player);
+	if (Private_Vehicle_IsEnabled(SelectedVehicle)) {
+		return SelectedVehicle;
+	}
+	return Private_Vehicle_GetEnabled()[0];
+}
+
+Ident Private_Player_GetSelectedVehicleModelId(CSmPlayer _Player) {
+	declare Vehicles::K_Vehicle Vehicle = Private_Player_GetSelectedVehicle(_Player);
+	if (Vehicle.Id == C_Vehicle_Stadium.Id) {
+		return Teams::GetSkinModelIdForTeam(_Player.RequestedClan);
+	}
+	return Vehicles::GetItemId(Vehicle.Id);
+}
+
 Boolean Private_Player_RequestsClanChange(CSmPlayer _Player) {
 	return _Player.CurrentClan != _Player.RequestedClan;
 }
@@ -121,7 +133,7 @@ Void Private_Player_ApplyHandicaps(CSmPlayer _Player) {
 Void Private_Player_ResetHandicaps(CSmPlayer _Player) {
 	HandicapQueue::Queue_Reset(_Player);
 	Private_Player_ApplyVehicleTuning(_Player);
-	Player.ForceLightTrail = False;
+	_Player.ForceLightTrail = False;
 }
 
 Boolean Private_Player_CanSpawn(CSmPlayer _Player) {
@@ -137,7 +149,7 @@ Void Private_Player_Initialize(CSmPlayer _Player) {
 	_Player.UseCrudeExtrapolation = !UsePvPCollisions && Settings::GetBoolean(SettingNames::S_UseCrudeExtrapolation);
 	_Player.Dossard_Number = "  ";
 	_Player.Dossard_Color = <1., 1., 1.>;
-	_Player.ForceModelId = Vehicle_GetModelId(_Player);
+	_Player.ForceModelId = Private_Player_GetSelectedVehicleModelId(_Player);
 	_Player.ForceLightTrail = False;
 	declare Boolean FlagRush_WasInitializedBefore for _Player = False;
 	FlagRush_WasInitializedBefore = True;
@@ -145,11 +157,11 @@ Void Private_Player_Initialize(CSmPlayer _Player) {
 
 Void Private_Player_Spawn(CSmPlayer _Player) {
 	declare Boolean FlagRush_WasInitializedBefore for _Player = False;
-	if (MB_TurnIsRunning() && !Progression_WarmUpIsRunning() && FlagRush_WasInitializedBefore && _Player.ForceModelId != Vehicle_GetModelId(_Player)) {
+	if (MB_TurnIsRunning() && !Progression_WarmUpIsRunning() && FlagRush_WasInitializedBefore && _Player.ForceModelId != Private_Player_GetSelectedVehicleModelId(_Player)) {
 		Scores::OnPlayerChangesVehicle(_Player.Score);
 	}
 	Private_Player_Initialize(_Player);
-	declare CMapLandmark SpawnLandmark = FlagRushMap::GetSpawn(_Player);
+	declare CMapLandmark SpawnLandmark = Map::GetSpawn(_Player);
 	if (SpawnLandmark != Null) {
 		SpawnPlayer(_Player, _Player.CurrentClan, 1, SpawnLandmark.PlayerSpawn, Now + Durations::C_SpawnAnimDuration);
 		Player_ApplyVehicleTuning(_Player);
@@ -520,7 +532,7 @@ Void Private_UpdatePlayers() {
       Private_Player_Spawn(Player);
     }
   
-    Player_Net_SendPosition(Player);
+    Private_Player_Net_SendPosition(Player);
   }
 }
 
@@ -531,7 +543,7 @@ Void Init() {
 }
 
 Void Start() {
-  declare CMapLandmark FlagSpawn = FlagRushMap::GetDefaultFlagSpawn();
+  declare CMapLandmark FlagSpawn = Map::GetDefaultFlagSpawn();
   Flag::SetAtLandmark(FlagSpawn);
   Flag::InvalidateLastSafePosition();
   FlagMarker::Update();
@@ -566,10 +578,10 @@ Void WarmUpLoop() {
 		}
 	
 		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && Now - FlagRush_Warmup_UnspawnDate > C_RespawnDelayMin) {
-			Player_Spawn(Player);
+			Private_Player_Spawn(Player);
 		}
 	
-		Player_Net_SendPosition(Player);
+		Private_Player_Net_SendPosition(Player);
 	}
 	
 	foreach (Event in PendingEvents) {
@@ -584,7 +596,7 @@ Void WarmUpLoop() {
 			}
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				// Player might have left in the same server frame, causing Player to be Null
-				if (Event.Player != Null && FlagRushMap::IsOutOfBoundsTrigger(Event.Landmark) && Event.Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
+				if (Event.Player != Null && Map::IsOutOfBoundsTrigger(Event.Landmark) && Event.Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
 					Messages::PlayerOutOfBounds(Event.Player);
 					UnspawnPlayer(Event.Player);
 					declare Integer FlagRush_Warmup_UnspawnDate for Event.Player = Now;
@@ -596,13 +608,33 @@ Void WarmUpLoop() {
 }
 
 Void Yield() {
+	foreach (Event in Settings::GetPendingEvents()) {
+		switch (Event.Name) {
+			case SettingNames::S_ForceEnabledVehiclesCsv: {
+				G_ForceEnabledVehicles.clear();
+				foreach (CsvEntry in TL::Split(",", S_ForceEnabledVehiclesCsv)) {
+					declare Text VehicleId = TL::ToLowerCase(TL::Trim(CsvEntry));
+					if (Vehicles::IsValid(VehicleId)) {
+						G_ForceEnabledVehicles.add(Vehicles::Get(VehicleId));
+					}
+				}
 
+				declare Vehicles::K_Vehicle[] EnabledVehicles;
+				if (G_ForceEnabledVehicles.count > 0) {
+					EnabledVehicles = G_ForceEnabledVehicles;
+				} else {
+					EnabledVehicles = Map::GetEnabledVehicles();
+				}
+				UIModule_VehicleSelection::SetEnabledVehicles(EnabledVehicles);
+				}
+		}
+	}
 }
 
 Void Unload() {
-
+	G_ForceEnabledVehicles.clear();
 }
 
 Void Load() {
-
+	Unload();
 }

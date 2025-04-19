@@ -3,8 +3,9 @@
  *
  * Gamemode by Ze-Rax, Reaby, Geekid & Rxelux.
  *
- * This mode extends a modified version of Nadeos lowest level mode base, which contains the main server loop.
- * The Match_ prefix of plugs has been dropped!
+ * Development notes:
+ * - This mode extends a modified version of Nadeos lowest level mode base, which contains the main server loop. The Match_ prefix of plugs has been dropped.
+ * - This script only contains progression logic decissions and library orchestration. The actual round gameplay logic takes place in Playloop.Script.txt.
  *
  * #RequireContext CSmMode
  */
@@ -143,7 +144,7 @@
 // Commands //
 //////////////
 
-// KEEP SETTINGS IN SYNC WITH "Const/CommandNames.Script.txt"
+// KEEP COMMANDS IN SYNC WITH "Const/CommandNames.Script.txt"
 
 // Progression
 #Command Command_PauseRound							(Boolean) as		"Pause round"
@@ -849,7 +850,7 @@ foreach(Event in Settings::GetPendingEvents()) {
 		// Collision
 		case SettingNames::S_UseCollisions: {
 			UsePvPCollisions = S_UseCollisions;
-			RestartTurn = True;
+			RestartTurn = True; // Respawn all players; this is easier
 		}
 		// Vehicle Tunings
 		case SettingNames::S_TuningStadiumAcceleration, SettingNames::S_TuningStadiumAdherence, SettingNames::S_TuningStadiumControl,
@@ -857,32 +858,15 @@ foreach(Event in Settings::GetPendingEvents()) {
 					SettingNames::S_TuningRallyAcceleration, SettingNames::S_TuningRallyAdherence, SettingNames::S_TuningRallyControl,
 					SettingNames::S_TuningDesertAcceleration, SettingNames::S_TuningDesertAdherence, SettingNames::S_TuningDesertControl: {
 			UpdateVehicleTunings = True;
-			RestartTurn = True;
+			RestartTurn = True; // Could just apply vehicle tunings, but this is easier
 		}
 		// Forced Vehicles
 		case SettingNames::S_ForceEnabledVehiclesCsv: {
-			// Note: Cannot use functions like Vehicle_GetEnabled or globals in Yield due to ordering after compilation
-			declare Vehicles::K_Vehicle[] FlagRush_ForceEnabledVehicles for This = [];
-			FlagRush_ForceEnabledVehicles.clear();
-			foreach (CsvEntry in TL::Split(",", S_ForceEnabledVehiclesCsv)) {
-				declare Text VehicleId = TL::ToLowerCase(TL::Trim(CsvEntry));
-				if (Vehicles::IsValid(VehicleId)) {
-					FlagRush_ForceEnabledVehicles.add(Vehicles::Get(VehicleId));
-				}
-			}
-
-			declare Vehicles::K_Vehicle[] EnabledVehicles;
-			if (FlagRush_ForceEnabledVehicles.count > 0) {
-				EnabledVehicles = FlagRush_ForceEnabledVehicles;
-			} else {
-				EnabledVehicles = FlagRushMap::GetEnabledVehicles();
-			}
-			FlagRush_VehicleSelection::SetEnabledVehicles(EnabledVehicles);
-			RestartTurn = True;
+			RestartTurn = True; // Respawn players with disallowed vehicles; this is easier
 		}
 		// Physics simulation
 		case SettingNames::S_TrustClientSimu, SettingNames::S_UseCrudeExtrapolation: {
-			RestartTurn = True;
+			RestartTurn = True; // Respawn all players; this is easier
 		}
 	}
 }

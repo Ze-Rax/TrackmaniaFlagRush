@@ -4,7 +4,7 @@
  * Provides events for begin and end of different segments, like warmup, maps, matches, etc.
  * Consuming scripts should only access the pending using the GetPendingEvents function.
  * Events are published from the respective mode using the Mode_PublishEvent function. They should not be used by consuming scripts.
- * This script therefore only serves as a point that is accessible to libraries, as they cannot access members from the mode files.
+ * This script therefore only serves as a point that is accessible to libraries, as they cannot access members from the main mode file.
  *
  * #RequireContext CSmMode
  */
@@ -38,6 +38,8 @@
   Integer Segment;
 }
 
+// MARK: API
+
 // Need a separate buffer for events before publishing.
 // If events are added to pending events directly, then during yield they would be cleared before other libraries could see them.
 // This way it is guaranteed that they are visible for exactly one yield, no matter if other libraries yield before or after this library.
@@ -54,6 +56,8 @@ K_Event[] GetPendingEvents() {
 Void Mode_PublishEvent(K_Event _Event) {
   G_EventsAggregationBuffer.add(_Event);
 }
+
+// MARK: Lifecycle
 
 Void Yield() {
   G_PendingEvents = G_EventsAggregationBuffer;

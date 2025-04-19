@@ -15,6 +15,7 @@
 }
 
 #Const C_LayerName "FlagRush_EventFeed"
+#Const C_LayerType CUILayer::EUILayerType::Normal
 
 #Const C_IconName_Info "info"
 #Const C_IconName_Chrono "chrono"

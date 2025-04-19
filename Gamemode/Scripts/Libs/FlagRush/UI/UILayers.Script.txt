@@ -8,6 +8,8 @@
 
 // Modules
 #Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"					as UIModule_EventFeed
+#Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt"					as UIModule_FlagMarker
+
 #Include "Libs/FlagRush/UI/Modules/Menu.Script.txt"								as UIModule_Menu
 #Include "Libs/FlagRush/UI/Modules/PodiumBackground.Script.txt"		as UIModule_PodiumBackground
 #Include "Libs/FlagRush/UI/Modules/Radar.Script.txt"							as UIModule_Radar
@@ -44,6 +46,7 @@ Void Private_LoadModules() {
 	UIModule_EventFeed::ClearMessages();
 
 	UIModule_EventFeed::Load();
+	UIModule_FlagMarker::Load();
 	// UIModule_Menu::Load();
 	// UIModule_PodiumBackground::Load();
 	// UIModule_Radar::Load();
@@ -58,9 +61,20 @@ Void Private_LoadModules() {
 
 Void Private_UnloadModules() {
 	UIModule_EventFeed::Unload();
+	UIModule_FlagMarker::Unload();
 }
 
-Void Private_AttachModules() {
+Void Private_CreateModuleLayers() {
+	// Event Feed
+	Layers::Create(UIModule_EventFeed::C_LayerName, UIModule_EventFeed::GetManialink());
+	Layers::SetType(UIModule_EventFeed::C_LayerName, UIModule_EventFeed::C_LayerType);
+	Layers::Attach(UIModule_EventFeed::C_LayerName);
+
+	// Flag Marker
+	Layers::Create(UIModule_FlagMarker::C_LayerName, UIModule_FlagMarker::GetManialink());
+	Layers::SetType(UIModule_FlagMarker::C_LayerName, UIModule_FlagMarker::C_LayerType);
+	Layers::Attach(UIModule_FlagMarker::C_LayerName);
+
 	// Scores header
 	Layers::Create(C_LayerName_ScoresHeader, UIModule_ScoresHeader::GetManialink());
 	Layers::SetType(C_LayerName_ScoresHeader, CUILayer::EUILayerType::Normal);
@@ -81,10 +95,6 @@ Void Private_AttachModules() {
 	Layers::SetType(C_LayerName_Menu, CUILayer::EUILayerType::InGameMenu);
 	Layers::Attach(C_LayerName_Menu);
 
-	// Event Feed
-	Layers::Create(UIModule_EventFeed::C_LayerName, UIModule_EventFeed::GetManialink());
-	Layers::SetType(UIModule_EventFeed::C_LayerName, CUILayer::EUILayerType::Normal);
-	Layers::Attach(UIModule_EventFeed::C_LayerName);
 
 	// Respawn Bar
 	Layers::Create(C_LayerName_Respawn, UIModule_RespawnTimer::GetManialink());
@@ -122,12 +132,13 @@ Void DetachPodiumBackground() {
 	Layers::Detach(C_LayerName_Podium);
 }
 
-Void Private_DetachModules() {
-	Layers::Detach(C_LayerName_ScoresHeader);
-	Layers::Detach(C_LayerName_ScoresTable);
-	Layers::Detach(C_LayerName_Sound);
-	Layers::Detach(C_LayerName_Menu);
-	Layers::Detach(UIModule_EventFeed::C_LayerName);
+Void Private_DestroyModuleLayers() {
+	Layers::Destroy(UIModule_EventFeed::C_LayerName);
+	Layers::Destroy(UIModule_FlagMarker::C_LayerName);
+	Layers::Destroy(C_LayerName_ScoresHeader);
+	Layers::Destroy(C_LayerName_ScoresTable);
+	Layers::Destroy(C_LayerName_Sound);
+	Layers::Destroy(C_LayerName_Menu);
 }
 
 /**
@@ -173,7 +184,7 @@ Void Yield() {
 }
 
 Void Unload() {
-	Private_DetachModules();
+	Private_DestroyModuleLayers();
 	Private_UnloadModules();
 }
 
@@ -183,5 +194,5 @@ Void Load() {
 }
 
 Void LoadHud() {
-	Private_AttachModules();
+	Private_CreateModuleLayers();
 }

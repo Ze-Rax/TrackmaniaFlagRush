@@ -63,7 +63,6 @@
 #Include "Libs/FlagRush/UI/Modules/PodiumStatistics.Script.txt"						as UIModule_PodiumStatistics
 #Include "Libs/FlagRush/UI/Modules/ModeCommands.Script.txt"								as UIModule_ModeCommands
 #Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt"						as UIModule_VehicleSelection
-#Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt"									as UIModule_FlagMarker
 #Include "Libs/FlagRush/UI/Modules/FlagPossessionIndicator.Script.txt"		as UIModule_FlagPossessionIndicator
 
 // ===============
@@ -334,7 +333,6 @@ Log::Unload();
 ***
 UIConfig::LoadHud();
 UILayers::LoadHud();
-UIModule_FlagMarker::Load();
 UIModule_MapMarkers::Load();
 UIModule_PodiumStatistics::Load();
 UIModule_VehicleSelection::Load();

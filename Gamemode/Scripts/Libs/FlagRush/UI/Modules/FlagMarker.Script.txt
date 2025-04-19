@@ -1,10 +1,10 @@
-#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
-
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 #Const C_LayerName "FlagRush_FlagMarker"
+#Const C_LayerType CUILayer::EUILayerType::Markers
+
 #Const C_FrameId "FlagRush_Marker_Flag"
 #Const C_FrameId_ShadowVisibilityMarker "FlagRush_Marker_FlagShadowVisibility"
 
@@ -274,7 +274,7 @@ main() {
 </manialink>""";
 }
 
-// Helpers
+// MARK: Helper Functions
 
 CUIConfigMarker Private_GetMarker(Ident _Id) {
 	return UIManager.UIAll.Markers.get(_Id, Null);
@@ -343,6 +343,8 @@ Void Private_SetAtPlayer(CSmPlayer _Player) {
 	Marker.HudVisibility = CUIConfigMarker::EHudVisibility::Always;
 }
 
+// MARK: API
+
 Void Hide() {
 	declare CUIConfigMarker Marker = Private_GetMarker(G_MarkerId);
 	if (Marker != Null) {
@@ -365,18 +367,16 @@ Void Show() {
 	}
 }
 
-// Lifecycle
+// MARK: Lifecycle
 
 Void Unload() {
 	Private_Remove();
-	Layers::Destroy(C_LayerName);
+	G_MarkerId = NullId;
+	G_ShadowVisibilityMarkerId = NullId;
 }
 
 Void Load() {
 	Unload();
-	Layers::Create(C_LayerName, GetManialink());
-	Layers::SetType(C_LayerName, CUILayer::EUILayerType::Markers);
-	Layers::Attach(C_LayerName);
 }
 
 Void Update() {

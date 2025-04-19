@@ -58,7 +58,7 @@ CSmPlayer Private_GetFirstCollidingPlayer_OpponentPriority(CSmPlayer _ReferenceP
       return Player;
     }
 
-    if (FirstCollidingPlayer != Null) {
+    if (FirstCollidingPlayer == Null) {
       FirstCollidingPlayer = Player;
     }
 	}
@@ -455,7 +455,6 @@ Void Private_UpdateFlag() {
   			}
   		}
 
-			log("""IsLocked: {{{IsLocked}}}, IsOpponent: {{{IsOpponent}}}, SameTeamFlagSteal: {{{Settings::GetBoolean(SettingNames::S_FlagSameTeamSteal)}}}, IsTryingToScore: {{{IsTryingToScore}}}""");
   		if (!IsLocked && (IsOpponent || (Settings::GetBoolean(SettingNames::S_FlagSameTeamSteal) && !IsTryingToScore))) {
   			Private_FlagCarrier_PassFlag(FlagReceiver);
   		}

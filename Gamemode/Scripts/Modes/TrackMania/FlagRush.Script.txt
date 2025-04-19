@@ -16,9 +16,9 @@
 #Const	Version							"1.7.0"
 #Const	ScriptName					"Modes/TrackMania/FlagRush.Script.txt"
 
-///////////////
-// Libraries //
-///////////////
+// ===============
+// MARK: Libraries
+// ===============
 
 // General Libs
 #Include "TextLib" as TL
@@ -66,9 +66,9 @@
 #Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt"									as UIModule_FlagMarker
 #Include "Libs/FlagRush/UI/Modules/FlagPossessionIndicator.Script.txt"		as UIModule_FlagPossessionIndicator
 
-///////////////
-// Constants //
-///////////////
+// ===============
+// MARK: Constants
+// ===============
 
 #Const C_TimeLimitWarning_Seconds [60, 30]
 
@@ -77,9 +77,9 @@
 #Const Vehicles::C_Vehicle_Rally as C_Vehicle_Rally
 #Const Vehicles::C_Vehicle_Desert as C_Vehicle_Desert
 
-//////////////
-// Settings //
-//////////////
+// ==============
+// MARK: Settings
+// ==============
 
 // KEEP SETTINGS IN SYNC WITH "Const/SettingNames.Script.txt" AND UPDATE IN ***TrackModeSettings***
 
@@ -169,21 +169,16 @@
 // #Command Command_BalanceTeams				(Boolean) as		"Balance Teams"
 // #Command Command_SetBots							(Integer) as 		"<hidden>"
 
-//////////////////////
-// Global Variables //
-//////////////////////
+// ======================
+// MARK: Global Variables
+// ======================
 
-declare Integer Private_Progression_RoundTimeRemaining;
-
+declare Integer Private_RoundTimeRemaining; // Keep track of remaining time when round is paused
 declare Boolean[Integer] Private_TimeLimitWarningsEnabled;
 
-declare Boolean Private_WarmUpIsRunning;
-declare Boolean Private_PauseIsRunning;
-declare Boolean Private_OvertimeIsRunning;
-
-///////////
-// Plugs //
-///////////
+// ===========
+// MARK: Plugs
+// ===========
 
 // ~~~~~~~~~~ Setup ~~~~~~~~~~ //
 
@@ -202,8 +197,8 @@ CheckpointBehaviour = CSmMode::ECheckpointBehaviour::Custom;
 UseMultiClans = False;
 UseClans = True;
 UseForcedClans = False;
-UsePvPCollisions = False; // Should be set by FlagRush.Script.txt depending on S_UseCollisions
-UsePvECollisions = True; // Force player visibility and dynamic item sync
+UsePvPCollisions = S_UseCollisions;
+UsePvECollisions = True; // Force player visibility and dynamic/moving items sync
 UseGuns = False;
 UsePvPWeapons = False;
 UseInterractiveScreensIn3d = False;
@@ -219,7 +214,6 @@ ReadonlyLaunchedCheckpoints = False;
 UseProtectClanmates = False;
 UseAllies = False;
 CrudeExtrapolation_AllowDelay = False;
-UsePvPCollisions = S_UseCollisions;
 ***
 
 ***TrackModeSettings***
@@ -360,13 +354,10 @@ Vehicles::LoadItems();
 // ~~~~~~~~~~ Server ~~~~~~~~~~ //
 ***StartServer***
 ***
-Private_WarmUpIsRunning = False;
 declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
 FlagRush_Net_WarmUpIsRunning = False;
-Private_PauseIsRunning = False;
 declare netwrite Boolean FlagRush_Net_PauseIsRunning for Teams[0];
 FlagRush_Net_PauseIsRunning = False;
-Private_OvertimeIsRunning = False;
 declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
 FlagRush_Net_OvertimeIsRunning = False;
 
@@ -427,7 +418,7 @@ if (S_UseWarmUp && !MatchEndRequested) +++Private_WarmUp+++
 
 ***AfterEndMap***
 ***
-declare Boolean MapIsValid = Progression_MapIsValid();
+declare Boolean MapIsValid = Progression::MapIsValid();
 FlagRush_XmlRpc::Send_MapEnd(MapIsValid);
 if (!MapIsValid) {
 	Messages::MapSkip(Durations::C_Duration_MapEnd);
@@ -449,7 +440,7 @@ Scores::EndMap();
 MB_Sleep(Durations::C_Duration_MapEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
-if (Progression_MatchPointLimitReached()) {
+if (Private_MatchPointLimitReached()) {
 	MB_StopMatch();
 } else {
 	MB_SkipPodiumSequence(); // Podium == Match end MVP
@@ -473,31 +464,27 @@ Progression::StartRound();
 Messages::RoundStart(MB_GetRoundCount(), Durations::C_Duration_RoundStart);
 MB_Sleep(Durations::C_Duration_RoundStart);
 StartTime = Now;
-Private_Progression_RoundTimeRemaining = S_RoundTimeLimitSeconds * 1000;
+Private_RoundTimeRemaining = S_RoundTimeLimitSeconds * 1000;
 
 // Enable time limit warnings
-Private_TimeLimitWarningsEnabled = [];
-foreach (WarningSeonds in C_TimeLimitWarning_Seconds) {
-	Private_TimeLimitWarningsEnabled[WarningSeonds] = S_RoundTimeLimitSeconds > WarningSeonds;
+Private_TimeLimitWarningsEnabled.clear();
+foreach (WarningSeconds in C_TimeLimitWarning_Seconds) {
+	Private_TimeLimitWarningsEnabled[WarningSeconds] = S_RoundTimeLimitSeconds > WarningSeconds;
 }
 ***
 
 ***EndRound***
 ***
-Private_OvertimeIsRunning = False;
 declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
-FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
+FlagRush_Net_OvertimeIsRunning = False;
 Progression::EndRound();
 ***
 
 ***AfterEndRound***
 ***
-declare Boolean RoundIsValid = Progression_RoundIsValid();
+declare Boolean RoundIsValid = Progression::RoundIsValid();
 FlagRush_XmlRpc::Send_RoundEnd(RoundIsValid);
-if (!RoundIsValid) {
-	Messages::RoundSkip(Durations::C_Duration_RoundEnd);
-	Scores::Clear(Scores::C_Level_Round);
-} else {
+if (RoundIsValid) {
 	declare Integer WinnerClan = Scores::EvaluateRound();
 	if (WinnerClan == 0) {
 		Messages::RoundDraw(Durations::C_Duration_RoundEnd);
@@ -505,6 +492,9 @@ if (!RoundIsValid) {
 		Messages::RoundWin(WinnerClan, Durations::C_Duration_RoundEnd);
 		Scores::OnClanRoundWin(WinnerClan);
 	}
+} else {
+	Messages::RoundSkip(Durations::C_Duration_RoundEnd);
+	Scores::Clear(Scores::C_Level_Round);
 }
 
 // Sleep during message and show scoreboard update half way through
@@ -514,7 +504,7 @@ Scores::EndRound();
 MB_Sleep(Durations::C_Duration_RoundEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
-if (Progression_MapPointLimitReached()) {
+if (Private_MapPointLimitReached()) {
 	MB_StopMap();
 }
 ***
@@ -532,7 +522,7 @@ if (Progression::RoundPauseRequested()) {
 
 // Set end time
 if (S_RoundTimeLimitSeconds > 0) {
-	ModeUtils::SetEndTime(Now + Private_Progression_RoundTimeRemaining + Durations::C_SpawnAnimDuration);
+	ModeUtils::SetEndTime(Now + Private_RoundTimeRemaining + Durations::C_SpawnAnimDuration);
 }
 
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
@@ -540,7 +530,7 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 ***EndTurn***
 ***
-Private_Progression_RoundTimeRemaining = EndTime - Now;
+Private_RoundTimeRemaining = EndTime - Now;
 ModeUtils::SetEndTime(-1);
 Progression::EndTurn();
 ***
@@ -572,19 +562,18 @@ if (Progression::RoundEndRequested()) {
 }
 
 // Round end & overtime conditions
-if(Progression_OvertimeIsRunning()) {
-	if (!Progression_RoundIsTied()) {
+if(Progression::OvertimeIsRunning()) {
+	if (!Private_RoundIsTied()) {
 		MB_StopRound();
 	}
-} else if (Progression_FlagLimitReached()) {
+} else if (Private_RoundPointLimitReached()) {
 	MB_StopRound();
-} else if (Progression_TimeLimitReached()) {
-	if (Progression_RoundIsTied() && S_UseOvertime) {
+} else if (Private_RoundTimeLimitReached()) {
+	if (Private_RoundIsTied() && S_UseOvertime) {
 		Progression::StartOvertime();
 		FlagRush_XmlRpc::Send_Overtime();
-		Private_OvertimeIsRunning = True;
 		declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
-		FlagRush_Net_OvertimeIsRunning = Private_OvertimeIsRunning;
+		FlagRush_Net_OvertimeIsRunning = True;
 		Messages::OvertimeStart(Durations::C_Duration_Overtime);
 	} else {
 		Messages::TimeLimitEnd(Durations::C_Duration_EventMessage);
@@ -593,12 +582,12 @@ if(Progression_OvertimeIsRunning()) {
 }
 
 // Time warnings
-foreach (WarningSeonds => Enabled in Private_TimeLimitWarningsEnabled) {
-	if (!Enabled || (EndTime - Now) / 1000 > WarningSeonds) {
+foreach (WarningSeconds => Enabled in Private_TimeLimitWarningsEnabled) {
+	if (!Enabled || (EndTime - Now) / 1000 > WarningSeconds) {
 		continue;
 	}
-	Private_TimeLimitWarningsEnabled[WarningSeonds] = False;
-	Messages::TimeLimitSecondsRemaining(WarningSeonds, Durations::C_Duration_EventMessage);
+	Private_TimeLimitWarningsEnabled[WarningSeconds] = False;
+	Messages::TimeLimitSecondsRemaining(WarningSeconds, Durations::C_Duration_EventMessage);
 }
 
 // Pause handling (Request reaction, actual pause on StartTurn)
@@ -661,9 +650,8 @@ if (HasPodium) {
 ***
 Progression::StartWarmUp();
 FlagRush_XmlRpc::Send_WarmUpStart();
-Private_WarmUpIsRunning = True;
 declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
-FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
+FlagRush_Net_WarmUpIsRunning = True;
 Messages::WarmUpStart(Durations::C_Duration_WarmUpStart);
 UIModule_MapMarkers::ShowFlagSpawnMarkers();
 WarmUpReadyUp::Start(S_WarmUpWaitForApproval);
@@ -694,8 +682,7 @@ ModeUtils::SetEndTime(-1);
 Messages::WarmUpEnd(Durations::C_Duration_WarmUpEnd);
 UIManager.UIAll.UISequence = PreviousSequence;
 MB_Sleep(Durations::C_Duration_WarmUpEnd);
-Private_WarmUpIsRunning = False;
-FlagRush_Net_WarmUpIsRunning = Private_WarmUpIsRunning;
+FlagRush_Net_WarmUpIsRunning = False;
 UIModule_MapMarkers::HideFlagSpawnMarkers();
 FlagRush_XmlRpc::Send_WarmUpEnd();
 Progression::EndWarmUp();
@@ -715,9 +702,8 @@ foreach (Player in Players) {
 
 ***Private_Pause***
 ***
-Private_PauseIsRunning = True;
 declare netwrite Boolean FlagRush_Net_PauseIsRunning for Teams[0] = False;
-FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
+FlagRush_Net_PauseIsRunning = True;
 ModeUtils::SetEndTime(-1);
 Messages::PauseStart(Durations::C_Duration_PauseStart);
 MB_Sleep(Durations::C_Duration_PauseStart);
@@ -726,8 +712,7 @@ MB_Sleep(Durations::C_Duration_PauseStart);
 
 Messages::PauseEnd(Durations::C_Duration_PauseEnd);
 MB_Sleep(Durations::C_Duration_PauseEnd);
-Private_PauseIsRunning = False;
-FlagRush_Net_PauseIsRunning = Private_PauseIsRunning;
+FlagRush_Net_PauseIsRunning = False;
 ***
 
 // ~~~~~~~~~~ Yield ~~~~~~~~~~ //
@@ -1020,50 +1005,30 @@ foreach (Command in Commands::GetPendingEvents()) {
 }
 ***
 
-///////////////
-// Functions //
-///////////////
+// ===============
+// MARK: Functions
+// ===============
 
-Boolean Progression_WarmUpIsRunning() {
-	return Private_WarmUpIsRunning;
-}
-
-Boolean Progression_PauseIsRunning() {
-	return Private_PauseIsRunning;
-}
-
-Boolean Progression_OvertimeIsRunning() {
-	return Private_OvertimeIsRunning;
-}
-
-Boolean Progression_MatchPointLimitReached() {
+Boolean Private_MatchPointLimitReached() {
 	return ML::Max(Scores::GetClanMatchPoints(1), Scores::GetClanMatchPoints(2)) >= S_NbMapsToWinMatch;
 }
 
-Boolean Progression_MapPointLimitReached() {
+Boolean Private_MapPointLimitReached() {
 	return ML::Max(Scores::GetClanMapPoints(1), Scores::GetClanMapPoints(2)) >= S_NbRoundsToWinMap;
 }
 
-Boolean Progression_FlagLimitReached() {
+Boolean Private_RoundPointLimitReached() {
 	if (S_NbFlagsToWinRound <= 0) return False;
 	declare Integer RoundPointsTeam1 = Scores::GetClanRoundPoints(1);
 	declare Integer RoundPointsTeam2 = Scores::GetClanRoundPoints(2);
 	return ML::Max(RoundPointsTeam1, RoundPointsTeam2) >= S_NbFlagsToWinRound;
 }
 
-Boolean Progression_TimeLimitReached() {
+Boolean Private_RoundTimeLimitReached() {
 	if (S_RoundTimeLimitSeconds <= 0) return False;
 	return Now > EndTime;
 }
 
-Boolean Progression_RoundIsTied() {
+Boolean Private_RoundIsTied() {
 	return Scores::EvaluateRound() == 0;
-}
-
-Boolean Progression_MapIsValid() {
-	return !MatchEndRequested;
-}
-
-Boolean Progression_RoundIsValid() {
-	return Progression_MapIsValid() && !Progression::RoundEndRequested();
 }

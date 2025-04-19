@@ -60,6 +60,8 @@ K_Event[] GetPendingEvents() {
   return G_PendingEvents;
 }
 
+// Segment running states
+
 Boolean MatchIsRunning() {
   return G_MatchIsRunning;
 }
@@ -96,12 +98,15 @@ Boolean SegmentIsRunning(Integer _Segment) {
   return False;
 }
 
-Boolean RoundPauseRequested() {
-  return G_RoundPauseRequested;
+// Segment end requests
+
+Boolean MapEndRequsted() {
+  // Contradictory to its name, MatchEndRequested is generally used to skip a map, not the whole match.
+  return MatchEndRequested;
 }
 
-Void RequestRoundPause() {
-  G_RoundPauseRequested = True;
+Void RequestMapEnd() {
+  MatchEndRequested = True;
 }
 
 Boolean RoundEndRequested() {
@@ -110,6 +115,24 @@ Boolean RoundEndRequested() {
 
 Void RequestRoundEnd() {
   G_RoundEndRequested = True;
+}
+
+Boolean RoundPauseRequested() {
+  return G_RoundPauseRequested;
+}
+
+Void RequestRoundPause() {
+  G_RoundPauseRequested = True;
+}
+
+// Segment validities
+
+Boolean MapIsValid() {
+  return !MapEndRequsted();
+}
+
+Boolean RoundIsValid() {
+  return MapIsValid() && !RoundEndRequested();
 }
 
 // MARK: Lifecycle

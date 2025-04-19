@@ -57,7 +57,7 @@
 #Include "Libs/FlagRush/Util/Command.Script.txt"													as Command
 
 #Include "Libs/FlagRush/UI/UIConfig.Script.txt"														as UIConfig
-#Include "Libs/FlagRush/UI/FlagRush_UI.Script.txt"												as FlagRush_UI
+#Include "Libs/FlagRush/UI/UILayers.Script.txt"														as UILayers
 #Include "Libs/FlagRush/UI/Messages.Script.txt"														as Messages
 #Include "Libs/FlagRush/UI/Modules/MapMarkers.Script.txt"									as UIModule_MapMarkers
 #Include "Libs/FlagRush/UI/Modules/PodiumStatistics.Script.txt"						as UIModule_PodiumStatistics
@@ -295,6 +295,7 @@ EnabledVehicles::Load();
 
 // UI
 Messages::Load();
+UILayers::Load();
 
 // Misc
 FlagRush_XmlRpc::Load();
@@ -322,6 +323,7 @@ EnabledVehicles::Unload();
 
 // UI
 Messages::Unload();
+UILayers::Unload();
 
 // Misc
 FlagRush_XmlRpc::Unload();
@@ -331,7 +333,7 @@ Log::Unload();
 ***LoadHud***
 ***
 UIConfig::LoadHud();
-FlagRush_UI::Load();
+UILayers::LoadHud();
 UIModule_FlagMarker::Load();
 UIModule_MapMarkers::Load();
 UIModule_PodiumStatistics::Load();
@@ -630,7 +632,7 @@ if (HasPodium) {
 		PodiumPlayerLogins.add(Scores[I].User.Login);
 	}
 	UIModule_MapMarkers::Hide();
-	FlagRush_UI::AttachPodiumBackground(PodiumPlayerScores);
+	UILayers::AttachPodiumBackground(PodiumPlayerScores);
 	UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
 	MB_Sleep(ML::NearestInteger(Durations::C_Duration_Podium * 0.33));
@@ -639,7 +641,7 @@ if (HasPodium) {
 	MB_Sleep(ML::NearestInteger(Durations::C_Duration_Podium * 0.67));
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 	UIModule_PodiumStatistics::Detach();
-	FlagRush_UI::DetachPodiumBackground();
+	UILayers::DetachPodiumBackground();
 	UIModule_MapMarkers::Show();
 }
 ***
@@ -737,7 +739,7 @@ Flag::Yield();
 HandicapQueue::Yield();
 Scores::Yield();
 
-FlagRush_UI::Yield();
+UILayers::Yield();
 Messages::Yield();
 UIModule_ModeCommands::Yield();
 
@@ -856,7 +858,7 @@ foreach(Event in Settings::GetPendingEvents()) {
 }
 
 if (SendProgressionSettingsToClient) {
-	FlagRush_UI::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
+	UILayers::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
 }
 
 if (ReinitTeamsConfig) {

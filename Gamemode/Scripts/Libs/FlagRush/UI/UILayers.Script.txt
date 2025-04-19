@@ -4,6 +4,8 @@
 
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
+#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" as PlayerLifecycleEvents
+
 // Modules
 #Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"					as UIModule_EventFeed
 #Include "Libs/FlagRush/UI/Modules/Menu.Script.txt"								as UIModule_Menu
@@ -22,15 +24,12 @@
 #Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
 #Const C_LayerName_ScoresHeader				"Layer_FlagRush_ScoresHeader"
 #Const C_LayerName_Menu								"Layer_FlagRush_Menu"
-#Const C_LayerName_Feed								"Layer_FlagRush_Feed"
 #Const C_LayerName_Flash							"Layer_FlagRush_Flash"
 #Const C_LayerName_Sound							"Layer_FlagRush_Sound"
 #Const C_LayerName_Spectator					"Layer_FlagRush_Spectator"
 #Const C_LayerName_Respawn						"Layer_FlagRush_Respawn"
 #Const C_LayerName_Radar							"Layer_FlagRush_Radar"
 #Const C_LayerName_Podium							"Layer_UIModule_PodiumBackground"
-
-declare Integer G_PreviousPlayersCount;
 
 Void Private_LoadModules() {
 	declare UIModule_Radar::K_Config Config = UIModule_Radar::K_Config {
@@ -42,8 +41,23 @@ Void Private_LoadModules() {
 		DetailOpacity = 0.1
 	};
 	UIModule_Radar::SetConfig(Config);
-
 	UIModule_EventFeed::ClearMessages();
+
+	UIModule_EventFeed::Load();
+	// UIModule_Menu::Load();
+	// UIModule_PodiumBackground::Load();
+	// UIModule_Radar::Load();
+	// UIModule_RespawnFlash::Load();
+	// UIModule_RespawnTimer::Load();
+	// UIModule_ScoresHeader::Load();
+	// UIModule_ScoresTable::Load();
+	// UIModule_Sounds::Load();
+	// UIModule_SpectatorControls::Load();
+
+}
+
+Void Private_UnloadModules() {
+	UIModule_EventFeed::Unload();
 }
 
 Void Private_AttachModules() {
@@ -68,9 +82,9 @@ Void Private_AttachModules() {
 	Layers::Attach(C_LayerName_Menu);
 
 	// Event Feed
-	Layers::Create(C_LayerName_Feed, UIModule_EventFeed::GetManialink(10));
-	Layers::SetType(C_LayerName_Feed, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName_Feed);
+	Layers::Create(UIModule_EventFeed::C_LayerName, UIModule_EventFeed::GetManialink());
+	Layers::SetType(UIModule_EventFeed::C_LayerName, CUILayer::EUILayerType::Normal);
+	Layers::Attach(UIModule_EventFeed::C_LayerName);
 
 	// Respawn Bar
 	Layers::Create(C_LayerName_Respawn, UIModule_RespawnTimer::GetManialink());
@@ -113,7 +127,7 @@ Void Private_DetachModules() {
 	Layers::Detach(C_LayerName_ScoresTable);
 	Layers::Detach(C_LayerName_Sound);
 	Layers::Detach(C_LayerName_Menu);
-	Layers::Detach(C_LayerName_Feed);
+	Layers::Detach(UIModule_EventFeed::C_LayerName);
 }
 
 /**
@@ -133,21 +147,41 @@ Void Net_SendModeScriptProgressionSettings(Integer NbMapsToWinMatch, Integer NbR
 /* Lifecycle */
 
 Void Yield() {
-	if (G_PreviousPlayersCount != Players.count) {
-		G_PreviousPlayersCount = Players.count;
+
+	declare Boolean UpdateRadar = False;
+	foreach (Event in PlayerLifecycleEvents::GetPendingEvents()) {
+		switch (Event.Type) {
+			case PlayerLifecycleEvents::C_EventType_PlayerAdded: {
+				if (Players.existskey(Event.Player.PlayerId)) {
+					UpdateRadar = True;
+				}
+			}
+			case PlayerLifecycleEvents::C_EventType_PlayerRemoved: {
+				if (!Event.Player.Previously.WasSpectator) {
+					UpdateRadar = True;
+				}
+			}
+			case PlayerLifecycleEvents::C_EventType_PlayerToSpectator, PlayerLifecycleEvents::C_EventType_SpectatorToPlayer: {
+				UpdateRadar = True;
+			}
+		}
+	}
+
+	if (UpdateRadar) {
 		Layers::Update(C_LayerName_Radar, UIModule_Radar::GetManialink());
 	}
 }
 
 Void Unload() {
 	Private_DetachModules();
+	Private_UnloadModules();
 }
 
 Void Load() {
 	Unload();
-
-	G_PreviousPlayersCount = Players.count;
-
 	Private_LoadModules();
+}
+
+Void LoadHud() {
 	Private_AttachModules();
 }

@@ -5,7 +5,7 @@
 #Const C_LayerName "FlagRush_FlagMarker"
 #Const C_LayerType CUILayer::EUILayerType::Markers
 
-#Const C_FrameId "FlagRush_Marker_Flag"
+#Const C_FrameId "FlagRush_FlagMarker"
 #Const C_FrameId_ShadowVisibilityMarker "FlagRush_Marker_FlagShadowVisibility"
 
 #Const Vehicles::C_Vehicle_Snow as C_Vehicle_Snow
@@ -367,18 +367,6 @@ Void Show() {
 	}
 }
 
-// MARK: Lifecycle
-
-Void Unload() {
-	Private_Remove();
-	G_MarkerId = NullId;
-	G_ShadowVisibilityMarkerId = NullId;
-}
-
-Void Load() {
-	Unload();
-}
-
 Void Update() {
 	if (Flag::IsPlayerConnected()) {
 		Private_SetAtPlayer(Flag::GetPlayer());
@@ -389,4 +377,16 @@ Void Update() {
 	} else {
 		Private_Remove();
 	}
+}
+
+// MARK: Lifecycle
+
+Void Unload() {
+	Private_Remove();
+	G_MarkerId = NullId;
+	G_ShadowVisibilityMarkerId = NullId;
+}
+
+Void Load() {
+	Unload();
 }

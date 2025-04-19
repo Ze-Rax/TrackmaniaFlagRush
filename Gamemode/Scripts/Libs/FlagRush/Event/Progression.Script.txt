@@ -9,8 +9,8 @@
  * #RequireContext CSmMode
  */
 
-#Const C_Type_SegmentStart 1
-#Const C_Type_SegmentEnd 2
+#Const C_EventType_SegmentStart 1
+#Const C_EventType_SegmentEnd 2
 
 #Const C_Segment_Match 1
 #Const C_Segment_Map 2
@@ -18,6 +18,7 @@
 #Const C_Segment_Turn 4
 #Const C_Segment_Overtime 5
 #Const C_Segment_WarmUp 6
+#Const C_Segment_Podium 7
 
 #Const C_EventTypeNames [
 	1 => "SegmentStart",
@@ -44,6 +45,7 @@ declare Boolean G_RoundIsRunning;
 declare Boolean G_TurnIsRunning;
 declare Boolean G_OvertimeIsRunning;
 declare Boolean G_WarmUpIsRunning;
+declare Boolean G_PodiumIsRunning;
 
 declare Boolean G_RoundPauseRequested;
 declare Boolean G_RoundEndRequested;
@@ -140,7 +142,7 @@ Boolean RoundIsValid() {
 Void StartMatch() {
   G_MatchIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
-    Type = C_Type_SegmentStart,
+    Type = C_EventType_SegmentStart,
     Segment = C_Segment_Match
   });
 }
@@ -148,7 +150,7 @@ Void StartMatch() {
 Void EndMatch() {
   G_MatchIsRunning = False;
   G_EventsAggregationBuffer.add(K_Event{
-    Type = C_Type_SegmentEnd,
+    Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Match
   });
 }
@@ -156,7 +158,7 @@ Void EndMatch() {
 Void StartMap() {
   G_MapIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
-    Type = C_Type_SegmentStart,
+    Type = C_EventType_SegmentStart,
     Segment = C_Segment_Map
   });
 }
@@ -164,7 +166,7 @@ Void StartMap() {
 Void EndMap() {
   G_MapIsRunning = False;
   G_EventsAggregationBuffer.add(K_Event{
-    Type = C_Type_SegmentEnd,
+    Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Map
   });
 }
@@ -173,7 +175,7 @@ Void StartRound() {
   G_RoundEndRequested = False;
   G_RoundIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
-    Type = C_Type_SegmentStart,
+    Type = C_EventType_SegmentStart,
     Segment = C_Segment_Round
   });
 }
@@ -182,14 +184,14 @@ Void EndRound() {
   if (G_OvertimeIsRunning) {
     G_OvertimeIsRunning = False;
     G_EventsAggregationBuffer.add(K_Event{
-      Type = C_Type_SegmentEnd,
+      Type = C_EventType_SegmentEnd,
       Segment = C_Segment_Overtime
     });
   }
 
   G_RoundIsRunning = False;
   G_EventsAggregationBuffer.add(K_Event{
-    Type = C_Type_SegmentEnd,
+    Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Round
   });
 }
@@ -197,7 +199,7 @@ Void EndRound() {
 Void StartTurn() {
   G_TurnIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
-    Type = C_Type_SegmentStart,
+    Type = C_EventType_SegmentStart,
     Segment = C_Segment_Turn
   });
 }
@@ -205,7 +207,7 @@ Void StartTurn() {
 Void EndTurn() {
   G_TurnIsRunning = False;
   G_EventsAggregationBuffer.add(K_Event{
-    Type = C_Type_SegmentEnd,
+    Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Turn
   });
 }
@@ -213,7 +215,7 @@ Void EndTurn() {
 Void StartOvertime() {
   G_OvertimeIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
-    Type = C_Type_SegmentStart,
+    Type = C_EventType_SegmentStart,
     Segment = C_Segment_Overtime
   });
 }
@@ -221,7 +223,7 @@ Void StartOvertime() {
 Void StartWarmUp() {
   G_WarmUpIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
-    Type = C_Type_SegmentStart,
+    Type = C_EventType_SegmentStart,
     Segment = C_Segment_WarmUp
   });
 }
@@ -230,8 +232,24 @@ Void EndWarmUp() {
   G_WarmUpIsRunning = False;
   G_RoundPauseRequested = False;
   G_EventsAggregationBuffer.add(K_Event{
-    Type = C_Type_SegmentEnd,
+    Type = C_EventType_SegmentEnd,
     Segment = C_Segment_WarmUp
+  });
+}
+
+Void StartPodium() {
+  G_PodiumIsRunning = True;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_SegmentStart,
+    Segment = C_Segment_Podium
+  });
+}
+
+Void EndPodium() {
+  G_PodiumIsRunning = False;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_Podium
   });
 }
 

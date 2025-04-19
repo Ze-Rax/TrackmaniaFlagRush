@@ -1,5 +1,3 @@
-#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
-
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
@@ -84,13 +82,10 @@ main() {
 
 // Lifecycle
 
-Void Unload() {
-	Layers::Destroy(C_LayerName);
+Void Unload() { // @mslint-disable-line no-empty -- Kept for consistency
+
 }
 
 Void Load() {
 	Unload();
-	Layers::Create(C_LayerName, GetManialink());
-	Layers::SetType(C_LayerName, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName);
 }

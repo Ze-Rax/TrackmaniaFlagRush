@@ -5,7 +5,8 @@
 #Include "Libs/FlagRush/Core/Map.Script.txt" as FlagRushMap
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
-#Const C_LayerName "FlagRushMapMarkers"
+#Const C_LayerName "FlagRush_MapMarkers"
+#Const C_LayerType CUILayer::EUILayerType::Markers
 
 #Const C_BaseMarkerFrameIdPrefix			"marker-base-team"
 #Const C_FlagSpawnMarkerFrameIdPrefix	"marker-flag-spawn-"
@@ -145,6 +146,8 @@ Text GetManialink() {
 	""";
 }
 
+// MARK: Helper functions
+
 CUIConfigMarker Private_GetMarker(Ident _Id) {
 	return UIManager.UIAll.Markers.get(_Id, Null);
 }
@@ -165,6 +168,8 @@ Void Private_RemoveAllMarkers() {
 		Private_RemoveMarker(Id);
 	}
 }
+
+// MARK: API
 
 Void SetFlagSpawnMarkerVisibility(Boolean _Visible) {
 	foreach (FlagSpawnMarkerId in G_FlagSpawnMarkerIds) {
@@ -229,14 +234,12 @@ Void Update() {
 	}
 }
 
+// MARK: Lifecycle
+
 Void Unload() {
 	Private_RemoveAllMarkers();
-	Layers::Destroy(C_LayerName);
 }
 
 Void Load() {
 	Unload();
-	Layers::Create(C_LayerName, GetManialink());
-	Layers::SetType(C_LayerName, CUILayer::EUILayerType::Markers);
-	Layers::Attach(C_LayerName);
 }

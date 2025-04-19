@@ -79,16 +79,15 @@ K_Command FromNameAndParams(Text _Name, Text[] _Params, K_Source _Source) {
  * Transforms a Text into a Command
  */
 K_Command FromText(Text _CommandText, K_Source _Source) {
-	declare K_Command Command;
 	declare Text[] CommandSplit = TL::Split(" ", _CommandText);
 	if(CommandSplit.count >= 1) {
-		Command = FromNameAndParams(CommandSplit[0], CommandSplit.slice(1, CommandSplit.count - 1), _Source);
+		return FromNameAndParams(CommandSplit[0], CommandSplit.slice(1, CommandSplit.count - 1), _Source);
 	}
-	return Command;
+	return K_Command{};
 }
 
 /**
- * Transforms a CSmModeEvent into a Command struct. Command_ prefix is removed if present.
+ * Transforms a CSmModeEvent into a Command struct.
  */
 K_Command FromEvent(CSmModeEvent _Event) {
 	return K_Command {
@@ -106,7 +105,7 @@ K_Command FromEvent(CSmModeEvent _Event) {
 }
 
 /**
- * Transforms a CUIConfigEvent into a Command struct. Command_ prefix is removed if present.
+ * Transforms a CUIConfigEvent into a Command struct.
  */
 K_Command FromEvent(CUIConfigEvent _Event) {
 	declare K_Source Source;

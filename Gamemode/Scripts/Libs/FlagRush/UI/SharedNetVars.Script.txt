@@ -42,3 +42,42 @@ Text DefineLayerFunction_GetNbFlagsToWinRound() {
   return Net_FlagRush_NbFlagsToWinRound;
 }""";
 }
+
+Void SetWarmUpIsRunning(Boolean _IsRunning) {
+  declare netwrite Boolean Net_FlagRush_WarmUpIsRunning for Teams[0] = False;
+  Net_FlagRush_WarmUpIsRunning = _IsRunning;
+}
+
+Text DefineLayerFunction_WarmUpIsRunning() {
+  return
+"""Boolean WarmUpIsRunning(){
+  declare netwrite Boolean Net_FlagRush_WarmUpIsRunning for Teams[0] = False;
+  return Net_FlagRush_WarmUpIsRunning;
+}""";
+}
+
+Void SetPauseIsRunning(Boolean _IsRunning) {
+  declare netwrite Boolean Net_FlagRush_PauseIsRunning for Teams[0] = False;
+  Net_FlagRush_PauseIsRunning = _IsRunning;
+}
+
+Text DefineLayerFunction_PauseIsRunning() {
+  return
+"""Boolean PauseIsRunning(){
+  declare netwrite Boolean Net_FlagRush_PauseIsRunning for Teams[0] = False;
+  return Net_FlagRush_PauseIsRunning;
+}""";
+}
+
+Void SetOvertimeIsRunning(Boolean _IsRunning) {
+  declare netwrite Boolean Net_FlagRush_OvertimeIsRunning for Teams[0] = False;
+  Net_FlagRush_OvertimeIsRunning = _IsRunning;
+}
+
+Text DefineLayerFunction_OvertimeIsRunning() {
+  return
+"""Boolean OvertimeIsRunning(){
+  declare netwrite Boolean Net_FlagRush_OvertimeIsRunning for Teams[0] = False;
+  return Net_FlagRush_OvertimeIsRunning;
+}""";
+}

@@ -8,6 +8,7 @@
 
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include "Libs/FlagRush/UI/SharedNetVars.Script.txt" as SharedNetVars
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 
 // /!\ On changes, also change the necessary values in K_RadarUserConfig in Manialink script /!\
@@ -161,6 +162,8 @@ Text GetManialink() {
 			}
 
 			{{{ Flag::DumpNetFlagStructs() }}}
+
+			{{{ SharedNetVars::DefineLayerFunction_WarmUpIsRunning() }}}
 
 			/* References */
 			declare CMlFrame CustomizationSettingsDialogFrame;
@@ -430,8 +433,7 @@ Text GetManialink() {
 			 */
 			Void UpdateFlagMarker() {
 				// Hide in warmup
-				declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
-				if (FlagRush_Net_WarmUpIsRunning) {
+				if (WarmUpIsRunning()) {
 					FlagMarker.Frame.Hide();
 					return;
 				}

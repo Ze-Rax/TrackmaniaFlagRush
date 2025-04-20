@@ -268,9 +268,19 @@ Void Yield() {
 	foreach (Event in Progression::GetPendingEvents()) {
 		if (Event.Type == Progression::C_EventType_SegmentStart && Event.Segment == Progression::C_Segment_Map) {
 			UIModule_MapMarkers::Update();
+		} else if (Event.Type == Progression::C_EventType_SegmentEnd && Event.Segment == Progression::C_Segment_Round) {
+			SharedNetVars::SetOvertimeIsRunning(False);
+		} else if (Event.Type == Progression::C_EventType_SegmentStart && Event.Segment == Progression::C_Segment_Overtime) {
+			SharedNetVars::SetOvertimeIsRunning(True);
+		} else if (Event.Type == Progression::C_EventType_SegmentStart && Event.Segment == Progression::C_Segment_Pause) {
+			SharedNetVars::SetPauseIsRunning(True);
+		} else if (Event.Type == Progression::C_EventType_SegmentEnd && Event.Segment == Progression::C_Segment_Pause) {
+			SharedNetVars::SetPauseIsRunning(False);
 		} else if (Event.Type == Progression::C_EventType_SegmentStart && Event.Segment == Progression::C_Segment_WarmUp) {
+			SharedNetVars::SetWarmUpIsRunning(True);
 			UIModule_MapMarkers::ShowFlagSpawnMarkers();
 		} else if (Event.Type == Progression::C_EventType_SegmentEnd && Event.Segment == Progression::C_Segment_WarmUp) {
+			SharedNetVars::SetWarmUpIsRunning(False);
 			UIModule_MapMarkers::HideFlagSpawnMarkers();
 		} else if (Event.Type == Progression::C_EventType_SegmentStart && Event.Segment == Progression::C_Segment_Podium) {
 			UIModule_MapMarkers::Hide();

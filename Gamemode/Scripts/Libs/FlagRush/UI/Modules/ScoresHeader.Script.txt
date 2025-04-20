@@ -9,6 +9,7 @@
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include "Libs/FlagRush/UI/SharedNetVars.Script.txt" as SharedNetVars
 
 #Const C_LayerName "FlagRush_ScoresHeader"
 #Const C_LayerType CUILayer::EUILayerType::Normal
@@ -94,6 +95,9 @@ Text GetManialink() {
 
 	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 
+	{{{ SharedNetVars::DefineLayerFunction_WarmUpIsRunning() }}}
+	{{{ SharedNetVars::DefineLayerFunction_OvertimeIsRunning() }}}
+
 	/**
 	 * Assigns all needed MlControl references.
 	 */
@@ -161,8 +165,8 @@ Text GetManialink() {
 	 */
 	Void UpdateTimer() {
 		declare netread Integer Net_EndTime for Teams[0];
-		declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
-		declare netread Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
+		declare Boolean WarmUpIsRunning = WarmUpIsRunning();
+		declare Boolean OvertimeIsRunning = OvertimeIsRunning();
 
 		declare Integer RoundTimeLeft = Net_EndTime - GameTime;
 		declare Boolean IsTimeLeft = RoundTimeLeft > 0;
@@ -173,17 +177,17 @@ Text GetManialink() {
 			Timer.TimerLabel.Show();
 			Timer.TimerLabel.Value = TL::TimeToText(
 				ML::Max(RoundTimeLeft, 0),
-				RoundTimeLeft < 10000 && !FlagRush_Net_WarmUpIsRunning
+				RoundTimeLeft < 10000 && !WarmUpIsRunning
 			);
 
-			if (FlagRush_Net_WarmUpIsRunning) {
+			if (WarmUpIsRunning) {
 				Timer.TimerLabel.TextColor = {{{ Stylesheet::C_Warning }}};
 			} else if (IsTimeLeft && RoundTimeLeft / 1000 < 30) {
 				Timer.TimerLabel.TextColor = {{{ Stylesheet::C_Error }}};
 			} else {
 				Timer.TimerLabel.TextColor = {{{ Stylesheet::C_NeutralLight }}};
 			}
-		} else if (FlagRush_Net_OvertimeIsRunning && !FlagRush_Net_WarmUpIsRunning && Net_EndTime >= 0) {
+		} else if (OvertimeIsRunning && !WarmUpIsRunning && Net_EndTime >= 0) {
 			Timer.Icon.Hide();
 			Timer.TimerLabel.Show();
 			Timer.TimerLabel.TextSizeReal = 1.5;
@@ -219,8 +223,7 @@ Text GetManialink() {
 	 * Updates the flag carrier display.
 	 */
 	Void UpdateCarrier() {
-		declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
-		if (FlagRush_Net_WarmUpIsRunning) {
+		if (WarmUpIsRunning()) {
 			Carrier.CarrierLabel.Value = "WarmUp";
 			Carrier.CarrierLabel.TextColor = {{{ Stylesheet::C_Warning }}};
 		} else {

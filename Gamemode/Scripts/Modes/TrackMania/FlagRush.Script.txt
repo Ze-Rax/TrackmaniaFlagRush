@@ -348,16 +348,16 @@ Vehicles::LoadItems();
 ***
 
 // ~~~~~~~~~~ Server ~~~~~~~~~~ //
+
 ***StartServer***
 ***
-declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
-FlagRush_Net_WarmUpIsRunning = False;
-declare netwrite Boolean FlagRush_Net_PauseIsRunning for Teams[0];
-FlagRush_Net_PauseIsRunning = False;
-declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
-FlagRush_Net_OvertimeIsRunning = False;
-
 ModeUtils::SetEndTime(-1);
+Progression::StartServer();
+***
+
+***EndServer***
+***
+Progression::EndServer();
 ***
 
 // ~~~~~~~~~~ Match ~~~~~~~~~~ //
@@ -469,8 +469,6 @@ foreach (WarningSeconds in C_TimeLimitWarning_Seconds) {
 
 ***EndRound***
 ***
-declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
-FlagRush_Net_OvertimeIsRunning = False;
 Progression::EndRound();
 ***
 
@@ -566,8 +564,6 @@ if(Progression::OvertimeIsRunning()) {
 	if (Private_RoundIsTied() && S_UseOvertime) {
 		Progression::StartOvertime();
 		FlagRush_XmlRpc::Send_Overtime();
-		declare netwrite Boolean FlagRush_Net_OvertimeIsRunning for Teams[0];
-		FlagRush_Net_OvertimeIsRunning = True;
 		Messages::OvertimeStart(Durations::C_Duration_Overtime);
 	} else {
 		Messages::TimeLimitEnd(Durations::C_Duration_EventMessage);
@@ -630,8 +626,6 @@ if (HasPodium) {
 ***
 Progression::StartWarmUp();
 FlagRush_XmlRpc::Send_WarmUpStart();
-declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
-FlagRush_Net_WarmUpIsRunning = True;
 Messages::WarmUpStart(Durations::C_Duration_WarmUpStart);
 WarmUpReadyUp::Start(S_WarmUpWaitForApproval);
 if (S_WarmUpWaitForApproval) Messages::WarmUpWaitForApproval();
@@ -661,7 +655,6 @@ ModeUtils::SetEndTime(-1);
 Messages::WarmUpEnd(Durations::C_Duration_WarmUpEnd);
 UIManager.UIAll.UISequence = PreviousSequence;
 MB_Sleep(Durations::C_Duration_WarmUpEnd);
-FlagRush_Net_WarmUpIsRunning = False;
 FlagRush_XmlRpc::Send_WarmUpEnd();
 Progression::EndWarmUp();
 ***
@@ -680,9 +673,8 @@ foreach (Player in Players) {
 
 ***Private_Pause***
 ***
-declare netwrite Boolean FlagRush_Net_PauseIsRunning for Teams[0] = False;
-FlagRush_Net_PauseIsRunning = True;
 ModeUtils::SetEndTime(-1);
+Progression::StartPause();
 Messages::PauseStart(Durations::C_Duration_PauseStart);
 MB_Sleep(Durations::C_Duration_PauseStart);
 
@@ -690,7 +682,7 @@ MB_Sleep(Durations::C_Duration_PauseStart);
 
 Messages::PauseEnd(Durations::C_Duration_PauseEnd);
 MB_Sleep(Durations::C_Duration_PauseEnd);
-FlagRush_Net_PauseIsRunning = False;
+Progression::EndPause();
 ***
 
 // ~~~~~~~~~~ Yield ~~~~~~~~~~ //
@@ -772,8 +764,7 @@ if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted && Map != 
 	Log::Info("Current match was skipped as there are no players remaining");
 	MatchEndRequested = True; // Invalidate Map, Round, ...
 	MB_StopMatch();
-	declare netwrite Boolean FlagRush_Net_WarmUpIsRunning for Teams[0]; // Can't use global variable in yield
-	if (FlagRush_Net_WarmUpIsRunning) {
+	if (Progression::WarmUpIsRunning()) {
 		WarmUpReadyUp::Stop();
 	}
 }

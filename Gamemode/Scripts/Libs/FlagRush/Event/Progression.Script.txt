@@ -12,13 +12,15 @@
 #Const C_EventType_SegmentStart 1
 #Const C_EventType_SegmentEnd 2
 
-#Const C_Segment_Match 1
-#Const C_Segment_Map 2
-#Const C_Segment_Round 3
-#Const C_Segment_Turn 4
-#Const C_Segment_Overtime 5
-#Const C_Segment_WarmUp 6
-#Const C_Segment_Podium 7
+#Const C_Segment_Server 1
+#Const C_Segment_Match 2
+#Const C_Segment_Map 3
+#Const C_Segment_Round 4
+#Const C_Segment_Turn 5
+#Const C_Segment_Overtime 6
+#Const C_Segment_WarmUp 7
+#Const C_Segment_Pause 8
+#Const C_Segment_Podium 9
 
 #Const C_EventTypeNames [
 	1 => "SegmentStart",
@@ -39,12 +41,14 @@
   Integer Segment;
 }
 
+declare Boolean G_ServerIsRunning;
 declare Boolean G_MatchIsRunning;
 declare Boolean G_MapIsRunning;
 declare Boolean G_RoundIsRunning;
 declare Boolean G_TurnIsRunning;
 declare Boolean G_OvertimeIsRunning;
 declare Boolean G_WarmUpIsRunning;
+declare Boolean G_PauseIsRunning;
 declare Boolean G_PodiumIsRunning;
 
 declare Boolean G_RoundPauseRequested;
@@ -63,6 +67,10 @@ K_Event[] GetPendingEvents() {
 }
 
 // Segment running states
+
+Boolean ServerIsRunning() {
+  return G_ServerIsRunning;
+}
 
 Boolean MatchIsRunning() {
   return G_MatchIsRunning;
@@ -88,18 +96,24 @@ Boolean WarmUpIsRunning() {
   return G_WarmUpIsRunning;
 }
 
+Boolean PauseIsRunning() {
+  return G_PauseIsRunning;
+}
+
 Boolean PodiumIsRunning() {
   return G_PodiumIsRunning;
 }
 
 Boolean SegmentIsRunning(Integer _Segment) {
   switch(_Segment) {
+    case C_Segment_Server: return ServerIsRunning();
     case C_Segment_Match: return MatchIsRunning();
     case C_Segment_Map: return MapIsRunning();
     case C_Segment_Round: return RoundIsRunning();
     case C_Segment_Turn: return TurnIsRunning();
     case C_Segment_Overtime: return OvertimeIsRunning();
     case C_Segment_WarmUp: return WarmUpIsRunning();
+    case C_Segment_Pause: return PauseIsRunning();
     case C_Segment_Podium: return PodiumIsRunning();
   }
   return False;
@@ -143,6 +157,22 @@ Boolean RoundIsValid() {
 }
 
 // MARK: Lifecycle
+
+Void StartServer() {
+  G_ServerIsRunning = True;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_SegmentStart,
+    Segment = C_Segment_Server
+  });
+}
+
+Void EndServer() {
+  G_ServerIsRunning = False;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_Server
+  });
+}
 
 Void StartMatch() {
   G_MatchIsRunning = True;
@@ -242,6 +272,22 @@ Void EndWarmUp() {
   });
 }
 
+Void StartPause() {
+  G_PauseIsRunning = True;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_SegmentStart,
+    Segment = C_Segment_Pause
+  });
+}
+
+Void EndPause() {
+  G_PauseIsRunning = False;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_Pause
+  });
+}
+
 Void StartPodium() {
   G_PodiumIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
@@ -266,12 +312,14 @@ Void Yield() {
 Void Unload() {
   G_PendingEvents.clear();
   G_EventsAggregationBuffer.clear();
+  G_ServerIsRunning = False;
   G_MatchIsRunning = False;
   G_MapIsRunning = False;
   G_RoundIsRunning = False;
   G_TurnIsRunning = False;
   G_OvertimeIsRunning = False;
   G_WarmUpIsRunning = False;
+  G_PauseIsRunning = False;
   G_RoundEndRequested = False;
   G_RoundPauseRequested = False;
 }

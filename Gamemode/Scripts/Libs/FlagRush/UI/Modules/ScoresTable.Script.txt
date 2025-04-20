@@ -221,6 +221,7 @@ Text GetManialink() {
 	{{{ SharedNetVars::DefineLayerFunction_GetNbMapsToWinMatch() }}}
 	{{{ SharedNetVars::DefineLayerFunction_GetNbRoundsToWinMap() }}}
 	{{{ SharedNetVars::DefineLayerFunction_GetNbFlagsToWinRound() }}}
+	{{{ SharedNetVars::DefineLayerFunction_WarmUpIsRunning() }}}
 
 	/**
 	 * Gets the player object for a given login.
@@ -433,7 +434,6 @@ Text GetManialink() {
 	 * Updates a playercard with given index in the respective team.
 	 */
 	Void UpdatePlayercard(K_PlayerCard Playercard, CSmScore Score) {
-		declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
 		declare netread Boolean[Text] Net_WarmUpReadyUp_ReadyStates for Teams[0];
 
 		// SpectatorInfo
@@ -450,7 +450,7 @@ Text GetManialink() {
 			Playercard.Name.RelativePosition_V3 = {{{ C_PlayerCard_NameDefaultPosition }}};
 		}
 
-		if (FlagRush_Net_WarmUpIsRunning && Net_WarmUpReadyUp_ReadyStates.get(Score.User.Login, False)) {
+		if (WarmUpIsRunning() && Net_WarmUpReadyUp_ReadyStates.get(Score.User.Login, False)) {
 			Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Stylesheet::C_Success }}};
 		} else {
 			Playercard.BackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(Score.TeamNum);
@@ -520,7 +520,6 @@ Text GetManialink() {
 	 * Scores are returned in an array with the clan number as key.
 	 */
 	CSmScore[][Integer] FilterScoresToDisplay() {
-		declare netread Boolean FlagRush_Net_WarmUpIsRunning for Teams[0];
 		declare CSmScore[][Integer] ScoresToDisplay = [1 => [], 2 => []];
 		foreach (Score in Scores) {
 			if (Score.TeamNum <= 0 || Score.TeamNum > 2) continue;
@@ -529,7 +528,7 @@ Text GetManialink() {
 
 			// In warmup, do not show disonnected or spectating players.
 			// Outside of warmup, do not show disconnected or spectating players with no points.
-			if (PlayerIsDisconnectedOrSpectator && (FlagRush_Net_WarmUpIsRunning || Score.Points + Score.RoundPoints <= 0)) {
+			if (PlayerIsDisconnectedOrSpectator && (WarmUpIsRunning() || Score.Points + Score.RoundPoints <= 0)) {
 				continue;
 			}
 			ScoresToDisplay[Score.TeamNum].add(Score);

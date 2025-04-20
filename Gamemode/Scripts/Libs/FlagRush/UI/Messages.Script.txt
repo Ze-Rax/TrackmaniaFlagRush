@@ -10,13 +10,13 @@
 
 #Include "ColorLib" as CL
 
-#Include "Libs/FlagRush/CommonLibs/Nadeo/Message.Script.txt"				as Message
+#Include "Libs/FlagRush/CommonLibs/Nadeo/Message.Script.txt"		as Message
 
-#Include "Libs/FlagRush/Util/ModeUtils.Script.txt"									as ModeUtils
-
-#Include "Libs/FlagRush/UI/Stylesheet.Script.txt"	as Stylesheet
-#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"		as UIModule_EventFeed
-#Include "Libs/FlagRush/UI/Modules/Sounds.Script.txt"								as UIModule_Sound
+#Include "Libs/FlagRush/Core/Teams.Script.txt"									as Teams
+#Include "Libs/FlagRush/Util/ModeUtils.Script.txt"							as ModeUtils
+#Include "Libs/FlagRush/UI/Stylesheet.Script.txt"								as Stylesheet
+#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"				as UIModule_EventFeed
+#Include "Libs/FlagRush/UI/Modules/Sounds.Script.txt"						as UIModule_Sound
 
 #Const C_ChatPrefix		"[FlagRush]"
 
@@ -34,17 +34,12 @@ Void Private_ClearAllMessages() {
 	}
 }
 
-Vec3 Private_GetTeamColor(Integer _Clan) {
-	declare netwrite Vec3 Net_FlagRush_MidColor for Teams[_Clan - 1] = <0., 0., 0.>;
-	return Net_FlagRush_MidColor;
-}
-
 Text Private_GetTeamColorCode(Integer _Clan) {
-	return """${{{ CL::RgbToHex3(Private_GetTeamColor(_Clan)) }}}""";
+	return """${{{ CL::RgbToHex3(Teams::GetMidColor(_Clan)) }}}""";
 }
 
 Text Private_GetColoredTeamName(Integer _Clan) {
-	return """$<${{{ CL::RgbToHex3(Private_GetTeamColor(_Clan)) }}}{{{ Teams[_Clan-1].Name }}}$>""";
+	return """$<${{{ CL::RgbToHex3(Teams::GetMidColor(_Clan)) }}}{{{ Teams[_Clan-1].Name }}}$>""";
 }
 
 Text Private_GetColoredPlayerName(CSmPlayer _Player) {
@@ -159,14 +154,14 @@ Void PauseEnd(Integer _Duration) {
 
 Void FlagPickUp(CSmPlayer _Player, Integer _Duration) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(_Player) }}} has the $<{{{ Private_GetTeamColorCode(_Player.CurrentClan) }}}flag$>""";
-	declare Vec3 TeamColor = Private_GetTeamColor(_Player.CurrentClan);
+	declare Vec3 TeamColor = Teams::GetMidColor(_Player.CurrentClan);
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag, TeamColor);
 }
 
 Void FlagScored(CSmPlayer _Scorer, Integer _Duration) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(_Scorer) }}} scored for {{{ Private_GetColoredTeamName(_Scorer.CurrentClan) }}}""";
-	declare Vec3 TeamColor = Private_GetTeamColor(_Scorer.CurrentClan);
+	declare Vec3 TeamColor = Teams::GetMidColor(_Scorer.CurrentClan);
 	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Event, CUIConfig::EUISound::Finish);
 	UIModule_Sound::Play(["file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/KnockOutPlayer_01.wav", "file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/ShowWinners.wav"]);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag, TeamColor);

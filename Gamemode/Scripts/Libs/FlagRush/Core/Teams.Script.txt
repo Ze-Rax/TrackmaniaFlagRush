@@ -12,6 +12,7 @@
 
 #Include "Libs/FlagRush/CommonLibs/Rx/NiceColors.Script.txt"	as NCL
 
+#Const C_Color_Invalid			<1., 1., 1.>
 #Const C_Hue_UseDefault			-1
 #Const C_DefaultTeamHue			120
 #Const C_DefaultTeamHues		[0 => 240, 1 => 0]
@@ -43,6 +44,9 @@
 	Integer Hue;
 	Text SkinName;
 	Ident ItemId;
+	Vec3 LightColor;
+	Vec3 MidColor;
+	Vec3 DarkColor;
 }
 
 declare K_TeamConfig[Integer] G_TeamConfigs;
@@ -124,20 +128,20 @@ Void Private_ApplyToTeams() {
 
 		declare Integer Hue = G_TeamConfigs[Clan].Hue;
 
-		declare Vec3 LightColor = NCL::GetLightColor(Hue * 1.);
-		declare Vec3 MidColor = NCL::GetMidColor(Hue * 1.);
-		declare Vec3 DarkColor = NCL::GetDarkColor(Hue * 1.);
+		G_TeamConfigs[Clan].LightColor = NCL::GetLightColor(Hue * 1.);
+		G_TeamConfigs[Clan].MidColor = NCL::GetMidColor(Hue * 1.);
+		G_TeamConfigs[Clan].DarkColor = NCL::GetDarkColor(Hue * 1.);
 
-		Teams[Clan - 1].ColorPrimary = MidColor;
-		Teams[Clan - 1].ColorSecondary = MidColor;
-		Teams[Clan - 1].ColorUI = MidColor;
+		Teams[Clan - 1].ColorPrimary = G_TeamConfigs[Clan].MidColor;
+		Teams[Clan - 1].ColorSecondary = G_TeamConfigs[Clan].MidColor;
+		Teams[Clan - 1].ColorUI = G_TeamConfigs[Clan].MidColor;
 
-		declare netwrite Vec3 Net_FlagRush_LightColor for Teams[Clan - 1] = <0., 0., 0.>;
-		Net_FlagRush_LightColor = LightColor;
-		declare netwrite Vec3 Net_FlagRush_MidColor for Teams[Clan - 1] = <0., 0., 0.>;
-		Net_FlagRush_MidColor = MidColor;
-		declare netwrite Vec3 Net_FlagRush_DarkColor for Teams[Clan - 1] = <0., 0., 0.>;
-		Net_FlagRush_DarkColor = DarkColor;
+		declare netwrite Vec3 Net_FlagRush_LightColor for Teams[Clan - 1] = C_Color_Invalid;
+		Net_FlagRush_LightColor = G_TeamConfigs[Clan].LightColor;
+		declare netwrite Vec3 Net_FlagRush_MidColor for Teams[Clan - 1] = C_Color_Invalid;
+		Net_FlagRush_MidColor = G_TeamConfigs[Clan].MidColor;
+		declare netwrite Vec3 Net_FlagRush_DarkColor for Teams[Clan - 1] = C_Color_Invalid;
+		Net_FlagRush_DarkColor = G_TeamConfigs[Clan].DarkColor;
 
 		declare Integer LutIdx = Private_GetClosestLutIndex(Hue);
 		G_TeamConfigs[Clan].SkinName = C_HueToTeamPresetLut[LutIdx].SkinName;
@@ -205,13 +209,34 @@ Text GetSkinNameForTeam(Integer _Clan) {
 	return "";
 }
 
+Vec3 GetLightColor(Integer _Clan) {
+	if (!G_TeamConfigs.existskey(_Clan)) {
+		return C_Color_Invalid;
+	}
+	return G_TeamConfigs[_Clan].LightColor;
+}
+
+Vec3 GetMidColor(Integer _Clan) {
+	if (!G_TeamConfigs.existskey(_Clan)) {
+		return C_Color_Invalid;
+	}
+	return G_TeamConfigs[_Clan].MidColor;
+}
+
+Vec3 GetDarkColor(Integer _Clan) {
+	if (!G_TeamConfigs.existskey(_Clan)) {
+		return C_Color_Invalid;
+	}
+	return G_TeamConfigs[_Clan].DarkColor;
+}
+
 // Layer function definitions to get colors from team
 
 Text DefineLayerFunction_Team_GetLightColor() {
   return """
     Vec3 Team_GetLightColor(CTeam Team) {
       if (Team == Null) {
-        return <1., 1., 1.>;
+        return {{{ C_Color_Invalid }}};
       }
       declare netread Vec3 Net_FlagRush_LightColor for Team;
       return Net_FlagRush_LightColor;
@@ -219,7 +244,7 @@ Text DefineLayerFunction_Team_GetLightColor() {
 
     Vec3 Team_GetLightColor(Integer Clan) {
       if (Clan <= 0 || Clan > Teams.count) {
-        return <1., 1., 1.>;
+        return {{{ C_Color_Invalid }}};
       }
       return Team_GetLightColor(Teams[Clan-1]);
     }
@@ -230,7 +255,7 @@ Text DefineLayerFunction_Team_GetMidColor() {
   return """
     Vec3 Team_GetMidColor(CTeam Team) {
       if (Team == Null) {
-        return <1., 1., 1.>;
+        return {{{ C_Color_Invalid }}};
       }
       declare netread Vec3 Net_FlagRush_MidColor for Team;
       return Net_FlagRush_MidColor;
@@ -238,7 +263,7 @@ Text DefineLayerFunction_Team_GetMidColor() {
 
     Vec3 Team_GetMidColor(Integer Clan) {
       if (Clan <= 0 || Clan > Teams.count) {
-        return <1., 1., 1.>;
+        return {{{ C_Color_Invalid }}};
       }
       return Team_GetMidColor(Teams[Clan-1]);
     }
@@ -249,7 +274,7 @@ Text DefineLayerFunction_Team_GetDarkColor() {
   return """
     Vec3 Team_GetDarkColor(CTeam Team) {
       if (Team == Null) {
-        return <1., 1., 1.>;
+        return {{{ C_Color_Invalid }}};
       }
       declare netread Vec3 Net_FlagRush_DarkColor for Team;
       return Net_FlagRush_DarkColor;
@@ -257,7 +282,7 @@ Text DefineLayerFunction_Team_GetDarkColor() {
 
     Vec3 Team_GetDarkColor(Integer Clan) {
       if (Clan <= 0 || Clan > Teams.count) {
-        return <1., 1., 1.>;
+        return {{{ C_Color_Invalid }}};
       }
       return Team_GetDarkColor(Teams[Clan-1]);
     }

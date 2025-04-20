@@ -414,10 +414,7 @@ if (S_UseWarmUp && !MatchEndRequested) +++Private_WarmUp+++
 ***
 declare Boolean MapIsValid = Progression::MapIsValid();
 FlagRush_XmlRpc::Send_MapEnd(MapIsValid);
-if (!MapIsValid) {
-	Messages::MapSkip(Durations::C_Duration_MapEnd);
-	Scores::Clear(Scores::C_Level_Map);
-} else {
+if (MapIsValid) {
 	declare Integer WinnerClan = Scores::EvaluateMap();
 	if (WinnerClan == 0) {
 		Messages::MapDraw(Durations::C_Duration_MapEnd);
@@ -425,6 +422,9 @@ if (!MapIsValid) {
 		Messages::MapWin(WinnerClan, Durations::C_Duration_MapEnd);
 		Scores::OnClanMapWin(WinnerClan);
 	}
+} else {
+	Messages::MapSkip(Durations::C_Duration_MapEnd);
+	Scores::Clear(Scores::C_Level_Map);
 }
 
 // Sleep during message and show scoreboard update half way through

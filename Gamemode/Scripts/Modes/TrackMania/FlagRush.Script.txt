@@ -781,16 +781,11 @@ if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted && Map != 
 
 ***Private_Yield_HandleCriticalModeScriptSettingsUpdates***
 ***
-declare Boolean SendProgressionSettingsToClient = False;
 declare Boolean ReinitTeamsConfig = False;
 declare Boolean UpdateVehicleTunings = False;
 declare Boolean RestartTurn = False;
 foreach(Event in Settings::GetPendingEvents()) {
 	switch (Event.Name) {
-		// Point limits
-		case SettingNames::S_NbMapsToWinMatch, SettingNames::S_NbRoundsToWinMap, SettingNames::S_NbFlagsToWinRound : {
-			SendProgressionSettingsToClient = True;
-		}
 		// Team Configs
 		case SettingNames::S_UseClubTags, SettingNames::S_Team1Name, SettingNames::S_Team1Hue, SettingNames::S_Team2Name, SettingNames::S_Team2Hue: {
 			ReinitTeamsConfig = True;
@@ -833,10 +828,6 @@ foreach(Event in Settings::GetPendingEvents()) {
 			}
 		}
 	}
-}
-
-if (SendProgressionSettingsToClient) {
-	UILayers::Net_SendModeScriptProgressionSettings(S_NbMapsToWinMatch, S_NbRoundsToWinMap, S_NbFlagsToWinRound);
 }
 
 if (ReinitTeamsConfig) {

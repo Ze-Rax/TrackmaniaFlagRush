@@ -1,0 +1,44 @@
+/**
+ * Handling of net variables that are not specific to individual layers, but instead shared across multiple.
+ *
+ * #RequireContext CSmMode
+ */
+
+Void SetNbMapsToWinMatch(Integer _NbMapsToWinMatch) {
+  declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0] = 0;
+	Net_FlagRush_NbMapsToWinMatch = _NbMapsToWinMatch;
+}
+
+Text DefineLayerFunction_GetNbMapsToWinMatch() {
+  return
+"""Integer GetNbMapsToWinMatch(){
+  declare netread Integer Net_FlagRush_NbMapsToWinMatch for Teams[0] = 0;
+  return Net_FlagRush_NbMapsToWinMatch;
+}""";
+}
+
+Void SetNbRoundsToWinMap(Integer _NbRoundsToWinMap) {
+  declare netwrite Integer Net_FlagRush_NbRoundsToWinMap for Teams[0] = 0;
+	Net_FlagRush_NbRoundsToWinMap = _NbRoundsToWinMap;
+}
+
+Text DefineLayerFunction_GetNbRoundsToWinMap() {
+  return
+"""Integer GetNbRoundsToWinMap(){
+  declare netread Integer Net_FlagRush_NbRoundsToWinMap for Teams[0] = 0;
+  return Net_FlagRush_NbRoundsToWinMap;
+}""";
+}
+
+Void SetNbFlagsToWinRound(Integer _NbFlagsToWinRound) {
+  declare netwrite Integer Net_FlagRush_NbFlagsToWinRound for Teams[0] = 0;
+	Net_FlagRush_NbFlagsToWinRound = _NbFlagsToWinRound;
+}
+
+Text DefineLayerFunction_GetNbFlagsToWinRound() {
+  return
+"""Integer GetNbFlagsToWinRound(){
+  declare netread Integer Net_FlagRush_NbFlagsToWinRound for Teams[0] = 0;
+  return Net_FlagRush_NbFlagsToWinRound;
+}""";
+}

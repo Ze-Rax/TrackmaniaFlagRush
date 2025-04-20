@@ -8,6 +8,7 @@
 #Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include "Libs/FlagRush/UI/SharedNetVars.Script.txt" as SharedNetVars
 
 #Const C_LayerName "FlagRush_ScoresTable"
 #Const C_LayerType CUILayer::EUILayerType::ScoresTable
@@ -217,6 +218,10 @@ Text GetManialink() {
 
 	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 
+	{{{ SharedNetVars::DefineLayerFunction_GetNbMapsToWinMatch() }}}
+	{{{ SharedNetVars::DefineLayerFunction_GetNbRoundsToWinMap() }}}
+	{{{ SharedNetVars::DefineLayerFunction_GetNbFlagsToWinRound() }}}
+
 	/**
 	 * Gets the player object for a given login.
 	 * Returns Null if the player was not found.
@@ -403,24 +408,24 @@ Text GetManialink() {
 	 * Updates the team statistics (Scored point, round wins, map wins).
 	 */
 	Void UpdateTeamStatistics() {
-		declare netread Integer Net_FlagRush_NbFlagsToWinRound for Teams[0];
-		declare netread Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
-		declare netread Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
+		declare Integer NbFlagsToWinRound = GetNbFlagsToWinRound();
+		declare Integer NbRoundsToWinMap = GetNbRoundsToWinMap();
+		declare Integer NbMapsToWinMatch = GetNbMapsToWinMatch();
 
 		for (TeamIndex, 0, 1) {
 			declare netread Integer Net_FlagRush_TeamRoundScore for Teams[TeamIndex];
-			if (Net_FlagRush_NbFlagsToWinRound > 0) {
-				TeamScoreboards[TeamIndex].FlagsScored.Value.Value = Net_FlagRush_TeamRoundScore ^ "/" ^ Net_FlagRush_NbFlagsToWinRound;
+			if (NbFlagsToWinRound > 0) {
+				TeamScoreboards[TeamIndex].FlagsScored.Value.Value = Net_FlagRush_TeamRoundScore ^ "/" ^ NbFlagsToWinRound;
 			} else {
 				TeamScoreboards[TeamIndex].FlagsScored.Value.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
 			}
 
 
 			declare netread Integer Net_FlagRush_TeamMapScore for Teams[TeamIndex];
-			TeamScoreboards[TeamIndex].RoundWins.Value.Value = TeamScoreToGlyphsOrRatio(Net_FlagRush_TeamMapScore, Net_FlagRush_NbRoundsToWinMap);
+			TeamScoreboards[TeamIndex].RoundWins.Value.Value = TeamScoreToGlyphsOrRatio(Net_FlagRush_TeamMapScore, NbRoundsToWinMap);
 
 			declare netread Integer Net_FlagRush_TeamMatchScore for Teams[TeamIndex];
-			TeamScoreboards[TeamIndex].MapWins.Value.Value = TeamScoreToGlyphsOrRatio(Net_FlagRush_TeamMatchScore, Net_FlagRush_NbMapsToWinMatch);
+			TeamScoreboards[TeamIndex].MapWins.Value.Value = TeamScoreToGlyphsOrRatio(Net_FlagRush_TeamMatchScore, NbMapsToWinMatch);
 		}
 	}
 
@@ -568,8 +573,8 @@ Text GetManialink() {
 	}
 
 	Void UpdateFooter() {
-		declare netread Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
-		Footer.ScoresToggle.Frame.Visible = Net_FlagRush_NbMapsToWinMatch > 1;
+		declare Integer NbMapsToWinMatch = GetNbMapsToWinMatch();
+		Footer.ScoresToggle.Frame.Visible = NbMapsToWinMatch > 1;
 		Footer.Frame.Visible = Footer.PageControls.Frame.Visible || Footer.ScoresToggle.Frame.Visible;
 	}
 

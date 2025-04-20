@@ -40,6 +40,8 @@
 #Include "Libs/FlagRush/UI/Modules/SpectatorControls.Script.txt"					as UIModule_SpectatorControls
 #Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt"						as UIModule_VehicleSelection
 
+#Include "Libs/FlagRush/UI/SharedNetVars.Script.txt"											as SharedNetVars
+
 #Const C_AttachId_Podium							"16x9_StadiumSmall"
 
 Void Private_LoadModules() {
@@ -186,21 +188,6 @@ Void Private_DestroyModuleLayers() {
 	Layers::Destroy(UIModule_VehicleSelection::C_LayerName);
 }
 
-// TODO: Move to "shared netvars library"
-/**
- * Sends relevant progression mode settings values to the clients via netwrite.
- */
-Void Net_SendModeScriptProgressionSettings(Integer NbMapsToWinMatch, Integer NbRoundsToWinMap, Integer NbFlagsToWinRound) {
-	declare netwrite Integer Net_FlagRush_NbMapsToWinMatch for Teams[0];
-	Net_FlagRush_NbMapsToWinMatch = NbMapsToWinMatch;
-
-	declare netwrite Integer Net_FlagRush_NbRoundsToWinMap for Teams[0];
-	Net_FlagRush_NbRoundsToWinMap = NbRoundsToWinMap;
-
-	declare netwrite Integer Net_FlagRush_NbFlagsToWinRound for Teams[0];
-	Net_FlagRush_NbFlagsToWinRound = NbFlagsToWinRound;
-}
-
 // MARK: Lifecycle
 
 Void BeforeYield() {
@@ -242,6 +229,15 @@ Void Yield() {
 				foreach(Login in ModeCommandsAdminLogins) {
 					UIModule_ModeCommands::SetSuperAdmin(Login);
 				}
+			}
+			case SettingNames::S_NbMapsToWinMatch: {
+				SharedNetVars::SetNbMapsToWinMatch(Event.NewValue.ValueInteger);
+			}
+			case SettingNames::S_NbRoundsToWinMap: {
+				SharedNetVars::SetNbRoundsToWinMap(Event.NewValue.ValueInteger);
+			}
+			case SettingNames::S_NbFlagsToWinRound: {
+				SharedNetVars::SetNbFlagsToWinRound(Event.NewValue.ValueInteger);
 			}
 		}
 	}

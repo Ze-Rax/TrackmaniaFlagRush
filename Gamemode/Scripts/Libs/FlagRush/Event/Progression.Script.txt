@@ -156,10 +156,95 @@ Boolean RoundIsValid() {
   return MapIsValid() && !RoundEndRequested();
 }
 
+// Layer function definitions
+
+Text DefineLayerFunction_ServerIsRunning() {
+  return """
+    Boolean ServerIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_ServerIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_ServerIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_MatchIsRunning() {
+  return """
+    Boolean MatchIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_MatchIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_MatchIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_MapIsRunning() {
+  return """
+    Boolean MapIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_MapIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_MapIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_RoundIsRunning() {
+  return """
+    Boolean RoundIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_RoundIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_RoundIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_TurnIsRunning() {
+  return """
+    Boolean TurnIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_TurnIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_TurnIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_OvertimeIsRunning() {
+  return """
+    Boolean OvertimeIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_OvertimeIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_OvertimeIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_WarmUpIsRunning() {
+  return """
+    Boolean WarmUpIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_WarmUpIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_WarmUpIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_PauseIsRunning() {
+  return """
+    Boolean PauseIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_PauseIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_PauseIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_PodiumIsRunning() {
+  return """
+    Boolean PodiumIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_PodiumIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_PodiumIsRunning;
+    }
+  """;
+}
+
 // MARK: Lifecycle
 
 Void StartServer() {
   G_ServerIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_ServerIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_ServerIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentStart,
     Segment = C_Segment_Server
@@ -168,6 +253,8 @@ Void StartServer() {
 
 Void EndServer() {
   G_ServerIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_ServerIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_ServerIsRunning = False;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Server
@@ -176,6 +263,8 @@ Void EndServer() {
 
 Void StartMatch() {
   G_MatchIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_MatchIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_MatchIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentStart,
     Segment = C_Segment_Match
@@ -184,6 +273,8 @@ Void StartMatch() {
 
 Void EndMatch() {
   G_MatchIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_MatchIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_MatchIsRunning = False;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Match
@@ -192,6 +283,8 @@ Void EndMatch() {
 
 Void StartMap() {
   G_MapIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_MapIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_MapIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentStart,
     Segment = C_Segment_Map
@@ -200,6 +293,8 @@ Void StartMap() {
 
 Void EndMap() {
   G_MapIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_MapIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_MapIsRunning = False;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Map
@@ -208,6 +303,8 @@ Void EndMap() {
 
 Void StartRound() {
   G_RoundEndRequested = False;
+  declare netwrite Boolean Net_FlagRush_Progression_RoundIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_RoundIsRunning = True;
   G_RoundIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentStart,
@@ -218,6 +315,8 @@ Void StartRound() {
 Void EndRound() {
   if (G_OvertimeIsRunning) {
     G_OvertimeIsRunning = False;
+    declare netwrite Boolean Net_FlagRush_Progression_OvertimeIsRunning for Teams[0] = False;
+    Net_FlagRush_Progression_OvertimeIsRunning = False;
     G_EventsAggregationBuffer.add(K_Event{
       Type = C_EventType_SegmentEnd,
       Segment = C_Segment_Overtime
@@ -225,6 +324,8 @@ Void EndRound() {
   }
 
   G_RoundIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_RoundIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_RoundIsRunning = False;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Round
@@ -233,6 +334,8 @@ Void EndRound() {
 
 Void StartTurn() {
   G_TurnIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_TurnIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_TurnIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentStart,
     Segment = C_Segment_Turn
@@ -241,6 +344,8 @@ Void StartTurn() {
 
 Void EndTurn() {
   G_TurnIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_TurnIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_TurnIsRunning = False;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Turn
@@ -249,6 +354,8 @@ Void EndTurn() {
 
 Void StartOvertime() {
   G_OvertimeIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_OvertimeIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_OvertimeIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentStart,
     Segment = C_Segment_Overtime
@@ -257,6 +364,8 @@ Void StartOvertime() {
 
 Void StartWarmUp() {
   G_WarmUpIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_WarmUpIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_WarmUpIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentStart,
     Segment = C_Segment_WarmUp
@@ -265,6 +374,8 @@ Void StartWarmUp() {
 
 Void EndWarmUp() {
   G_WarmUpIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_WarmUpIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_WarmUpIsRunning = False;
   G_RoundPauseRequested = False;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentEnd,
@@ -274,6 +385,8 @@ Void EndWarmUp() {
 
 Void StartPause() {
   G_PauseIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_PauseIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_PauseIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentStart,
     Segment = C_Segment_Pause
@@ -282,6 +395,8 @@ Void StartPause() {
 
 Void EndPause() {
   G_PauseIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_PauseIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_PauseIsRunning = False;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Pause
@@ -290,6 +405,8 @@ Void EndPause() {
 
 Void StartPodium() {
   G_PodiumIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_PodiumIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_PodiumIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentStart,
     Segment = C_Segment_Podium
@@ -298,6 +415,8 @@ Void StartPodium() {
 
 Void EndPodium() {
   G_PodiumIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_PodiumIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_PodiumIsRunning = False;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Podium

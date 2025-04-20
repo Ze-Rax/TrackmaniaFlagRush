@@ -7,6 +7,9 @@
 #Include "ColorLib" as CL
 
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
+
+#Include "Libs/FlagRush/Event/Progression.Script.txt" as Progression
+
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 #Include "Libs/FlagRush/UI/SharedNetVars.Script.txt" as SharedNetVars
@@ -95,8 +98,8 @@ Text GetManialink() {
 
 	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 
-	{{{ SharedNetVars::DefineLayerFunction_WarmUpIsRunning() }}}
-	{{{ SharedNetVars::DefineLayerFunction_OvertimeIsRunning() }}}
+	{{{ Progression::DefineLayerFunction_WarmUpIsRunning() }}}
+	{{{ Progression::DefineLayerFunction_OvertimeIsRunning() }}}
 
 	/**
 	 * Assigns all needed MlControl references.

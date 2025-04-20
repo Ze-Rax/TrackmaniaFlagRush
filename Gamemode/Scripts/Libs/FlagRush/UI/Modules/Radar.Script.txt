@@ -9,8 +9,9 @@
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 #Include "Libs/FlagRush/Core/Players.Script.txt" as Players
 
+#Include "Libs/FlagRush/Event/Progression.Script.txt" as Progression
+
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
-#Include "Libs/FlagRush/UI/SharedNetVars.Script.txt" as SharedNetVars
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 
 // /!\ On changes, also change the necessary values in K_RadarUserConfig in Manialink script /!\
@@ -192,7 +193,7 @@ Text GetManialink() {
 			declare K_PlayerMarker[] PlayerMarkers;
 
 			/* Common Functions */
-			{{{ SharedNetVars::DefineLayerFunction_WarmUpIsRunning() }}}
+			{{{ Progression::DefineLayerFunction_WarmUpIsRunning() }}}
 			{{{ Players::DefineLayerFunction_Player_GetPosition() }}}
 			{{{ Players::DefineLayerFunction_Player_GetYaw() }}}
 

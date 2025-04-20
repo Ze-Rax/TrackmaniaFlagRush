@@ -62,33 +62,36 @@ Void SetSpawnDate(CSmPlayer _Player, Integer _SpawnDate) {
 }
 
 Text DefineLayerFunction_Player_GetSpawnDate() {
-  return
-"""Integer Player_GetSpawnDate(CSmPlayer _Player) {
-  declare netread Integer Net_FlagRush_SpawnDate for _Player = -1;
-  return Net_FlagRush_SpawnDate;
-}""";
+  return """
+    Integer Player_GetSpawnDate(CSmPlayer _Player) {
+      declare netread Integer Net_FlagRush_SpawnDate for _Player = -1;
+      return Net_FlagRush_SpawnDate;
+    }
+  """;
 }
 
 Text DefineLayerFunction_Player_GetPosition() {
-  return
-"""Vec3 Player_GetPosition(CSmPlayer _Player) {
-  if (_Player == InputPlayer || !_Player.UseCrudeExtrapolation) {
-    return _Player.Position;
-  }
-  declare netread Vec3 Net_FlagRush_Position for _Player = <0., 0., 0.>;
-  return Net_FlagRush_Position;
-}""";
+  return """
+    Vec3 Player_GetPosition(CSmPlayer _Player) {
+      if (_Player == InputPlayer || !_Player.UseCrudeExtrapolation) {
+        return _Player.Position;
+      }
+      declare netread Vec3 Net_FlagRush_Position for _Player = <0., 0., 0.>;
+      return Net_FlagRush_Position;
+    }
+  """;
 }
 
 Text DefineLayerFunction_Player_GetYaw() {
-  return
-"""Real Player_GetYaw(CSmPlayer _Player) {
-  if (_Player == InputPlayer || !_Player.UseCrudeExtrapolation) {
-    return _Player.AimYaw;
-  }
-  declare netread Real Net_FlagRush_Yaw for _Player = 0.;
-  return Net_FlagRush_Yaw;
-}""";
+  return """
+    Real Player_GetYaw(CSmPlayer _Player) {
+      if (_Player == InputPlayer || !_Player.UseCrudeExtrapolation) {
+        return _Player.AimYaw;
+      }
+      declare netread Real Net_FlagRush_Yaw for _Player = 0.;
+      return Net_FlagRush_Yaw;
+    }
+  """;
 }
 
 // MARK: Lifecycle

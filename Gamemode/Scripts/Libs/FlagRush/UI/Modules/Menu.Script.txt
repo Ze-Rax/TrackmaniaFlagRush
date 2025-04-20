@@ -1,4 +1,9 @@
-// #RequireContext CSmMlScriptIngame
+/**
+ * Custom ingame (Esc) menu.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 

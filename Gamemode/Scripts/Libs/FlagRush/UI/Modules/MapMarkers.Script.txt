@@ -1,4 +1,10 @@
-//#RequireContext CSmMlScriptIngame
+/**
+ * Markers for all releveant FlagRush Map Landmarks:
+ * - Bases
+ * - Flag spawns
+ *
+ * #RequireContext CSmMode
+ */
 
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 

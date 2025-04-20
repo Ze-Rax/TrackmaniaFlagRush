@@ -1,3 +1,9 @@
+/**
+ * Input elements to allow sending commands to the mode via a UI Layer.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "TextLib" as TL
 
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers

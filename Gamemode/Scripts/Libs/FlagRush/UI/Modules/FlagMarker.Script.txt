@@ -1,3 +1,9 @@
+/**
+ * Marker to show the position of the Flag.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared

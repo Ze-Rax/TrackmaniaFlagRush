@@ -1,3 +1,9 @@
+/**
+ * Indicator to show that the current (or spectated) player has the flag.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared

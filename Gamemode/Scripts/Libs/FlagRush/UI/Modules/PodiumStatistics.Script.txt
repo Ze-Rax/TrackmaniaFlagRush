@@ -1,8 +1,14 @@
+/**
+ * Overlay with player statistics in the form of a drawer menu to be shown during the podium sequence.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "MathLib" as ML
 #Include "TextLib" as TL
 
 #Include "Libs/FlagRush/CommonLibs/PlayerStatistics.Script.txt" as PlayerStatistics
-#Include "Libs/FlagRUsh/Const/Durations.Script.txt" as Durations
+#Include "Libs/FlagRush/Const/Durations.Script.txt" as Durations
 #Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 

@@ -1,3 +1,9 @@
+/**
+ * Background for the Podium screen showing statistics for the most valuable players of the match.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
 #Include "Libs/FlagRush/CommonLibs/PlayerStatistics.Script.txt" as PlayerStatistics
 

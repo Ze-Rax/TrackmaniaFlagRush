@@ -175,8 +175,8 @@ Text DumpNetFlagStructs() {
 }
 
 Void Net_Update() {
-	declare netwrite K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
-	FlagRush_Net_Flag = Get_Net();
+	declare netwrite K_Net_Flag Net_FlagRush_Flag for Teams[0] = K_Net_Flag{};
+	Net_FlagRush_Flag = Get_Net();
 }
 
 // Helpers: Easier querying for information.

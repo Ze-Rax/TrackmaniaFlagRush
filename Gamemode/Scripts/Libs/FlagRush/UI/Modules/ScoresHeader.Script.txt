@@ -195,25 +195,25 @@ Text GetManialink() {
 			Timer.TimerLabel.Value = "Overtime" ^ "\n" ^ "+" ^ TL::TimeToText(-RoundTimeLeft);
 			Timer.TimerLabel.TextColor = {{{ Stylesheet::C_Warning }}};
 		} else {
-			declare netread K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
-			Timer.Icon.Colorize = GetTeamMidColor(FlagRush_Net_Flag.Location.Player.Clan);
+			declare netread K_Net_Flag Net_FlagRush_Flag for Teams[0] = K_Net_Flag{};
+			Timer.Icon.Colorize = GetTeamMidColor(Net_FlagRush_Flag.Location.Player.Clan);
 			Timer.Icon.Show();
 			Timer.TimerLabel.Hide();
 		}
 	}
 
 	Text ResolveFlagLocationName() {
-		declare netread K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
-		if (FlagRush_Net_Flag.Location.Player.Login != "") {
+		declare netread K_Net_Flag Net_FlagRush_Flag for Teams[0] = K_Net_Flag{};
+		if (Net_FlagRush_Flag.Location.Player.Login != "") {
 			foreach (Player in Players) {
-				if (Player.User.Login == FlagRush_Net_Flag.Location.Player.Login) {
+				if (Player.User.Login == Net_FlagRush_Flag.Location.Player.Login) {
 					return Player.User.Name;
 				}
 			}
-			return FlagRush_Net_Flag.Location.Player.Login; // Disconnected?
-		} else if (FlagRush_Net_Flag.Location.IsAtLandmark) {
+			return Net_FlagRush_Flag.Location.Player.Login; // Disconnected?
+		} else if (Net_FlagRush_Flag.Location.IsAtLandmark) {
 			return "Flagspawn";
-		} else if (FlagRush_Net_Flag.Location.Position == {{{ Flag::C_Position_Invalid }}}) {
+		} else if (Net_FlagRush_Flag.Location.Position == {{{ Flag::C_Position_Invalid }}}) {
 			return "Unspawned";
 		}
 		return "Dropped";
@@ -227,9 +227,9 @@ Text GetManialink() {
 			Carrier.CarrierLabel.Value = "WarmUp";
 			Carrier.CarrierLabel.TextColor = {{{ Stylesheet::C_Warning }}};
 		} else {
-			declare netread K_Net_Flag FlagRush_Net_Flag for Teams[0] = K_Net_Flag{};
+			declare netread K_Net_Flag Net_FlagRush_Flag for Teams[0] = K_Net_Flag{};
 			Carrier.CarrierLabel.Value = ResolveFlagLocationName();
-			Carrier.CarrierLabel.TextColor = GetTeamMidColor(FlagRush_Net_Flag.Location.Player.Clan);
+			Carrier.CarrierLabel.TextColor = GetTeamMidColor(Net_FlagRush_Flag.Location.Player.Clan);
 		}
 	}
 

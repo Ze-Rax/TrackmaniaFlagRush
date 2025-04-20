@@ -28,7 +28,6 @@
 #Include "Libs/FlagRush/Util/Command.Script.txt" as Command
 
 #Include "Libs/FlagRush/UI/Messages.Script.txt" as Messages
-#Include "Libs/FlagRush/UI/Modules/RespawnFlash.Script.txt" as UIModule_RespawnFlash
 #Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt" as UIModule_VehicleSelection
 
 #Const C_Epsilon_Distance 0.001
@@ -44,11 +43,13 @@
 #Const C_EventType_PlayerPickedUpFlag 2
 #Const C_EventType_PlayerPassedFlag 3
 #Const C_EventType_PlayerDroppedFlag 4
+#Const C_EventType_PlayerRespawned 5
+#Const C_EventType_PlayerRequestedRespawnButIsTooFast 6
 
 #Struct K_Event {
 	Integer Type;
-	CSmPlayer Player; ///< Can be Null. Meaning depending on event type.
-	CSmPlayer RelatedPlayer; ///< Can be Null. Meaning depending on event type.
+	CSmPlayer Player; ///< Can be Null. Meaning depends on event type.
+	CSmPlayer RelatedPlayer; ///< Can be Null. Meaning depends on event type.
 	CMapLandmark Landmark; ///< Can be Null. Meaning depends on the event type.
 }
 
@@ -356,11 +357,18 @@ Void Private_OnPlayerRequestsRespawn(CSmPlayer _Player) {
 	}
 
 	if (Settings::GetReal(SettingNames::S_RespawnSpeedLimitKmh) >= 0 && _Player.Speed > Settings::GetReal(SettingNames::S_RespawnSpeedLimitKmh) / 3.6) {
-		UIModule_RespawnFlash::FlashRespawn(_Player);
+		G_PendingEvents.add(K_Event{
+			Type = C_EventType_PlayerRequestedRespawnButIsTooFast,
+			Player = _Player
+		});
 		return;
 	}
 
 	Private_Player_Unspawn(_Player);
+	G_PendingEvents.add(K_Event{
+		Type = C_EventType_PlayerRespawned,
+		Player = _Player
+	});
 	Messages::PlayerRespawn(_Player);
 	Scores::OnPlayerRespawn(_Player.Score);
 }

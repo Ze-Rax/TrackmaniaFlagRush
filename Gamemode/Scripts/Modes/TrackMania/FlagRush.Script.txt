@@ -351,7 +351,7 @@ Vehicles::LoadItems();
 
 ***StartServer***
 ***
-ModeUtils::SetEndTime(-1);
+Progression::SetEndTime(-1);
 Progression::StartServer();
 ***
 
@@ -514,7 +514,7 @@ if (Progression::RoundPauseRequested()) {
 
 // Set end time
 if (S_RoundTimeLimitSeconds > 0) {
-	ModeUtils::SetEndTime(Now + Private_RoundTimeRemaining + Durations::C_SpawnAnimDuration);
+	Progression::SetEndTime(Now + Private_RoundTimeRemaining + Durations::C_SpawnAnimDuration);
 }
 
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
@@ -523,7 +523,7 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 ***EndTurn***
 ***
 Private_RoundTimeRemaining = EndTime - Now;
-ModeUtils::SetEndTime(-1);
+Progression::SetEndTime(-1);
 Progression::EndTurn();
 ***
 
@@ -643,7 +643,7 @@ while(!WarmUpReadyUp::WarmUpShouldStop()) {
 					WarmUpReadyUp::C_Event_Type_TimeoutUpdate,
 					WarmUpReadyUp::C_Event_Type_TimeoutAbort: {
 				// Refrech EndTime net variable when it's updated by WURU
-				ModeUtils::SetEndTime(EndTime);
+				Progression::SetEndTime(EndTime);
 			}
 		}
 	}
@@ -651,7 +651,7 @@ while(!WarmUpReadyUp::WarmUpShouldStop()) {
 }
 { +++EndWarmUp+++ }
 
-ModeUtils::SetEndTime(-1);
+Progression::SetEndTime(-1);
 Messages::WarmUpEnd(Durations::C_Duration_WarmUpEnd);
 UIManager.UIAll.UISequence = PreviousSequence;
 MB_Sleep(Durations::C_Duration_WarmUpEnd);
@@ -673,7 +673,7 @@ foreach (Player in Players) {
 
 ***Private_Pause***
 ***
-ModeUtils::SetEndTime(-1);
+Progression::SetEndTime(-1);
 Progression::StartPause();
 Messages::PauseStart(Durations::C_Duration_PauseStart);
 MB_Sleep(Durations::C_Duration_PauseStart);
@@ -939,7 +939,7 @@ foreach (Command in Commands::GetPendingEvents()) {
 			if (!MB_TurnIsRunning()) {
 				break;
 			}
-			ModeUtils::SetEndTime(Now + Command.ValueInteger * 1000);
+			Progression::SetEndTime(Now + Command.ValueInteger * 1000);
 			CommandText = """Set time limit to {{{ Command.ValueInteger }}} seconds remaining.""";
 		}
 		case CommandNames::Command_ApproveWarmUpEnd: {

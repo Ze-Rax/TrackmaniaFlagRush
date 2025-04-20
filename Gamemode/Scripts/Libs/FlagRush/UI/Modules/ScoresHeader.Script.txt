@@ -101,6 +101,7 @@ Text GetManialink() {
 	{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
 	{{{ Progression::DefineLayerFunction_WarmUpIsRunning() }}}
 	{{{ Progression::DefineLayerFunction_OvertimeIsRunning() }}}
+	{{{ Progression::DefineLayerFunction_GetEndTime() }}}
 
 	/**
 	 * Assigns all needed MlControl references.
@@ -168,11 +169,11 @@ Text GetManialink() {
 	 * Updates the center timer.
 	 */
 	Void UpdateTimer() {
-		declare netread Integer Net_EndTime for Teams[0];
+		declare Integer EndTime = GetEndTime();
 		declare Boolean WarmUpIsRunning = WarmUpIsRunning();
 		declare Boolean OvertimeIsRunning = OvertimeIsRunning();
 
-		declare Integer RoundTimeLeft = Net_EndTime - GameTime;
+		declare Integer RoundTimeLeft = EndTime - GameTime;
 		declare Boolean IsTimeLeft = RoundTimeLeft > 0;
 		Timer.TimerLabel.TextSizeReal = 2.;
 		Timer.TimerLabel.AutoNewLine = False;
@@ -191,7 +192,7 @@ Text GetManialink() {
 			} else {
 				Timer.TimerLabel.TextColor = {{{ Stylesheet::C_NeutralLight }}};
 			}
-		} else if (OvertimeIsRunning && !WarmUpIsRunning && Net_EndTime >= 0) {
+		} else if (OvertimeIsRunning && !WarmUpIsRunning && EndTime >= 0) {
 			Timer.Icon.Hide();
 			Timer.TimerLabel.Show();
 			Timer.TimerLabel.TextSizeReal = 1.5;

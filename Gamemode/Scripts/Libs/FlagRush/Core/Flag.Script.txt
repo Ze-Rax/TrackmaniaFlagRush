@@ -343,6 +343,7 @@ Void Yield() { // @mslint-disable-line no-empty -- Kept for consistency
 
 Void Unload() {
 	G_Flag = K_Flag{};
+	Net_Update();
 }
 
 Void Load() {

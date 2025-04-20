@@ -29,12 +29,3 @@ CUser GetUser(Text _Login) {
 	}
 	return Null;
 }
-
-/**
- * Sets the EndTime but also sends it to the clients over netwrite
- */
- Void SetEndTime(Integer _EndTime) {
-	EndTime = _EndTime;
-	declare netwrite Integer Net_EndTime for Teams[0] = -1;
-	Net_EndTime = EndTime;
-}

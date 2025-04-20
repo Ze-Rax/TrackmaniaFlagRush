@@ -11,6 +11,7 @@
 
 #Const C_EventType_SegmentStart 1
 #Const C_EventType_SegmentEnd 2
+#Const C_EventType_EndTimeChanged 3
 
 #Const C_Segment_Server 1
 #Const C_Segment_Match 2
@@ -156,6 +157,21 @@ Boolean RoundIsValid() {
   return MapIsValid() && !RoundEndRequested();
 }
 
+// EndTime
+
+Integer GetEndTime() {
+  return EndTime;
+}
+
+Void SetEndTime(Integer _EndTime) {
+  EndTime = _EndTime;
+  declare netwrite Integer Net_FlagRush_Progression_EndTime for Teams[0] = -1;
+	Net_FlagRush_Progression_EndTime = EndTime;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_EndTimeChanged
+  });
+}
+
 // Layer function definitions
 
 Text DefineLayerFunction_ServerIsRunning() {
@@ -235,6 +251,15 @@ Text DefineLayerFunction_PodiumIsRunning() {
     Boolean PodiumIsRunning(){
       declare netread Boolean Net_FlagRush_Progression_PodiumIsRunning for Teams[0] = False;
       return Net_FlagRush_Progression_PodiumIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_GetEndTime() {
+  return """
+    Integer GetEndTime(){
+      declare netread Integer Net_FlagRush_Progression_EndTime for Teams[0] = -1;
+      return Net_FlagRush_Progression_EndTime;
     }
   """;
 }

@@ -288,10 +288,12 @@ Void Yield() {
 			Layers::Attach(UIModule_PodiumBackground::C_LayerName);
 			UIModule_PodiumStatistics::Update();
 			Layers::Attach(UIModule_PodiumStatistics::C_LayerName);
+			Layers::Detach(UIModule_ScoresHeader::C_LayerName);
 		} else if (Event.Type == Progression::C_EventType_SegmentEnd && Event.Segment == Progression::C_Segment_Podium) {
 			UIModule_MapMarkers::Show();
 			Layers::Detach(UIModule_PodiumBackground::C_LayerName);
 			Layers::Detach(UIModule_PodiumStatistics::C_LayerName);
+			Layers::Attach(UIModule_ScoresHeader::C_LayerName);
 		} else if (Event.Type == Progression::C_EventType_SegmentEnd && Event.Segment == Progression::C_Segment_Turn) {
 			UIModule_FlagMarker::Update();
 		}

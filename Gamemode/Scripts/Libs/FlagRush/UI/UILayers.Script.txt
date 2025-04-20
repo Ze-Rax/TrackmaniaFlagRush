@@ -1,5 +1,7 @@
 /**
  * This library manages all the layers and their lifecycle, including updating them when needed or requested.
+ *
+ * #RequireContext CSmMode
  */
 
 #Include "TextLib" as TL
@@ -35,9 +37,9 @@
 #Include "Libs/FlagRush/UI/Modules/Sound.Script.txt"							as UIModule_Sounds
 #Include "Libs/FlagRush/UI/Modules/Spectator.Script.txt"					as UIModule_SpectatorControls
 
-
 #Const C_AttachId_Podium							"16x9_StadiumSmall"
 
+// TODO: Remove layernames when finished refactoring
 #Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
 #Const C_LayerName_ScoresHeader				"Layer_FlagRush_ScoresHeader"
 #Const C_LayerName_Menu								"Layer_FlagRush_Menu"
@@ -49,17 +51,6 @@
 #Const C_LayerName_Podium							"Layer_UIModule_PodiumBackground"
 
 Void Private_LoadModules() {
-	declare UIModule_Radar::K_Config Config = UIModule_Radar::K_Config {
-		Scale = 0.35,
-		MarkerScale = 1.5,
-		Position = <135., -65.>,
-		Zoom = 0.35,
-		BackgroundOpacity = 0.7,
-		DetailOpacity = 0.1
-	};
-	UIModule_Radar::SetConfig(Config);
-	UIModule_EventFeed::ClearMessages();
-
 	UIModule_EventFeed::Load();
 	UIModule_FlagMarker::Load();
 	UIModule_FlagPossessionIndicator::Load();
@@ -73,17 +64,9 @@ Void Private_LoadModules() {
 	UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_ResetFlag, "UICommon64_1", "Flag_light");
 	UIModule_PodiumBackground::Load();
 	UIModule_PodiumStatistics::Load();
+	UIModule_Radar::Load();
 
 	UIModule_ScoresHeader::Load();
-
-
-	// UIModule_Radar::Load();
-	// UIModule_RespawnFlash::Load();
-	// UIModule_RespawnTimer::Load();
-	// UIModule_ScoresTable::Load();
-	// UIModule_Sounds::Load();
-	// UIModule_SpectatorControls::Load();
-
 }
 
 Void Private_UnloadModules() {
@@ -95,6 +78,7 @@ Void Private_UnloadModules() {
 	UIModule_ModeCommands::Unload();
 	UIModule_PodiumBackground::Unload();
 	UIModule_PodiumStatistics::Unload();
+	UIModule_Radar::Unload();
 
 	UIModule_ScoresHeader::Unload();
 }
@@ -141,6 +125,13 @@ Void Private_CreateModuleLayers() {
 	Layers::SetType(UIModule_PodiumStatistics::C_LayerName, UIModule_PodiumStatistics::C_LayerType);
 	// Don't attach yet; only explicitly during podium
 
+	// Radar
+	Layers::Create(UIModule_Radar::C_LayerName, UIModule_Radar::GetManialink());
+	Layers::SetType(UIModule_Radar::C_LayerName, UIModule_Radar::C_LayerType);
+	Layers::Attach(UIModule_Radar::C_LayerName);
+
+
+
 	// Scores header
 	Layers::Create(UIModule_ScoresHeader::C_LayerName, UIModule_ScoresHeader::GetManialink());
 	Layers::SetType(UIModule_ScoresHeader::C_LayerName, UIModule_ScoresHeader::C_LayerType);
@@ -163,11 +154,6 @@ Void Private_CreateModuleLayers() {
 	Layers::SetType(C_LayerName_Respawn, CUILayer::EUILayerType::Normal);
 	Layers::Attach(C_LayerName_Respawn);
 
-	// Radar
-	Layers::Create(C_LayerName_Radar, UIModule_Radar::GetManialink());
-	Layers::SetType(C_LayerName_Radar, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName_Radar);
-
 	// Flash
 	Layers::Create(C_LayerName_Flash, UIModule_RespawnFlash::GetManialink());
 	Layers::SetType(C_LayerName_Flash, CUILayer::EUILayerType::Normal);
@@ -187,6 +173,7 @@ Void Private_DestroyModuleLayers() {
 	Layers::Destroy(UIModule_Menu::C_LayerName);
 	Layers::Destroy(UIModule_ModeCommands::C_LayerName);
 	Layers::Destroy(UIModule_PodiumBackground::C_LayerName);
+	Layers::Destroy(UIModule_Radar::C_LayerName);
 
 	Layers::Destroy(UIModule_ScoresHeader::C_LayerName);
 
@@ -196,6 +183,7 @@ Void Private_DestroyModuleLayers() {
 	Layers::Destroy(C_LayerName_Menu);
 }
 
+// TODO: Move to "shared netvars library"
 /**
  * Sends relevant progression mode settings values to the clients via netwrite.
  */
@@ -215,16 +203,10 @@ Void Net_SendModeScriptProgressionSettings(Integer NbMapsToWinMatch, Integer NbR
 Void BeforeYield() {
 	foreach (Event in Playloop::GetPendingEvents()) {
 		switch (Event.Type) {
-			case Playloop::C_EventType_FlagReset: {
-				UIModule_FlagMarker::Update();
-			}
-			case Playloop::C_EventType_PlayerPickedUpFlag: {
-				UIModule_FlagMarker::Update();
-			}
-			case Playloop::C_EventType_PlayerPassedFlag: {
-				UIModule_FlagMarker::Update();
-			}
-			case Playloop::C_EventType_PlayerDroppedFlag: {
+			case Playloop::C_EventType_FlagReset,
+					Playloop::C_EventType_PlayerPickedUpFlag,
+					Playloop::C_EventType_PlayerPassedFlag,
+					Playloop::C_EventType_PlayerDroppedFlag: {
 				UIModule_FlagMarker::Update();
 			}
 		}

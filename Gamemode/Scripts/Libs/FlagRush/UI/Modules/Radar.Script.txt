@@ -1,16 +1,14 @@
+/**
+ * Radar showing other players and the flag.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "TextLib" as TL
 
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
-
-
-#Const C_BackgroundZIndex					0
-#Const C_RadarBaseSize						100.
-#Const C_MarkerFadeStart					0.80
-#Const C_MarkerFadeEnd 						0.95
-#Const C_PlayerMarkerGlowOpacity	0.5
-#Const C_PlayerMarkerIconOpacity	1.
 
 // /!\ On changes, also change the necessary values in K_RadarUserConfig in Manialink script /!\
 #Struct K_Config {
@@ -22,23 +20,34 @@
 	Real DetailOpacity;
 }
 
-declare K_Config G_Config;
+#Const C_LayerName "FlagRush_Radar"
+#Const C_LayerType CUILayer::EUILayerType::Normal
 
-/**
- * Sets the default config to be used for the radar
- * Will be used for user config if no user config is given
- */
-Void SetConfig(K_Config Config) {
-	G_Config = Config;
+#Const C_BackgroundZIndex					0
+#Const C_RadarBaseSize						100.
+#Const C_MarkerFadeStart					0.80
+#Const C_MarkerFadeEnd 						0.95
+#Const C_PlayerMarkerGlowOpacity	0.5
+#Const C_PlayerMarkerIconOpacity	1.
+
+#Const C_DefaultConfig K_Config {
+	Scale = 0.35,
+	MarkerScale = 1.5,
+	Position = <135., -65.>,
+	Zoom = 0.35,
+	BackgroundOpacity = 0.7,
+	DetailOpacity = 0.1
 }
+
+declare K_Config G_DefaultConfig;
 
 Text GetManialink() {
 	declare Text[] PlayerMarkerInstances = [];
-	for (I, 0, Players.count-2) PlayerMarkerInstances.add("""<frameinstance modelid="marker-player" id="marker-player-{{{ I }}}" scale="{{{ G_Config.MarkerScale }}}"/>""");
+	for (I, 0, Players.count-2) PlayerMarkerInstances.add("""<frameinstance modelid="marker-player" id="marker-player-{{{ I }}}" scale="{{{ G_DefaultConfig.MarkerScale }}}"/>""");
 
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-	<manialink version="3" name="FlagRush_Radar">
+	<manialink version="3" name="{{{ C_LayerName }}}">
 		<!-- Framemodels -->
 		<framemodel id="marker-player">
 			<label id="icon" pos="0 -0.5" z-index="1" size="10 10"  text="" textsize="5" rot="-45" halign="center" valign="center2" />
@@ -53,7 +62,7 @@ Text GetManialink() {
 		</framemodel>
 
 		<!-- Radar area -->
-		<frame id="radar" scale="{{{ G_Config.Scale }}}" pos="{{{ G_Config.Position.X }}} {{{ G_Config.Position.Y }}}">
+		<frame id="radar" scale="{{{ G_DefaultConfig.Scale }}}" pos="{{{ G_DefaultConfig.Position.X }}} {{{ G_DefaultConfig.Position.Y }}}">
 			<!-- Drag activator -->
 			<frame id="drag" z-index="2">
 				<quad id="drag-activator" size="{{{C_RadarBaseSize}}} {{{C_RadarBaseSize}}}" valign="center" halign="center" bgcolor="f00" opacity="0" scriptevents="1"/>
@@ -64,26 +73,26 @@ Text GetManialink() {
 			<frame id="background" z-index="0">
 
 				<!-- Base -->
-				<quad id="base" size="{{{C_RadarBaseSize}}} {{{C_RadarBaseSize}}}" image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga" valign="center" halign="center" modulatecolor="111" opacity="{{{G_Config.BackgroundOpacity}}}"/>
+				<quad id="base" size="{{{C_RadarBaseSize}}} {{{C_RadarBaseSize}}}" image="file://Media/Painter/Stencils/01-EllipseRound/Brush.tga" valign="center" halign="center" modulatecolor="111" opacity="{{{G_DefaultConfig.BackgroundOpacity}}}"/>
 
 				<!-- Border -->
 				<quad id="border" z-index="2" size="{{{C_RadarBaseSize * 1.02}}} {{{C_RadarBaseSize * 1.02}}}"  image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" valign="center" halign="center"/>
 
 				<!-- Inner decoration -->
-				<quad id="detail-1" z-index="1" pos="0 {{{C_RadarBaseSize / 2}}}" size="1 {{{C_RadarBaseSize * 0.375}}}" bgcolor="000" opacity="{{{G_Config.DetailOpacity}}}" halign="center" valign="top"/>
-				<quad id="detail-2" z-index="1" pos="0 {{{-C_RadarBaseSize / 2}}}" size="1 {{{C_RadarBaseSize * 0.375}}}" bgcolor="000" opacity="{{{G_Config.DetailOpacity}}}" halign="center" valign="bottom"/>
-				<quad id="detail-3" z-index="1" pos="{{{C_RadarBaseSize / 2}}} 0" size="{{{C_RadarBaseSize * 0.375}}} 1" bgcolor="000" opacity="{{{G_Config.DetailOpacity}}}" halign="right" valign="center"/>
-				<quad id="detail-4" z-index="1" pos="{{{-C_RadarBaseSize / 2}}} 0" size="{{{C_RadarBaseSize * 0.375}}} 1" bgcolor="000" opacity="{{{G_Config.DetailOpacity}}}" halign="left" valign="center"/>
+				<quad id="detail-1" z-index="1" pos="0 {{{C_RadarBaseSize / 2}}}" size="1 {{{C_RadarBaseSize * 0.375}}}" bgcolor="000" opacity="{{{G_DefaultConfig.DetailOpacity}}}" halign="center" valign="top"/>
+				<quad id="detail-2" z-index="1" pos="0 {{{-C_RadarBaseSize / 2}}}" size="1 {{{C_RadarBaseSize * 0.375}}}" bgcolor="000" opacity="{{{G_DefaultConfig.DetailOpacity}}}" halign="center" valign="bottom"/>
+				<quad id="detail-3" z-index="1" pos="{{{C_RadarBaseSize / 2}}} 0" size="{{{C_RadarBaseSize * 0.375}}} 1" bgcolor="000" opacity="{{{G_DefaultConfig.DetailOpacity}}}" halign="right" valign="center"/>
+				<quad id="detail-4" z-index="1" pos="{{{-C_RadarBaseSize / 2}}} 0" size="{{{C_RadarBaseSize * 0.375}}} 1" bgcolor="000" opacity="{{{G_DefaultConfig.DetailOpacity}}}" halign="left" valign="center"/>
 
-				<quad id="detail-5" z-index="1" size="{{{C_RadarBaseSize * 0.75}}} {{{C_RadarBaseSize * 0.75}}}" image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" valign="center" halign="center" modulatecolor="000" opacity="{{{G_Config.DetailOpacity}}}"/>
-				<quad id="detail-6" z-index="1" size="{{{C_RadarBaseSize * 0.5}}} {{{C_RadarBaseSize * 0.5}}}" image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" valign="center" halign="center" modulatecolor="000" opacity="{{{G_Config.DetailOpacity}}}"/>
+				<quad id="detail-5" z-index="1" size="{{{C_RadarBaseSize * 0.75}}} {{{C_RadarBaseSize * 0.75}}}" image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" valign="center" halign="center" modulatecolor="000" opacity="{{{G_DefaultConfig.DetailOpacity}}}"/>
+				<quad id="detail-6" z-index="1" size="{{{C_RadarBaseSize * 0.5}}} {{{C_RadarBaseSize * 0.5}}}" image="file://Media/Painter/Stencils/11-Ellipses/_EllipseRoundc/Brush.tga" valign="center" halign="center" modulatecolor="000" opacity="{{{G_DefaultConfig.DetailOpacity}}}"/>
 
 			</frame>
 
 			<!-- Markers -->
 			<frame id="markers" z-index="1">
-				<frameinstance modelid="marker-flag" id="marker-flag" scale="{{{ G_Config.MarkerScale }}}"/>
-				<frameinstance modelid="marker-player" id="marker-self" scale="{{{ G_Config.MarkerScale }}}"/>
+				<frameinstance modelid="marker-flag" id="marker-flag" scale="{{{ G_DefaultConfig.MarkerScale }}}"/>
+				<frameinstance modelid="marker-player" id="marker-self" scale="{{{ G_DefaultConfig.MarkerScale }}}"/>
 				{{{ TL::Join("\n", PlayerMarkerInstances) }}}
 			</frame>
 
@@ -254,7 +263,7 @@ Text GetManialink() {
 			***LoadRadarUserConfig***
 			***
 			if(RadarConfig == K_RadarUserConfig{}) {	// Config not loaded yet
-				declare persistent Text Persistent_FlagRush_RadarUserConfigJson for UserMgr.MainUser = "{{{ TL::Replace(G_Config.tojson(), "\"", "\\\"") }}}";
+				declare persistent Text Persistent_FlagRush_RadarUserConfigJson for UserMgr.MainUser = "{{{ TL::Replace(G_DefaultConfig.tojson(), "\"", "\\\"") }}}";
 				RadarConfig.fromjson(Persistent_FlagRush_RadarUserConfigJson);
 			}
 			***
@@ -358,19 +367,19 @@ Text GetManialink() {
 					case CMlScriptEvent::Type::MouseRightClick: {
 						if (Event.ControlId == "drag-activator") {
 							Dragging = False;
-							RadarConfig.Position = {{{ G_Config.Position }}};
+							RadarConfig.Position = {{{ G_DefaultConfig.Position }}};
 							Customization_PositionXEntry.Value = TL::ToText(RadarConfig.Position.X);
 							Customization_PositionYEntry.Value = TL::ToText(RadarConfig.Position.Y);
 							+++SaveRadarUserConfig+++
 						} else if (Event.Control == Customization_ScaleSlider) {
-							RadarConfig.Scale = {{{ G_Config.Scale }}};
-							Customization_ScaleSlider.Value = {{{ G_Config.Scale }}};
+							RadarConfig.Scale = {{{ G_DefaultConfig.Scale }}};
+							Customization_ScaleSlider.Value = {{{ G_DefaultConfig.Scale }}};
 						} else if (Event.Control == Customization_BackgroundOpacitySlider) {
-							RadarConfig.BackgroundOpacity = {{{ G_Config.BackgroundOpacity }}};
-							Customization_BackgroundOpacitySlider.Value = {{{ G_Config.BackgroundOpacity }}};
+							RadarConfig.BackgroundOpacity = {{{ G_DefaultConfig.BackgroundOpacity }}};
+							Customization_BackgroundOpacitySlider.Value = {{{ G_DefaultConfig.BackgroundOpacity }}};
 						} else if (Event.Control == Customization_DetailOpacitySlider) {
-							RadarConfig.DetailOpacity = {{{ G_Config.DetailOpacity }}};
-							Customization_DetailOpacitySlider.Value = {{{ G_Config.DetailOpacity }}};
+							RadarConfig.DetailOpacity = {{{ G_DefaultConfig.DetailOpacity }}};
+							Customization_DetailOpacitySlider.Value = {{{ G_DefaultConfig.DetailOpacity }}};
 						}
 					}
 					case CMlScriptEvent::Type::MouseOver: {
@@ -445,10 +454,10 @@ Text GetManialink() {
 				// If too far outside, still show on border
 				declare Distance = ML::Distance(<0., 0.> , RelativeRadarPosition);
 				declare Vec2 UnitDirection = RelativeRadarPosition * (1 / (ML::Abs(Distance) + 0.001));
-				RelativeRadarPosition = UnitDirection * ML::Clamp(Distance, {{{ -C_RadarBaseSize / 2 / G_Config.Zoom }}}, {{{ C_RadarBaseSize / 2 / G_Config.Zoom}}});
+				RelativeRadarPosition = UnitDirection * ML::Clamp(Distance, {{{ -C_RadarBaseSize / 2 / G_DefaultConfig.Zoom }}}, {{{ C_RadarBaseSize / 2 / G_DefaultConfig.Zoom}}});
 
 				// Update marker frame
-				FlagMarker.Frame.RelativePosition_V3 = RelativeRadarPosition * {{{ G_Config.Zoom }}};
+				FlagMarker.Frame.RelativePosition_V3 = RelativeRadarPosition * {{{ G_DefaultConfig.Zoom }}};
 				FlagMarker.Frame.ZIndex = 1000.;
 				FlagMarker.Glow.Visible = FlagCarrierPlayer != Null;
 				FlagMarker.Up.Visible = RelativePosition.Y >= {{{ UIShared::C_FlagMarkerHeightIndicatorThreshold }}};
@@ -468,7 +477,7 @@ Text GetManialink() {
 
 				// Determine relative position on radar
 				declare Vec3 RelativePosition = GetPlayerPosition(Player) - GetPlayerPosition(GUIPlayer);
-				declare Vec2 RelativeRadarPosition = Rotate(-GetPlayerYaw(GUIPlayer), -<RelativePosition.X, RelativePosition.Z>) * {{{ G_Config.Zoom }}};
+				declare Vec2 RelativeRadarPosition = Rotate(-GetPlayerYaw(GUIPlayer), -<RelativePosition.X, RelativePosition.Z>) * {{{ G_DefaultConfig.Zoom }}};
 
 				// Hide when outside
 				declare OffsetPercentage = ML::Distance(<0., 0.> , RelativeRadarPosition) / {{{ C_RadarBaseSize / 2 }}};
@@ -574,4 +583,24 @@ Text GetManialink() {
 		--></script>
 	</manialink>
 	""";
+}
+
+// MARK: API
+
+/**
+ * Sets the default config to be used for the radar
+ * Will be used for user config if no user config is given
+ */
+ Void SetDefaultConfig(K_Config _Config) {
+	G_DefaultConfig = _Config;
+}
+
+// MARK: Lifecycle
+
+Void Unload() {
+	G_DefaultConfig = C_DefaultConfig;
+}
+
+Void Load() {
+	Unload();
 }

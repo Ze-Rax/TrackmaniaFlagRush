@@ -9,7 +9,7 @@
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
 #Include "Libs/FlagRush/Core/Map.Script.txt" as FlagRushMap
-#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
 
 #Const C_LayerName "FlagRush_MapMarkers"
 #Const C_LayerType CUILayer::EUILayerType::Markers
@@ -87,7 +87,9 @@ Text GetManialink() {
 		declare K_FlagSpawnMarker[] G_FlagSpawnMarkers;
 		declare K_FlagSpawnMarker G_DefaultFlagSpawnMarker;
 
-		{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+		{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+		{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+		{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
 
 		Void Init() {
 			// Team bases
@@ -128,7 +130,7 @@ Text GetManialink() {
 
 			foreach (Clan => BaseMarkers in G_TeamBaseMarkers) {
 				declare Boolean ShowDefenseIcon = UIClan == 0 || Clan == UIClan;
-				declare Vec3 Color = GetTeamMidColor(Clan);
+				declare Vec3 Color = Team_GetMidColor(Clan);
 				foreach (BaseMarker in BaseMarkers) {
 					BaseMarker.Icon.TextColor = Color;
 					if (ShowDefenseIcon) {

@@ -51,6 +51,8 @@ declare Integer[Integer] G_TeamHueOverrides;
 declare Ident[Integer] G_SkinIds;
 declare Boolean G_UseClubTags;
 
+// MARK: Helper Functions
+
 Integer Private_GetClosestLutIndex(Integer _Hue) {
 	declare Integer LutIdx = 0;
 	declare Integer Dist = 400;
@@ -64,6 +66,8 @@ Integer Private_GetClosestLutIndex(Integer _Hue) {
 	}
 	return LutIdx;
 }
+
+// MARK: API
 
 Void SetTeam1NameOverride(Text _Name) {
 	G_TeamNameOverrides[1] = _Name;
@@ -120,6 +124,66 @@ Text GetDefaultTeamName(Integer _Clan) {
 	return "Team " ^ Teamname;
 }
 
+// Layer function definitions to get colors from team
+
+Text DefineLayerFunction_Team_GetLightColor() {
+  return """
+    Vec3 Team_GetLightColor(CTeam Team) {
+      if (Team == Null) {
+        return <1., 1., 1.>;
+      }
+      declare netread Vec3 Net_FlagRush_LightColor for Team;
+      return Net_FlagRush_LightColor;
+    }
+
+    Vec3 Team_GetLightColor(Integer Clan) {
+      if (Clan <= 0 || Clan > Teams.count) {
+        return <1., 1., 1.>;
+      }
+      return Team_GetLightColor(Teams[Clan-1]);
+    }
+  """;
+}
+
+Text DefineLayerFunction_Team_GetMidColor() {
+  return """
+    Vec3 Team_GetMidColor(CTeam Team) {
+      if (Team == Null) {
+        return <1., 1., 1.>;
+      }
+      declare netread Vec3 Net_FlagRush_MidColor for Team;
+      return Net_FlagRush_MidColor;
+    }
+
+    Vec3 Team_GetMidColor(Integer Clan) {
+      if (Clan <= 0 || Clan > Teams.count) {
+        return <1., 1., 1.>;
+      }
+      return Team_GetMidColor(Teams[Clan-1]);
+    }
+  """;
+}
+
+Text DefineLayerFunction_Team_GetDarkColor() {
+  return """
+    Vec3 Team_GetDarkColor(CTeam Team) {
+      if (Team == Null) {
+        return <1., 1., 1.>;
+      }
+      declare netread Vec3 Net_FlagRush_DarkColor for Team;
+      return Net_FlagRush_DarkColor;
+    }
+
+    Vec3 Team_GetDarkColor(Integer Clan) {
+      if (Clan <= 0 || Clan > Teams.count) {
+        return <1., 1., 1.>;
+      }
+      return Team_GetDarkColor(Teams[Clan-1]);
+    }
+  """;
+}
+
+// TODO: MOVE UP
 Void Private_OverrideForcedOrEmptyFields() {
 	for(Clan, 1, 2) {
 		if (G_TeamHueOverrides.get(Clan, C_Hue_UseDefault) != C_Hue_UseDefault) { // Forced

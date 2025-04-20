@@ -7,6 +7,7 @@
 #Include "ColorLib" as CL
 
 #Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
 
 #Include "Libs/FlagRush/Event/Progression.Script.txt" as Progression
 
@@ -220,7 +221,9 @@ Text GetManialink() {
 	declare K_TeamScoreboard[] TeamScoreboards;
 	declare K_Footer Footer;
 
-	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
 
 	{{{ SharedNetVars::DefineLayerFunction_GetNbMapsToWinMatch() }}}
 	{{{ SharedNetVars::DefineLayerFunction_GetNbRoundsToWinMap() }}}
@@ -366,16 +369,16 @@ Text GetManialink() {
 	Void InitGradients() {
 		for (Clan, 1, 2) {
 			declare K_BackgroundGradient TeamNameBackgroundGradient = TeamScoreboards[Clan - 1].TeamNameBackgroundGradient;
-			TeamNameBackgroundGradient.Base.BgColor = GetTeamMidColor(Clan);
-			TeamNameBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(Clan);
-			TeamNameBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(Clan);
+			TeamNameBackgroundGradient.Base.BgColor = Team_GetMidColor(Clan);
+			TeamNameBackgroundGradient.LeftGradient.ModulateColor = Team_GetDarkColor(Clan);
+			TeamNameBackgroundGradient.RightGradient.ModulateColor = Team_GetLightColor(Clan);
 
 			for (CardIndex, 0, 4) {
 				declare K_PlayerCard Playercard = TeamScoreboards[Clan - 1].Playercards[CardIndex];
-				Playercard.Avatar.BgColor = GetTeamMidColor(Clan);
+				Playercard.Avatar.BgColor = Team_GetMidColor(Clan);
 				declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
-				PlayercardBackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(Clan);
-				PlayercardBackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(Clan);
+				PlayercardBackgroundGradient.LeftGradient.ModulateColor = Team_GetDarkColor(Clan);
+				PlayercardBackgroundGradient.RightGradient.ModulateColor = Team_GetLightColor(Clan);
 			}
 		}
 	}
@@ -457,7 +460,7 @@ Text GetManialink() {
 		if (WarmUpIsRunning() && Net_WarmUpReadyUp_ReadyStates.get(Score.User.Login, False)) {
 			Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Stylesheet::C_Success }}};
 		} else {
-			Playercard.BackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(Score.TeamNum);
+			Playercard.BackgroundGradient.LeftGradient.ModulateColor = Team_GetDarkColor(Score.TeamNum);
 		}
 
 		Playercard.Avatar.ImageUrl = Score.User.CountryFlagUrl;

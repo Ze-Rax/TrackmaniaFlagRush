@@ -6,7 +6,7 @@
 
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
-#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
 
 #Const C_LayerName "FlagRush_FlagMarker"
 #Const C_LayerType CUILayer::EUILayerType::Markers
@@ -136,7 +136,9 @@ Text GetManialink() {
 declare K_FlagMarker G_FlagMarker;
 declare CMlFrame G_FlagMarkerVisibilityMarker;
 
-{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
 
 Real Lerp01(Integer _From, Integer _To, Integer _T) {
 	if (_From == _To) {
@@ -187,7 +189,7 @@ Void Init() {
 
 Void UpdateFlagColor() {
 	declare netread K_Net_Flag Net_FlagRush_Flag for Teams[0] = K_Net_Flag{};
-	G_FlagMarker.FlagIcon.IconQuad.Colorize = GetTeamMidColor(Net_FlagRush_Flag.Location.Player.Clan); // Clan will be 0 (neutral) if not carried
+	G_FlagMarker.FlagIcon.IconQuad.Colorize = Team_GetMidColor(Net_FlagRush_Flag.Location.Player.Clan); // Clan will be 0 (neutral) if not carried
 }
 
 Void UpdateDistanceIndicators() {
@@ -231,13 +233,13 @@ Void UpdateLock() {
 
 			DisplayLock = LockedForAll || LockedForGUIClan || LockedForGUIPlayer;
 			if (LockedForAll || LockedForGUIClan || LockedForGUIOpponentClan) {
-				G_FlagMarker.Lock.StatusLabel.TextColor = GetTeamMidColor(Net_FlagRush_Flag.Lock.Clan);
+				G_FlagMarker.Lock.StatusLabel.TextColor = Team_GetMidColor(Net_FlagRush_Flag.Lock.Clan);
 			} else {
-				G_FlagMarker.Lock.StatusLabel.TextColor = GetTeamMidColor(GUIPlayer.CurrentClan);
+				G_FlagMarker.Lock.StatusLabel.TextColor = Team_GetMidColor(GUIPlayer.CurrentClan);
 			}
 		} else { // Spectating in overview: Only display if locked for a clan or everyone
 			DisplayLock = LockedForClan || LockedForAll;
-			G_FlagMarker.Lock.StatusLabel.TextColor = GetTeamMidColor(Net_FlagRush_Flag.Lock.Clan);
+			G_FlagMarker.Lock.StatusLabel.TextColor = Team_GetMidColor(Net_FlagRush_Flag.Lock.Clan);
 		}
 	}
 

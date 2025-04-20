@@ -9,8 +9,8 @@
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
 
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
-#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 #Include "Libs/FlagRush/Util/Log.Script.txt" as Log
 
 #Struct K_Event {
@@ -69,7 +69,9 @@ Text GetManialink() {
 	declare CMlFrame G_VehicleSelectionFrame;
 	declare K_VehicleOption[] G_VehicleOptions;
 
-	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
 
 	Void Init() {
 		G_VehicleSelectionFrame = (Page.GetFirstChild("vehicle-selection") as CMlFrame);
@@ -119,7 +121,7 @@ Text GetManialink() {
 		declare Integer SelectedVehicleIndex = GetSelectedVehicleIndex();
 		foreach (Index => Option in G_VehicleOptions) {
 			if (Index == SelectedVehicleIndex && InputPlayer != Null) {
-				Option.Controls.Background.BgColor = GetTeamDarkColor(InputPlayer.RequestedClan);
+				Option.Controls.Background.BgColor = Team_GetDarkColor(InputPlayer.RequestedClan);
 			} else {
 				Option.Controls.Background.BgColor = {{{ Stylesheet::C_NeutralDark }}};
 			}

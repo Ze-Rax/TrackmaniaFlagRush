@@ -4,7 +4,8 @@
  * #RequireContext CSmMode
  */
 
-#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
+
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 
 #Const C_LayerName "FlagRush_Menu"
@@ -161,7 +162,9 @@ Text GetManialink() {
 	declare Integer G_FocusedButtonIndex;
 	declare K_MenuButton G_CurrentFocusedButton;
 
-	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
 
 	Text LastInputType() {
 		switch (Input.TimeSinceLatestActivity) {
@@ -289,7 +292,7 @@ Text GetManialink() {
 		G_PauseMenu.TeamsMenu.PageControls.ButtonPrevious.Visible = PageIndex > 0;
 
 		for (TeamIndex, 0, 1) {
-			declare Vec3 TeamColor = GetTeamMidColor(TeamIndex + 1);
+			declare Vec3 TeamColor = Team_GetMidColor(TeamIndex + 1);
 			G_PauseMenu.TeamsMenu.TeamLists[TeamIndex].ButtonJoin.Background.Colorize = TeamColor;
 			G_PauseMenu.TeamsMenu.TeamLists[TeamIndex].ButtonJoin.Label.Value = "Join " ^ Teams[TeamIndex].Name;
 

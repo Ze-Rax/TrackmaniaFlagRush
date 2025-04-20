@@ -4,8 +4,10 @@
  * #RequireContext CSmMode
  */
 
-#Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
 #Include "Libs/FlagRush/CommonLibs/PlayerStatistics.Script.txt" as PlayerStatistics
+
+#Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
 
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
@@ -123,7 +125,9 @@ Text GetManialink() {
 
 	declare K_Player[] G_Players;
 
-	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
 
 	Vec3 PlacementToTextColor(Integer Placement) {
 		switch (Placement) {
@@ -186,11 +190,11 @@ Text GetManialink() {
 				continue;
 			}
 
-			Player.BackgroundGradient.Base.BgColor = GetTeamMidColor(Config.Clan);
-			Player.BackgroundGradient.Left.ModulateColor = GetTeamDarkColor(Config.Clan);
-			Player.BackgroundGradient.Right.ModulateColor = GetTeamLightColor(Config.Clan);
+			Player.BackgroundGradient.Base.BgColor = Team_GetMidColor(Config.Clan);
+			Player.BackgroundGradient.Left.ModulateColor = Team_GetDarkColor(Config.Clan);
+			Player.BackgroundGradient.Right.ModulateColor = Team_GetLightColor(Config.Clan);
 			Player.Name.Value = Config.Name;
-			Player.Avatar.BgColor = GetTeamMidColor(Config.Clan);
+			Player.Avatar.BgColor = Team_GetMidColor(Config.Clan);
 			Player.Avatar.ImageUrl = Config.Avatar;
 			Player.Points.Value = TL::ToText(Config.Points);
 			Player.Points.TextColor = PlacementToTextColor(Index + 1);

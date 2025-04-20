@@ -7,8 +7,7 @@
 #Include "Libs/FlagRush/Const/Durations.Script.txt" as Durations
 
 #Include "Libs/FlagRush/Core/Players.Script.txt" as Players
-
-#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
 
 #Const C_LayerName "FlagRush_RespawnTimer"
 #Const C_LayerType CUILayer::EUILayerType::Normal
@@ -28,7 +27,9 @@ Text GetManialink() {
 	<script><!--
 	#Include "MathLib" as ML
 
-	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
 	{{{ Players::DefineLayerFunction_Player_GetSpawnDate() }}}
 
 	main() {
@@ -59,7 +60,7 @@ Text GetManialink() {
 			// Display
 			declare Integer SecondsRemaining = MillisRemaining / 1000 + 1;
 			GaugeFrame.Size.X = ML::Clamp(80. * Ratio, 0., 80.);
-			RespawnQuad.Colorize = GetTeamDarkColor(InputPlayer.CurrentClan);
+			RespawnQuad.Colorize = Team_GetDarkColor(InputPlayer.CurrentClan);
 			RespawnLabel.SetText("Respawning in " ^ SecondsRemaining ^ "...");
 			RespawnFrame.Show();
 		}

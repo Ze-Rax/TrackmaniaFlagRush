@@ -10,7 +10,7 @@
 #Include "Libs/FlagRush/CommonLibs/PlayerStatistics.Script.txt" as PlayerStatistics
 #Include "Libs/FlagRush/Const/Durations.Script.txt" as Durations
 #Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
-#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
 
 #Const C_LayerName "FlagRush_PodiumStatistics"
 #Const C_LayerType CUILayer::EUILayerType::Normal
@@ -134,7 +134,9 @@ Text GetManialink() {
 
 declare K_Statistics G_Statistics;
 
-{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
 
 Void Init() {
 	G_Statistics.Frame = (Page.GetFirstChild("statistics") as CMlFrame);
@@ -189,7 +191,7 @@ Void UpdateContent() {
 				continue;
 			}
 
-			Statistic.Title.Value = "$" ^ CL::RgbToHex3(GetTeamMidColor(Clan)) ^ StatisticDescription.PlayerName ^ "$g, " ^ StatisticDescription.Title;
+			Statistic.Title.Value = "$" ^ CL::RgbToHex3(Team_GetMidColor(Clan)) ^ StatisticDescription.PlayerName ^ "$g, " ^ StatisticDescription.Title;
 			Statistic.Description.Value = StatisticDescription.Description;
 		}
 	}

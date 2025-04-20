@@ -5,8 +5,7 @@
  */
 
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
-
-#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
 
 #Const C_LayerName "FlagRush_FlagPossessionIndicator"
 #Const C_LayerType CUILayer::EUILayerType::Normal
@@ -33,7 +32,9 @@ Text GetManialink() {
 
 declare K_Indicator G_Indicator;
 
-{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
 
 CMlQuad[] GetQuads() {
 	return [G_Indicator.TopBar, G_Indicator.BottomBar];
@@ -72,7 +73,7 @@ main() {
 		declare Boolean IsWatchingFlagCarrier = GUIPlayer != Null && Net_FlagRush_Flag.Location.Player.Login == GUIPlayer.User.Login;
 		if (IsWatchingFlagCarrier && !WasWatchingFlagCarrier) {
 			foreach (Quad in GetQuads()) {
-				Quad.Colorize = GetTeamMidColor(GUIPlayer.CurrentClan);
+				Quad.Colorize = Team_GetMidColor(GUIPlayer.CurrentClan);
 			}
 			Show();
 		} else if (WasWatchingFlagCarrier && !IsWatchingFlagCarrier){

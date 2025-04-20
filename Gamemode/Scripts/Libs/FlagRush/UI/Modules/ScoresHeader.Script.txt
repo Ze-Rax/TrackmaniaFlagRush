@@ -7,12 +7,12 @@
 #Include "ColorLib" as CL
 
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
 
 #Include "Libs/FlagRush/Event/Progression.Script.txt" as Progression
 
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
-#Include "Libs/FlagRush/UI/SharedNetVars.Script.txt" as SharedNetVars
 
 #Const C_LayerName "FlagRush_ScoresHeader"
 #Const C_LayerType CUILayer::EUILayerType::Normal
@@ -96,8 +96,9 @@ Text GetManialink() {
 	declare K_Timer Timer;
 	declare K_Carrier Carrier;
 
-	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
-
+	{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
 	{{{ Progression::DefineLayerFunction_WarmUpIsRunning() }}}
 	{{{ Progression::DefineLayerFunction_OvertimeIsRunning() }}}
 
@@ -144,10 +145,10 @@ Text GetManialink() {
 	 */
 	Void InitMlControls() {
 		for (Clan , 1, 2) {
-			TeamAreas[Clan - 1].BackgroundGradient.Base.BgColor = GetTeamMidColor(Clan);
-			TeamAreas[Clan - 1].BackgroundGradient.LeftGradient.ModulateColor = GetTeamDarkColor(Clan);
-			TeamAreas[Clan - 1].BackgroundGradient.RightGradient.ModulateColor = GetTeamLightColor(Clan);
-			TeamAreas[Clan - 1].ScoreBackground.ModulateColor = GetTeamMidColor(Clan);
+			TeamAreas[Clan - 1].BackgroundGradient.Base.BgColor = Team_GetMidColor(Clan);
+			TeamAreas[Clan - 1].BackgroundGradient.LeftGradient.ModulateColor = Team_GetDarkColor(Clan);
+			TeamAreas[Clan - 1].BackgroundGradient.RightGradient.ModulateColor = Team_GetLightColor(Clan);
+			TeamAreas[Clan - 1].ScoreBackground.ModulateColor = Team_GetMidColor(Clan);
 		}
 	}
 
@@ -199,7 +200,7 @@ Text GetManialink() {
 			Timer.TimerLabel.TextColor = {{{ Stylesheet::C_Warning }}};
 		} else {
 			declare netread K_Net_Flag Net_FlagRush_Flag for Teams[0] = K_Net_Flag{};
-			Timer.Icon.Colorize = GetTeamMidColor(Net_FlagRush_Flag.Location.Player.Clan);
+			Timer.Icon.Colorize = Team_GetMidColor(Net_FlagRush_Flag.Location.Player.Clan);
 			Timer.Icon.Show();
 			Timer.TimerLabel.Hide();
 		}
@@ -232,7 +233,7 @@ Text GetManialink() {
 		} else {
 			declare netread K_Net_Flag Net_FlagRush_Flag for Teams[0] = K_Net_Flag{};
 			Carrier.CarrierLabel.Value = ResolveFlagLocationName();
-			Carrier.CarrierLabel.TextColor = GetTeamMidColor(Net_FlagRush_Flag.Location.Player.Clan);
+			Carrier.CarrierLabel.TextColor = Team_GetMidColor(Net_FlagRush_Flag.Location.Player.Clan);
 		}
 	}
 

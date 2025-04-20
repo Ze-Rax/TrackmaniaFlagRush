@@ -466,6 +466,25 @@ Void Unload() {
   G_PauseIsRunning = False;
   G_RoundEndRequested = False;
   G_RoundPauseRequested = False;
+
+  declare netwrite Boolean Net_FlagRush_Progression_ServerIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_ServerIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_MatchIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_MatchIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_MapIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_MapIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_RoundIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_RoundIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_TurnIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_TurnIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_OvertimeIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_OvertimeIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_WarmUpIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_WarmUpIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_PauseIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_PauseIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_PodiumIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_PodiumIsRunning = False;
 }
 
 Void Load() {

@@ -5,8 +5,10 @@
  */
 
 Void LoadHud() {
-  UIManager.UIAll.DisableZoomTransitions = False; // Spawn animation (camera-overview-to-car zoom effect)
+	UIManager.UIAll.DisableZoomTransitions = False; // Spawn animation (camera-overview-to-car zoom effect)
+	UIManager.UIAll.DisplayControl_UseEsportsProgrammation = True; // Disable adds
 
+	// Default overlays
 	UIManager.UIAll.OverlayHideNotices = True;
 	UIManager.UIAll.OverlayHideMapInfo = True;
 	UIManager.UIAll.OverlayHideChat = False;
@@ -18,9 +20,9 @@ Void LoadHud() {
 	UIManager.UIAll.OverlayMute321Go = False;
 	UIManager.UIAll.OverlayHideEndMapLadderRecap = True;
 	UIManager.UIAll.OverlayHideSpectatorInfos = True;
-
 	UIManager.UIAll.ScoreTableOnlyManialink = True; // Hide default simple score board
 
+	// Labels
 	UIManager.UIAll.TeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;
 	UIManager.UIAll.TeamLabelsVisibility = CUIConfig::ELabelsVisibility::WhenInFrustum;
 	UIManager.UIAll.OpposingTeamLabelsShowNames = CUIConfig::EVisibility::ForcedVisible;

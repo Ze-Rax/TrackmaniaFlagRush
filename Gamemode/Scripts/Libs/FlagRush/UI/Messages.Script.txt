@@ -218,7 +218,7 @@ Void TimeLimitEnd(Integer _Duration) {
 
 Void Welcome(CSmPlayer _Player, Text _Version) {
 	declare CUIConfig UI = UIManager.GetUI(_Player);
-	UI.SendChat("""Welcome to $l[https://discord.gg/J6ApdyRqEZ]$44f「$fffFlagRush$f44」$l $g[{{{ _Version }}}]!""");
+	UI.SendChat("""Welcome to $44f[$fffFlagRush$f44] $g[v{{{ _Version }}}]!{{{ "\n" }}}Join us on $l[https://discord.gg/J6ApdyRqEZ]$99fDiscord $g$l.""");
 }
 
 Void CriticalSettingUpdate_RestartTurn() {

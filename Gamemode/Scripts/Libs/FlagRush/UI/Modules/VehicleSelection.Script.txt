@@ -1,3 +1,9 @@
+/**
+ * Buttons on the scoreboard to allow players to select a vehicle.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "ColorLib" as CL
 
 #Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
@@ -7,6 +13,7 @@
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 #Const C_LayerName "FlagRush_VehicleSelection"
+#Const C_LayerType CUILayer::EUILayerType::ScoresTable
 
 declare Vehicles::K_Vehicle[] G_EnabledVehicles;
 
@@ -81,14 +88,14 @@ Text GetManialink() {
 	}
 
 	Void SetSelectedVehicleIndex(Integer VehicleIndex) {
-		declare netwrite Text Net_FlagRush_SelectedVehicleId for UI = "";
-		Net_FlagRush_SelectedVehicleId = G_VehicleOptions.get(VehicleIndex, K_VehicleOption{}).Id;
+		declare netwrite Text Net_FlagRush_VehicleSelection_SelectedVehicleId for UI = "";
+		Net_FlagRush_VehicleSelection_SelectedVehicleId = G_VehicleOptions.get(VehicleIndex, K_VehicleOption{}).Id;
 	}
 
 	Integer GetSelectedVehicleIndex() {
-		declare netwrite Text Net_FlagRush_SelectedVehicleId for UI = "";
+		declare netwrite Text Net_FlagRush_VehicleSelection_SelectedVehicleId for UI = "";
 		foreach (Index => Option in G_VehicleOptions) {
-			if (Option.Id == Net_FlagRush_SelectedVehicleId) {
+			if (Option.Id == Net_FlagRush_VehicleSelection_SelectedVehicleId) {
 				return Index;
 			}
 		}
@@ -158,28 +165,30 @@ Text GetManialink() {
 	""";
 }
 
-Vehicles::K_Vehicle GetSlectedVehicle(CSmPlayer Player) {
-	declare CUIConfig UI = UIManager.GetUI(Player);
-	declare netread Text Net_FlagRush_SelectedVehicleId for UI = "";
+// MARK: API
+
+Vehicles::K_Vehicle GetSlectedVehicle(CSmPlayer _Player) {
+	declare CUIConfig UI = UIManager.GetUI(_Player);
+	declare netread Text Net_FlagRush_VehicleSelection_SelectedVehicleId for UI = "";
 	foreach (Vehicle in G_EnabledVehicles) {
-		if (Vehicle.Id == Net_FlagRush_SelectedVehicleId) {
+		if (Vehicle.Id == Net_FlagRush_VehicleSelection_SelectedVehicleId) {
 			return Vehicle;
 		}
 	}
 	return Vehicles::C_Vehicle_Invalid;
 }
 
-Void SetEnabledVehicles(Vehicles::K_Vehicle[] Vehicles) {
-	G_EnabledVehicles = Vehicles::Sort(Vehicles);
+Void SetEnabledVehicles(Vehicles::K_Vehicle[] _Vehicles) {
+	G_EnabledVehicles = Vehicles::Sort(_Vehicles);
 	Layers::Update(C_LayerName, GetManialink());
 }
 
+// MARK: Lifecycle
+
 Void Unload() {
-	Layers::Destroy(C_LayerName);
+	G_EnabledVehicles.clear();
 }
 
 Void Load() {
-	Layers::Create(C_LayerName, GetManialink());
-	Layers::SetType(C_LayerName, CUILayer::EUILayerType::ScoresTable);
-	Layers::Attach(C_LayerName);
+	Unload();
 }

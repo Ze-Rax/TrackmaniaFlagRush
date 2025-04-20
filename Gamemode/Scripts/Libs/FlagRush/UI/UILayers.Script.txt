@@ -18,6 +18,7 @@
 #Include "Libs/FlagRush/Event/Progression.Script.txt"											as Progression
 #Include "Libs/FlagRush/Event/Settings.Script.txt"												as Settings
 #Include "Libs/FlagRush/Event/Commands.Script.txt"												as Commands
+#Include "Libs/FlagRush/Event/EnabledVehicles.Script.txt"									as EnabledVehicles
 
 // Modules
 #Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"									as UIModule_EventFeed
@@ -35,20 +36,9 @@
 #Include "Libs/FlagRush/UI/Modules/ScoresTable.Script.txt"								as UIModule_ScoresTable
 #Include "Libs/FlagRush/UI/Modules/Sounds.Script.txt"											as UIModule_Sounds
 #Include "Libs/FlagRush/UI/Modules/SpectatorControls.Script.txt"					as UIModule_SpectatorControls
-
+#Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt"						as UIModule_VehicleSelection
 
 #Const C_AttachId_Podium							"16x9_StadiumSmall"
-
-// TODO: Remove layernames when finished refactoring
-#Const C_LayerName_ScoresTable				"Layer_FlagRush_ScoresTable"
-#Const C_LayerName_ScoresHeader				"Layer_FlagRush_ScoresHeader"
-#Const C_LayerName_Menu								"Layer_FlagRush_Menu"
-#Const C_LayerName_Flash							"Layer_FlagRush_Flash"
-#Const C_LayerName_Sound							"Layer_FlagRush_Sound"
-#Const C_LayerName_Spectator					"Layer_FlagRush_Spectator"
-#Const C_LayerName_Respawn						"Layer_FlagRush_Respawn"
-#Const C_LayerName_Radar							"Layer_FlagRush_Radar"
-#Const C_LayerName_Podium							"Layer_UIModule_PodiumBackground"
 
 Void Private_LoadModules() {
 	UIModule_EventFeed::Load();
@@ -71,6 +61,7 @@ Void Private_LoadModules() {
 	UIModule_ScoresTable::Load();
 	UIModule_Sounds::Load();
 	UIModule_SpectatorControls::Load();
+	UIModule_VehicleSelection::Load();
 }
 
 Void Private_UnloadModules() {
@@ -89,6 +80,7 @@ Void Private_UnloadModules() {
 	UIModule_ScoresTable::Unload();
 	UIModule_Sounds::Unload();
 	UIModule_SpectatorControls::Unload();
+	UIModule_VehicleSelection::Unload();
 }
 
 Void Private_CreateModuleLayers() {
@@ -167,6 +159,11 @@ Void Private_CreateModuleLayers() {
 	Layers::Create(UIModule_SpectatorControls::C_LayerName, UIModule_SpectatorControls::GetManialink());
 	Layers::SetType(UIModule_SpectatorControls::C_LayerName, UIModule_SpectatorControls::C_LayerType);
 	Layers::Attach(UIModule_SpectatorControls::C_LayerName);
+
+	// Spectator controls
+	Layers::Create(UIModule_VehicleSelection::C_LayerName, UIModule_VehicleSelection::GetManialink());
+	Layers::SetType(UIModule_VehicleSelection::C_LayerName, UIModule_VehicleSelection::C_LayerType);
+	Layers::Attach(UIModule_VehicleSelection::C_LayerName);
 }
 
 Void Private_DestroyModuleLayers() {
@@ -184,6 +181,7 @@ Void Private_DestroyModuleLayers() {
 	Layers::Destroy(UIModule_ScoresTable::C_LayerName);
 	Layers::Destroy(UIModule_Sounds::C_LayerName);
 	Layers::Destroy(UIModule_SpectatorControls::C_LayerName);
+	Layers::Destroy(UIModule_VehicleSelection::C_LayerName);
 }
 
 // TODO: Move to "shared netvars library"
@@ -201,9 +199,10 @@ Void Net_SendModeScriptProgressionSettings(Integer NbMapsToWinMatch, Integer NbR
 	Net_FlagRush_NbFlagsToWinRound = NbFlagsToWinRound;
 }
 
-/* Lifecycle */
+// MARK: Lifecycle
 
 Void BeforeYield() {
+	// Playloop events are only guaranteed to be valid before yield, due to API object references (players, landmarks, ...)
 	foreach (Event in Playloop::GetPendingEvents()) {
 		switch (Event.Type) {
 			case Playloop::C_EventType_FlagReset,
@@ -220,7 +219,13 @@ Void BeforeYield() {
 }
 
 Void Yield() {
+	// Yield modules
 	UIModule_ModeCommands::Yield();
+	foreach (Command in UIModule_ModeCommands::GetPendingCommands()) {
+		Commands::Publish(Command);
+	}
+
+	// React to events
 
 	foreach (Event in Settings::GetPendingEvents()) {
 		switch (Event.Name) {
@@ -254,7 +259,7 @@ Void Yield() {
 	}
 
 	if (UpdateRadar) {
-		Layers::Update(C_LayerName_Radar, UIModule_Radar::GetManialink());
+		Layers::Update(UIModule_Radar::C_LayerName, UIModule_Radar::GetManialink());
 	}
 
 	foreach (Event in Progression::GetPendingEvents()) {
@@ -289,8 +294,8 @@ Void Yield() {
 		}
 	}
 
-	foreach (Command in UIModule_ModeCommands::GetPendingCommands()) {
-		Commands::Publish(Command);
+	foreach (Event in EnabledVehicles::GetPendingEvents()) {
+		UIModule_VehicleSelection::SetEnabledVehicles(Event.EnabledVehicles);
 	}
 }
 

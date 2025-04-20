@@ -13,6 +13,7 @@
 #Include "Libs/FlagRush/Const/CommandNames.Script.txt"										as CommandNames
 #Include "Libs/FlagRush/Const/SettingNames.Script.txt"										as SettingNames
 
+// Event
 #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" 					as PlayerLifecycleEvents
 #Include "Libs/FlagRush/Event/Progression.Script.txt"											as Progression
 #Include "Libs/FlagRush/Event/Settings.Script.txt"												as Settings
@@ -30,10 +31,9 @@
 #Include "Libs/FlagRush/UI/Modules/Radar.Script.txt"											as UIModule_Radar
 #Include "Libs/FlagRush/UI/Modules/RespawnFlash.Script.txt"								as UIModule_RespawnFlash
 #Include "Libs/FlagRush/UI/Modules/RespawnTimer.Script.txt"								as UIModule_RespawnTimer
-
 #Include "Libs/FlagRush/UI/Modules/ScoresHeader.Script.txt"								as UIModule_ScoresHeader
+#Include "Libs/FlagRush/UI/Modules/ScoresTable.Script.txt"								as UIModule_ScoresTable
 
-#Include "Libs/FlagRush/UI/Modules/ScoresTable.Script.txt"				as UIModule_ScoresTable
 #Include "Libs/FlagRush/UI/Modules/Sound.Script.txt"							as UIModule_Sounds
 #Include "Libs/FlagRush/UI/Modules/Spectator.Script.txt"					as UIModule_SpectatorControls
 
@@ -67,8 +67,8 @@ Void Private_LoadModules() {
 	UIModule_Radar::Load();
 	UIModule_RespawnFlash::Load();
 	UIModule_RespawnTimer::Load();
-
 	UIModule_ScoresHeader::Load();
+	UIModule_ScoresTable::Load();
 }
 
 Void Private_UnloadModules() {
@@ -83,8 +83,8 @@ Void Private_UnloadModules() {
 	UIModule_Radar::Unload();
 	UIModule_RespawnFlash::Unload();
 	UIModule_RespawnTimer::Unload();
-
 	UIModule_ScoresHeader::Unload();
+	UIModule_ScoresTable::Unload();
 }
 
 Void Private_CreateModuleLayers() {
@@ -144,19 +144,17 @@ Void Private_CreateModuleLayers() {
 	Layers::SetType(UIModule_RespawnTimer::C_LayerName, UIModule_RespawnTimer::C_LayerType);
 	Layers::Attach(UIModule_RespawnTimer::C_LayerName);
 
-
-
 	// Scores header
 	Layers::Create(UIModule_ScoresHeader::C_LayerName, UIModule_ScoresHeader::GetManialink());
 	Layers::SetType(UIModule_ScoresHeader::C_LayerName, UIModule_ScoresHeader::C_LayerType);
 	Layers::Attach(UIModule_ScoresHeader::C_LayerName);
 
-
-
 	// Scores table
-	Layers::Create(C_LayerName_ScoresTable, UIModule_ScoresTable::GetManialink());
-	Layers::SetType(C_LayerName_ScoresTable, CUILayer::EUILayerType::ScoresTable);
-	Layers::Attach(C_LayerName_ScoresTable);
+	Layers::Create(UIModule_ScoresTable::C_LayerName, UIModule_ScoresTable::GetManialink());
+	Layers::SetType(UIModule_ScoresTable::C_LayerName, UIModule_ScoresTable::C_LayerType);
+	Layers::Attach(UIModule_ScoresTable::C_LayerName);
+
+
 
 	// Sound
 	Layers::Create(C_LayerName_Sound, UIModule_Sounds::GetManialink());
@@ -180,8 +178,8 @@ Void Private_DestroyModuleLayers() {
 	Layers::Destroy(UIModule_Radar::C_LayerName);
 	Layers::Destroy(UIModule_RespawnFlash::C_LayerName);
 	Layers::Destroy(UIModule_RespawnTimer::C_LayerName);
-
 	Layers::Destroy(UIModule_ScoresHeader::C_LayerName);
+	Layers::Destroy(UIModule_ScoresTable::C_LayerName);
 
 	Layers::Destroy(C_LayerName_ScoresHeader);
 	Layers::Destroy(C_LayerName_ScoresTable);

@@ -5,6 +5,9 @@
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
+#Const C_LayerName "FlagRush_ScoresTable"
+#Const C_LayerType CUILayer::EUILayerType::ScoresTable
+
 #Const C_PlayersPerPage 5
 #Const C_PlayerCard_NameDefaultPosition <-37.5, 0.>
 #Const C_PlayerCard_NameOffset <0., 1.2>
@@ -13,8 +16,8 @@
 /** Return Manialink */
 Text GetManialink() {
 	return """
-	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-	<manialink version="3" name="FlagRush_ScoresTable">
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="{{{ C_LayerName }}}">
 	{{{ UIShared::GetLogoTransparentFramemodel() }}}
 	{{{ UIShared::GetGradientFramemodel() }}}
 
@@ -620,6 +623,16 @@ Text GetManialink() {
 	}
 	--></script>
 
-	</manialink>
+</manialink>
 	""";
+}
+
+// MARK: Lifecycle
+
+Void Unload() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void Load() {
+	Unload();
 }

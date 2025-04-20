@@ -181,13 +181,6 @@ Void Private_Player_Unspawn(CSmPlayer _Player) {
 	Players::SetSpawnDate(_Player, SpawnDate);
 }
 
-Void Private_Player_Net_SendPosition(CSmPlayer _Player) {
-	declare netwrite Vec3 Net_Position for _Player = <0., 0., 0.>;
-	Net_Position = _Player.Position;
-	declare netwrite Real Net_Yaw for _Player = 0.;
-	Net_Yaw = _Player.AimYaw;
-}
-
 Boolean Private_Player_CanPickUpDroppedFlag(CSmPlayer _Player) {
 	if (_Player.SpawnStatus != CSmPlayer::ESpawnStatus::Spawned || _Player.Armor <= 0) {
     return False;
@@ -546,8 +539,6 @@ Void Private_UpdatePlayers() {
     if (Private_Player_CanSpawn(Player)) {
       Private_Player_Spawn(Player);
     }
-
-    Private_Player_Net_SendPosition(Player);
   }
 }
 
@@ -599,8 +590,6 @@ Void WarmUpLoop() {
 		if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && Now - FlagRush_Warmup_UnspawnDate > C_RespawnDelayMin) {
 			Private_Player_Spawn(Player);
 		}
-
-		Private_Player_Net_SendPosition(Player);
 	}
 
 	foreach (Event in PendingEvents) {

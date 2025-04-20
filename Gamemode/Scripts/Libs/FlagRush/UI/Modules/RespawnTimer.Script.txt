@@ -37,20 +37,17 @@ Text GetManialink() {
 		declare CMlLabel RespawnLabel = (Page.GetFirstChild("rs-label") as CMlLabel);
 		declare CMlQuad  RespawnQuad = (Page.GetFirstChild("rs-gauge") as CMlQuad);
 
+		wait(InputPlayer != Null);
 		declare Integer TotalRespawnTime = -1;
 
 		while (True) {
 			yield;
 
-			if (InputPlayer == Null || IsSpectator) {
-				RespawnFrame.Hide();
-				continue;
-			}
-
 			declare Integer SpawnDate = Player_GetSpawnDate(InputPlayer);
 			declare Integer MillisRemaining = SpawnDate - GameTime + {{{ Durations::C_SpawnAnimDuration }}};
-			if (SpawnDate <= 0 || MillisRemaining <= 0) {
+			if (SpawnDate <= 0 || MillisRemaining <= 0 || IsSpectator) {
 				RespawnFrame.Hide();
+				TotalRespawnTime = -1;
 				continue;
 			}
 

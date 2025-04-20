@@ -7,6 +7,8 @@
 #Include "TextLib" as TL
 
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
+#Include "Libs/FlagRush/Core/Players.Script.txt" as Players
+
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 #Include "Libs/FlagRush/UI/SharedNetVars.Script.txt" as SharedNetVars
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
@@ -163,7 +165,6 @@ Text GetManialink() {
 
 			{{{ Flag::DumpNetFlagStructs() }}}
 
-			{{{ SharedNetVars::DefineLayerFunction_WarmUpIsRunning() }}}
 
 			/* References */
 			declare CMlFrame CustomizationSettingsDialogFrame;
@@ -191,9 +192,12 @@ Text GetManialink() {
 			declare K_PlayerMarker[] PlayerMarkers;
 
 			/* Common Functions */
+			{{{ SharedNetVars::DefineLayerFunction_WarmUpIsRunning() }}}
+			{{{ Players::DefineLayerFunction_Player_GetPosition() }}}
+			{{{ Players::DefineLayerFunction_Player_GetYaw() }}}
+
 			{{{ UIShared::GetTeamColorNetreadFunctions() }}}
 			{{{ UIShared::GetLoginMappingFunctions() }}}
-			{{{ UIShared::GetPlayerPositionFunctions() }}}
 
 			/**
 			 * Assigns all the needed CMlControl references.
@@ -423,7 +427,7 @@ Text GetManialink() {
 					SelfMarker.Frame.Hide();
 				} else {
 					SelfMarker.Frame.Show();
-					SelfMarker.Frame.ZIndex = GetPlayerPosition(GUIPlayer).Y;
+					SelfMarker.Frame.ZIndex = Player_GetPosition(GUIPlayer).Y;
 					SelfMarker.Icon.TextColor = GetTeamMidColor(GUIPlayer.CurrentClan);
 				}
 			}
@@ -445,13 +449,13 @@ Text GetManialink() {
 				declare Vec3 RelativePosition;
 				declare CSmPlayer FlagCarrierPlayer <=> GetPlayer(FlagRush_Net_Flag.Location.Player.Login);
 				if (FlagRush_Net_Flag.Location.Player.Login == "" || FlagCarrierPlayer == Null) {
-					RelativePosition = FlagRush_Net_Flag.Location.Position - GetPlayerPosition(GUIPlayer);
+					RelativePosition = FlagRush_Net_Flag.Location.Position - Player_GetPosition(GUIPlayer);
 					FlagMarker.Icon.Colorize = {{{ Stylesheet::C_NeutralLight }}};
 				} else {
-					RelativePosition = GetPlayerPosition(FlagCarrierPlayer) - GetPlayerPosition(GUIPlayer);
+					RelativePosition = Player_GetPosition(FlagCarrierPlayer) - Player_GetPosition(GUIPlayer);
 					FlagMarker.Icon.Colorize = GetTeamMidColor(FlagCarrierPlayer.CurrentClan);
 				}
-				declare Vec2 RelativeRadarPosition = Rotate(-GetPlayerYaw(GUIPlayer), <-RelativePosition.X, -RelativePosition.Z>);
+				declare Vec2 RelativeRadarPosition = Rotate(-Player_GetYaw(GUIPlayer), <-RelativePosition.X, -RelativePosition.Z>);
 
 				// If too far outside, still show on border
 				declare Distance = ML::Distance(<0., 0.> , RelativeRadarPosition);
@@ -478,8 +482,8 @@ Text GetManialink() {
 				}
 
 				// Determine relative position on radar
-				declare Vec3 RelativePosition = GetPlayerPosition(Player) - GetPlayerPosition(GUIPlayer);
-				declare Vec2 RelativeRadarPosition = Rotate(-GetPlayerYaw(GUIPlayer), -<RelativePosition.X, RelativePosition.Z>) * {{{ G_DefaultConfig.Zoom }}};
+				declare Vec3 RelativePosition = Player_GetPosition(Player) - Player_GetPosition(GUIPlayer);
+				declare Vec2 RelativeRadarPosition = Rotate(-Player_GetYaw(GUIPlayer), -<RelativePosition.X, RelativePosition.Z>) * {{{ G_DefaultConfig.Zoom }}};
 
 				// Hide when outside
 				declare OffsetPercentage = ML::Distance(<0., 0.> , RelativeRadarPosition) / {{{ C_RadarBaseSize / 2 }}};
@@ -492,7 +496,7 @@ Text GetManialink() {
 				// Determine relative rotation to the player
 				declare Real RelativeYaw;
 				if (FlagRush_Net_Flag.Location.Player.Login == Player.User.Login) RelativeYaw = 0.;
-				else RelativeYaw = GetPlayerYaw(Player) - GetPlayerYaw(GUIPlayer);
+				else RelativeYaw = Player_GetYaw(Player) - Player_GetYaw(GUIPlayer);
 
 				// Fade when close too the edge
 				declare Real Opacity = 1.0;
@@ -503,7 +507,7 @@ Text GetManialink() {
 
 				// Update marker frame
 				PlayerMarker.Frame.RelativePosition_V3 = RelativeRadarPosition;
-				PlayerMarker.Frame.ZIndex = GetPlayerPosition(Player).Y;
+				PlayerMarker.Frame.ZIndex = Player_GetPosition(Player).Y;
 				PlayerMarker.Frame.RelativeRotation = ML::RadToDeg(-RelativeYaw);
 				PlayerMarker.Icon.TextColor = GetTeamMidColor(Player.CurrentClan);
 				PlayerMarker.Icon.Opacity = Opacity * {{{ C_PlayerMarkerIconOpacity }}};

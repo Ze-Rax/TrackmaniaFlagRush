@@ -5,7 +5,6 @@
  */
 
 #Include "MathLib" as ML
-#Include "TextLib" as TL
 
 #Include "Libs/FlagRush/Const/SettingNames.Script.txt" as SettingNames
 #Include "Libs/FlagRush/Const/CommandNames.Script.txt" as CommandNames
@@ -519,8 +518,8 @@ Void Private_HandleCommands() {
 	  	default: continue;
 	  }
 
-	  declare Text UnprefixedCommandName = TL::Replace(Command.Name, Command::C_CommandPrefix, "");
-	  declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ UnprefixedCommandName }}}" by {{{ Command.Source.Name }}}.""";
+	  declare Text UnprefixedCommandName = Command::RemovePrefix(Command.Name);
+	  declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ UnprefixedCommandName }}}" from {{{ Command.Source.Name }}}.""";
 	  if (CommandText != "") Message ^= " " ^ CommandText;
 	  UIManager.UIAll.SendChat(Message);
   }

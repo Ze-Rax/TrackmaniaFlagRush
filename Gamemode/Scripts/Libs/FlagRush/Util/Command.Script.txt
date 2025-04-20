@@ -40,6 +40,13 @@
 }
 
 /**
+ * Removes the Command_ prefix from a given command name.
+ */
+Text RemovePrefix(Text _CommandName) {
+	return TL::Replace(_CommandName, C_CommandPrefix, "");
+}
+
+/**
  * Transfroms a Text and Params into a Command
  */
 K_Command FromNameAndParams(Text _Name, Text[] _Params, K_Source _Source) {

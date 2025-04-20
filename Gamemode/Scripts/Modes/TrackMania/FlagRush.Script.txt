@@ -43,7 +43,6 @@
 #Include "Libs/FlagRush/Core/Flag.Script.txt"															as Flag
 #Include "Libs/FlagRush/Core/HandicapQueue.Script.txt"										as HandicapQueue
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt"													as Vehicles
-#Include "Libs/FlagRush/Core/Hitbox.Script.txt"														as Hitbox
 
 #Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"								as FlagRush_XmlRpc
 
@@ -54,7 +53,6 @@
 #Include "Libs/FlagRush/Event/EnabledVehicles.Script.txt"									as EnabledVehicles
 
 #Include "Libs/FlagRush/Util/Log.Script.txt"															as Log
-#Include "Libs/FlagRush/Util/ModeUtils.Script.txt"												as ModeUtils
 #Include "Libs/FlagRush/Util/Command.Script.txt"													as Command
 
 #Include "Libs/FlagRush/UI/UIConfig.Script.txt"														as UIConfig
@@ -958,8 +956,8 @@ foreach (Command in Commands::GetPendingEvents()) {
 		default: return;
 	}
 
-	declare Text UnprefixedCommandName = TL::Replace(Command.Name, Command::C_CommandPrefix, "");
-	declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ UnprefixedCommandName }}}" by {{{ Command.Source.Name }}}.""";
+	declare Text UnprefixedCommandName = Command::RemovePrefix(Command.Name);
+	declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ UnprefixedCommandName }}}" from {{{ Command.Source.Name }}}.""";
 	if (CommandText != "") {
 		Message ^= " " ^ CommandText;
 	}

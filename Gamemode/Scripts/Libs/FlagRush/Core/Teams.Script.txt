@@ -230,6 +230,10 @@ Vec3 GetDarkColor(Integer _Clan) {
 	return G_TeamConfigs[_Clan].DarkColor;
 }
 
+Boolean IsTeamSkin(Ident _ModelId) {
+	return G_SkinIds.exists(_ModelId);
+}
+
 // Layer function definitions to get colors from team
 
 Text DefineLayerFunction_Team_GetLightColor() {

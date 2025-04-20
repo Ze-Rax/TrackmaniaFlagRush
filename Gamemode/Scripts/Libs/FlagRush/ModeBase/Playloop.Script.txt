@@ -116,15 +116,23 @@ Boolean Private_Player_RequestsClanChange(CSmPlayer _Player) {
 	return _Player.CurrentClan != _Player.RequestedClan;
 }
 
+Vehicles::K_Tuning Private_Player_GetVehicleTuning(CSmPlayer _Player) {
+	// Team skin Ids are not available in Vehicles lib
+	if (Teams::IsTeamSkin(_Player.ForceModelId)) {
+		return Vehicles::GetTuning(C_Vehicle_Stadium.Id);
+	}
+	return Vehicles::GetTuning(_Player.ForceModelId);
+}
+
 Void Private_Player_ApplyVehicleTuning(CSmPlayer _Player) {
-	declare Vehicles::K_Tuning Tuning = Vehicles::GetTuning(_Player.ForceModelId);
+	declare Vehicles::K_Tuning Tuning = Private_Player_GetVehicleTuning(_Player);
 	HandicapQueue::Queue_AccelCoef(_Player, Tuning.Acceleration);
 	HandicapQueue::Queue_AdherenceCoef(_Player, Tuning.Adherence);
 	HandicapQueue::Queue_ControlCoef(_Player, Tuning.Control);
 }
 
 Void Private_Player_ApplyHandicaps(CSmPlayer _Player) {
-	declare Vehicles::K_Tuning Tuning = Vehicles::GetTuning(_Player.ForceModelId);
+	declare Vehicles::K_Tuning Tuning = Private_Player_GetVehicleTuning(_Player);
 	HandicapQueue::Queue_Fragile(_Player, Settings::GetBoolean(SettingNames::S_FlagCarrierFragile));
 	HandicapQueue::Queue_AccelCoef(_Player, Tuning.Acceleration * Settings::GetReal(SettingNames::S_FlagCarrierAcceleration));
 	HandicapQueue::Queue_ControlCoef(_Player, Tuning.Control * Settings::GetReal(SettingNames::S_FlagCarrierControl));

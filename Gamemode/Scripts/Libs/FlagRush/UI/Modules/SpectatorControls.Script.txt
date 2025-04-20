@@ -1,4 +1,8 @@
-//#RequireContext CSmMlScriptIngame
+/**
+ * Spectator controls to follow the flag carrier.
+ *
+ * #RequireContext CSmMode
+ */
 
 #Include "ColorLib" as CL
 
@@ -7,10 +11,13 @@
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 
+#Const C_LayerName "FlagRush_SpectatorControls"
+#Const C_LayerType CUILayer::EUILayerType::Normal
+
 Text GetManialink() {
 	return """
-	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-	<manialink version="3" name="FlagRush_SpectatorUI">
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="{{{ C_LayerName }}}">
 	<frame id="spectatorbutton" pos="135 -40" scale="0.75">
 		<quad size="50 10" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" colorize="{{{ CL::RgbToHex6(Stylesheet::C_NeutralDark) }}}" opacity="{{{ Stylesheet::C_TransparentBackgroundOpacity }}}"/>
 		<quad pos="20 0" z-index="1" size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" id="buttonstate-background"/>
@@ -187,6 +194,16 @@ Text GetManialink() {
 		}
 	}
 	--></script>
-	</manialink>
+</manialink>
 	""";
+}
+
+// MARK: Lifecycle
+
+Void Unload() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void Load() {
+	Unload();
 }

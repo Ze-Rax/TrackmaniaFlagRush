@@ -34,8 +34,8 @@
 #Include "Libs/FlagRush/UI/Modules/ScoresHeader.Script.txt"								as UIModule_ScoresHeader
 #Include "Libs/FlagRush/UI/Modules/ScoresTable.Script.txt"								as UIModule_ScoresTable
 #Include "Libs/FlagRush/UI/Modules/Sounds.Script.txt"											as UIModule_Sounds
+#Include "Libs/FlagRush/UI/Modules/SpectatorControls.Script.txt"					as UIModule_SpectatorControls
 
-#Include "Libs/FlagRush/UI/Modules/Spectator.Script.txt"					as UIModule_SpectatorControls
 
 #Const C_AttachId_Podium							"16x9_StadiumSmall"
 
@@ -70,6 +70,7 @@ Void Private_LoadModules() {
 	UIModule_ScoresHeader::Load();
 	UIModule_ScoresTable::Load();
 	UIModule_Sounds::Load();
+	UIModule_SpectatorControls::Load();
 }
 
 Void Private_UnloadModules() {
@@ -87,6 +88,7 @@ Void Private_UnloadModules() {
 	UIModule_ScoresHeader::Unload();
 	UIModule_ScoresTable::Unload();
 	UIModule_Sounds::Unload();
+	UIModule_SpectatorControls::Unload();
 }
 
 Void Private_CreateModuleLayers() {
@@ -161,12 +163,10 @@ Void Private_CreateModuleLayers() {
 	Layers::SetType(UIModule_Sounds::C_LayerName, UIModule_Sounds::C_LayerType);
 	Layers::Attach(UIModule_Sounds::C_LayerName);
 
-
-
 	// Spectator controls
-	Layers::Create(C_LayerName_Spectator, UIModule_SpectatorControls::GetManialink());
-	Layers::SetType(C_LayerName_Spectator, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName_Spectator);
+	Layers::Create(UIModule_SpectatorControls::C_LayerName, UIModule_SpectatorControls::GetManialink());
+	Layers::SetType(UIModule_SpectatorControls::C_LayerName, UIModule_SpectatorControls::C_LayerType);
+	Layers::Attach(UIModule_SpectatorControls::C_LayerName);
 }
 
 Void Private_DestroyModuleLayers() {
@@ -183,6 +183,7 @@ Void Private_DestroyModuleLayers() {
 	Layers::Destroy(UIModule_ScoresHeader::C_LayerName);
 	Layers::Destroy(UIModule_ScoresTable::C_LayerName);
 	Layers::Destroy(UIModule_Sounds::C_LayerName);
+	Layers::Destroy(UIModule_SpectatorControls::C_LayerName);
 }
 
 // TODO: Move to "shared netvars library"

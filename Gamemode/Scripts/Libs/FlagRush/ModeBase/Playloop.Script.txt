@@ -143,8 +143,7 @@ Boolean Private_Player_CanSpawn(CSmPlayer _Player) {
 	if (_Player.SpawnStatus != CSmPlayer::ESpawnStatus::NotSpawned) {
     return False;
   }
-	declare netwrite Integer Net_SpawnDate for _Player = -1;
-	return Net_SpawnDate < Now;
+	return Players::GetSpawnDate(_Player) < Now;
 }
 
 Void Private_Player_Initialize(CSmPlayer _Player) {
@@ -177,9 +176,9 @@ Boolean Private_Player_IsDead(CSmPlayer _Player) {
 
 Void Private_Player_Unspawn(CSmPlayer _Player) {
 	UnspawnPlayer(_Player);
-	declare netwrite Integer Net_SpawnDate for _Player = Now;
 	declare Integer SpawnDelay = ML::NearestInteger(Settings::GetReal(SettingNames::S_RespawnDelayPerPlayer) * ClansNbPlayers[_Player.RequestedClan] * 1000);
-	Net_SpawnDate = Now + ML::Min(SpawnDelay, C_RespawnDelayMin);
+	declare Integer SpawnDate = Now + ML::Max(SpawnDelay, C_RespawnDelayMin);
+	Players::SetSpawnDate(_Player, SpawnDate);
 }
 
 Void Private_Player_Net_SendPosition(CSmPlayer _Player) {
@@ -571,8 +570,7 @@ Void Start() {
 	});
 
   foreach (Player in Players) {
-    declare netwrite Integer Net_SpawnDate for Player = -1;
-    Net_SpawnDate = -1;
+		Players::SetSpawnDate(Player, -1);
     SetPlayerClan(Player, Player.RequestedClan);
   }
 }

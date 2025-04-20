@@ -6,6 +6,7 @@
 #Struct K_Player {
   Ident PlayerId;
   Vehicles::K_Vehicle SelectedVehicle;
+  Integer SpawnDate;
 }
 
 declare K_Player[Ident] G_Players; // By PlayerId
@@ -14,33 +15,51 @@ declare K_Player[Ident] G_Players; // By PlayerId
 
 Void Private_Initilialize(Ident _PlayerId) {
   declare K_Player Player = K_Player {
-    PlayerId = _PlayerId
+    PlayerId = _PlayerId,
+    SelectedVehicle = Vehicles::C_Vehicle_Invalid,
+    SpawnDate = -1
   };
   G_Players[_PlayerId] = Player;
 }
 
 // MARK: API
 
-Vehicles::K_Vehicle GetSelectedVehicle(Ident _PlayerId) {
-  if (!G_Players.existskey(_PlayerId)) {
+Vehicles::K_Vehicle GetSelectedVehicle(CSmPlayer _Player) {
+  if (_Player == Null || !G_Players.existskey(_Player.Id)) {
     return Vehicles::C_Vehicle_Invalid;
   }
-  return G_Players[_PlayerId].SelectedVehicle;
-}
-
-Vehicles::K_Vehicle GetSelectedVehicle(CSmPlayer _Player) {
-  return GetSelectedVehicle(_Player.Id);
-}
-
-Void SetSelectedVehicle(Ident _PlayerId, Vehicles::K_Vehicle _Vehicle) {
-  if (!G_Players.existskey(_PlayerId)) {
-    return;
-  }
-  G_Players[_PlayerId].SelectedVehicle = _Vehicle;
+  return G_Players[_Player.Id].SelectedVehicle;
 }
 
 Void SetSelectedVehicle(CSmPlayer _Player, Vehicles::K_Vehicle _Vehicle) {
-  SetSelectedVehicle(_Player.Id, _Vehicle);
+  if (_Player == Null || !G_Players.existskey(_Player.Id)) {
+    return;
+  }
+  G_Players[_Player.Id].SelectedVehicle = _Vehicle;
+}
+
+Integer GetSpawnDate(CSmPlayer _Player) {
+  if (_Player == Null || !G_Players.existskey(_Player.Id)) {
+    return -1;
+  }
+  return G_Players[_Player.Id].SpawnDate;
+}
+
+Void SetSpawnDate(CSmPlayer _Player, Integer _SpawnDate) {
+  if (_Player == Null || !G_Players.existskey(_Player.Id)) {
+    return;
+  }
+  G_Players[_Player.Id].SpawnDate = _SpawnDate;
+  declare netwrite Integer Net_FlagRush_SpawnDate for _Player = -1;
+  Net_FlagRush_SpawnDate = _SpawnDate;
+}
+
+Text DefineLayerFunction_Player_GetSpawnDate() {
+  return
+"""Integer Player_GetSpawnDate(CSmPlayer _Player) {
+  declare netread Integer Net_FlagRush_SpawnDate for _Player = -1;
+  return Net_FlagRush_SpawnDate;
+}""";
 }
 
 // MARK: Lifecycle

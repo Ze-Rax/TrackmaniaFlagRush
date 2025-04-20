@@ -5,6 +5,9 @@
  */
 
 #Include "Libs/FlagRush/Const/Durations.Script.txt" as Durations
+
+#Include "Libs/FlagRush/Core/Players.Script.txt" as Players
+
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
 #Const C_LayerName "FlagRush_RespawnTimer"
@@ -26,6 +29,7 @@ Text GetManialink() {
 	#Include "MathLib" as ML
 
 	{{{ UIShared::GetTeamColorNetreadFunctions() }}}
+	{{{ Players::DefineLayerFunction_Player_GetSpawnDate() }}}
 
 	main() {
 		declare CMlFrame RespawnFrame = (Page.GetFirstChild("rs-frame") as CMlFrame);
@@ -33,17 +37,20 @@ Text GetManialink() {
 		declare CMlLabel RespawnLabel = (Page.GetFirstChild("rs-label") as CMlLabel);
 		declare CMlQuad  RespawnQuad = (Page.GetFirstChild("rs-gauge") as CMlQuad);
 
-		wait(InputPlayer != Null);
-
-		declare netread Integer Net_SpawnDate for InputPlayer;
 		declare Integer TotalRespawnTime = -1;
+
 		while (True) {
 			yield;
 
-			declare Integer MillisRemaining = Net_SpawnDate - GameTime + {{{ Durations::C_SpawnAnimDuration }}};
-			if (Net_SpawnDate <= 0 || MillisRemaining <= 0 || IsSpectator) {
+			if (InputPlayer == Null || IsSpectator) {
 				RespawnFrame.Hide();
-				TotalRespawnTime = -1;
+				continue;
+			}
+
+			declare Integer SpawnDate = Player_GetSpawnDate(InputPlayer);
+			declare Integer MillisRemaining = SpawnDate - GameTime + {{{ Durations::C_SpawnAnimDuration }}};
+			if (SpawnDate <= 0 || MillisRemaining <= 0) {
+				RespawnFrame.Hide();
 				continue;
 			}
 

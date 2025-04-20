@@ -1,4 +1,9 @@
-//#RequireContext CSmMlScriptIngame
+/**
+ * Indicator showing when the respawn process is finished.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "Libs/FlagRush/Const/Durations.Script.txt" as Durations
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 

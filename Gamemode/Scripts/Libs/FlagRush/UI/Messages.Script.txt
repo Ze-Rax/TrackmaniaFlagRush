@@ -16,7 +16,7 @@
 
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt"	as Stylesheet
 #Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"		as UIModule_EventFeed
-#Include "Libs/FlagRush/UI/Modules/Sound.Script.txt"								as UIModule_Sound
+#Include "Libs/FlagRush/UI/Modules/Sounds.Script.txt"								as UIModule_Sound
 
 #Const C_ChatPrefix		"[FlagRush]"
 

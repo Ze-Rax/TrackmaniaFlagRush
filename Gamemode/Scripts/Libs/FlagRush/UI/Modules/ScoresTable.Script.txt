@@ -1,4 +1,8 @@
-// #RequireContext CSmMlScriptIngame
+/**
+ * Custom scores table.
+ *
+ * #RequireContext CSmMode
+ */
 
 #Include "ColorLib" as CL
 #Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores

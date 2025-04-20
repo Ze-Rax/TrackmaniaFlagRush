@@ -1,3 +1,9 @@
+/**
+ * Header showing round scores, flag state and timelimit at the top of the screen.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Include "ColorLib" as CL
 
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag

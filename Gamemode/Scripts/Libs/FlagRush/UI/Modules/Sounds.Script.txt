@@ -1,0 +1,60 @@
+/**
+ * Layer without content to play sounds from the game files.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Const C_LayerName "FlagRush_Sounds"
+#Const C_LayerType CUILayer::EUILayerType::Normal
+
+/**
+* get the layer manialink as text
+*/
+Text GetManialink() {
+	return """
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="{{{ C_LayerName }}}">
+	<script><!--
+	main() {
+		declare netread Integer Net_FlagRush_Sounds_UpdateTimestamp for Teams[0];
+		declare Integer LastAudioEventStamp = Net_FlagRush_Sounds_UpdateTimestamp;
+
+		declare netread Text[] Net_FlagRush_Sounds_SoundUrls for Teams[0];
+		while(True) {
+			yield;
+			if (Net_FlagRush_Sounds_UpdateTimestamp > LastAudioEventStamp) {
+				LastAudioEventStamp = Net_FlagRush_Sounds_UpdateTimestamp;
+				foreach(Url in Net_FlagRush_Sounds_SoundUrls) {
+					Audio.PlaySoundEvent(Url, 1.);
+				}
+			}
+		}
+	}
+	--></script>
+</manialink>
+	""";
+}
+
+// MARK: API
+
+/**
+* Plays sound events on timestamp:
+* @param Text[] _SoundUrls
+*/
+Void Play(Text[] _SoundUrls) {
+	declare netwrite Integer Net_FlagRush_Sounds_UpdateTimestamp for Teams[0] = Now;
+	declare netwrite Text[] Net_FlagRush_Sounds_SoundUrls for Teams[0] = [];
+
+	Net_FlagRush_Sounds_UpdateTimestamp = Now;
+	Net_FlagRush_Sounds_SoundUrls = _SoundUrls;
+}
+
+// MARK: Lifecycle
+
+Void Unload() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void Load() {
+	Unload();
+}

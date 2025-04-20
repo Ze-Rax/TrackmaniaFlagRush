@@ -33,8 +33,8 @@
 #Include "Libs/FlagRush/UI/Modules/RespawnTimer.Script.txt"								as UIModule_RespawnTimer
 #Include "Libs/FlagRush/UI/Modules/ScoresHeader.Script.txt"								as UIModule_ScoresHeader
 #Include "Libs/FlagRush/UI/Modules/ScoresTable.Script.txt"								as UIModule_ScoresTable
+#Include "Libs/FlagRush/UI/Modules/Sounds.Script.txt"											as UIModule_Sounds
 
-#Include "Libs/FlagRush/UI/Modules/Sound.Script.txt"							as UIModule_Sounds
 #Include "Libs/FlagRush/UI/Modules/Spectator.Script.txt"					as UIModule_SpectatorControls
 
 #Const C_AttachId_Podium							"16x9_StadiumSmall"
@@ -69,6 +69,7 @@ Void Private_LoadModules() {
 	UIModule_RespawnTimer::Load();
 	UIModule_ScoresHeader::Load();
 	UIModule_ScoresTable::Load();
+	UIModule_Sounds::Load();
 }
 
 Void Private_UnloadModules() {
@@ -85,6 +86,7 @@ Void Private_UnloadModules() {
 	UIModule_RespawnTimer::Unload();
 	UIModule_ScoresHeader::Unload();
 	UIModule_ScoresTable::Unload();
+	UIModule_Sounds::Unload();
 }
 
 Void Private_CreateModuleLayers() {
@@ -154,12 +156,12 @@ Void Private_CreateModuleLayers() {
 	Layers::SetType(UIModule_ScoresTable::C_LayerName, UIModule_ScoresTable::C_LayerType);
 	Layers::Attach(UIModule_ScoresTable::C_LayerName);
 
+	// Sounds
+	Layers::Create(UIModule_Sounds::C_LayerName, UIModule_Sounds::GetManialink());
+	Layers::SetType(UIModule_Sounds::C_LayerName, UIModule_Sounds::C_LayerType);
+	Layers::Attach(UIModule_Sounds::C_LayerName);
 
 
-	// Sound
-	Layers::Create(C_LayerName_Sound, UIModule_Sounds::GetManialink());
-	Layers::SetType(C_LayerName_Sound, CUILayer::EUILayerType::Normal);
-	Layers::Attach(C_LayerName_Sound);
 
 	// Spectator controls
 	Layers::Create(C_LayerName_Spectator, UIModule_SpectatorControls::GetManialink());
@@ -180,11 +182,7 @@ Void Private_DestroyModuleLayers() {
 	Layers::Destroy(UIModule_RespawnTimer::C_LayerName);
 	Layers::Destroy(UIModule_ScoresHeader::C_LayerName);
 	Layers::Destroy(UIModule_ScoresTable::C_LayerName);
-
-	Layers::Destroy(C_LayerName_ScoresHeader);
-	Layers::Destroy(C_LayerName_ScoresTable);
-	Layers::Destroy(C_LayerName_Sound);
-	Layers::Destroy(C_LayerName_Menu);
+	Layers::Destroy(UIModule_Sounds::C_LayerName);
 }
 
 // TODO: Move to "shared netvars library"

@@ -2,10 +2,13 @@
 #Include "Libs/FlagRush/Const/Durations.Script.txt" as Durations
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
 
+#Const C_LayerName "FlagRush_RespawnTimer"
+#Const C_LayerType CUILayer::EUILayerType::Normal
+
 Text GetManialink() {
 	return """
 	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-	<manialink version="3" name="FlagRush_RespawnCounter">
+	<manialink version="3" name="{{{ C_LayerName }}}">
 		<frame pos="-40 -50" id="rs-frame" hidden="1">
 			<label pos="40 -5" z-index="2" size="80 6" text="" halign="center" style="TextCardSmall" textsize="3" valign="center2" id="rs-label" textcolor="fff"/>
 			<frame id="rs-gauge-frame" z-index="1" size="80 10">
@@ -55,4 +58,14 @@ Text GetManialink() {
 	--></script>
 	</manialink>
 	""";
+}
+
+// MARK: Lifecycle
+
+Void Unload() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void Load() {
+	Unload();
 }

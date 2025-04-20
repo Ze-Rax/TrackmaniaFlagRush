@@ -363,12 +363,12 @@ Progression::EndServer();
 ***InitMatch***
 ***
 Scores::StartMatch();
-FlagRush_XmlRpc::Send_MatchStart();
 ***
 
 ***StartMatch***
 ***
 Progression::StartMatch();
+FlagRush_XmlRpc::Send_MatchStart();
 ***
 
 ***EndMatch***
@@ -393,7 +393,6 @@ if (!MapValid) {
 	Messages::InvalidMap();
 }
 EnabledVehicles::Mode_SetMapEnabledVehicles(Map::GetEnabledVehicles());
-FlagRush_XmlRpc::Send_MapStart();
 Teams::Init();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 MB_Synchro();
@@ -402,14 +401,18 @@ MB_Synchro();
 ***StartMap***
 ***
 Progression::StartMap();
+FlagRush_XmlRpc::Send_MapStart();
 MB_Sleep(Durations::C_Duration_MapStart);
 
 StartTime = Now; // Start time has to be set otherwise cannot spawn players
-if (S_UseWarmUp && !MatchEndRequested) +++Private_WarmUp+++
+if (S_UseWarmUp && !MatchEndRequested) {
+	+++Private_WarmUp+++
+}
 ***
 
-***AfterEndMap***
+***EndMap***
 ***
+Progression::EndMap();
 declare Boolean MapIsValid = Progression::MapIsValid();
 FlagRush_XmlRpc::Send_MapEnd(MapIsValid);
 if (MapIsValid) {
@@ -431,14 +434,15 @@ MB_Sleep(Durations::C_Duration_MapEnd / 2);
 Scores::EndMap();
 MB_Sleep(Durations::C_Duration_MapEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
+***
 
+***AfterEndMap***
+***
 if (Private_MatchPointLimitReached()) {
 	MB_StopMatch();
 } else {
 	MB_SkipPodiumSequence(); // Podium == Match end MVP
 }
-
-Progression::EndMap();
 ***
 
 // ~~~~~~~~~~ Round ~~~~~~~~~~ //
@@ -446,17 +450,7 @@ Progression::EndMap();
 ***InitRound***
 ***
 Scores::StartRound();
-FlagRush_XmlRpc::Send_RoundStart();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
-***
-
-***StartRound***
-***
-Progression::StartRound();
-Messages::RoundStart(MB_GetRoundCount(), Durations::C_Duration_RoundStart);
-MB_Sleep(Durations::C_Duration_RoundStart);
-StartTime = Now;
-Private_RoundTimeRemaining = S_RoundTimeLimitSeconds * 1000;
 
 // Enable time limit warnings
 Private_TimeLimitWarningsEnabled.clear();
@@ -465,13 +459,20 @@ foreach (WarningSeconds in C_TimeLimitWarning_Seconds) {
 }
 ***
 
+***StartRound***
+***
+Progression::StartRound();
+FlagRush_XmlRpc::Send_RoundStart();
+Messages::RoundStart(MB_GetRoundCount(), Durations::C_Duration_RoundStart);
+MB_Sleep(Durations::C_Duration_RoundStart);
+
+StartTime = Now;
+Private_RoundTimeRemaining = S_RoundTimeLimitSeconds * 1000;
+***
+
 ***EndRound***
 ***
 Progression::EndRound();
-***
-
-***AfterEndRound***
-***
 declare Boolean RoundIsValid = Progression::RoundIsValid();
 FlagRush_XmlRpc::Send_RoundEnd(RoundIsValid);
 if (RoundIsValid) {
@@ -493,7 +494,10 @@ MB_Sleep(Durations::C_Duration_RoundEnd / 2);
 Scores::EndRound();
 MB_Sleep(Durations::C_Duration_RoundEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
+***
 
+***AfterEndRound***
+***
 if (Private_MapPointLimitReached()) {
 	MB_StopMap();
 }
@@ -523,10 +527,7 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 Private_RoundTimeRemaining = EndTime - Now;
 Progression::SetEndTime(-1);
 Progression::EndTurn();
-***
 
-***AfterEndTurn***
-***
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
 MB_Sleep(Durations::C_Duration_TurnEnd);
 
@@ -552,10 +553,8 @@ if (Progression::RoundEndRequested()) {
 }
 
 // Round end & overtime conditions
-if(Progression::OvertimeIsRunning()) {
-	if (!Private_RoundIsTied()) {
-		MB_StopRound();
-	}
+if(Progression::OvertimeIsRunning() && !Private_RoundIsTied()) {
+	MB_StopRound();
 } else if (Private_RoundPointLimitReached()) {
 	MB_StopRound();
 } else if (Private_RoundTimeLimitReached()) {
@@ -593,6 +592,8 @@ Playloop::End();
 
 ***PodiumSequence***
 ***
+// Mostly EndMatch logic, but podium is part of the map and not the match, so evaluate match here.
+
 // Score table phase
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 declare Integer WinnerClan = Scores::EvaluateMatch();
@@ -601,6 +602,7 @@ if (WinnerClan == 0) {
 } else {
 	Messages::MatchWin(WinnerClan, Durations::C_Duration_MatchEnd);
 }
+
 // Sleep during message and show scoreboard update half way through
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 MB_Sleep(Durations::C_Duration_MatchEnd / 2);
@@ -625,9 +627,13 @@ if (HasPodium) {
 Progression::StartWarmUp();
 FlagRush_XmlRpc::Send_WarmUpStart();
 Messages::WarmUpStart(Durations::C_Duration_WarmUpStart);
+
 WarmUpReadyUp::Start(S_WarmUpWaitForApproval);
-if (S_WarmUpWaitForApproval) Messages::WarmUpWaitForApproval();
+if (S_WarmUpWaitForApproval) {
+	Messages::WarmUpWaitForApproval();
+}
 MB_Sleep(Durations::C_Duration_WarmUpStart);
+
 declare CUIConfig::EUISequence PreviousSequence = UIManager.UIAll.UISequence;
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
@@ -685,6 +691,10 @@ Progression::EndPause();
 
 // ~~~~~~~~~~ Yield ~~~~~~~~~~ //
 
+// NOTE: Cannot use non-library functions or globales in here, as this is executed during MB_Yield() in the modebase,
+// which is defined before any function or globale that could be defined in any extend.
+// Only code directly or plugs which don't contain non-library functions or non ModeBase globales themselves.
+
 /**
  * Flush previous events and create new ones from CSmModeEvents, etc.
  */
@@ -699,10 +709,6 @@ EnabledVehicles::Yield();
 
 Playloop::Yield();
 ***
-
-// NOTE: Cannot use non-library functions or globales in here, as this is executed during MB_Yield() in the modebase,
-// which is defined before any function or globale that could be defined in any extend.
-// Only code directly or plugs which don't contain non-library functions or non ModeBase globales themselves.
 
 ***BeforeYield***
 ***
@@ -978,14 +984,18 @@ Boolean Private_MapPointLimitReached() {
 }
 
 Boolean Private_RoundPointLimitReached() {
-	if (S_NbFlagsToWinRound <= 0) return False;
+	if (S_NbFlagsToWinRound <= 0) {
+		return False;
+	}
 	declare Integer RoundPointsTeam1 = Scores::GetClanRoundPoints(1);
 	declare Integer RoundPointsTeam2 = Scores::GetClanRoundPoints(2);
 	return ML::Max(RoundPointsTeam1, RoundPointsTeam2) >= S_NbFlagsToWinRound;
 }
 
 Boolean Private_RoundTimeLimitReached() {
-	if (S_RoundTimeLimitSeconds <= 0) return False;
+	if (S_RoundTimeLimitSeconds <= 0) {
+		return False;
+	}
 	return Now > EndTime;
 }
 

@@ -216,3 +216,14 @@ Void LoadItems() {
 		G_SkinIds[Index] = ItemList_AddWithSkin("CarSport", TeamColor.SkinName);
 	}
 }
+
+Void Unload() {
+	G_TeamConfigs.clear();
+	G_TeamNameOverrides.clear();
+	G_TeamHueOverrides.clear();
+	G_UseClubTags = False;
+}
+
+Void Load() {
+	Unload();
+}

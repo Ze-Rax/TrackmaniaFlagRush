@@ -166,3 +166,14 @@ Boolean InitLandmarks() {
 
 	return Valid;
 }
+
+Void Unload() {
+	G_DefaultFlagSpawn = Null;
+	G_FlagSpawns.clear();
+	G_Spawns.clear();
+	G_Bases.clear();
+}
+
+Void Load() {
+	Unload();
+}

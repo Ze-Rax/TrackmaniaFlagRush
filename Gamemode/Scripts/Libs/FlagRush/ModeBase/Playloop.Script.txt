@@ -13,6 +13,7 @@
 
 #Include "Libs/FlagRush/Core/Map.Script.txt" as Map
 #Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
+#Include "Libs/FlagRush/Core/Players.Script.txt" as Players
 #Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
 #Include "Libs/FlagRush/Core/HandicapQueue.Script.txt" as HandicapQueue
@@ -28,7 +29,6 @@
 #Include "Libs/FlagRush/Util/Command.Script.txt" as Command
 
 #Include "Libs/FlagRush/UI/Messages.Script.txt" as Messages
-#Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt" as UIModule_VehicleSelection
 
 #Const C_Epsilon_Distance 0.001
 #Const C_AssistTimeThreshold 5000
@@ -98,7 +98,7 @@ Void Private_Flag_Reset() {
 }
 
 Vehicles::K_Vehicle Private_Player_GetSelectedVehicle(CSmPlayer _Player) {
-	declare Vehicles::K_Vehicle SelectedVehicle = UIModule_VehicleSelection::GetSlectedVehicle(_Player);
+	declare Vehicles::K_Vehicle SelectedVehicle = Players::GetSelectedVehicle(_Player);
 	if (EnabledVehicles::IsEnabled(SelectedVehicle)) {
 		return SelectedVehicle;
 	}

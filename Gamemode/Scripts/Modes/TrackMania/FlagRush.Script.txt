@@ -39,6 +39,7 @@
 #Include "Libs/FlagRush/Core/Map.Script.txt"															as Map
 #Include "Libs/FlagRush/Core/Scores.Script.txt"														as Scores
 #Include "Libs/FlagRush/Core/Teams.Script.txt"														as Teams
+#Include "Libs/FlagRush/Core/Players.Script.txt"													as Players
 #Include "Libs/FlagRush/Core/Flag.Script.txt"															as Flag
 #Include "Libs/FlagRush/Core/HandicapQueue.Script.txt"										as HandicapQueue
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt"													as Vehicles
@@ -272,15 +273,18 @@ Settings::Track(SettingNames::S_ModeCommands_AdminLoginsCsv, S_ModeCommands_Admi
 Playloop::Load();
 
 // Core
+Map::Load();
 Flag::Load();
 HandicapQueue::Load();
 Scores::Load();
+Teams::Load();
 Teams::SetTeam1NameOverride(S_Team1Name);
 Teams::SetTeam1HueOverride(S_Team1Hue);
 Teams::SetTeam2NameOverride(S_Team2Name);
 Teams::SetTeam2HueOverride(S_Team2Hue);
 Teams::UseClubTags(S_UseClubTags);
 Teams::Init();
+Players::Load();
 
 // Events
 Settings::Load();
@@ -308,9 +312,12 @@ if (S_Debug) {
 Playloop::Unload();
 
 // Core
+Map::Unload();
 Flag::Unload();
 HandicapQueue::Unload();
 Scores::Unload();
+Teams::Unload();
+Players::Unload();
 
 // Events
 Settings::Unload();
@@ -688,6 +695,21 @@ FlagRush_Net_PauseIsRunning = False;
 
 // ~~~~~~~~~~ Yield ~~~~~~~~~~ //
 
+/**
+ * Flush previous events and create new ones from CSmModeEvents, etc.
+ */
+***CollectEvents***
+***
+Settings::Yield();
+{ +++TrackModeSettings+++ } // Track modesettings after Settings::Yield, else events would be cleared instantly.
+Commands::Yield();
+Progression::Yield();
+PlayerLifecycleEvents::Yield();
+EnabledVehicles::Yield();
+
+Playloop::Yield();
+***
+
 // NOTE: Cannot use non-library functions or globales in here, as this is executed during MB_Yield() in the modebase,
 // which is defined before any function or globale that could be defined in any extend.
 // Only code directly or plugs which don't contain non-library functions or non ModeBase globales themselves.
@@ -701,21 +723,12 @@ UILayers::BeforeYield();
 
 ***Yield***
 ***
-// Collect events in Event libraries first
-// Event libraries should be yielded first
-Settings::Yield();
-{ +++TrackModeSettings+++ } // Track modesettings after Settings::Yield, else events would be cleared instantly.
-Commands::Yield();
-Progression::Yield();
-PlayerLifecycleEvents::Yield();
-EnabledVehicles::Yield();
++++CollectEvents+++
 
-Playloop::Yield();
-
-// Now update all other libs
 Flag::Yield();
 HandicapQueue::Yield();
 Scores::Yield();
+Players::Yield();
 
 UILayers::Yield();
 Messages::Yield();

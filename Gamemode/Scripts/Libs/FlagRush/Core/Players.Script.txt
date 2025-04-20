@@ -1,0 +1,67 @@
+#Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
+
+#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" as PlayerLifecycleEvents
+
+
+#Struct K_Player {
+  Ident PlayerId;
+  Vehicles::K_Vehicle SelectedVehicle;
+}
+
+declare K_Player[Ident] G_Players; // By PlayerId
+
+// MARK: Helper Functions
+
+Void Private_Initilialize(Ident _PlayerId) {
+  declare K_Player Player = K_Player {
+    PlayerId = _PlayerId
+  };
+  G_Players[_PlayerId] = Player;
+}
+
+// MARK: API
+
+Vehicles::K_Vehicle GetSelectedVehicle(Ident _PlayerId) {
+  if (!G_Players.existskey(_PlayerId)) {
+    return Vehicles::C_Vehicle_Invalid;
+  }
+  return G_Players[_PlayerId].SelectedVehicle;
+}
+
+Vehicles::K_Vehicle GetSelectedVehicle(CSmPlayer _Player) {
+  return GetSelectedVehicle(_Player.Id);
+}
+
+Void SetSelectedVehicle(Ident _PlayerId, Vehicles::K_Vehicle _Vehicle) {
+  if (!G_Players.existskey(_PlayerId)) {
+    return;
+  }
+  G_Players[_PlayerId].SelectedVehicle = _Vehicle;
+}
+
+Void SetSelectedVehicle(CSmPlayer _Player, Vehicles::K_Vehicle _Vehicle) {
+  SetSelectedVehicle(_Player.Id, _Vehicle);
+}
+
+// MARK: Lifecycle
+
+Void Yield() {
+  foreach (Event in PlayerLifecycleEvents::GetPendingEvents()) {
+    switch (Event.Type) {
+      case PlayerLifecycleEvents::C_EventType_PlayerAdded: {
+        Private_Initilialize(Event.Player.PlayerId);
+      }
+      case PlayerLifecycleEvents::C_EventType_PlayerRemoved: {
+        G_Players.removekey(Event.Player.PlayerId);
+      }
+    }
+  }
+}
+
+Void Unload() {
+  G_Players.clear();
+}
+
+Void Load() {
+  Unload();
+}

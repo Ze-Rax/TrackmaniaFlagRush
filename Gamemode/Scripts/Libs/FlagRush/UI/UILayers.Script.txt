@@ -13,6 +13,8 @@
 #Include "Libs/FlagRush/Const/CommandNames.Script.txt"										as CommandNames
 #Include "Libs/FlagRush/Const/SettingNames.Script.txt"										as SettingNames
 
+#Include "Libs/FlagRush/Core/Players.Script.txt"													as Players
+
 // Event
 #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" 					as PlayerLifecycleEvents
 #Include "Libs/FlagRush/Event/Progression.Script.txt"											as Progression
@@ -223,6 +225,11 @@ Void Yield() {
 	UIModule_ModeCommands::Yield();
 	foreach (Command in UIModule_ModeCommands::GetPendingCommands()) {
 		Commands::Publish(Command);
+	}
+
+	UIModule_VehicleSelection::Yield();
+	foreach (Event in UIModule_VehicleSelection::GetPendingEvents()) {
+		Players::SetSelectedVehicle(Event.Player, Event.SelectedVehicle);
 	}
 
 	// React to events

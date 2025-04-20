@@ -11,10 +11,19 @@
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
 #Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include "Libs/FlagRush/Util/Log.Script.txt" as Log
+
+#Struct K_Event {
+	CSmPlayer Player;
+	Vehicles::K_Vehicle SelectedVehicle;
+}
 
 #Const C_LayerName "FlagRush_VehicleSelection"
 #Const C_LayerType CUILayer::EUILayerType::ScoresTable
 
+#Const C_EventType_SelectionChanged "VehicleSelection_SelectionChanged"
+
+declare K_Event[] G_PendingEvents;
 declare Vehicles::K_Vehicle[] G_EnabledVehicles;
 
 Text GetManialink() {
@@ -87,15 +96,18 @@ Text GetManialink() {
 		}
 	}
 
-	Void SetSelectedVehicleIndex(Integer VehicleIndex) {
-		declare netwrite Text Net_FlagRush_VehicleSelection_SelectedVehicleId for UI = "";
-		Net_FlagRush_VehicleSelection_SelectedVehicleId = G_VehicleOptions.get(VehicleIndex, K_VehicleOption{}).Id;
+	Void SetSelectedVehicleIndex(Integer _VehicleIndex) {
+		declare Text VehicleId = G_VehicleOptions.get(_VehicleIndex, K_VehicleOption{}).Id;
+		// Use a declare-for in order to persist selection between layer refreshes
+		declare Text FlagRush_VehicleSelection_SelectedVehicleId for UI = "";
+		FlagRush_VehicleSelection_SelectedVehicleId = VehicleId;
+		SendCustomEvent("{{{ C_EventType_SelectionChanged }}}", [VehicleId]);
 	}
 
 	Integer GetSelectedVehicleIndex() {
-		declare netwrite Text Net_FlagRush_VehicleSelection_SelectedVehicleId for UI = "";
+		declare Text FlagRush_VehicleSelection_SelectedVehicleId for UI = "";
 		foreach (Index => Option in G_VehicleOptions) {
-			if (Option.Id == Net_FlagRush_VehicleSelection_SelectedVehicleId) {
+			if (Option.Id == FlagRush_VehicleSelection_SelectedVehicleId) {
 				return Index;
 			}
 		}
@@ -143,6 +155,7 @@ Text GetManialink() {
 
 	main() {
 		Init();
+		SetSelectedVehicleIndex(GetSelectedVehicleIndex()); // Handles layer updates
 
 		while (True) {
 			yield;
@@ -167,15 +180,8 @@ Text GetManialink() {
 
 // MARK: API
 
-Vehicles::K_Vehicle GetSlectedVehicle(CSmPlayer _Player) {
-	declare CUIConfig UI = UIManager.GetUI(_Player);
-	declare netread Text Net_FlagRush_VehicleSelection_SelectedVehicleId for UI = "";
-	foreach (Vehicle in G_EnabledVehicles) {
-		if (Vehicle.Id == Net_FlagRush_VehicleSelection_SelectedVehicleId) {
-			return Vehicle;
-		}
-	}
-	return Vehicles::C_Vehicle_Invalid;
+K_Event[] GetPendingEvents() {
+	return G_PendingEvents;
 }
 
 Void SetEnabledVehicles(Vehicles::K_Vehicle[] _Vehicles) {
@@ -185,7 +191,25 @@ Void SetEnabledVehicles(Vehicles::K_Vehicle[] _Vehicles) {
 
 // MARK: Lifecycle
 
+Void Yield() {
+	G_PendingEvents.clear();
+	foreach (Event in UIManager.PendingEvents) {
+		if (Event.CustomEventType == C_EventType_SelectionChanged) {
+			if (Event.CustomEventData.count == 0) {
+				Log::Warn("""VehicleSelection: Received event "{{{ C_EventType_SelectionChanged }}}" without parameter!""");
+				continue;
+			}
+			declare Text SelectedVehicleId = Event.CustomEventData[0];
+			G_PendingEvents.add(K_Event{
+				Player = GetPlayer(Event.UI),
+				SelectedVehicle = Vehicles::Get(SelectedVehicleId)
+			});
+		}
+	}
+}
+
 Void Unload() {
+	G_PendingEvents.clear();
 	G_EnabledVehicles.clear();
 }
 

@@ -29,25 +29,30 @@
 #Const C_Segment_Podium 9
 #Const C_Segment_MatchEndScoresTable 10 ///< Unfortunately, the match winner is determined during the podium sequence which happens before match end, so we need a special segment
 
-// TODO: Fill
 #Const C_EventTypeNames [
 	1 => "SegmentStart",
 	2 => "SegmentEnd",
 	3 => "SegmentInvalid",
-	4 => "EndTimeChanged"
+	4 => "EndTimeChanged",
+	5 => "TimeLimitReached",
+	6 => "WarmUpApprovalChanged",
+	7 => "MatchSkippedDueToNoPlayersLeft",
+	8 => "RestartTurnDueToCriticalModeSettingChanged"
 ]
 
 #Const C_SegmentNames [
-  1 => "Server",
-  2 => "Match",
-  3 => "Map",
-  4 => "Round",
-  5 => "Turn",
-  6 => "Overtime",
-  7 => "WarmUp",
-  8 => "Pause",
-  9 => "Podium"
+	1 => "Server",
+	2 => "Match",
+	3 => "Map",
+	4 => "Round",
+	5 => "Turn",
+	6 => "Overtime",
+	7 => "WarmUp",
+	8 => "Pause",
+	9 => "Podium",
+	10 => "MatchEndScoresTable"
 ]
+
 
 #Struct K_Event {
   Integer Type;

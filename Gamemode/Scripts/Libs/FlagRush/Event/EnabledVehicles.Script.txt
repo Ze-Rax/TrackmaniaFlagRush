@@ -5,7 +5,6 @@
 }
 
 declare K_Event[] G_PendingEvents;
-declare K_Event[] G_EventAggregationBuffer;
 
 declare Vehicles::K_Vehicle[] G_MapEnabledVehicles;
 declare Vehicles::K_Vehicle[] G_ForcedEnabledVehicles;
@@ -46,7 +45,7 @@ Boolean IsEnabled(Vehicles::K_Vehicle _Vehicle) {
  */
 Void Mode_ForceEnabledVehicles(Vehicles::K_Vehicle[] _Vehicles) {
   G_ForcedEnabledVehicles = _Vehicles;
-  G_EventAggregationBuffer.add(K_Event{ EnabledVehicles = Get() });
+  G_PendingEvents.add(K_Event{ EnabledVehicles = Get() });
 }
 
 /**
@@ -54,19 +53,17 @@ Void Mode_ForceEnabledVehicles(Vehicles::K_Vehicle[] _Vehicles) {
  */
 Void Mode_SetMapEnabledVehicles(Vehicles::K_Vehicle[] _Vehicles) {
   G_MapEnabledVehicles = _Vehicles;
-  G_EventAggregationBuffer.add(K_Event{ EnabledVehicles = Get() });
+  G_PendingEvents.add(K_Event{ EnabledVehicles = Get() });
 }
 
 // MARK: Lifecycle
 
 Void Yield() {
-	G_PendingEvents = G_EventAggregationBuffer;
-  G_EventAggregationBuffer.clear();
+	G_PendingEvents.clear();
 }
 
 Void Unload() {
   G_PendingEvents.clear();
-  G_EventAggregationBuffer.clear();
 	G_MapEnabledVehicles.clear();
 	G_ForcedEnabledVehicles.clear();
 }

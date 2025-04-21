@@ -661,9 +661,33 @@ MB_Sleep(Durations::C_Segment_PauseEnd);
 // Only code directly or plugs which don't contain non-library functions or non ModeBase globales themselves.
 
 /**
- * Flush previous events and create new ones from CSmModeEvents, etc.
+ * Functions that listen to library events but also produce new ones.
+ * Need to be called first in BeforeYield
  */
-***CollectEvents***
+***BeforeYield_TransformEvents***
+***
+{ +++Private_Yield_HandleProgressionsCommands+++ }
+{ +++Private_Yield_HandleCriticalModeScriptSettingsUpdates+++ }
+{ +++Private_Yield_HandlePlayerLifecycleEvents+++ }
+***
+
+/**
+ * Yield libraries that consume events produced from other libraries.
+ */
+***BeforeYield***
+***
+{ +++BeforeYield_TransformEvents+++ } // Keep as first
+
+// Libraries that react to library events
+Players::BeforeYield();
+UILayers::BeforeYield();
+Messages::BeforeYield();
+***
+
+/**
+ * Yield libraries. Libraries that depend on events from other libraries should be yielded in BeforeYield.
+ */
+***Yield***
 ***
 Settings::Yield();
 { +++TrackModeSettings+++ } // Track modesettings after Settings::Yield, else events would be cleared instantly.
@@ -673,20 +697,6 @@ PlayerLifecycleEvents::Yield();
 EnabledVehicles::Yield();
 
 Playloop::Yield();
-***
-
-***BeforeYield***
-***
-// Playloop produces events that are only guaranteed to be valid in the current yield, due to for example player references.
-// React to those events before API array are updated on yield.
-UILayers::BeforeYield();
-Messages::BeforeYield();
-***
-
-***Yield***
-***
-+++CollectEvents+++
-
 Flag::Yield();
 HandicapQueue::Yield();
 Scores::Yield();
@@ -694,10 +704,6 @@ Players::Yield();
 
 UILayers::Yield();
 Messages::Yield();
-
-{ +++Private_Yield_HandleProgressionsCommands+++ }
-{ +++Private_Yield_HandleCriticalModeScriptSettingsUpdates+++ }
-{ +++Private_Yield_HandlePlayerLifecycleEvents+++ }
 ***
 
 ***Private_Yield_HandlePlayerLifecycleEvents***

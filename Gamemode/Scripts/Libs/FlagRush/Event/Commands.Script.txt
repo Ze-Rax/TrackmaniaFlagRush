@@ -13,7 +13,6 @@
 #Const Command::C_SourceNameByType as C_SourceNameByType
 
 declare Command::K_Command[] G_PendingEvents;
-declare Command::K_Command[] G_EventAggregationBuffer;
 
 // MARK: API
 
@@ -22,7 +21,7 @@ Command::K_Command[] GetPendingEvents() {
 }
 
 Void Publish(Command::K_Command _Command) {
-  G_EventAggregationBuffer.add(_Command);
+  G_PendingEvents.add(_Command);
 }
 
 // MARK: Lifecycle
@@ -37,8 +36,6 @@ Void Load() {
 
 Void Yield() {
   G_PendingEvents.clear();
-  G_PendingEvents = G_EventAggregationBuffer;
-  G_EventAggregationBuffer.clear();
 
   // XmlRpc
   foreach (XmlRpcEvent in XmlRpc.PendingEvents) {

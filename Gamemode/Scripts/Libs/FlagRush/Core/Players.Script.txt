@@ -101,7 +101,7 @@ Text DefineLayerFunction_Player_GetYaw() {
 
 // MARK: Lifecycle
 
-Void Yield() {
+Void BeforeYield() {
   foreach (Event in PlayerLifecycleEvents::GetPendingEvents()) {
     switch (Event.Type) {
       case PlayerLifecycleEvents::C_EventType_PlayerAdded: {
@@ -112,7 +112,9 @@ Void Yield() {
       }
     }
   }
+}
 
+Void Yield() {
   foreach (Player in Players) {
     Private_Net_SendPositionAndYaw(Player);
   }

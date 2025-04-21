@@ -17,8 +17,10 @@
 
 #Include "Libs/FlagRush/Const/Durations.Script.txt"													as Durations
 #Include "Libs/FlagRush/Const/SettingNames.Script.txt"											as SettingNames
+
 #Include "Libs/FlagRush/Core/Teams.Script.txt"															as Teams
 #Include "Libs/FlagRush/Core/Scores.Script.txt"															as Scores
+
 #Include "Libs/FlagRush/Event/Progression.Script.txt"												as Progression
 #Include "Libs/FlagRush/Event/Settings.Script.txt" 													as Settings
 #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" 						as PlayerLifecycleEvents
@@ -304,30 +306,6 @@ Void BeforeYield() {
 			}
 		}
 	}
-}
-
-Void Yield() {
-	Message::Yield();
-
-	foreach (Event in PlayerLifecycleEvents::GetPendingEvents()) {
-		if (Event.Type == PlayerLifecycleEvents::C_EventType_PlayerAdded) {
-			declare CSmPlayer Player <=> AllPlayers.get(Event.Player.PlayerId, Null);
-			if (Player != Null) {
-				Private_Welcome(Player);
-			}
-		}
-	}
-
-	// Time warnings
-	if (Progression::TurnIsRunning()) {
-		foreach (WarningSeconds => Enabled in G_TimeLimitWarningsEnabled) {
-			if (!Enabled || (EndTime - Now) / 1000 > WarningSeconds) {
-				continue;
-			}
-			G_TimeLimitWarningsEnabled[WarningSeconds] = False;
-			Private_TimeLimitWarning(WarningSeconds, Durations::C_EventMessage);
-		}
-	}
 
 	foreach (Event in Progression::GetPendingEvents()) {
 		switch (Event.Type) {
@@ -427,6 +405,30 @@ Void Yield() {
 			case Progression::C_EventType_RestartTurnDueToCriticalModeSettingChanged: {
 				Private_OnTurnRestartedDueToCriticalSettingChanged();
 			}
+		}
+	}
+
+	foreach (Event in PlayerLifecycleEvents::GetPendingEvents()) {
+		if (Event.Type == PlayerLifecycleEvents::C_EventType_PlayerAdded) {
+			declare CSmPlayer Player <=> AllPlayers.get(Event.Player.PlayerId, Null);
+			if (Player != Null) {
+				Private_Welcome(Player);
+			}
+		}
+	}
+}
+
+Void Yield() {
+	Message::Yield();
+
+	// Time warnings
+	if (Progression::TurnIsRunning()) {
+		foreach (WarningSeconds => Enabled in G_TimeLimitWarningsEnabled) {
+			if (!Enabled || (EndTime - Now) / 1000 > WarningSeconds) {
+				continue;
+			}
+			G_TimeLimitWarningsEnabled[WarningSeconds] = False;
+			Private_TimeLimitWarning(WarningSeconds, Durations::C_EventMessage);
 		}
 	}
 }

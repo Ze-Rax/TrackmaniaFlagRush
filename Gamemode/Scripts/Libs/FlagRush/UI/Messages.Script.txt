@@ -15,6 +15,7 @@
 #Include "Libs/FlagRush/Const/Durations.Script.txt"							as Durations
 #Include "Libs/FlagRush/ModeBase/Playloop.Script.txt"						as Playloop
 #Include "Libs/FlagRush/Core/Teams.Script.txt"									as Teams
+#Include "Libs/FlagRush/Event/Progression.Script.txt"						as Progression
 #Include "Libs/FlagRush/Util/Chat.Script.txt"										as Chat
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt"								as Stylesheet
 #Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"				as UIModule_EventFeed
@@ -220,7 +221,7 @@ Void CriticalSettingUpdate_RestartTurn() {
 	Chat::Send(Message);
 }
 
-Void InvalidMap() {
+Void OnInvalidMap() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Error) }}}The map does not conform to the FlagRush map specification. Skipping...$>""";
 	Chat::Send(Message);
 }
@@ -229,6 +230,8 @@ Void AllPlayersLeft_SkipMatch() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}All players left, skipping match...$>""";
 	Chat::Send(Message);
 }
+
+// MARK: Lifecycle
 
 Void Unload() {
 	Message::Unload();
@@ -274,4 +277,22 @@ Void BeforeYield() {
 
 Void Yield() {
 	Message::Yield();
+
+	foreach (Event in Progression::GetPendingEvents()) {
+		switch (Event.Type) {
+			case Progression::C_EventType_SegmentStart: {
+
+			}
+			case Progression::C_EventType_SegmentEnd: {
+
+			}
+			case Progression::C_EventType_SegmentInvalid: {
+				switch (Event.Segment) {
+					case Progression::C_Segment_Map: {
+						OnInvalidMap();
+					}
+				}
+			}
+		}
+	}
 }

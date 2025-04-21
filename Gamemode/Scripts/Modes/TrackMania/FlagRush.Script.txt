@@ -388,11 +388,7 @@ Scores::EndMatch();
 ***InitMap***
 ***
 Scores::StartMap();
-declare Boolean MapValid = Map::InitLandmarks();
-if (!MapValid) {
-	MatchEndRequested = True;
-	Messages::InvalidMap();
-}
+Map::InitLandmarks();
 EnabledVehicles::Mode_SetMapEnabledVehicles(Map::GetEnabledVehicles());
 Teams::Init();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
@@ -403,10 +399,14 @@ MB_Synchro();
 ***
 Progression::StartMap();
 FlagRush_XmlRpc::Send_MapStart();
+if (!Map::IsValid()) {
+	Progression::InvalidateMap();
+	Progression::RequestMapEnd();
+}
 MB_Sleep(Durations::C_Duration_MapStart);
 
 StartTime = Now; // Start time has to be set otherwise cannot spawn players
-if (S_UseWarmUp && !MatchEndRequested) {
+if (S_UseWarmUp && !Progression::MapEndRequsted()) {
 	+++Private_WarmUp+++
 }
 ***
@@ -768,7 +768,8 @@ declare Boolean MatchWasStarted =  MB_GetMapCount() > 1 || MB_GetRoundCount() > 
 if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted && Map != Null) {
 	Messages::AllPlayersLeft_SkipMatch();
 	Log::Info("Current match was skipped as there are no players remaining");
-	MatchEndRequested = True; // Invalidate Map, Round, ...
+	Progression::InvalidateMatch();
+	Progression::RequestMatchEnd(); // Keep for consistency
 	MB_StopMatch();
 	if (Progression::WarmUpIsRunning()) {
 		WarmUpReadyUp::Stop();
@@ -885,11 +886,13 @@ foreach (Command in Commands::GetPendingEvents()) {
 			CommandText = "The round was paused.";
 		}
 		case CommandNames::Command_SkipRound: {
+			Progression::InvalidateRound();
 			Progression::RequestRoundEnd();
 			CommandText = "The round was skipped.";
 		}
 		case CommandNames::Command_SkipMap: {
-			MatchEndRequested = True;
+			Progression::InvalidateMap();
+			Progression::RequestMapEnd();
 			CommandText = "The map was skipped.";
 		}
 		case CommandNames::Command_SetTeam1RoundScore: {

@@ -11,7 +11,8 @@
 
 #Const C_EventType_SegmentStart 1
 #Const C_EventType_SegmentEnd 2
-#Const C_EventType_EndTimeChanged 3
+#Const C_EventType_SegmentInvalid 3
+#Const C_EventType_EndTimeChanged 4
 
 #Const C_Segment_Server 1
 #Const C_Segment_Match 2
@@ -25,16 +26,21 @@
 
 #Const C_EventTypeNames [
 	1 => "SegmentStart",
-	2 => "SegmentEnd"
+	2 => "SegmentEnd",
+	3 => "SegmentInvalid",
+	4 => "EndTimeChanged"
 ]
 
 #Const C_SegmentNames [
-  1 => "Match",
-  2 => "Map",
-  3 => "Round",
-  4 => "Turn",
-  5 => "Overtime",
-  6 => "WarmUp"
+  1 => "Server",
+  2 => "Match",
+  3 => "Map",
+  4 => "Round",
+  5 => "Turn",
+  6 => "Overtime",
+  7 => "WarmUp",
+  8 => "Pause",
+  9 => "Podium"
 ]
 
 #Struct K_Event {
@@ -52,6 +58,11 @@ declare Boolean G_WarmUpIsRunning;
 declare Boolean G_PauseIsRunning;
 declare Boolean G_PodiumIsRunning;
 
+declare Boolean G_MatchIsValid;
+declare Boolean G_MapIsValid;
+declare Boolean G_RoundIsValid;
+
+declare Boolean G_MatchEndRequested;
 declare Boolean G_RoundPauseRequested;
 declare Boolean G_RoundEndRequested;
 
@@ -122,9 +133,17 @@ Boolean SegmentIsRunning(Integer _Segment) {
 
 // Segment end requests
 
+Boolean MatchEndRequested() {
+  return G_MatchEndRequested;
+}
+
+Void RequestMatchEnd() {
+  G_MatchEndRequested = True;
+}
+
 Boolean MapEndRequsted() {
   // Contradictory to its name, MatchEndRequested is generally used to skip a map, not the whole match.
-  return MatchEndRequested;
+  return MatchEndRequested() || MatchEndRequested;
 }
 
 Void RequestMapEnd() {
@@ -132,7 +151,7 @@ Void RequestMapEnd() {
 }
 
 Boolean RoundEndRequested() {
-  return G_RoundEndRequested;
+  return MapEndRequsted() || G_RoundEndRequested;
 }
 
 Void RequestRoundEnd() {
@@ -149,12 +168,40 @@ Void RequestRoundPause() {
 
 // Segment validities
 
+Boolean MatchIsValid() {
+  return G_MatchIsValid;
+}
+
+Void InvalidateMatch() {
+  G_MatchIsValid = False;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_SegmentInvalid,
+    Segment = C_Segment_Match
+  });
+}
+
 Boolean MapIsValid() {
-  return !MapEndRequsted();
+  return MatchIsValid() && G_MapIsValid && !MapEndRequsted();
+}
+
+Void InvalidateMap() {
+  G_MapIsValid = False;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_SegmentInvalid,
+    Segment = C_Segment_Map
+  });
 }
 
 Boolean RoundIsValid() {
-  return MapIsValid() && !RoundEndRequested();
+  return MapIsValid() && G_RoundIsValid && !RoundEndRequested();
+}
+
+Void InvalidateRound() {
+  G_RoundIsValid = False;
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_SegmentInvalid,
+    Segment = C_Segment_Round
+  });
 }
 
 // EndTime
@@ -287,6 +334,8 @@ Void EndServer() {
 }
 
 Void StartMatch() {
+  G_MatchIsValid = True;
+  G_MatchEndRequested = False;
   G_MatchIsRunning = True;
   declare netwrite Boolean Net_FlagRush_Progression_MatchIsRunning for Teams[0] = True;
   Net_FlagRush_Progression_MatchIsRunning = True;
@@ -307,6 +356,8 @@ Void EndMatch() {
 }
 
 Void StartMap() {
+  G_MapIsValid = True;
+  MatchEndRequested = False; // This is actually used for map end
   G_MapIsRunning = True;
   declare netwrite Boolean Net_FlagRush_Progression_MapIsRunning for Teams[0] = True;
   Net_FlagRush_Progression_MapIsRunning = True;
@@ -327,10 +378,11 @@ Void EndMap() {
 }
 
 Void StartRound() {
+  G_RoundIsValid = True;
   G_RoundEndRequested = False;
+  G_RoundIsRunning = True;
   declare netwrite Boolean Net_FlagRush_Progression_RoundIsRunning for Teams[0] = True;
   Net_FlagRush_Progression_RoundIsRunning = True;
-  G_RoundIsRunning = True;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentStart,
     Segment = C_Segment_Round
@@ -456,6 +508,7 @@ Void Yield() {
 Void Unload() {
   G_PendingEvents.clear();
   G_EventsAggregationBuffer.clear();
+
   G_ServerIsRunning = False;
   G_MatchIsRunning = False;
   G_MapIsRunning = False;
@@ -464,6 +517,12 @@ Void Unload() {
   G_OvertimeIsRunning = False;
   G_WarmUpIsRunning = False;
   G_PauseIsRunning = False;
+
+  G_MatchIsValid = False;
+  G_MapIsValid = False;
+  G_RoundIsValid = False;
+
+  G_MatchEndRequested = False;
   G_RoundEndRequested = False;
   G_RoundPauseRequested = False;
 

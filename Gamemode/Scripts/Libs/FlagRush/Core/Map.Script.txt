@@ -21,6 +21,9 @@ declare CMapLandmark						G_DefaultFlagSpawn;
 declare CMapLandmark[]					G_FlagSpawns;
 declare CMapLandmark[Integer]		G_Spawns;
 declare CMapLandmark[][Integer]	G_Bases;
+declare Boolean									G_Valid;
+
+// MARK: API
 
 /**
  * Gets the default flag spawn.
@@ -148,9 +151,9 @@ Boolean InitLandmarks() {
 	declare Boolean FoundDefaultFlagSpawn = G_DefaultFlagSpawn != Null;
 	declare Boolean SameAmountBases = G_Bases[1].count == G_Bases[2].count;
 
-	declare Boolean Valid = FoundSpawnTeam1 && FoundSpawnTeam2 && FoundBaseTeam1 && FoundBaseTeam2 && FoundFlagSpawn && FoundDefaultFlagSpawn && SameAmountBases;
+	G_Valid = FoundSpawnTeam1 && FoundSpawnTeam2 && FoundBaseTeam1 && FoundBaseTeam2 && FoundFlagSpawn && FoundDefaultFlagSpawn && SameAmountBases;
 
-	if (Valid) {
+	if (G_Valid) {
 		Log::Debug("All Landmarks found!");
 	} else {
 		Log::Warn("""Could not find all landmarks!
@@ -164,14 +167,21 @@ Boolean InitLandmarks() {
 		);
 	}
 
-	return Valid;
+	return G_Valid;
 }
+
+Boolean IsValid() {
+	return G_Valid;
+}
+
+// MARK: Lifecycle
 
 Void Unload() {
 	G_DefaultFlagSpawn = Null;
 	G_FlagSpawns.clear();
 	G_Spawns.clear();
 	G_Bases.clear();
+	G_Valid = False;
 }
 
 Void Load() {

@@ -207,7 +207,7 @@ Void Private_Player_Spawn(CSmPlayer _Player) {
 	Private_Player_Initialize(_Player);
 	declare CMapLandmark SpawnLandmark = Map::GetSpawn(_Player);
 	if (SpawnLandmark != Null) {
-		SpawnPlayer(_Player, _Player.CurrentClan, 1, SpawnLandmark.PlayerSpawn, Now + Durations::C_SpawnAnimDuration);
+		SpawnPlayer(_Player, _Player.CurrentClan, 1, SpawnLandmark.PlayerSpawn, Now + Durations::C_SpawnAnimation);
 		Private_Player_ApplyVehicleTuning(_Player);
 	}
 }

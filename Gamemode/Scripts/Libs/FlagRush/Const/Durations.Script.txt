@@ -2,19 +2,19 @@
  * Constants for several durations for delays, message displayed and more, both progression and main gamemode settings.
  */
 
-#Const C_SpawnAnimDuration      1500
-#Const C_PodiumCameraDuration   5000
+#Const C_SpawnAnimation         1500
+#Const C_PodiumCameraAnimation  5000
 
-#Const C_Duration_Podium				15000
-#Const C_Duration_MatchEnd			5000
-#Const C_Duration_MapStart			3000
-#Const C_Duration_MapEnd				5000
-#Const C_Duration_RoundStart		3000
-#Const C_Duration_RoundEnd			5000
-#Const C_Duration_TurnEnd				3000
-#Const C_Duration_Overtime			2000
-#Const C_Duration_WarmUpStart		2000
-#Const C_Duration_WarmUpEnd			2000
-#Const C_Duration_PauseStart		2000
-#Const C_Duration_PauseEnd			2000
-#Const C_Duration_EventMessage	2000
+#Const C_Segment_Podium         15000
+#Const C_Segment_MatchEnd       5000
+#Const C_Segment_MapStart       3000
+#Const C_Segment_MapEnd         5000
+#Const C_Segment_RoundStart     3000
+#Const C_Segment_RoundEnd       5000
+#Const C_Segment_TurnEnd        3000
+#Const C_Segment_WarmUpStart    2000
+#Const C_Segment_WarmUpEnd      2000
+#Const C_Segment_PauseStart     2000
+#Const C_Segment_PauseEnd       2000
+
+#Const C_EventMessage           2000

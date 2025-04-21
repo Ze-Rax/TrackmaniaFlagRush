@@ -83,79 +83,79 @@ Void SetFlagRushVersion(Text _Version) {
 
 Void OnMatchWon(Integer _WinnerClan) {
 	declare Text Message = """{{{ Private_GetColoredTeamName(_WinnerClan) }}} won the match""";
-	Private_QueueBigMessage(Message, Durations::C_Duration_MatchEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
+	Private_QueueBigMessage(Message, Durations::C_Segment_MatchEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnMatchDraw() {
 	declare Text Message = """Match draw""";
-	Private_QueueBigMessage(Message, Durations::C_Duration_MatchEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
+	Private_QueueBigMessage(Message, Durations::C_Segment_MatchEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnMatchSkipped() {
 	declare Text Message = "Match skipped";
-	Private_QueueBigMessage(Message, Durations::C_Duration_MatchEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	Private_QueueBigMessage(Message, Durations::C_Segment_MatchEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnMapWon(Integer _WinnerClan) {
 	declare Text Message = """{{{ Private_GetColoredTeamName(_WinnerClan) }}} won the map""";
-	Private_QueueBigMessage(Message, Durations::C_Duration_MapEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	Private_QueueBigMessage(Message, Durations::C_Segment_MapEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnMapDraw() {
 	declare Text Message = "Map draw";
-	Private_QueueBigMessage(Message, Durations::C_Duration_MapEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	Private_QueueBigMessage(Message, Durations::C_Segment_MapEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnMapSkipped() {
 	declare Text Message = "Map skipped";
-	Private_QueueBigMessage(Message, Durations::C_Duration_MapEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	Private_QueueBigMessage(Message, Durations::C_Segment_MapEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnRoundStarted(Integer _NbRound) {
 	declare Text Message = """Round {{{ _NbRound }}} start""";
-	Private_QueueBigMessage(Message, Durations::C_Duration_RoundStart, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	Private_QueueBigMessage(Message, Durations::C_Segment_RoundStart, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnRoundWon(Integer _WinnerClan)  {
 	declare Text Message = """{{{ Private_GetColoredTeamName(_WinnerClan) }}} won the round""";
-	Private_QueueBigMessage(Message, Durations::C_Duration_RoundEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	Private_QueueBigMessage(Message, Durations::C_Segment_RoundEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnRoundDraw() {
 	declare Text Message = "Round draw";
-	Private_QueueBigMessage(Message, Durations::C_Duration_RoundEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	Private_QueueBigMessage(Message, Durations::C_Segment_RoundEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnRoundSkipped() {
 	declare Text Message = "Round skipped";
-	Private_QueueBigMessage(Message, Durations::C_Duration_RoundEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	Private_QueueBigMessage(Message, Durations::C_Segment_RoundEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnOvertimeStarted() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}Overtime$>""";
-	Private_QueueBigMessage(Message, Durations::C_Duration_Overtime, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	Private_QueueBigMessage(Message, Durations::C_EventMessage, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnWarmUpStarted() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}WarmUp$>""";
-	Private_QueueBigMessage(Message, Durations::C_Duration_WarmUpStart, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	Private_QueueBigMessage(Message, Durations::C_Segment_WarmUpStart, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnWarmUpEnded() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}WarmUp end$>""";
-	Private_QueueBigMessage(Message, Durations::C_Duration_WarmUpEnd, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	Private_QueueBigMessage(Message, Durations::C_Segment_WarmUpEnd, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
@@ -171,27 +171,27 @@ Void OnWarmUpEndApproved() {
 
 Void OnPauseStarted() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}The round was paused$>""";
-	Private_QueueBigMessage(Message, Durations::C_Duration_PauseStart, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	Private_QueueBigMessage(Message, Durations::C_Segment_PauseStart, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnPauseEnded() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}The round continues$>""";
-	Private_QueueBigMessage(Message, Durations::C_Duration_PauseEnd, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	Private_QueueBigMessage(Message, Durations::C_Segment_PauseEnd, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
 Void OnFlagPickedUp(CSmPlayer _Player) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(_Player) }}} has the $<{{{ Private_GetTeamColorCode(_Player.CurrentClan) }}}flag$>""";
 	declare Vec3 TeamColor = Teams::GetMidColor(_Player.CurrentClan);
-	Private_QueueBigMessage(Message, Durations::C_Duration_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
+	Private_QueueBigMessage(Message, Durations::C_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag, TeamColor);
 }
 
 Void OnFlagScored(CSmPlayer _Scorer) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(_Scorer) }}} scored for {{{ Private_GetColoredTeamName(_Scorer.CurrentClan) }}}""";
 	declare Vec3 TeamColor = Teams::GetMidColor(_Scorer.CurrentClan);
-	Private_QueueBigMessage(Message, Durations::C_Duration_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Finish);
+	Private_QueueBigMessage(Message, Durations::C_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Finish);
 	UIModule_Sound::Play(["file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/KnockOutPlayer_01.wav", "file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/ShowWinners.wav"]);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag, TeamColor);
 }
@@ -199,13 +199,13 @@ Void OnFlagScored(CSmPlayer _Scorer) {
 Void OnFlagDropped(CSmScore _OldCarrierScore /* Player might have disconnected, but we need their clan */) {
 	declare Text PlayerName = """$<{{{ Private_GetTeamColorCode(_OldCarrierScore.TeamNum) }}}{{{ _OldCarrierScore.User.Name }}}$>""";
 	declare Text Message = """{{{ PlayerName }}} dropped the flag$>""";
-	Private_QueueBigMessage(Message, Durations::C_Duration_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
+	Private_QueueBigMessage(Message, Durations::C_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag);
 }
 
 Void OnFlagReset() {
 	declare Text Message = "The flag was reset";
-	Private_QueueBigMessage(Message, Durations::C_Duration_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Warning);
+	Private_QueueBigMessage(Message, Durations::C_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Warning);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag);
 }
 
@@ -235,7 +235,7 @@ Void TimeLimitSecondsRemaining(Integer _SecondsRemaining, Integer _Duration) {
 
 Void OnTimeLimitReached() {
 	declare Text Message = """Time is up!""";
-	Private_QueueBigMessage(Message, Durations::C_Duration_EventMessage, C_MessagePriority_Progression, CUIConfig::EUISound::VictoryPoint);
+	Private_QueueBigMessage(Message, Durations::C_EventMessage, C_MessagePriority_Progression, CUIConfig::EUISound::VictoryPoint);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Chrono);
 }
 
@@ -323,7 +323,7 @@ Void Yield() {
 				continue;
 			}
 			G_TimeLimitWarningsEnabled[WarningSeconds] = False;
-			TimeLimitSecondsRemaining(WarningSeconds, Durations::C_Duration_EventMessage);
+			TimeLimitSecondsRemaining(WarningSeconds, Durations::C_EventMessage);
 		}
 	}
 

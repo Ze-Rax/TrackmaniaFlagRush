@@ -222,7 +222,7 @@ main() {
 	ResetControls();
 
 	// Wait for the podium camera to stop moving
-	declare Integer DelayEnd = Now + {{{ Durations::C_PodiumCameraDuration }}};
+	declare Integer DelayEnd = Now + {{{ Durations::C_PodiumCameraAnimation }}};
 	wait(Now >= DelayEnd);
 
 	AnimateIn();

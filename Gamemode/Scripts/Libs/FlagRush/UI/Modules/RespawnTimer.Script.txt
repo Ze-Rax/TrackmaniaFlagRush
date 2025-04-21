@@ -45,7 +45,7 @@ Text GetManialink() {
 			yield;
 
 			declare Integer SpawnDate = Player_GetSpawnDate(InputPlayer);
-			declare Integer MillisRemaining = SpawnDate - GameTime + {{{ Durations::C_SpawnAnimDuration }}};
+			declare Integer MillisRemaining = SpawnDate - GameTime + {{{ Durations::C_SpawnAnimation }}};
 			if (SpawnDate <= 0 || MillisRemaining <= 0 || IsSpectator) {
 				RespawnFrame.Hide();
 				TotalRespawnTime = -1;

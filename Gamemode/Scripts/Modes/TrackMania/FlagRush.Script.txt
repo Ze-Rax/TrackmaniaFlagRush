@@ -6,6 +6,8 @@
  * Development notes:
  * - This mode extends a modified version of Nadeos lowest level mode base, which contains the main server loop. The Match_ prefix of plugs has been dropped.
  * - This script only contains progression logic decissions and library orchestration. The actual round gameplay logic takes place in Playloop.Script.txt.
+ * - Libraries that react to changes like progression events (Segment start / end) or playloop / FlagRush events should do so by querying events
+ * 		from the respective libraries (Playloop or Event/*) and reacting in the libraries itself during Yield / BeforeYield
  *
  * #RequireContext CSmMode
  */
@@ -401,7 +403,7 @@ if (!Map::IsValid()) {
 	Progression::InvalidateMap();
 	Progression::RequestMapEnd();
 }
-MB_Sleep(Durations::C_Duration_MapStart);
+MB_Sleep(Durations::C_Segment_MapStart);
 
 StartTime = Now; // Start time has to be set otherwise cannot spawn players
 if (S_UseWarmUp && !Progression::MapEndRequsted()) {
@@ -423,9 +425,9 @@ if (!MapIsValid) {
 
 // Sleep during message and show scoreboard update half way through
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-MB_Sleep(Durations::C_Duration_MapEnd / 2);
+MB_Sleep(Durations::C_Segment_MapEnd / 2);
 Scores::EndMap();
-MB_Sleep(Durations::C_Duration_MapEnd / 2);
+MB_Sleep(Durations::C_Segment_MapEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 ***
 
@@ -450,7 +452,7 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 ***
 Progression::StartRound();
 FlagRush_XmlRpc::Send_RoundStart();
-MB_Sleep(Durations::C_Duration_RoundStart);
+MB_Sleep(Durations::C_Segment_RoundStart);
 
 StartTime = Now;
 Private_RoundTimeRemaining = S_RoundTimeLimitSeconds * 1000;
@@ -470,9 +472,9 @@ if (!RoundIsValid) {
 
 // Sleep during message and show scoreboard update half way through
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-MB_Sleep(Durations::C_Duration_RoundEnd / 2);
+MB_Sleep(Durations::C_Segment_RoundEnd / 2);
 Scores::EndRound();
-MB_Sleep(Durations::C_Duration_RoundEnd / 2);
+MB_Sleep(Durations::C_Segment_RoundEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 ***
 
@@ -495,7 +497,7 @@ if (Progression::RoundPauseRequested()) {
 Progression::StartTurn();
 // Set end time
 if (S_RoundTimeLimitSeconds > 0) {
-	Progression::SetEndTime(Now + Private_RoundTimeRemaining + Durations::C_SpawnAnimDuration);
+	Progression::SetEndTime(Now + Private_RoundTimeRemaining + Durations::C_SpawnAnimation);
 }
 
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
@@ -508,7 +510,7 @@ Progression::SetEndTime(-1);
 Progression::EndTurn();
 
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
-MB_Sleep(Durations::C_Duration_TurnEnd);
+MB_Sleep(Durations::C_Segment_TurnEnd);
 
 foreach (Player in Players) {
 	UnspawnPlayer(Player);
@@ -575,9 +577,9 @@ if (!MatchIsValid) {
 
 // Sleep during message and show scoreboard update half way through
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-MB_Sleep(Durations::C_Duration_MatchEnd / 2);
+MB_Sleep(Durations::C_Segment_MatchEnd / 2);
 Scores::EndMatch();
-MB_Sleep(Durations::C_Duration_MatchEnd / 2);
+MB_Sleep(Durations::C_Segment_MatchEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 Progression::EndMatchEndScoresTable();
 
@@ -585,7 +587,7 @@ Progression::EndMatchEndScoresTable();
 if (HasPodium) {
 	Progression::StartPodium();
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
-	MB_Sleep(Durations::C_Duration_Podium);
+	MB_Sleep(Durations::C_Segment_Podium);
 	UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 	Progression::EndPodium();
 }
@@ -598,7 +600,7 @@ if (HasPodium) {
 Progression::StartWarmUp();
 FlagRush_XmlRpc::Send_WarmUpStart();
 WarmUpReadyUp::Start(S_WarmUpWaitForApproval);
-MB_Sleep(Durations::C_Duration_WarmUpStart);
+MB_Sleep(Durations::C_Segment_WarmUpStart);
 
 declare CUIConfig::EUISequence PreviousSequence = UIManager.UIAll.UISequence;
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
@@ -625,7 +627,7 @@ Progression::SetEndTime(-1);
 Progression::EndWarmUp();
 FlagRush_XmlRpc::Send_WarmUpEnd();
 UIManager.UIAll.UISequence = PreviousSequence;
-MB_Sleep(Durations::C_Duration_WarmUpEnd);
+MB_Sleep(Durations::C_Segment_WarmUpEnd);
 ***
 
 ***WarmUpLoop***
@@ -644,12 +646,12 @@ foreach (Player in Players) {
 ***
 Progression::SetEndTime(-1);
 Progression::StartPause();
-MB_Sleep(Durations::C_Duration_PauseStart);
+MB_Sleep(Durations::C_Segment_PauseStart);
 
 { +++Private_WarmUp+++ }
 
 Progression::EndPause();
-MB_Sleep(Durations::C_Duration_PauseEnd);
+MB_Sleep(Durations::C_Segment_PauseEnd);
 ***
 
 // ~~~~~~~~~~ Yield ~~~~~~~~~~ //

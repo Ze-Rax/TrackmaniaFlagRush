@@ -82,6 +82,10 @@ Boolean[Text] GetPlayersReadyStates() {
 	return G_PlayersReady;
 }
 
+Boolean IsWarmUpEndApproved() {
+	return G_Approval;
+}
+
 Void SetWarmUpEndApproval(Boolean _Approved) {
 	G_Approval = _Approved;
 }

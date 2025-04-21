@@ -10,20 +10,28 @@
 
 #Include "ColorLib" as CL
 
-#Include "Libs/FlagRush/CommonLibs/Nadeo/Message.Script.txt"		as Message
+#Include "Libs/FlagRush/CommonLibs/Nadeo/Message.Script.txt"							as Message
 
-#Include "Libs/FlagRush/Const/Durations.Script.txt"							as Durations
-#Include "Libs/FlagRush/ModeBase/Playloop.Script.txt"						as Playloop
-#Include "Libs/FlagRush/Core/Teams.Script.txt"									as Teams
-#Include "Libs/FlagRush/Event/Progression.Script.txt"						as Progression
-#Include "Libs/FlagRush/Util/Chat.Script.txt"										as Chat
-#Include "Libs/FlagRush/UI/Stylesheet.Script.txt"								as Stylesheet
-#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"				as UIModule_EventFeed
-#Include "Libs/FlagRush/UI/Modules/Sounds.Script.txt"						as UIModule_Sound
+#Include "Libs/FlagRush/Const/Durations.Script.txt"												as Durations
+#Include "Libs/FlagRush/Const/SettingNames.Script.txt"										as SettingNames
+#Include "Libs/FlagRush/ModeBase/Playloop.Script.txt"											as Playloop
+#Include "Libs/FlagRush/ModeBase/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
+#Include "Libs/FlagRush/Core/Teams.Script.txt"														as Teams
+#Include "Libs/FlagRush/Core/Scores.Script.txt"														as Scores
+#Include "Libs/FlagRush/Event/Progression.Script.txt"											as Progression
+#Include "Libs/FlagRush/Event/Settings.Script.txt" 												as Settings
+#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" 					as PlayerLifecycleEvents
+
+#Include "Libs/FlagRush/Util/Chat.Script.txt"															as Chat
+#Include "Libs/FlagRush/UI/Stylesheet.Script.txt"													as Stylesheet
+#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"									as UIModule_EventFeed
+#Include "Libs/FlagRush/UI/Modules/Sounds.Script.txt"											as UIModule_Sound
 
 #Const C_MessagePriority_Default			1
 #Const C_MessagePriority_Event				2
 #Const C_MessagePriority_Progression	3
+
+declare Text G_FlagRushVersion;
 
 // MARK: Helper Functions
 
@@ -57,99 +65,109 @@ Void Private_QueueBigMessage(Text _Message, Integer _Duration, Integer _Priority
 	Message::SendBigMessage(_Message, _Duration, _Priority, _Sound, 0);
 }
 
+Void SetFlagRushVersion(Text _Version) {
+	G_FlagRushVersion = _Version;
+}
+
 // MARK: Event Handlers
 
-Void MatchWin(Integer _WinnerClan, Integer _Duration) {
+Void OnMatchWon(Integer _WinnerClan) {
 	declare Text Message = """{{{ Private_GetColoredTeamName(_WinnerClan) }}} won the match""";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
+	Private_QueueBigMessage(Message, Durations::C_Duration_MatchEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void MatchDraw(Integer _Duration) {
+Void OnMatchDraw() {
 	declare Text Message = """Match draw""";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
+	Private_QueueBigMessage(Message, Durations::C_Duration_MatchEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void MapWin(Integer _WinnerClan, Integer _Duration) {
+Void OnMatchSkipped() {
+	declare Text Message = "Match skipped";
+	Private_QueueBigMessage(Message, Durations::C_Duration_MatchEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void OnMapWon(Integer _WinnerClan) {
 	declare Text Message = """{{{ Private_GetColoredTeamName(_WinnerClan) }}} won the map""";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	Private_QueueBigMessage(Message, Durations::C_Duration_MapEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void MapDraw(Integer _Duration) {
+Void OnMapDraw() {
 	declare Text Message = "Map draw";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	Private_QueueBigMessage(Message, Durations::C_Duration_MapEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void MapSkip(Integer _Duration) {
+Void OnMapSkipped() {
 	declare Text Message = "Map skipped";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	Private_QueueBigMessage(Message, Durations::C_Duration_MapEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void RoundStart(Integer _NbRound, Integer _Duration) {
+Void OnRoundStarted(Integer _NbRound) {
 	declare Text Message = """Round {{{ _NbRound }}} start""";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	Private_QueueBigMessage(Message, Durations::C_Duration_RoundStart, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void RoundWin(Integer _WinnerClan, Integer _Duration)  {
+Void OnRoundWon(Integer _WinnerClan)  {
 	declare Text Message = """{{{ Private_GetColoredTeamName(_WinnerClan) }}} won the round""";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	Private_QueueBigMessage(Message, Durations::C_Duration_RoundEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void RoundDraw(Integer _Duration) {
+Void OnRoundDraw() {
 	declare Text Message = "Round draw";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	Private_QueueBigMessage(Message, Durations::C_Duration_RoundEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void RoundSkip(Integer _Duration) {
+Void OnRoundSkipped() {
 	declare Text Message = "Round skipped";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	Private_QueueBigMessage(Message, Durations::C_Duration_RoundEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void OvertimeStart(Integer _Duration) {
+Void OnOvertimeStarted() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}Overtime$>""";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	Private_QueueBigMessage(Message, Durations::C_Duration_Overtime, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void WarmUpStart(Integer _Duration) {
+Void OnWarmUpStarted() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}WarmUp$>""";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	Private_QueueBigMessage(Message, Durations::C_Duration_WarmUpStart, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void WarmUpEnd(Integer _Duration) {
+Void OnWarmUpEnded() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}WarmUp end$>""";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	Private_QueueBigMessage(Message, Durations::C_Duration_WarmUpEnd, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void WarmUpWaitForApproval() {
+Void OnWarmUpWaitForApproval() {
 	declare Text Message = """$<${{{CL::RgbToHex3(Stylesheet::C_Warning)}}}Waiting for admin confirmation to start the match.$>""";
 	Chat::Send(Message);
 }
 
-Void WarmUpApproved() {
+Void OnWarmUpEndApproved() {
 	declare Text Message = """$<${{{CL::RgbToHex3(Stylesheet::C_Success)}}}The match can start.$>""";
 	Chat::Send(Message);
 }
 
-Void PauseStart(Integer _Duration) {
+Void OnPauseStarted() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}The round was paused$>""";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	Private_QueueBigMessage(Message, Durations::C_Duration_PauseStart, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void PauseEnd(Integer _Duration) {
+Void OnPauseEnded() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}The round continues$>""";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	Private_QueueBigMessage(Message, Durations::C_Duration_PauseEnd, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
@@ -205,18 +223,18 @@ Void TimeLimitSecondsRemaining(Integer _SecondsRemaining, Integer _Duration) {
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Chrono);
 }
 
-Void TimeLimitEnd(Integer _Duration) {
-	declare Text Message = """Time is up""";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Progression, CUIConfig::EUISound::VictoryPoint);
+Void OnTimeLimitReached() {
+	declare Text Message = """Time is up!""";
+	Private_QueueBigMessage(Message, Durations::C_Duration_EventMessage, C_MessagePriority_Progression, CUIConfig::EUISound::VictoryPoint);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Chrono);
 }
 
-Void Welcome(CSmPlayer _Player, Text _Version) {
+Void Welcome(CSmPlayer _Player) {
 	declare CUIConfig UI = UIManager.GetUI(_Player);
-	UI.SendChat("""Welcome to $44f[$fffFlagRush$f44] $g[v{{{ _Version }}}]!{{{ "\n" }}}Join us on $l[https://discord.gg/J6ApdyRqEZ]$99fDiscord $g$l.""");
+	UI.SendChat("""Welcome to $44f[$fffFlagRush$f44] $g[v{{{ G_FlagRushVersion }}}]!{{{ "\n" }}}Join us on $l[https://discord.gg/J6ApdyRqEZ]$99fDiscord $g$l.""");
 }
 
-Void CriticalSettingUpdate_RestartTurn() {
+Void OnTurnRestartedDueToCriticalSettingChanged() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}A critical setting was updated! Restarting the the current turn...$>""";
 	Chat::Send(Message);
 }
@@ -226,7 +244,7 @@ Void OnInvalidMap() {
 	Chat::Send(Message);
 }
 
-Void AllPlayersLeft_SkipMatch() {
+Void OnMatchSkippedDueToNoPlayersLeft() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}All players left, skipping match...$>""";
 	Chat::Send(Message);
 }
@@ -234,6 +252,7 @@ Void AllPlayersLeft_SkipMatch() {
 // MARK: Lifecycle
 
 Void Unload() {
+	G_FlagRushVersion = "";
 	Message::Unload();
 }
 
@@ -278,20 +297,111 @@ Void BeforeYield() {
 Void Yield() {
 	Message::Yield();
 
+	foreach (Event in PlayerLifecycleEvents::GetPendingEvents()) {
+		if (Event.Type == PlayerLifecycleEvents::C_EventType_PlayerAdded) {
+			declare CSmPlayer Player <=> AllPlayers.get(Event.Player.PlayerId, Null);
+			if (Player != Null) {
+				Welcome(Player);
+			}
+		}
+	}
+
 	foreach (Event in Progression::GetPendingEvents()) {
 		switch (Event.Type) {
+			// Segment Start
 			case Progression::C_EventType_SegmentStart: {
-
+				switch (Event.Segment) {
+					case Progression::C_Segment_Round: {
+						OnRoundStarted(0); // TODO: Round Number
+					}
+					case Progression::C_Segment_Overtime: {
+						OnOvertimeStarted();
+					}
+					case Progression::C_Segment_MatchEndScoresTable: {
+						if (Event.IsInvalid) {
+							OnMatchSkipped();
+							break;
+						}
+						declare Integer WinnerClan = Scores::EvaluateRound();
+						if (WinnerClan == 0) {
+							OnMatchDraw();
+						} else {
+							OnMatchWon(WinnerClan);
+						}
+					}
+					case Progression::C_Segment_WarmUp: {
+						OnWarmUpStarted();
+						if (Settings::GetBoolean(SettingNames::S_WarmUpWaitForApproval)) {
+							OnWarmUpWaitForApproval();
+						}
+					}
+					case Progression::C_Segment_Pause: {
+						OnPauseStarted();
+					}
+				}
 			}
+			// Segment End
 			case Progression::C_EventType_SegmentEnd: {
-
+				switch (Event.Segment) {
+					case Progression::C_Segment_Map: {
+						if (Event.IsInvalid) {
+							OnMapSkipped();
+							break;
+						}
+						declare Integer WinnerClan = Scores::EvaluateMap();
+						if (WinnerClan == 0) {
+							OnMapDraw();
+						} else {
+							OnMapWon(WinnerClan);
+						}
+					}
+					case Progression::C_Segment_Round: {
+						if (Event.IsInvalid) {
+							OnRoundSkipped();
+							break;
+						}
+						declare Integer WinnerClan = Scores::EvaluateRound();
+						if (WinnerClan == 0) {
+							OnRoundDraw();
+						} else {
+							OnRoundWon(WinnerClan);
+						}
+					}
+					case Progression::C_Segment_WarmUp: {
+						OnWarmUpEnded();
+					}
+					case Progression::C_Segment_Pause: {
+						OnPauseEnded();
+					}
+				}
 			}
+			// Segment Invalid
 			case Progression::C_EventType_SegmentInvalid: {
 				switch (Event.Segment) {
 					case Progression::C_Segment_Map: {
 						OnInvalidMap();
 					}
 				}
+			}
+			// Time limit reached
+			case Progression::C_EventType_TimeLimitReached: {
+				OnTimeLimitReached();
+			}
+			// Warm Up Approval changed
+			case Progression::C_EventType_WarmUpApprovalChanged: {
+				if (WarmUpReadyUp::IsWarmUpEndApproved()) {
+					OnWarmUpEndApproved();
+				} else {
+					OnWarmUpWaitForApproval();
+				}
+			}
+			//  Match skipped due to no players being left
+			case Progression::C_EventType_MatchSkippedDueToNoPlayersLeft: {
+				OnMatchSkippedDueToNoPlayersLeft();
+			}
+			// Restart due to critical mode setting changes
+			case Progression::C_EventType_RestartTurnDueToCriticalModeSettingChanged: {
+				OnTurnRestartedDueToCriticalSettingChanged();
 			}
 		}
 	}

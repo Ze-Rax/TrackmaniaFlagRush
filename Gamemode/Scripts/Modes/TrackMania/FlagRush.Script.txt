@@ -294,6 +294,7 @@ EnabledVehicles::Load();
 
 // UI
 Messages::Load();
+Messages::SetFlagRushVersion(Version);
 UILayers::Load();
 
 // Misc
@@ -416,17 +417,11 @@ if (S_UseWarmUp && !Progression::MapEndRequsted()) {
 Progression::EndMap();
 declare Boolean MapIsValid = Progression::MapIsValid();
 FlagRush_XmlRpc::Send_MapEnd(MapIsValid);
-if (MapIsValid) {
-	declare Integer WinnerClan = Scores::EvaluateMap();
-	if (WinnerClan == 0) {
-		Messages::MapDraw(Durations::C_Duration_MapEnd);
-	} else {
-		Messages::MapWin(WinnerClan, Durations::C_Duration_MapEnd);
-		Scores::OnClanMapWin(WinnerClan);
-	}
-} else {
-	Messages::MapSkip(Durations::C_Duration_MapEnd);
+declare Integer WinnerClan = Scores::EvaluateMap();
+if (!MapIsValid) {
 	Scores::Clear(Scores::C_Level_Map);
+} else if (WinnerClan != 0) {
+	Scores::OnClanMapWin(WinnerClan);
 }
 
 // Sleep during message and show scoreboard update half way through
@@ -442,7 +437,7 @@ UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 if (Private_MatchPointLimitReached()) {
 	MB_StopMatch();
 } else {
-	MB_SkipPodiumSequence(); // Podium == Match end MVP
+	MB_SkipPodiumSequence(); // Podium sequence contains match end, since we need a map for the MVP
 }
 ***
 
@@ -464,7 +459,6 @@ foreach (WarningSeconds in C_TimeLimitWarning_Seconds) {
 ***
 Progression::StartRound();
 FlagRush_XmlRpc::Send_RoundStart();
-Messages::RoundStart(MB_GetRoundCount(), Durations::C_Duration_RoundStart);
 MB_Sleep(Durations::C_Duration_RoundStart);
 
 StartTime = Now;
@@ -476,17 +470,11 @@ Private_RoundTimeRemaining = S_RoundTimeLimitSeconds * 1000;
 Progression::EndRound();
 declare Boolean RoundIsValid = Progression::RoundIsValid();
 FlagRush_XmlRpc::Send_RoundEnd(RoundIsValid);
-if (RoundIsValid) {
-	declare Integer WinnerClan = Scores::EvaluateRound();
-	if (WinnerClan == 0) {
-		Messages::RoundDraw(Durations::C_Duration_RoundEnd);
-	} else {
-		Messages::RoundWin(WinnerClan, Durations::C_Duration_RoundEnd);
-		Scores::OnClanRoundWin(WinnerClan);
-	}
-} else {
-	Messages::RoundSkip(Durations::C_Duration_RoundEnd);
+declare Integer WinnerClan = Scores::EvaluateRound();
+if (!RoundIsValid) {
 	Scores::Clear(Scores::C_Level_Round);
+} else if (WinnerClan !=  0) {
+	Scores::OnClanRoundWin(WinnerClan);
 }
 
 // Sleep during message and show scoreboard update half way through
@@ -562,9 +550,8 @@ if(Progression::OvertimeIsRunning() && !Private_RoundIsTied()) {
 	if (Private_RoundIsTied() && S_UseOvertime) {
 		Progression::StartOvertime();
 		FlagRush_XmlRpc::Send_Overtime();
-		Messages::OvertimeStart(Durations::C_Duration_Overtime);
 	} else {
-		Messages::TimeLimitEnd(Durations::C_Duration_EventMessage);
+		Progression::SignalTimeLimitReached();
 		MB_StopRound();
 	}
 }
@@ -596,12 +583,11 @@ Playloop::End();
 // Mostly EndMatch logic, but podium is part of the map and not the match, so evaluate match here.
 
 // Score table phase
+Progression::StartMatchEndScoresTable();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
-declare Integer WinnerClan = Scores::EvaluateMatch();
-if (WinnerClan == 0) {
-	Messages::MatchDraw(Durations::C_Duration_MatchEnd);
-} else {
-	Messages::MatchWin(WinnerClan, Durations::C_Duration_MatchEnd);
+declare Boolean MatchIsValid = Progression::MatchIsValid();
+if (!MatchIsValid) {
+	Scores::Clear(Scores::C_Level_Match);
 }
 
 // Sleep during message and show scoreboard update half way through
@@ -610,6 +596,7 @@ MB_Sleep(Durations::C_Duration_MatchEnd / 2);
 Scores::EndMatch();
 MB_Sleep(Durations::C_Duration_MatchEnd / 2);
 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
+Progression::EndMatchEndScoresTable();
 
 // Actual podium phase
 if (HasPodium) {
@@ -627,12 +614,7 @@ if (HasPodium) {
 ***
 Progression::StartWarmUp();
 FlagRush_XmlRpc::Send_WarmUpStart();
-Messages::WarmUpStart(Durations::C_Duration_WarmUpStart);
-
 WarmUpReadyUp::Start(S_WarmUpWaitForApproval);
-if (S_WarmUpWaitForApproval) {
-	Messages::WarmUpWaitForApproval();
-}
 MB_Sleep(Durations::C_Duration_WarmUpStart);
 
 declare CUIConfig::EUISequence PreviousSequence = UIManager.UIAll.UISequence;
@@ -657,11 +639,10 @@ while(!WarmUpReadyUp::WarmUpShouldStop()) {
 { +++EndWarmUp+++ }
 
 Progression::SetEndTime(-1);
-Messages::WarmUpEnd(Durations::C_Duration_WarmUpEnd);
+Progression::EndWarmUp();
+FlagRush_XmlRpc::Send_WarmUpEnd();
 UIManager.UIAll.UISequence = PreviousSequence;
 MB_Sleep(Durations::C_Duration_WarmUpEnd);
-FlagRush_XmlRpc::Send_WarmUpEnd();
-Progression::EndWarmUp();
 ***
 
 ***WarmUpLoop***
@@ -680,14 +661,12 @@ foreach (Player in Players) {
 ***
 Progression::SetEndTime(-1);
 Progression::StartPause();
-Messages::PauseStart(Durations::C_Duration_PauseStart);
 MB_Sleep(Durations::C_Duration_PauseStart);
 
 { +++Private_WarmUp+++ }
 
-Messages::PauseEnd(Durations::C_Duration_PauseEnd);
-MB_Sleep(Durations::C_Duration_PauseEnd);
 Progression::EndPause();
+MB_Sleep(Durations::C_Duration_PauseEnd);
 ***
 
 // ~~~~~~~~~~ Yield ~~~~~~~~~~ //
@@ -741,13 +720,6 @@ Messages::Yield();
 declare Boolean ReinitTeamNames = False;
 declare Boolean LastPlayerLeft = False;
 foreach (Event in PlayerLifecycleEvents::GetPendingEvents()) {
-	if (Event.Type == PlayerLifecycleEvents::C_EventType_PlayerAdded) {
-		declare CSmPlayer Player <=> AllPlayers.get(Event.Player.PlayerId, Null);
-		if (Player != Null) {
-			Messages::Welcome(Player, Version);
-		}
-	}
-
 	// Check if player event requires team reinitialization
 	declare Boolean PlayerAdded = Event.Type == PlayerLifecycleEvents::C_EventType_PlayerAdded && Players.existskey(Event.Player.PlayerId);
 	declare Boolean PlayerRemoved = Event.Type == PlayerLifecycleEvents::C_EventType_PlayerRemoved && !Event.Player.Previously.WasSpectator;
@@ -766,7 +738,7 @@ if (ReinitTeamNames) {
 // Skip running match if the last player left, but not if we're before the first round of the first map
 declare Boolean MatchWasStarted =  MB_GetMapCount() > 1 || MB_GetRoundCount() > 0; // At least first round on first map was started
 if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted && Map != Null) {
-	Messages::AllPlayersLeft_SkipMatch();
+	Progression::SignalMatchSkippedDueToNoPlayersLeft();
 	Log::Info("Current match was skipped as there are no players remaining");
 	Progression::InvalidateMatch();
 	Progression::RequestMatchEnd(); // Keep for consistency
@@ -864,7 +836,7 @@ if (UpdateVehicleTunings) {
 }
 
 if (RestartTurn && MB_TurnIsRunning()) {
-	Messages::CriticalSettingUpdate_RestartTurn();
+	Progression::SignalRestartTurnDueToCriticalModeSettingChanged();
 	MB_StopTurn();
 }
 ***
@@ -953,15 +925,11 @@ foreach (Command in Commands::GetPendingEvents()) {
 		}
 		case CommandNames::Command_ApproveWarmUpEnd: {
 			WarmUpReadyUp::SetWarmUpEndApproval(Command.ValueBoolean);
-			if (Command.ValueBoolean) {
-				Messages::WarmUpApproved();
-			} else {
-				Messages::WarmUpWaitForApproval();
-			}
+			Progression::SignalWarmUpApprovalChanged();
 			CommandText = """Approvel given: {{{ Command.ValueBoolean }}}.""";
 		}
 		case CommandNames::Command_Announce: {
-			UIManager.UIAll.QueueMessage(3000, Messages::C_MessagePriority_Default, CUIConfig::EMessageDisplay::Big, Command.ValueText, CUIConfig::EUISound::Default, 1);
+			UIManager.UIAll.QueueMessage(3000, 999, CUIConfig::EMessageDisplay::Big, Command.ValueText, CUIConfig::EUISound::Default, 1);
 			CommandText = """Message: $<{{{ Command.ValueText }}}$>""";
 		}
 		default: return;

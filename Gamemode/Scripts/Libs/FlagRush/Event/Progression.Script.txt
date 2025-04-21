@@ -13,6 +13,10 @@
 #Const C_EventType_SegmentEnd 2
 #Const C_EventType_SegmentInvalid 3
 #Const C_EventType_EndTimeChanged 4
+#Const C_EventType_TimeLimitReached 5
+#Const C_EventType_WarmUpApprovalChanged 6
+#Const C_EventType_MatchSkippedDueToNoPlayersLeft 7
+#Const C_EventType_RestartTurnDueToCriticalModeSettingChanged 8
 
 #Const C_Segment_Server 1
 #Const C_Segment_Match 2
@@ -23,7 +27,9 @@
 #Const C_Segment_WarmUp 7
 #Const C_Segment_Pause 8
 #Const C_Segment_Podium 9
+#Const C_Segment_MatchEndScoresTable 10 ///< Unfortunately, the match winner is determined during the podium sequence which happens before match end, so we need a special segment
 
+// TODO: Fill
 #Const C_EventTypeNames [
 	1 => "SegmentStart",
 	2 => "SegmentEnd",
@@ -46,6 +52,7 @@
 #Struct K_Event {
   Integer Type;
   Integer Segment;
+  Boolean IsInvalid; // Using negative case so it defaults to being valid
 }
 
 declare Boolean G_ServerIsRunning;
@@ -219,6 +226,34 @@ Void SetEndTime(Integer _EndTime) {
   });
 }
 
+Void SignalTimeLimitReached() {
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_TimeLimitReached,
+    Segment = C_Segment_Round
+  });
+}
+
+Void SignalWarmUpApprovalChanged() {
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_WarmUpApprovalChanged,
+    Segment = C_Segment_WarmUp
+  });
+}
+
+Void SignalMatchSkippedDueToNoPlayersLeft() {
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_MatchSkippedDueToNoPlayersLeft,
+    Segment = C_Segment_Match
+  });
+}
+
+Void SignalRestartTurnDueToCriticalModeSettingChanged() {
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_RestartTurnDueToCriticalModeSettingChanged,
+    Segment = C_Segment_Turn
+  });
+}
+
 // Layer function definitions
 
 Text DefineLayerFunction_ServerIsRunning() {
@@ -351,7 +386,8 @@ Void EndMatch() {
   Net_FlagRush_Progression_MatchIsRunning = False;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentEnd,
-    Segment = C_Segment_Match
+    Segment = C_Segment_Match,
+    IsInvalid = !MatchIsValid()
   });
 }
 
@@ -373,7 +409,8 @@ Void EndMap() {
   Net_FlagRush_Progression_MapIsRunning = False;
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentEnd,
-    Segment = C_Segment_Map
+    Segment = C_Segment_Map,
+    IsInvalid = !MapIsValid()
   });
 }
 
@@ -396,7 +433,8 @@ Void EndRound() {
     Net_FlagRush_Progression_OvertimeIsRunning = False;
     G_EventsAggregationBuffer.add(K_Event{
       Type = C_EventType_SegmentEnd,
-      Segment = C_Segment_Overtime
+      Segment = C_Segment_Overtime,
+      IsInvalid = !RoundIsValid()
     });
   }
 
@@ -497,6 +535,20 @@ Void EndPodium() {
   G_EventsAggregationBuffer.add(K_Event{
     Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Podium
+  });
+}
+
+Void StartMatchEndScoresTable() {
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_MatchEndScoresTable
+  });
+}
+
+Void EndMatchEndScoresTable() {
+  G_EventsAggregationBuffer.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_MatchEndScoresTable
   });
 }
 

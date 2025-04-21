@@ -16,7 +16,6 @@
 #Include "Libs/FlagRush/ModeBase/Playloop.Script.txt"						as Playloop
 #Include "Libs/FlagRush/Core/Teams.Script.txt"									as Teams
 #Include "Libs/FlagRush/Util/Chat.Script.txt"										as Chat
-#Include "Libs/FlagRush/Util/ModeUtils.Script.txt"							as ModeUtils
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt"								as Stylesheet
 #Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"				as UIModule_EventFeed
 #Include "Libs/FlagRush/UI/Modules/Sounds.Script.txt"						as UIModule_Sound
@@ -24,6 +23,8 @@
 #Const C_MessagePriority_Default			1
 #Const C_MessagePriority_Event				2
 #Const C_MessagePriority_Progression	3
+
+// MARK: Helper Functions
 
 Void Private_ClearAllMessages() {
 	UIManager.UIAll.ClearMessages();
@@ -54,6 +55,8 @@ Void Private_QueueBigMessage(Text _Message, Integer _Duration, Integer _Priority
 	Message::CleanBigMessages();
 	Message::SendBigMessage(_Message, _Duration, _Priority, _Sound, 0);
 }
+
+// MARK: Event Handlers
 
 Void MatchWin(Integer _WinnerClan, Integer _Duration) {
 	declare Text Message = """{{{ Private_GetColoredTeamName(_WinnerClan) }}} won the match""";
@@ -149,41 +152,40 @@ Void PauseEnd(Integer _Duration) {
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void FlagPickUp(CSmPlayer _Player, Integer _Duration) {
+Void OnFlagPickedUp(CSmPlayer _Player) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(_Player) }}} has the $<{{{ Private_GetTeamColorCode(_Player.CurrentClan) }}}flag$>""";
 	declare Vec3 TeamColor = Teams::GetMidColor(_Player.CurrentClan);
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
+	Private_QueueBigMessage(Message, Durations::C_Duration_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag, TeamColor);
 }
 
-Void FlagScored(CSmPlayer _Scorer, Integer _Duration) {
+Void OnFlagScored(CSmPlayer _Scorer) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(_Scorer) }}} scored for {{{ Private_GetColoredTeamName(_Scorer.CurrentClan) }}}""";
 	declare Vec3 TeamColor = Teams::GetMidColor(_Scorer.CurrentClan);
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Event, CUIConfig::EUISound::Finish);
+	Private_QueueBigMessage(Message, Durations::C_Duration_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Finish);
 	UIModule_Sound::Play(["file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/KnockOutPlayer_01.wav", "file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/ShowWinners.wav"]);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag, TeamColor);
 }
 
-Void FlagDropped(CUser _OldCarrierUser, Integer _Duration) {
-	declare CSmScore OldCarrierScore <=> ModeUtils::GetScore(_OldCarrierUser.Login);
-	declare Text PlayerName = """$<{{{ Private_GetTeamColorCode(OldCarrierScore.TeamNum) }}}{{{ OldCarrierScore.User.Name }}}$>""";
+Void OnFlagDropped(CSmScore _OldCarrierScore /* Player might have disconnected, but we need their clan */) {
+	declare Text PlayerName = """$<{{{ Private_GetTeamColorCode(_OldCarrierScore.TeamNum) }}}{{{ _OldCarrierScore.User.Name }}}$>""";
 	declare Text Message = """{{{ PlayerName }}} dropped the flag$>""";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
+	Private_QueueBigMessage(Message, Durations::C_Duration_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag);
 }
 
-Void FlagReset(Integer _Duration) {
+Void OnFlagReset() {
 	declare Text Message = "The flag was reset";
-	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Event, CUIConfig::EUISound::Warning);
+	Private_QueueBigMessage(Message, Durations::C_Duration_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Warning);
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag);
 }
 
-Void FlagCarrierTeleport() {
+Void OnFlagCarrierTeleported() {
 	declare Text Message = "Flag carrier teleported!";
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
 }
 
-Void PlayerOutOfBounds(CSmPlayer _Player) {
+Void OnPlayerOutOfBounds(CSmPlayer _Player) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(_Player) }}} went out of bounds""";
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Error);
 	// Play a Sound for the dead player
@@ -191,7 +193,7 @@ Void PlayerOutOfBounds(CSmPlayer _Player) {
 	if (UI != Null) UI.QueueMessage(2000, 1, CUIConfig::EMessageDisplay::Small, "", CUIConfig::EUISound::Capture, 1);
 }
 
-Void PlayerRespawn(CSmPlayer _Player) {
+Void OnPlayerRespawned(CSmPlayer _Player) {
 	declare Text Message = """{{{ Private_GetColoredPlayerName(_Player) }}} respawned""";
 	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Reload);
 }
@@ -241,30 +243,30 @@ Void BeforeYield() {
 		switch (Event.Type) {
 			case Playloop::C_EventType_FlagReset: {
 				if (!Event.Silent) {
-					FlagReset(Durations::C_Duration_EventMessage);
+					OnFlagReset();
 				}
 			}
 			case Playloop::C_EventType_PlayerPickedUpFlag: {
-				FlagPickUp(Event.Player, Durations::C_Duration_EventMessage);
+				OnFlagPickedUp(Playloop::GetPlayer(Event.Player));
 			}
 			case Playloop::C_EventType_PlayerPassedFlag: {
 				// Note that the event is from the perspective of the old carrier who passed the flag
-				FlagPickUp(Event.RelatedPlayer, Durations::C_Duration_EventMessage);
+				OnFlagPickedUp(Playloop::GetPlayer(Event.RelatedPlayer));
 			}
 			case Playloop::C_EventType_PlayerDroppedFlag: {
-				FlagDropped(Event.Player.User, Durations::C_Duration_EventMessage);
+				OnFlagDropped(Playloop::GetScore(Event.Player));
 			}
 			case Playloop::C_EventType_PlayerScoredFlag: {
-				FlagScored(Event.Player, Durations::C_Duration_EventMessage);
+				OnFlagScored(Playloop::GetPlayer(Event.Player));
 			}
 			case Playloop::C_EventType_FlagCarrierTeleported: {
-				FlagCarrierTeleport();
+				OnFlagCarrierTeleported();
 			}
 			case Playloop::C_EventType_PlayerOutOfBounds: {
-				PlayerOutOfBounds(Event.Player);
+				OnPlayerOutOfBounds(Playloop::GetPlayer(Event.Player));
 			}
 			case Playloop::C_EventType_PlayerRespawned: {
-				PlayerRespawn(Event.Player);
+				OnPlayerRespawned(Playloop::GetPlayer(Event.Player));
 			}
 		}
 	}

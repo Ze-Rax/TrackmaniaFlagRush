@@ -201,7 +201,10 @@ Void BeforeYield() {
 				UIModule_FlagMarker::Update();
 			}
 			case Playloop::C_EventType_PlayerRequestedRespawnButIsTooFast: {
-				UIModule_RespawnFlash::Flash(Event.Player);
+				declare CSmPlayer Player = Playloop::GetPlayer(Event.Player);
+				if (Player != Null) {
+					UIModule_RespawnFlash::Flash(Player);
+				}
 			}
 		}
 	}

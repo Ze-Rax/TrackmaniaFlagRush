@@ -37,20 +37,26 @@
 #Const Vehicles::C_Vehicle_Rally as C_Vehicle_Rally
 #Const Vehicles::C_Vehicle_Desert as C_Vehicle_Desert
 
-#Const C_EventType_FlagReset 1
-#Const C_EventType_PlayerPickedUpFlag 2
-#Const C_EventType_PlayerPassedFlag 3
-#Const C_EventType_PlayerDroppedFlag 4
-#Const C_EventType_PlayerRespawned 5
-#Const C_EventType_PlayerRequestedRespawnButIsTooFast 6
-#Const C_EventType_PlayerScoredFlag 7
+#Const C_EventType_PlayerRequestedRespawnButIsTooFast 1
+#Const C_EventType_PlayerRespawned 2
+#Const C_EventType_PlayerOutOfBounds 3
+#Const C_EventType_FlagReset 4
+#Const C_EventType_PlayerPickedUpFlag 5
+#Const C_EventType_PlayerPassedFlag 6
+#Const C_EventType_PlayerDroppedFlag 7
 #Const C_EventType_FlagCarrierTeleported 8
-#Const C_EventType_PlayerOutOfBounds 9
+#Const C_EventType_PlayerScoredFlag 9
+
+#Struct K_PlayerRef {
+	Ident Id;
+	Ident UserId;
+	Ident ScoreId;
+}
 
 #Struct K_Event {
 	Integer Type;
-	CSmPlayer Player; ///< Can be Null. Meaning depends on event type.
-	CSmPlayer RelatedPlayer; ///< Can be Null. Meaning depends on event type.
+	K_PlayerRef Player; ///< Can be Invalid (containing NullIds). Meaning depends on event type.
+	K_PlayerRef RelatedPlayer; ///< Can be Invalid (containing NullIds). Meaning depends on event type.
 	CMapLandmark Landmark; ///< Can be Null. Meaning depends on the event type.
 	Boolean Silent; ///< Do not show any notification; Needed for Flag reset on initial spawn and after scoring
 }
@@ -59,6 +65,35 @@ declare Flag::K_Flag G_PreviousFlag;
 declare K_Event[] G_PendingEvents;
 
 // MARK: Helper functions
+
+K_PlayerRef Private_CreatePlayerStruct(CSmPlayer _Player) {
+	if (_Player == Null) {
+		return K_PlayerRef{};
+	}
+
+	return K_PlayerRef{
+		Id = _Player.Id,
+		UserId = _Player.User.Id,
+		ScoreId = _Player.Score.Id
+	};
+}
+
+K_PlayerRef Private_CreatePlayerStruct(CSmScore _Score) {
+	if (_Score == Null) {
+		return K_PlayerRef{};
+	}
+
+	declare CSmPlayer Player = GetPlayer(_Score.User.Login);
+	if (Player != Null) {
+		return Private_CreatePlayerStruct(Player);
+	}
+
+	return K_PlayerRef{
+		Id = NullId, // Disconnected
+		UserId = _Score.User.Id,
+		ScoreId = _Score.Id
+	};
+}
 
 CSmPlayer Private_GetFirstCollidingPlayer_OpponentPriority(CSmPlayer _ReferencePlayer) {
 	declare CSmPlayer FirstCollidingPlayer;
@@ -205,7 +240,7 @@ Void Private_Player_PickUpFlag(CSmPlayer _Player) {
 
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerPickedUpFlag,
-		Player = _Player
+		Player = Private_CreatePlayerStruct(_Player)
 	});
 	FlagRush_XmlRpc::Send_FlagPickup();
 }
@@ -232,8 +267,8 @@ Void Private_FlagCarrier_PassFlag(CSmPlayer _ToPlayer) {
 
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerPassedFlag,
-		Player = OldCarrier,
-		RelatedPlayer = _ToPlayer
+		Player = Private_CreatePlayerStruct(OldCarrier),
+		RelatedPlayer = Private_CreatePlayerStruct(_ToPlayer)
 	});
 	FlagRush_XmlRpc::Send_FlagPass(OldCarrier);
 }
@@ -267,7 +302,7 @@ Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
 
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerDroppedFlag,
-		Player = OldCarrierPlayer
+		Player = Private_CreatePlayerStruct(OldCarrierPlayer)
 	});
 	FlagRush_XmlRpc::Send_FlagDrop(OldCarrierUser);
 }
@@ -277,13 +312,11 @@ Void Private_FlagCarrier_ScoreFlag(CMapLandmark _Base) {
 	declare CSmPlayer CarrierPlayer = Flag::GetPlayer();
 
 	// Check for assist
-	declare CSmScore AssistScore;
-	declare CUser AssistUser;
+	declare CSmScore AssistScore; // Assisting Player might already be disconnected and therefore removed
 	if (Now - Flag.LastPass.Date <= C_AssistTimeThreshold && Flag.LastPass.From.Id != NullId) {
 		declare CSmScore LastPassSourceScore <=> Scores.get(Flag.LastPass.From.ScoreId, Null);
 		if (LastPassSourceScore.TeamNum == CarrierPlayer.Score.TeamNum) {
 			AssistScore <=> LastPassSourceScore;
-			AssistUser <=> LastPassSourceScore.User;
 		}
 	}
 
@@ -291,10 +324,15 @@ Void Private_FlagCarrier_ScoreFlag(CMapLandmark _Base) {
 	Private_Player_ResetHandicaps(CarrierPlayer);
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerScoredFlag,
-		Player = CarrierPlayer,
-		RelatedPlayer = Null, // TODO: Assist
+		Player = Private_CreatePlayerStruct(CarrierPlayer),
+		RelatedPlayer = Private_CreatePlayerStruct(AssistScore),
 		Landmark = _Base
 	});
+
+	declare CUser AssistUser;
+	if (AssistScore != Null) {
+		AssistUser = AssistScore.User;
+	}
 	FlagRush_XmlRpc::Send_FlagScored(CarrierPlayer, AssistUser);
 
 	Private_Flag_Reset(True);
@@ -310,7 +348,7 @@ Void Private_OnFlagCarrierTeleported() {
 	declare CSmPlayer CarrierPlayer = Flag::GetPlayer();
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_FlagCarrierTeleported,
-		Player = CarrierPlayer
+		Player = Private_CreatePlayerStruct(CarrierPlayer)
 	});
   Private_FlagCarrier_DropFlag(G_PreviousFlag.Location.Position);
 }
@@ -332,7 +370,7 @@ Void Private_OnPlayerOutOfBound(CSmPlayer _Player) {
 	Scores::OnPlayerOutOfBounds(_Player.Score);
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerOutOfBounds,
-		Player = _Player
+		Player = Private_CreatePlayerStruct(_Player)
 	});
 	FlagRush_XmlRpc::Send_PlayerDeath(_Player);
 
@@ -368,7 +406,7 @@ Void Private_OnPlayerRequestsRespawn(CSmPlayer _Player) {
 	if (Settings::GetReal(SettingNames::S_RespawnSpeedLimitKmh) >= 0 && _Player.Speed > Settings::GetReal(SettingNames::S_RespawnSpeedLimitKmh) / 3.6) {
 		G_PendingEvents.add(K_Event{
 			Type = C_EventType_PlayerRequestedRespawnButIsTooFast,
-			Player = _Player
+			Player = Private_CreatePlayerStruct(_Player)
 		});
 		return;
 	}
@@ -376,7 +414,7 @@ Void Private_OnPlayerRequestsRespawn(CSmPlayer _Player) {
 	Private_Player_Unspawn(_Player);
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerRespawned,
-		Player = _Player
+		Player = Private_CreatePlayerStruct(_Player)
 	});
 	Scores::OnPlayerRespawn(_Player.Score);
 }
@@ -566,6 +604,18 @@ K_Event[] GetPendingEvents() {
 	return G_PendingEvents;
 }
 
+CSmPlayer GetPlayer(K_PlayerRef _PlayerStruct) {
+	return AllPlayers.get(_PlayerStruct.Id, Null);
+}
+
+CSmScore GetScore(K_PlayerRef _PlayerStruct) {
+	return Scores.get(_PlayerStruct.ScoreId, Null);
+}
+
+CUser GetUser(K_PlayerRef _PlayerStruct) {
+	return Users.get(_PlayerStruct.UserId, Null);
+}
+
 // MARK: Lifecycle
 
 Void Start() {
@@ -629,7 +679,7 @@ Void WarmUpLoop() {
 					FlagRush_Warmup_UnspawnDate = Now;
 					G_PendingEvents.add(K_Event{
 						Type = C_EventType_PlayerOutOfBounds,
-						Player = Event.Player
+						Player = Private_CreatePlayerStruct(Event.Player)
 					});
 				}
 			}

@@ -266,36 +266,51 @@ Void Yield() {
 	}
 
 	foreach (Event in Progression::GetPendingEvents()) {
-		if (Event.Type == Progression::C_EventType_SegmentStart && Event.Segment == Progression::C_Segment_Map) {
-			UIModule_MapMarkers::Update();
-		} else if (Event.Type == Progression::C_EventType_SegmentStart && Event.Segment == Progression::C_Segment_WarmUp) {
-			UIModule_MapMarkers::ShowFlagSpawnMarkers();
-		} else if (Event.Type == Progression::C_EventType_SegmentEnd && Event.Segment == Progression::C_Segment_WarmUp) {
-			UIModule_MapMarkers::HideFlagSpawnMarkers();
-		} else if (Event.Type == Progression::C_EventType_SegmentStart && Event.Segment == Progression::C_Segment_Podium) {
-			UIModule_MapMarkers::Hide();
-			declare CSmScore[] PodiumPlayerScores;
-			declare Text[] PodiumPlayerLogins;
-			for (I, 0, 2) {
-				if (!Scores.existskey(I)) {
-					break;
+		switch (Event.Type) {
+			case Progression::C_EventType_SegmentStart: {
+				switch (Event.Segment) {
+					case Progression::C_Segment_Map: {
+						UIModule_MapMarkers::Update();
+					}
+					case Progression::C_Segment_WarmUp: {
+						UIModule_MapMarkers::ShowFlagSpawnMarkers();
+					}
+					case Progression::C_Segment_Podium: {
+						UIModule_MapMarkers::Hide();
+						declare CSmScore[] PodiumPlayerScores;
+						declare Text[] PodiumPlayerLogins;
+						for (I, 0, 2) {
+							if (!Scores.existskey(I)) {
+								break;
+							}
+							PodiumPlayerScores.add(Scores[I]);
+							PodiumPlayerLogins.add(Scores[I].User.Login);
+						}
+						UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
+						UIModule_PodiumBackground::SetContent(PodiumPlayerScores);
+						Layers::Attach(UIModule_PodiumBackground::C_LayerName);
+						UIModule_PodiumStatistics::Update();
+						Layers::Attach(UIModule_PodiumStatistics::C_LayerName);
+						Layers::Detach(UIModule_ScoresHeader::C_LayerName);
+					}
 				}
-				PodiumPlayerScores.add(Scores[I]);
-				PodiumPlayerLogins.add(Scores[I].User.Login);
 			}
-			UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
-			UIModule_PodiumBackground::SetContent(PodiumPlayerScores);
-			Layers::Attach(UIModule_PodiumBackground::C_LayerName);
-			UIModule_PodiumStatistics::Update();
-			Layers::Attach(UIModule_PodiumStatistics::C_LayerName);
-			Layers::Detach(UIModule_ScoresHeader::C_LayerName);
-		} else if (Event.Type == Progression::C_EventType_SegmentEnd && Event.Segment == Progression::C_Segment_Podium) {
-			UIModule_MapMarkers::Show();
-			Layers::Detach(UIModule_PodiumBackground::C_LayerName);
-			Layers::Detach(UIModule_PodiumStatistics::C_LayerName);
-			Layers::Attach(UIModule_ScoresHeader::C_LayerName);
-		} else if (Event.Type == Progression::C_EventType_SegmentEnd && Event.Segment == Progression::C_Segment_Turn) {
-			UIModule_FlagMarker::Update();
+			case Progression::C_EventType_SegmentEnd: {
+				switch (Event.Segment) {
+					case Progression::C_Segment_Turn: {
+						UIModule_FlagMarker::Update();
+					}
+					case Progression::C_Segment_WarmUp: {
+						UIModule_MapMarkers::HideFlagSpawnMarkers();
+					}
+					case Progression::C_Segment_Podium: {
+						UIModule_MapMarkers::Show();
+						Layers::Detach(UIModule_PodiumBackground::C_LayerName);
+						Layers::Detach(UIModule_PodiumStatistics::C_LayerName);
+						Layers::Attach(UIModule_ScoresHeader::C_LayerName);
+					}
+				}
+			}
 		}
 	}
 

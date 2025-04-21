@@ -26,8 +26,7 @@
 #Include "Libs/FlagRush/Event/EnabledVehicles.Script.txt" as EnabledVehicles
 
 #Include "Libs/FlagRush/Util/Command.Script.txt" as Command
-
-#Include "Libs/FlagRush/UI/Messages.Script.txt" as Messages
+#Include "Libs/FlagRush/Util/Chat.Script.txt" as Chat
 
 #Const C_Epsilon_Distance 0.001
 #Const C_AssistTimeThreshold 5000
@@ -44,12 +43,16 @@
 #Const C_EventType_PlayerDroppedFlag 4
 #Const C_EventType_PlayerRespawned 5
 #Const C_EventType_PlayerRequestedRespawnButIsTooFast 6
+#Const C_EventType_PlayerScoredFlag 7
+#Const C_EventType_FlagCarrierTeleported 8
+#Const C_EventType_PlayerOutOfBounds 9
 
 #Struct K_Event {
 	Integer Type;
 	CSmPlayer Player; ///< Can be Null. Meaning depends on event type.
 	CSmPlayer RelatedPlayer; ///< Can be Null. Meaning depends on event type.
 	CMapLandmark Landmark; ///< Can be Null. Meaning depends on the event type.
+	Boolean Silent; ///< Do not show any notification; Needed for Flag reset on initial spawn and after scoring
 }
 
 declare Flag::K_Flag G_PreviousFlag;
@@ -77,17 +80,14 @@ CSmPlayer Private_GetFirstCollidingPlayer_OpponentPriority(CSmPlayer _ReferenceP
 }
 
 Void Private_Flag_Reset(Boolean _Silent) {
-	if (!_Silent) {
-    Messages::FlagReset(Durations::C_Duration_EventMessage);
-  }
-
 	declare CMapLandmark FlagSpawn = Map::GetRandomFlagSpawn();
 	Flag::SetAtLandmark(FlagSpawn);
 	Flag::InvalidateLastSafePosition();
 
 	G_PendingEvents.add(K_Event {
 		Type = C_EventType_FlagReset,
-		Landmark = FlagSpawn
+		Landmark = FlagSpawn,
+		Silent = _Silent
 	});
 	FlagRush_XmlRpc::Send_FlagReset();
 }
@@ -197,7 +197,6 @@ Boolean Private_Player_CanPickUpDroppedFlag(CSmPlayer _Player) {
 }
 
 Void Private_Player_PickUpFlag(CSmPlayer _Player) {
-	Messages::FlagPickUp(_Player, Durations::C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_FlagStealResistDurationSeconds) * 1000);
 	Flag::SetAtPlayer(_Player);
 	Flag::RemoveDropTimer();
@@ -222,7 +221,6 @@ Void Private_FlagCarrier_PassFlag(CSmPlayer _ToPlayer) {
 	}
 	Private_Player_ResetHandicaps(OldCarrier);
 	// New Carrier
-	Messages::FlagPickUp(_ToPlayer, Durations::C_Duration_EventMessage);
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_FlagStealResistDurationSeconds) * 1000);
 	Flag::SetAtPlayer(_ToPlayer);
 	if (IsPassToOpponent || Settings::GetBoolean(SettingNames::S_FlagStealResistanceOnTeamPass)) {
@@ -271,11 +269,10 @@ Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
 		Type = C_EventType_PlayerDroppedFlag,
 		Player = OldCarrierPlayer
 	});
-	Messages::FlagDropped(OldCarrierUser, Durations::C_Duration_EventMessage);
 	FlagRush_XmlRpc::Send_FlagDrop(OldCarrierUser);
 }
 
-Void Private_FlagCarrier_ScoreFlag() {
+Void Private_FlagCarrier_ScoreFlag(CMapLandmark _Base) {
 	declare Flag::K_Flag Flag = Flag::Get();
 	declare CSmPlayer CarrierPlayer = Flag::GetPlayer();
 
@@ -290,11 +287,16 @@ Void Private_FlagCarrier_ScoreFlag() {
 		}
 	}
 
-	Messages::FlagScored(CarrierPlayer, Durations::C_Duration_EventMessage);
 	Scores::OnPlayerScoresFlag(CarrierPlayer.Score, AssistScore);
-
 	Private_Player_ResetHandicaps(CarrierPlayer);
+	G_PendingEvents.add(K_Event{
+		Type = C_EventType_PlayerScoredFlag,
+		Player = CarrierPlayer,
+		RelatedPlayer = Null, // TODO: Assist
+		Landmark = _Base
+	});
 	FlagRush_XmlRpc::Send_FlagScored(CarrierPlayer, AssistUser);
+
 	Private_Flag_Reset(True);
 }
 
@@ -305,7 +307,11 @@ Void Private_OnFlagCarrierDisconnected() {
 }
 
 Void Private_OnFlagCarrierTeleported() {
-  Messages::FlagCarrierTeleport();
+	declare CSmPlayer CarrierPlayer = Flag::GetPlayer();
+	G_PendingEvents.add(K_Event{
+		Type = C_EventType_FlagCarrierTeleported,
+		Player = CarrierPlayer
+	});
   Private_FlagCarrier_DropFlag(G_PreviousFlag.Location.Position);
 }
 
@@ -322,13 +328,17 @@ Void Private_OnPlayerOutOfBound(CSmPlayer _Player) {
 		return;
 	}
 
-	Messages::PlayerOutOfBounds(_Player);
+	Private_Player_Unspawn(_Player);
+	Scores::OnPlayerOutOfBounds(_Player.Score);
+	G_PendingEvents.add(K_Event{
+		Type = C_EventType_PlayerOutOfBounds,
+		Player = _Player
+	});
+	FlagRush_XmlRpc::Send_PlayerDeath(_Player);
+
 	if (_Player == Flag::GetPlayer()) {
 		Private_FlagCarrier_DropFlag(Flag::Get().Location.LastSafePosition);
 	}
-	FlagRush_XmlRpc::Send_PlayerDeath(_Player);
-	Private_Player_Unspawn(_Player);
-	Scores::OnPlayerOutOfBounds(_Player.Score);
 }
 
 Void Private_OnPlayerTriggersWaypoint(CSmPlayer _Player, CMapLandmark _Landmark) {
@@ -340,7 +350,7 @@ Void Private_OnPlayerTriggersWaypoint(CSmPlayer _Player, CMapLandmark _Landmark)
 	} else if (_Player == Flag::GetPlayer()){
 		declare Integer TargetBaseClan = 3 - _Player.CurrentClan;
 		if (Map::IsBase(_Landmark, TargetBaseClan)) {
-			Private_FlagCarrier_ScoreFlag();
+			Private_FlagCarrier_ScoreFlag(_Landmark);
 		}
 	}
 }
@@ -368,7 +378,6 @@ Void Private_OnPlayerRequestsRespawn(CSmPlayer _Player) {
 		Type = C_EventType_PlayerRespawned,
 		Player = _Player
 	});
-	Messages::PlayerRespawn(_Player);
 	Scores::OnPlayerRespawn(_Player.Score);
 }
 
@@ -527,9 +536,11 @@ Void Private_HandleCommands() {
 	  }
 
 	  declare Text UnprefixedCommandName = Command::RemovePrefix(Command.Name);
-	  declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ UnprefixedCommandName }}}" from {{{ Command.Source.Name }}}.""";
-	  if (CommandText != "") Message ^= " " ^ CommandText;
-	  UIManager.UIAll.SendChat(Message);
+	  declare Text Message = """Received command "{{{ UnprefixedCommandName }}}" from {{{ Command.Source.Name }}}.""";
+	  if (CommandText != "") {
+			Message ^= " " ^ CommandText;
+		}
+		Chat::Send(Message);
   }
 }
 
@@ -564,7 +575,8 @@ Void Start() {
   Flag::InvalidateLastSafePosition();
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_FlagReset,
-		Landmark = FlagSpawn
+		Landmark = FlagSpawn,
+		Silent = True
 	});
 
   foreach (Player in Players) {
@@ -612,10 +624,13 @@ Void WarmUpLoop() {
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
 				// Player might have left in the same server frame, causing Player to be Null
 				if (Event.Player != Null && Map::IsOutOfBoundsTrigger(Event.Landmark) && Event.Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
-					Messages::PlayerOutOfBounds(Event.Player);
 					UnspawnPlayer(Event.Player);
 					declare Integer FlagRush_Warmup_UnspawnDate for Event.Player = Now;
 					FlagRush_Warmup_UnspawnDate = Now;
+					G_PendingEvents.add(K_Event{
+						Type = C_EventType_PlayerOutOfBounds,
+						Player = Event.Player
+					});
 				}
 			}
 		}

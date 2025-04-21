@@ -54,6 +54,7 @@
 
 #Include "Libs/FlagRush/Util/Log.Script.txt"															as Log
 #Include "Libs/FlagRush/Util/Command.Script.txt"													as Command
+#Include "Libs/FlagRush/Util/Chat.Script.txt"															as Chat
 
 #Include "Libs/FlagRush/UI/UIConfig.Script.txt"														as UIConfig
 #Include "Libs/FlagRush/UI/UILayers.Script.txt"														as UILayers
@@ -715,6 +716,7 @@ Playloop::Yield();
 // Playloop produces events that are only guaranteed to be valid in the current yield, due to for example player references.
 // React to those events before API array are updated on yield.
 UILayers::BeforeYield();
+Messages::BeforeYield();
 ***
 
 ***Yield***
@@ -963,11 +965,11 @@ foreach (Command in Commands::GetPendingEvents()) {
 	}
 
 	declare Text UnprefixedCommandName = Command::RemovePrefix(Command.Name);
-	declare Text Message = """{{{ Messages::C_ChatPrefix }}} Received command "{{{ UnprefixedCommandName }}}" from {{{ Command.Source.Name }}}.""";
+	declare Text Message = """Received command "{{{ UnprefixedCommandName }}}" from {{{ Command.Source.Name }}}.""";
 	if (CommandText != "") {
 		Message ^= " " ^ CommandText;
 	}
-	UIManager.UIAll.SendChat(Message);
+	Chat::Send(Message);
 }
 ***
 

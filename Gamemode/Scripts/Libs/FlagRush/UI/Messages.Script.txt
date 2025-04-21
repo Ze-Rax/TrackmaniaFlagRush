@@ -12,13 +12,14 @@
 
 #Include "Libs/FlagRush/CommonLibs/Nadeo/Message.Script.txt"		as Message
 
+#Include "Libs/FlagRush/Const/Durations.Script.txt"							as Durations
+#Include "Libs/FlagRush/ModeBase/Playloop.Script.txt"						as Playloop
 #Include "Libs/FlagRush/Core/Teams.Script.txt"									as Teams
+#Include "Libs/FlagRush/Util/Chat.Script.txt"										as Chat
 #Include "Libs/FlagRush/Util/ModeUtils.Script.txt"							as ModeUtils
 #Include "Libs/FlagRush/UI/Stylesheet.Script.txt"								as Stylesheet
 #Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"				as UIModule_EventFeed
 #Include "Libs/FlagRush/UI/Modules/Sounds.Script.txt"						as UIModule_Sound
-
-#Const C_ChatPrefix		"[FlagRush]"
 
 #Const C_MessagePriority_Default			1
 #Const C_MessagePriority_Event				2
@@ -52,10 +53,6 @@ Void Private_QueueBigMessage(Text _Message, Integer _Duration, Integer _Priority
 	// Using Message library to make it possible to replace big messages instantly (for example when flag changes carrier often in a short timeframe)
 	Message::CleanBigMessages();
 	Message::SendBigMessage(_Message, _Duration, _Priority, _Sound, 0);
-}
-
-Void Private_SendChat(Text _Message) {
-	UIManager.UIAll.SendChat("""{{{ C_ChatPrefix }}} $<{{{ _Message }}}$>""");
 }
 
 Void MatchWin(Integer _WinnerClan, Integer _Duration) {
@@ -132,12 +129,12 @@ Void WarmUpEnd(Integer _Duration) {
 
 Void WarmUpWaitForApproval() {
 	declare Text Message = """$<${{{CL::RgbToHex3(Stylesheet::C_Warning)}}}Waiting for admin confirmation to start the match.$>""";
-	Private_SendChat(Message);
+	Chat::Send(Message);
 }
 
 Void WarmUpApproved() {
 	declare Text Message = """$<${{{CL::RgbToHex3(Stylesheet::C_Success)}}}The match can start.$>""";
-	Private_SendChat(Message);
+	Chat::Send(Message);
 }
 
 Void PauseStart(Integer _Duration) {
@@ -218,17 +215,17 @@ Void Welcome(CSmPlayer _Player, Text _Version) {
 
 Void CriticalSettingUpdate_RestartTurn() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}A critical setting was updated! Restarting the the current turn...$>""";
-	Private_SendChat(Message);
+	Chat::Send(Message);
 }
 
 Void InvalidMap() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Error) }}}The map does not conform to the FlagRush map specification. Skipping...$>""";
-	Private_SendChat(Message);
+	Chat::Send(Message);
 }
 
 Void AllPlayersLeft_SkipMatch() {
 	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}All players left, skipping match...$>""";
-	Private_SendChat(Message);
+	Chat::Send(Message);
 }
 
 Void Unload() {
@@ -237,6 +234,40 @@ Void Unload() {
 
 Void Load() {
 	Message::Load();
+}
+
+Void BeforeYield() {
+	foreach (Event in Playloop::GetPendingEvents()) {
+		switch (Event.Type) {
+			case Playloop::C_EventType_FlagReset: {
+				if (!Event.Silent) {
+					FlagReset(Durations::C_Duration_EventMessage);
+				}
+			}
+			case Playloop::C_EventType_PlayerPickedUpFlag: {
+				FlagPickUp(Event.Player, Durations::C_Duration_EventMessage);
+			}
+			case Playloop::C_EventType_PlayerPassedFlag: {
+				// Note that the event is from the perspective of the old carrier who passed the flag
+				FlagPickUp(Event.RelatedPlayer, Durations::C_Duration_EventMessage);
+			}
+			case Playloop::C_EventType_PlayerDroppedFlag: {
+				FlagDropped(Event.Player.User, Durations::C_Duration_EventMessage);
+			}
+			case Playloop::C_EventType_PlayerScoredFlag: {
+				FlagScored(Event.Player, Durations::C_Duration_EventMessage);
+			}
+			case Playloop::C_EventType_FlagCarrierTeleported: {
+				FlagCarrierTeleport();
+			}
+			case Playloop::C_EventType_PlayerOutOfBounds: {
+				PlayerOutOfBounds(Event.Player);
+			}
+			case Playloop::C_EventType_PlayerRespawned: {
+				PlayerRespawn(Event.Player);
+			}
+		}
+	}
 }
 
 Void Yield() {

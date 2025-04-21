@@ -1,0 +1,5 @@
+#Const C_Prefix "[FlagRush]"
+
+Void Send(Text _Message) {
+  UIManager.UIAll.SendChat("""{{{ C_Prefix }}} $<{{{ _Message }}}$>""");
+}

@@ -1,5 +1,10 @@
-#Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
+/**
+ * Manages FlagRush specific player states.
+ *
+ * #RequireContext CSmMode
+ */
 
+#Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
 #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" as PlayerLifecycleEvents
 
 

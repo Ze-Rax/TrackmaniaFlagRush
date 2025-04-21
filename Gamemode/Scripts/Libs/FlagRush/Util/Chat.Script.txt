@@ -1,3 +1,9 @@
+/**
+ * Simple library used to send common prefixed chat messages from the gamemode.
+ *
+ * #RequireContext CSmMode
+ */
+
 #Const C_Prefix "[FlagRush]"
 
 Void Send(Text _Message) {

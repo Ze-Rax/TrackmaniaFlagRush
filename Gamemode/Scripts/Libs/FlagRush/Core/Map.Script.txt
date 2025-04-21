@@ -8,13 +8,13 @@
 #Include "Libs/FlagRush/Util/Log.Script.txt" as Log
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
 
-#Const C_LandmarkTag_SpawnTeam1					"SpawnTeam1"
-#Const C_LandmarkTag_SpawnTeam2					"SpawnTeam2"
-#Const C_LandmarkTag_BaseTeam1					"BaseTeam1"
-#Const C_LandmarkTag_BaseTeam2					"BaseTeam2"
-#Const C_LandmarkTag_FlagSpawn					"FlagSpawn"
-#Const C_LandmarkTag_DefaultFlagSpawn		"DefaultFlagSpawn"
-#Const C_LandmarkTag_OutOfBoundsTrigger	"OutOfBoundsTrigger"
+#Const C_LandmarkTag_SpawnTeam1											"SpawnTeam1"
+#Const C_LandmarkTag_SpawnTeam2											"SpawnTeam2"
+#Const C_LandmarkTag_BaseTeam1											"BaseTeam1"
+#Const C_LandmarkTag_BaseTeam2											"BaseTeam2"
+#Const C_LandmarkTag_FlagSpawn											"FlagSpawn"
+#Const C_LandmarkTag_DefaultFlagSpawn								"DefaultFlagSpawn"
+#Const C_LandmarkTag_OutOfBoundsTrigger							"OutOfBoundsTrigger"
 #Const C_LandmarkTag_OutOfBoundsTrigger_Deprecated	"FlagResetTrigger"
 
 declare CMapLandmark						G_DefaultFlagSpawn;

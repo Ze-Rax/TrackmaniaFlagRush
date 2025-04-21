@@ -12,7 +12,7 @@
  * #RequireContext CSmMode
  */
 
-#Extends "Libs/FlagRush/ModeBase/ModeBase.Script.txt"
+#Extends "Libs/FlagRush/CommonLibs/ModeBase.Script.txt"
 
 #Const	CompatibleMapTypes	"Trackmania\\FlagRushArena,FlagRushArena"
 #Const	Version							"1.7.0"
@@ -27,40 +27,40 @@
 #Include "MathLib" as ML
 
 // From mode base
-// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"								as XmlRpc
-// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt"					as XmlRpc_Base
+// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2.Script.txt"									as XmlRpc
+// #Include "Libs/Nadeo/ModeLibs/Legacy/XmlRpc2_Base.Script.txt"						as XmlRpc_Base
 
 // FlagRush Libs
-#Include "Libs/FlagRush/ModeBase/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
-#Include "Libs/FlagRush/ModeBase/Playloop.Script.txt" 										as Playloop
+#Include "Libs/FlagRush/CommonLibs/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
+#Include "Libs/FlagRush/Playloop.Script.txt" 																as Playloop
 
-#Include "Libs/FlagRush/Const/Durations.Script.txt"												as Durations
-#Include "Libs/FlagRush/Const/SettingNames.Script.txt"										as SettingNames
-#Include "Libs/FlagRush/Const/CommandNames.Script.txt"										as CommandNames
+#Include "Libs/FlagRush/Const/Durations.Script.txt"													as Durations
+#Include "Libs/FlagRush/Const/SettingNames.Script.txt"											as SettingNames
+#Include "Libs/FlagRush/Const/CommandNames.Script.txt"											as CommandNames
 
-#Include "Libs/FlagRush/Core/Map.Script.txt"															as Map
-#Include "Libs/FlagRush/Core/Scores.Script.txt"														as Scores
-#Include "Libs/FlagRush/Core/Teams.Script.txt"														as Teams
-#Include "Libs/FlagRush/Core/Players.Script.txt"													as Players
-#Include "Libs/FlagRush/Core/Flag.Script.txt"															as Flag
-#Include "Libs/FlagRush/Core/HandicapQueue.Script.txt"										as HandicapQueue
-#Include "Libs/FlagRush/Core/Vehicles.Script.txt"													as Vehicles
+#Include "Libs/FlagRush/Core/Map.Script.txt"																as Map
+#Include "Libs/FlagRush/Core/Scores.Script.txt"															as Scores
+#Include "Libs/FlagRush/Core/Teams.Script.txt"															as Teams
+#Include "Libs/FlagRush/Core/Players.Script.txt"														as Players
+#Include "Libs/FlagRush/Core/Flag.Script.txt"																as Flag
+#Include "Libs/FlagRush/Core/HandicapQueue.Script.txt"											as HandicapQueue
+#Include "Libs/FlagRush/Core/Vehicles.Script.txt"														as Vehicles
 
-#Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"								as FlagRush_XmlRpc
+#Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"									as FlagRush_XmlRpc
 
-#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt"						as PlayerLifecycleEvents
-#Include "Libs/FlagRush/Event/Settings.Script.txt"												as Settings
-#Include "Libs/FlagRush/Event/Commands.Script.txt"												as Commands
-#Include "Libs/FlagRush/Event/Progression.Script.txt"											as Progression
-#Include "Libs/FlagRush/Event/EnabledVehicles.Script.txt"									as EnabledVehicles
+#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt"							as PlayerLifecycleEvents
+#Include "Libs/FlagRush/Event/Settings.Script.txt"													as Settings
+#Include "Libs/FlagRush/Event/Commands.Script.txt"													as Commands
+#Include "Libs/FlagRush/Event/Progression.Script.txt"												as Progression
+#Include "Libs/FlagRush/Event/EnabledVehicles.Script.txt"										as EnabledVehicles
 
-#Include "Libs/FlagRush/Util/Log.Script.txt"															as Log
-#Include "Libs/FlagRush/Util/Command.Script.txt"													as Command
-#Include "Libs/FlagRush/Util/Chat.Script.txt"															as Chat
+#Include "Libs/FlagRush/Util/Log.Script.txt"																as Log
+#Include "Libs/FlagRush/Util/Command.Script.txt"														as Command
+#Include "Libs/FlagRush/Util/Chat.Script.txt"																as Chat
 
-#Include "Libs/FlagRush/UI/UIConfig.Script.txt"														as UIConfig
-#Include "Libs/FlagRush/UI/UILayers.Script.txt"														as UILayers
-#Include "Libs/FlagRush/UI/Messages.Script.txt"														as Messages
+#Include "Libs/FlagRush/UI/UIConfig.Script.txt"															as UIConfig
+#Include "Libs/FlagRush/UI/UILayers.Script.txt"															as UILayers
+#Include "Libs/FlagRush/UI/Messages.Script.txt"															as Messages
 
 // ===============
 // MARK: Constants

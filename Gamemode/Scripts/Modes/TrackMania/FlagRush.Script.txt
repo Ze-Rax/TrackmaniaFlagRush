@@ -33,6 +33,7 @@
 // FlagRush Libs
 #Include "Libs/FlagRush/CommonLibs/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
 #Include "Libs/FlagRush/Playloop.Script.txt" 																as Playloop
+#Include "Libs/FlagRush/XmlRpc.Script.txt"																	as FlagRushXmlRpc
 
 #Include "Libs/FlagRush/Const/Durations.Script.txt"													as Durations
 #Include "Libs/FlagRush/Const/SettingNames.Script.txt"											as SettingNames
@@ -269,6 +270,7 @@ Settings::Track(SettingNames::S_ModeCommands_AdminLoginsCsv, S_ModeCommands_Admi
 ***LoadLibraries***
 ***
 Playloop::Load();
+FlagRushXmlRpc::Load();
 
 // Core
 Map::Load();
@@ -309,6 +311,7 @@ if (S_Debug) {
 ***UnloadLibraries***
 ***
 Playloop::Unload();
+FlagRushXmlRpc::Unload();
 
 // Core
 Map::Unload();
@@ -679,6 +682,7 @@ MB_Sleep(Durations::C_Segment_PauseEnd);
 { +++BeforeYield_TransformEvents+++ } // Keep as first
 
 // Libraries that react to library events
+FlagRushXmlRpc::BeforeYield();
 Players::BeforeYield();
 UILayers::BeforeYield();
 Messages::BeforeYield();
@@ -697,6 +701,8 @@ PlayerLifecycleEvents::Yield();
 EnabledVehicles::Yield();
 
 Playloop::Yield();
+FlagRushXmlRpc::Yield();
+
 Flag::Yield();
 HandicapQueue::Yield();
 Scores::Yield();

@@ -39,13 +39,16 @@
 
 #Const C_EventType_PlayerRequestedRespawnButIsTooFast 1
 #Const C_EventType_PlayerRespawned 2
-#Const C_EventType_PlayerOutOfBounds 3
-#Const C_EventType_FlagReset 4
-#Const C_EventType_PlayerPickedUpFlag 5
-#Const C_EventType_PlayerPassedFlag 6
-#Const C_EventType_PlayerDroppedFlag 7
-#Const C_EventType_FlagCarrierTeleported 8
-#Const C_EventType_PlayerScoredFlag 9
+#Const C_EventType_PlayerSpawned 3
+#Const C_EventType_PlayerOutOfBounds 4
+#Const C_EventType_PlayerDied 5
+#Const C_EventType_FlagDropTimerExpired 6
+#Const C_EventType_FlagReset 7
+#Const C_EventType_PlayerPickedUpFlag 8
+#Const C_EventType_PlayerPassedFlag 9
+#Const C_EventType_PlayerDroppedFlag 10
+#Const C_EventType_FlagCarrierTeleported 11
+#Const C_EventType_PlayerScoredFlag 12
 
 #Struct K_PlayerRef {
 	Ident Id;
@@ -58,6 +61,7 @@
 	K_PlayerRef Player; ///< Can be Invalid (containing NullIds). Meaning depends on event type.
 	K_PlayerRef RelatedPlayer; ///< Can be Invalid (containing NullIds). Meaning depends on event type.
 	CMapLandmark Landmark; ///< Can be Null. Meaning depends on the event type.
+	Vec3 Position;
 	Boolean Silent; ///< Do not show any notification; Needed for Flag reset on initial spawn and after scoring
 }
 
@@ -66,7 +70,7 @@ declare K_Event[] G_PendingEvents;
 
 // MARK: Helper functions
 
-K_PlayerRef Private_CreatePlayerStruct(CSmPlayer _Player) {
+K_PlayerRef Private_CreatePlayerRef(CSmPlayer _Player) {
 	if (_Player == Null) {
 		return K_PlayerRef{};
 	}
@@ -78,14 +82,14 @@ K_PlayerRef Private_CreatePlayerStruct(CSmPlayer _Player) {
 	};
 }
 
-K_PlayerRef Private_CreatePlayerStruct(CSmScore _Score) {
+K_PlayerRef Private_CreatePlayerRef(CSmScore _Score) {
 	if (_Score == Null) {
 		return K_PlayerRef{};
 	}
 
 	declare CSmPlayer Player = GetPlayer(_Score.User.Login);
 	if (Player != Null) {
-		return Private_CreatePlayerStruct(Player);
+		return Private_CreatePlayerRef(Player);
 	}
 
 	return K_PlayerRef{
@@ -122,6 +126,7 @@ Void Private_Flag_Reset(Boolean _Silent) {
 	G_PendingEvents.add(K_Event {
 		Type = C_EventType_FlagReset,
 		Landmark = FlagSpawn,
+		Position = FlagSpawn.Position,
 		Silent = _Silent
 	});
 	FlagRush_XmlRpc::Send_FlagReset();
@@ -209,6 +214,12 @@ Void Private_Player_Spawn(CSmPlayer _Player) {
 	if (SpawnLandmark != Null) {
 		SpawnPlayer(_Player, _Player.CurrentClan, 1, SpawnLandmark.PlayerSpawn, Now + Durations::C_SpawnAnimation);
 		Private_Player_ApplyVehicleTuning(_Player);
+		G_PendingEvents.add(K_Event{
+			Type = C_EventType_PlayerSpawned,
+			Player = Private_CreatePlayerRef(_Player),
+			Landmark = SpawnLandmark,
+			Position = SpawnLandmark.Position
+		});
 	}
 }
 
@@ -229,20 +240,6 @@ Boolean Private_Player_CanPickUpDroppedFlag(CSmPlayer _Player) {
   }
 	declare Boolean IsLocked = Flag::IsLockedForPlayer(_Player);
 	return Flag::IsAtPosition() && !IsLocked && Hitbox::AreColliding(_Player, Flag::Get().Location.Position);
-}
-
-Void Private_Player_PickUpFlag(CSmPlayer _Player) {
-	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_FlagStealResistDurationSeconds) * 1000);
-	Flag::SetAtPlayer(_Player);
-	Flag::RemoveDropTimer();
-	Flag::Lock(StealResistanceEndDate);
-	Private_Player_ApplyHandicaps(_Player);
-
-	G_PendingEvents.add(K_Event{
-		Type = C_EventType_PlayerPickedUpFlag,
-		Player = Private_CreatePlayerStruct(_Player)
-	});
-	FlagRush_XmlRpc::Send_FlagPickup();
 }
 
 Void Private_FlagCarrier_PassFlag(CSmPlayer _ToPlayer) {
@@ -267,8 +264,9 @@ Void Private_FlagCarrier_PassFlag(CSmPlayer _ToPlayer) {
 
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerPassedFlag,
-		Player = Private_CreatePlayerStruct(OldCarrier),
-		RelatedPlayer = Private_CreatePlayerStruct(_ToPlayer)
+		Player = Private_CreatePlayerRef(OldCarrier),
+		RelatedPlayer = Private_CreatePlayerRef(_ToPlayer),
+		Position = OldCarrier.Position
 	});
 	FlagRush_XmlRpc::Send_FlagPass(OldCarrier);
 }
@@ -302,7 +300,8 @@ Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
 
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerDroppedFlag,
-		Player = Private_CreatePlayerStruct(OldCarrierPlayer)
+		Player = Private_CreatePlayerRef(OldCarrierPlayer),
+		Position = _Position
 	});
 	FlagRush_XmlRpc::Send_FlagDrop(OldCarrierUser);
 }
@@ -324,9 +323,10 @@ Void Private_FlagCarrier_ScoreFlag(CMapLandmark _Base) {
 	Private_Player_ResetHandicaps(CarrierPlayer);
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerScoredFlag,
-		Player = Private_CreatePlayerStruct(CarrierPlayer),
-		RelatedPlayer = Private_CreatePlayerStruct(AssistScore),
-		Landmark = _Base
+		Player = Private_CreatePlayerRef(CarrierPlayer),
+		RelatedPlayer = Private_CreatePlayerRef(AssistScore),
+		Landmark = _Base,
+		Position = CarrierPlayer.Position
 	});
 
 	declare CUser AssistUser;
@@ -348,17 +348,33 @@ Void Private_OnFlagCarrierTeleported() {
 	declare CSmPlayer CarrierPlayer = Flag::GetPlayer();
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_FlagCarrierTeleported,
-		Player = Private_CreatePlayerStruct(CarrierPlayer)
+		Player = Private_CreatePlayerRef(CarrierPlayer),
+		Position = CarrierPlayer.Position
 	});
   Private_FlagCarrier_DropFlag(G_PreviousFlag.Location.Position);
 }
 
 Void Private_OnFlagDropTimeoutExpired() {
+	G_PendingEvents.add(K_Event{
+		Type = C_EventType_FlagDropTimerExpired,
+		Position = Flag::Get().Location.Position
+	});
   Private_Flag_Reset();
 }
 
 Void Private_OnPlayerPicksUpFlag(CSmPlayer _Player) {
-  Private_Player_PickUpFlag(_Player);
+  declare Integer StealResistanceEndDate = Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_FlagStealResistDurationSeconds) * 1000);
+	Flag::SetAtPlayer(_Player);
+	Flag::RemoveDropTimer();
+	Flag::Lock(StealResistanceEndDate);
+	Private_Player_ApplyHandicaps(_Player);
+
+	G_PendingEvents.add(K_Event{
+		Type = C_EventType_PlayerPickedUpFlag,
+		Player = Private_CreatePlayerRef(_Player),
+		Position = _Player.Position
+	});
+	FlagRush_XmlRpc::Send_FlagPickup();
 }
 
 Void Private_OnPlayerOutOfBound(CSmPlayer _Player) {
@@ -370,7 +386,8 @@ Void Private_OnPlayerOutOfBound(CSmPlayer _Player) {
 	Scores::OnPlayerOutOfBounds(_Player.Score);
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerOutOfBounds,
-		Player = Private_CreatePlayerStruct(_Player)
+		Player = Private_CreatePlayerRef(_Player),
+		Position = _Player.Position
 	});
 	FlagRush_XmlRpc::Send_PlayerDeath(_Player);
 
@@ -379,18 +396,27 @@ Void Private_OnPlayerOutOfBound(CSmPlayer _Player) {
 	}
 }
 
-Void Private_OnPlayerTriggersWaypoint(CSmPlayer _Player, CMapLandmark _Landmark) {
-	if (Map::IsOutOfBoundsTrigger(_Landmark)) {
-		Private_OnPlayerOutOfBound(_Player);
-	} else if (Flag::Get().Location.LandmarkId == _Landmark.Id && !Flag::IsLockedForPlayer(_Player)) {
-		Private_Player_PickUpFlag(_Player);
-		Scores::OnPlayerPicksUpFlagFromLandmark(_Player.Score);
-	} else if (_Player == Flag::GetPlayer()){
-		declare Integer TargetBaseClan = 3 - _Player.CurrentClan;
-		if (Map::IsBase(_Landmark, TargetBaseClan)) {
-			Private_FlagCarrier_ScoreFlag(_Landmark);
-		}
+Void Private_OnPlayerRequestsClanChange(CSmPlayer _Player) {
+	if (_Player == Flag::GetPlayer()) {
+		Private_FlagCarrier_DropFlag(Flag::Get().Location.Position);
 	}
+	Private_Player_Unspawn(_Player);
+	SetPlayerClan(_Player, _Player.RequestedClan);
+}
+
+Void Private_OnPlayerDeath(CSmPlayer _Player) {
+	G_PendingEvents.add(K_Event{
+		Type = C_EventType_PlayerDied,
+		Player = Private_CreatePlayerRef(_Player),
+		Position = _Player.Position
+	});
+	FlagRush_XmlRpc::Send_PlayerDeath(_Player);
+
+	if (_Player == Flag::GetPlayer()) {
+		Private_FlagCarrier_DropFlag(Flag::Get().Location.LastSafePosition);
+	}
+	Private_Player_Unspawn(_Player);
+	Scores::OnPlayerDeath(_Player.Score);
 }
 
 Void Private_OnPlayerRequestsRespawn(CSmPlayer _Player) {
@@ -406,7 +432,8 @@ Void Private_OnPlayerRequestsRespawn(CSmPlayer _Player) {
 	if (Settings::GetReal(SettingNames::S_RespawnSpeedLimitKmh) >= 0 && _Player.Speed > Settings::GetReal(SettingNames::S_RespawnSpeedLimitKmh) / 3.6) {
 		G_PendingEvents.add(K_Event{
 			Type = C_EventType_PlayerRequestedRespawnButIsTooFast,
-			Player = Private_CreatePlayerStruct(_Player)
+			Player = Private_CreatePlayerRef(_Player),
+			Position = _Player.Position
 		});
 		return;
 	}
@@ -414,26 +441,24 @@ Void Private_OnPlayerRequestsRespawn(CSmPlayer _Player) {
 	Private_Player_Unspawn(_Player);
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerRespawned,
-		Player = Private_CreatePlayerStruct(_Player)
+		Player = Private_CreatePlayerRef(_Player),
+		Position = _Player.Position
 	});
 	Scores::OnPlayerRespawn(_Player.Score);
 }
 
-Void Private_OnPlayerRequestsClanChange(CSmPlayer _Player) {
-	if (_Player == Flag::GetPlayer()) {
-		Private_FlagCarrier_DropFlag(Flag::Get().Location.Position);
+Void Private_OnPlayerTriggersWaypoint(CSmPlayer _Player, CMapLandmark _Landmark) {
+	if (Map::IsOutOfBoundsTrigger(_Landmark)) {
+		Private_OnPlayerOutOfBound(_Player);
+	} else if (Flag::Get().Location.LandmarkId == _Landmark.Id && !Flag::IsLockedForPlayer(_Player)) {
+		Private_OnPlayerPicksUpFlag(_Player);
+		Scores::OnPlayerPicksUpFlagFromLandmark(_Player.Score);
+	} else if (_Player == Flag::GetPlayer()){
+		declare Integer TargetBaseClan = 3 - _Player.CurrentClan;
+		if (Map::IsBase(_Landmark, TargetBaseClan)) {
+			Private_FlagCarrier_ScoreFlag(_Landmark);
+		}
 	}
-	Private_Player_Unspawn(_Player);
-	SetPlayerClan(_Player, _Player.RequestedClan);
-}
-
-Void Private_OnPlayerDeath(CSmPlayer _Player) {
-	if (_Player == Flag::GetPlayer()) {
-		Private_FlagCarrier_DropFlag(Flag::Get().Location.LastSafePosition);
-	}
-	FlagRush_XmlRpc::Send_PlayerDeath(_Player);
-	Private_Player_Unspawn(_Player);
-	Scores::OnPlayerDeath(_Player.Score);
 }
 
 // MARK: Update functions
@@ -626,6 +651,7 @@ Void Start() {
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_FlagReset,
 		Landmark = FlagSpawn,
+		Position = FlagSpawn.Position,
 		Silent = True
 	});
 
@@ -651,6 +677,13 @@ Void WarmUpLoop() {
 	foreach (Player in Players) {
 		declare Integer FlagRush_Warmup_UnspawnDate for Player = Now;
 		if (Private_Player_RequestsClanChange(Player) || Private_Player_IsDead(Player)) {
+			if (Private_Player_IsDead(Player)) {
+				G_PendingEvents.add(K_Event{
+					Type = C_EventType_PlayerDied,
+					Player = Private_CreatePlayerRef(Player),
+					Position = Player.Position
+				});
+			}
 			UnspawnPlayer(Player);
 			FlagRush_Warmup_UnspawnDate = Now;
 			SetPlayerClan(Player, Player.RequestedClan);
@@ -669,6 +702,11 @@ Void WarmUpLoop() {
 					UnspawnPlayer(Event.Player);
 					declare Integer FlagRush_Warmup_UnspawnDate for Event.Player = Now;
 					FlagRush_Warmup_UnspawnDate = Now;
+					G_PendingEvents.add(K_Event{
+						Type = C_EventType_PlayerRespawned,
+						Player = Private_CreatePlayerRef(Event.Player),
+						Position = Event.Player.Position
+					});
 				}
 			}
 			case CSmModeEvent::EType::OnPlayerTriggersWaypoint: {
@@ -679,7 +717,8 @@ Void WarmUpLoop() {
 					FlagRush_Warmup_UnspawnDate = Now;
 					G_PendingEvents.add(K_Event{
 						Type = C_EventType_PlayerOutOfBounds,
-						Player = Private_CreatePlayerStruct(Event.Player)
+						Player = Private_CreatePlayerRef(Event.Player),
+						Position = Event.Player.Position
 					});
 				}
 			}

@@ -173,7 +173,7 @@ Void RequestMatchEnd() {
 }
 
 Boolean MapEndRequsted() {
-  // Contradictory to its name, MatchEndRequested is generally used to skip a map, not the whole match.
+  // Contradictory to its name, CSmMode::MatchEndRequested is generally used to skip a map, not the whole match.
   return MatchEndRequested() || MatchEndRequested;
 }
 

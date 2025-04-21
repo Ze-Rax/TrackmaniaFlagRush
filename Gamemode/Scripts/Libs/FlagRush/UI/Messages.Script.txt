@@ -31,9 +31,19 @@
 #Const C_MessagePriority_Event				2
 #Const C_MessagePriority_Progression	3
 
+#Const C_TimeLimitWarning_Seconds [60, 30]
+
 declare Text G_FlagRushVersion;
+declare Boolean[Integer] G_TimeLimitWarningsEnabled;
 
 // MARK: Helper Functions
+
+Void Private_EnableTimeLimitWarning() {
+	G_TimeLimitWarningsEnabled.clear();
+	foreach (WarningSeconds in C_TimeLimitWarning_Seconds) {
+		G_TimeLimitWarningsEnabled[WarningSeconds] = Settings::GetInteger(SettingNames::S_RoundTimeLimitSeconds) > WarningSeconds;
+	}
+}
 
 Void Private_ClearAllMessages() {
 	UIManager.UIAll.ClearMessages();
@@ -306,13 +316,25 @@ Void Yield() {
 		}
 	}
 
+	// Time warnings
+	if (Progression::TurnIsRunning()) {
+		foreach (WarningSeconds => Enabled in G_TimeLimitWarningsEnabled) {
+			if (!Enabled || (EndTime - Now) / 1000 > WarningSeconds) {
+				continue;
+			}
+			G_TimeLimitWarningsEnabled[WarningSeconds] = False;
+			TimeLimitSecondsRemaining(WarningSeconds, Durations::C_Duration_EventMessage);
+		}
+	}
+
 	foreach (Event in Progression::GetPendingEvents()) {
 		switch (Event.Type) {
 			// Segment Start
 			case Progression::C_EventType_SegmentStart: {
 				switch (Event.Segment) {
 					case Progression::C_Segment_Round: {
-						OnRoundStarted(0); // TODO: Round Number
+						OnRoundStarted(Progression::GetRoundNumber());
+						Private_EnableTimeLimitWarning();
 					}
 					case Progression::C_Segment_Overtime: {
 						OnOvertimeStarted();

@@ -73,6 +73,11 @@ declare Boolean G_MatchEndRequested;
 declare Boolean G_RoundPauseRequested;
 declare Boolean G_RoundEndRequested;
 
+declare Integer G_MatchCounter;
+declare Integer G_MapCounter;
+declare Integer G_RoundCounter;
+declare Integer G_TurnCounter;
+
 // Need a separate buffer for events before publishing.
 // If events are added to pending events directly, then during yield they would be cleared before other libraries could see them.
 // This way it is guaranteed that they are visible for exactly one yield, no matter if other libraries yield before or after this library.
@@ -136,6 +141,24 @@ Boolean SegmentIsRunning(Integer _Segment) {
     case C_Segment_Podium: return PodiumIsRunning();
   }
   return False;
+}
+
+// Segment counts
+
+Integer GetMatchNumber() {
+  return G_MatchCounter;
+}
+
+Integer GetMapNumber() {
+  return G_MapCounter;
+}
+
+Integer GetRoundNumber() {
+  return G_RoundCounter;
+}
+
+Integer GetTurnNumber() {
+  return G_TurnCounter;
 }
 
 // Segment end requests
@@ -369,6 +392,8 @@ Void EndServer() {
 }
 
 Void StartMatch() {
+  G_MatchCounter += 1;
+  G_MapCounter = 0;
   G_MatchIsValid = True;
   G_MatchEndRequested = False;
   G_MatchIsRunning = True;
@@ -392,6 +417,8 @@ Void EndMatch() {
 }
 
 Void StartMap() {
+  G_MapCounter += 1;
+  G_RoundCounter = 0;
   G_MapIsValid = True;
   MatchEndRequested = False; // This is actually used for map end
   G_MapIsRunning = True;
@@ -415,6 +442,8 @@ Void EndMap() {
 }
 
 Void StartRound() {
+  G_RoundCounter += 1;
+  G_TurnCounter = 0;
   G_RoundIsValid = True;
   G_RoundEndRequested = False;
   G_RoundIsRunning = True;
@@ -448,6 +477,7 @@ Void EndRound() {
 }
 
 Void StartTurn() {
+  G_TurnCounter += 1;
   G_TurnIsRunning = True;
   declare netwrite Boolean Net_FlagRush_Progression_TurnIsRunning for Teams[0] = True;
   Net_FlagRush_Progression_TurnIsRunning = True;
@@ -540,7 +570,7 @@ Void EndPodium() {
 
 Void StartMatchEndScoresTable() {
   G_EventsAggregationBuffer.add(K_Event{
-    Type = C_EventType_SegmentEnd,
+    Type = C_EventType_SegmentStart,
     Segment = C_Segment_MatchEndScoresTable
   });
 }
@@ -577,6 +607,11 @@ Void Unload() {
   G_MatchEndRequested = False;
   G_RoundEndRequested = False;
   G_RoundPauseRequested = False;
+
+  G_MatchCounter = 0;
+  G_MapCounter = 0;
+  G_RoundCounter = 0;
+  G_TurnCounter = 0;
 
   declare netwrite Boolean Net_FlagRush_Progression_ServerIsRunning for Teams[0] = False;
   Net_FlagRush_Progression_ServerIsRunning = False;

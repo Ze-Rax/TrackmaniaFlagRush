@@ -64,8 +64,6 @@
 // MARK: Constants
 // ===============
 
-#Const C_TimeLimitWarning_Seconds [60, 30]
-
 #Const Vehicles::C_Vehicle_Stadium as C_Vehicle_Stadium
 #Const Vehicles::C_Vehicle_Snow as C_Vehicle_Snow
 #Const Vehicles::C_Vehicle_Rally as C_Vehicle_Rally
@@ -168,7 +166,6 @@
 // ======================
 
 declare Integer Private_RoundTimeRemaining; // Keep track of remaining time when round is paused
-declare Boolean[Integer] Private_TimeLimitWarningsEnabled;
 
 // ===========
 // MARK: Plugs
@@ -447,12 +444,6 @@ if (Private_MatchPointLimitReached()) {
 ***
 Scores::StartRound();
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
-
-// Enable time limit warnings
-Private_TimeLimitWarningsEnabled.clear();
-foreach (WarningSeconds in C_TimeLimitWarning_Seconds) {
-	Private_TimeLimitWarningsEnabled[WarningSeconds] = S_RoundTimeLimitSeconds > WarningSeconds;
-}
 ***
 
 ***StartRound***
@@ -496,13 +487,12 @@ if (Private_MapPointLimitReached()) {
 
 ***StartTurn***
 ***
-Progression::StartTurn();
-
 // Pause handling (Execution)
 if (Progression::RoundPauseRequested()) {
 	+++Private_Pause+++
 }
 
+Progression::StartTurn();
 // Set end time
 if (S_RoundTimeLimitSeconds > 0) {
 	Progression::SetEndTime(Now + Private_RoundTimeRemaining + Durations::C_SpawnAnimDuration);
@@ -542,27 +532,20 @@ if (Progression::RoundEndRequested()) {
 }
 
 // Round end & overtime conditions
-if(Progression::OvertimeIsRunning() && !Private_RoundIsTied()) {
-	MB_StopRound();
+if (Progression::OvertimeIsRunning()) {
+  if (!Private_RoundIsTied()) {
+    MB_StopRound();
+  }
 } else if (Private_RoundPointLimitReached()) {
-	MB_StopRound();
+  MB_StopRound();
 } else if (Private_RoundTimeLimitReached()) {
-	if (Private_RoundIsTied() && S_UseOvertime) {
-		Progression::StartOvertime();
-		FlagRush_XmlRpc::Send_Overtime();
-	} else {
-		Progression::SignalTimeLimitReached();
-		MB_StopRound();
-	}
-}
-
-// Time warnings
-foreach (WarningSeconds => Enabled in Private_TimeLimitWarningsEnabled) {
-	if (!Enabled || (EndTime - Now) / 1000 > WarningSeconds) {
-		continue;
-	}
-	Private_TimeLimitWarningsEnabled[WarningSeconds] = False;
-	Messages::TimeLimitSecondsRemaining(WarningSeconds, Durations::C_Duration_EventMessage);
+  if (Private_RoundIsTied() && S_UseOvertime) {
+    Progression::StartOvertime();
+    FlagRush_XmlRpc::Send_Overtime();
+  } else {
+    Progression::SignalTimeLimitReached();
+    MB_StopRound();
+  }
 }
 
 // Pause handling (Request reaction, actual pause on StartTurn)

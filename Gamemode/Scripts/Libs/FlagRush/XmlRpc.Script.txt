@@ -1,5 +1,5 @@
 /**
- * Handles the XmlRpc communication.
+ * Handles the FlagRush specific XmlRpc communication.
  *
  * #RequireContext CSmMode
  */

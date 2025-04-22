@@ -81,7 +81,22 @@
 #Struct K_Event_Flag_Scored {
   Integer Timestamp;
   K_Player Scorer;
+}
+
+#Struct K_Event_Flag_ScoredWithAssist {
+  Integer Timestamp;
+  K_Player Scorer;
   K_Player Assist;
+}
+
+#Struct K_Event_GenericSegment { // Used for all segment start and end events that do not have any important information.
+  Integer Timestamp;
+}
+
+#Struct K_Event_SegmentEndWithScores {
+  Integer Timestamp;
+  Integer[] Scores; // Always exactly 2, one for each team
+  Integer WinnerClan; // 0 (Draw), 1 or 2
 }
 
 // MARK: Constants
@@ -89,16 +104,36 @@
 #Const C_Position_Invalid <-1., -1., -1.>
 #Const C_Id_Invalid -1
 
-#Const C_EventType_Player_RequestedRespawn    "FlagRush.Player.RequestedRespawn"
-#Const C_EventType_Player_Spawned             "FlagRush.Player.Spawned"
-#Const C_EventType_Player_OutOfBounds         "FlagRush.Player.OutOfBounds"
-#Const C_EventType_Player_Died                "FlagRush.Player.Died"
-#Const C_EventType_Flag_Reset                 "FlagRush.Flag.Reset"
-#Const C_EventType_Flag_PickedUp              "FlagRush.Flag.PickedUp"
-#Const C_EventType_Flag_Passed                "FlagRush.Flag.Passed"
-#Const C_EventType_Flag_Dropped               "FlagRush.Flag.Dropped"
-#Const C_EventType_Flag_OnCarrierTeleported   "FlagRush.Flag.CarrierTeleported"
-#Const C_EventType_Flag_Scored                "FlagRush.Flag.Scored"
+#Const C_EventType_Player_RequestedRespawn      "FlagRush.Player.RequestedRespawn"
+#Const C_EventType_Player_Spawned               "FlagRush.Player.Spawned"
+#Const C_EventType_Player_OutOfBounds           "FlagRush.Player.OutOfBounds"
+#Const C_EventType_Player_Died                  "FlagRush.Player.Died"
+
+#Const C_EventType_Flag_Reset                   "FlagRush.Flag.Reset"
+#Const C_EventType_Flag_PickedUp                "FlagRush.Flag.PickedUp"
+#Const C_EventType_Flag_Passed                  "FlagRush.Flag.Passed"
+#Const C_EventType_Flag_Dropped                 "FlagRush.Flag.Dropped"
+#Const C_EventType_Flag_OnCarrierTeleported     "FlagRush.Flag.CarrierTeleported"
+#Const C_EventType_Flag_Scored                  "FlagRush.Flag.Scored"
+
+#Const C_EventType_Progression_Server_Start     "FlagRush.Progression.Server.Start"
+#Const C_EventType_Progression_Server_End       "FlagRush.Progression.Server.End"
+#Const C_EventType_Progression_Match_Start      "FlagRush.Progression.Match.Start"
+#Const C_EventType_Progression_Match_End        "FlagRush.Progression.Match.End"
+#Const C_EventType_Progression_Map_Start        "FlagRush.Progression.Map.Start"
+#Const C_EventType_Progression_Map_End          "FlagRush.Progression.Map.End"
+#Const C_EventType_Progression_Round_Start      "FlagRush.Progression.Round.Start"
+#Const C_EventType_Progression_Round_End        "FlagRush.Progression.Round.End"
+#Const C_EventType_Progression_Turn_Start       "FlagRush.Progression.Turn.Start"
+#Const C_EventType_Progression_Turn_End         "FlagRush.Progression.Turn.End"
+#Const C_EventType_Progression_Overtime_Start   "FlagRush.Progression.Overtime.Start"
+#Const C_EventType_Progression_Overtime_End     "FlagRush.Progression.Overtime.End"
+#Const C_EventType_Progression_WarmUp_Start     "FlagRush.Progression.WarmUp.Start"
+#Const C_EventType_Progression_WarmUp_End       "FlagRush.Progression.WarmUp.End"
+#Const C_EventType_Progression_Pause_Start      "FlagRush.Progression.Pause.Start"
+#Const C_EventType_Progression_Pause_End        "FlagRush.Progression.Pause.End"
+#Const C_EventType_Progression_Podium_Start     "FlagRush.Progression.Podium.Start"
+#Const C_EventType_Progression_Podium_End       "FlagRush.Progression.Podium.End"
 
 #Const C_Player_Invalid K_Player{
   Name = "Invalid Player",
@@ -267,19 +302,154 @@ Void Private_OnFlagCarrierTeleported(Playloop::K_Event _Event) {
 
 Void Private_OnFlagScored(Playloop::K_Event _Event) {
   declare CSmPlayer Scorer <=> Playloop::GetPlayer(_Event.Player);
-  declare K_Event_Flag_Scored Event = K_Event_Flag_Scored{
-    Timestamp = Now,
-    Scorer = Private_CreatePlayerStruct(Scorer)
-  };
-
-  // Do not use player. Might be disconnected
   declare CSmScore AssistScore <=> Playloop::GetScore(_Event.RelatedPlayer);
   if (AssistScore == Null) {
-    Event.Assist = C_Player_Invalid;
-  } else {
-    Event.Assist = Private_CreatePlayerStruct(AssistScore);
+    declare K_Event_Flag_Scored Event = K_Event_Flag_Scored{
+      Timestamp = Now,
+      Scorer = Private_CreatePlayerStruct(Scorer)
+    };
+    Private_SendCallback(C_EventType_Flag_Scored, Event.tojson());
+    return;
   }
+
+  declare K_Event_Flag_ScoredWithAssist Event = K_Event_Flag_ScoredWithAssist{
+    Timestamp = Now,
+    Scorer = Private_CreatePlayerStruct(Scorer),
+    Assist = Private_CreatePlayerStruct(AssistScore)
+  };
   Private_SendCallback(C_EventType_Flag_Scored, Event.tojson());
+}
+
+Void Private_OnServerStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_Server_Start, Event.tojson());
+}
+
+Void Private_OnServerEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_Server_End, Event.tojson());
+}
+
+Void Private_OnMatchStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_Match_Start, Event.tojson());
+}
+
+Void Private_OnMatchEnd(Progression::K_Event _Event) {
+  declare K_Event_SegmentEndWithScores Event = K_Event_SegmentEndWithScores{
+    Timestamp = Now,
+    Scores = _Event.Scores,
+    WinnerClan = _Event.WinnerClan
+  };
+  Private_SendCallback(C_EventType_Progression_Match_End, Event.tojson());
+}
+
+Void Private_OnMapStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_Map_Start, Event.tojson());
+}
+
+Void Private_OnMapEnd(Progression::K_Event _Event) {
+  declare K_Event_SegmentEndWithScores Event = K_Event_SegmentEndWithScores{
+    Timestamp = Now,
+    Scores = _Event.Scores,
+    WinnerClan = _Event.WinnerClan
+  };
+  Private_SendCallback(C_EventType_Progression_Map_End, Event.tojson());
+}
+
+Void Private_OnRoundStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_Round_Start, Event.tojson());
+}
+
+Void Private_OnRoundEnd(Progression::K_Event _Event) {
+  declare K_Event_SegmentEndWithScores Event = K_Event_SegmentEndWithScores{
+    Timestamp = Now,
+    Scores = _Event.Scores,
+    WinnerClan = _Event.WinnerClan
+  };
+  Private_SendCallback(C_EventType_Progression_Round_End, Event.tojson());
+}
+
+Void Private_OnTurnStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_Turn_Start, Event.tojson());
+}
+
+Void Private_OnTurnEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_Turn_End, Event.tojson());
+}
+
+Void Private_OnOvertimeStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_Overtime_Start, Event.tojson());
+}
+
+Void Private_OnOvertimeEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_Overtime_End, Event.tojson());
+}
+
+Void Private_OnWarmUpStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_WarmUp_Start, Event.tojson());
+}
+
+Void Private_OnWarmUpEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_WarmUp_End, Event.tojson());
+}
+
+Void Private_OnPauseStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_Pause_Start, Event.tojson());
+}
+
+Void Private_OnPauseEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_Pause_End, Event.tojson());
+}
+
+Void Private_OnPodiumStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_Podium_Start, Event.tojson());
+}
+
+Void Private_OnPodiumEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_Event_GenericSegment Event = K_Event_GenericSegment{
+    Timestamp = Now
+  };
+  Private_SendCallback(C_EventType_Progression_Podium_End, Event.tojson());
 }
 
 // MARK: Lifecycle
@@ -305,28 +475,28 @@ Void BeforeYield() {
     switch (Event.Type) {
       case Progression::C_EventType_SegmentStart: {
         switch (Event.Segment) {
-          case Progression::C_Segment_Server: {}
-          case Progression::C_Segment_Match: {}
-          case Progression::C_Segment_Map: {}
-          case Progression::C_Segment_Round: {}
-          case Progression::C_Segment_Turn: {}
-          case Progression::C_Segment_Overtime: {}
-          case Progression::C_Segment_WarmUp: {}
-          case Progression::C_Segment_Pause: {}
-          case Progression::C_Segment_Podium: {}
+          case Progression::C_Segment_Server: Private_OnServerStart(Event);
+          case Progression::C_Segment_Match: Private_OnMatchStart(Event);
+          case Progression::C_Segment_Map: Private_OnMapStart(Event);
+          case Progression::C_Segment_Round: Private_OnRoundStart(Event);
+          case Progression::C_Segment_Turn: Private_OnTurnStart(Event);
+          case Progression::C_Segment_Overtime: Private_OnOvertimeStart(Event);
+          case Progression::C_Segment_WarmUp: Private_OnWarmUpStart(Event);
+          case Progression::C_Segment_Pause: Private_OnPauseStart(Event);
+          case Progression::C_Segment_Podium: Private_OnPodiumStart(Event);
         }
       }
       case Progression::C_EventType_SegmentEnd: {
         switch (Event.Segment) {
-          case Progression::C_Segment_Server: {}
-          case Progression::C_Segment_Match: {}
-          case Progression::C_Segment_Map: {}
-          case Progression::C_Segment_Round: {}
-          case Progression::C_Segment_Turn: {}
-          case Progression::C_Segment_Overtime: {}
-          case Progression::C_Segment_WarmUp: {}
-          case Progression::C_Segment_Pause: {}
-          case Progression::C_Segment_Podium: {}
+          case Progression::C_Segment_Server: Private_OnServerEnd(Event);
+          case Progression::C_Segment_Match: Private_OnMatchEnd(Event);
+          case Progression::C_Segment_Map: Private_OnMapEnd(Event);
+          case Progression::C_Segment_Round: Private_OnRoundEnd(Event);
+          case Progression::C_Segment_Turn: Private_OnTurnEnd(Event);
+          case Progression::C_Segment_Overtime: Private_OnOvertimeEnd(Event);
+          case Progression::C_Segment_WarmUp: Private_OnWarmUpEnd(Event);
+          case Progression::C_Segment_Pause: Private_OnPauseEnd(Event);
+          case Progression::C_Segment_Podium: Private_OnPodiumEnd(Event);
         }
       }
     }

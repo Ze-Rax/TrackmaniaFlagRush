@@ -377,7 +377,7 @@ FlagRush_XmlRpc::Send_MatchStart();
 
 ***EndMatch***
 ***
-Progression::EndMatch();
+Progression::EndMatch(Scores::GetClanMatchPoints(1), Scores::GetClanMatchPoints(2), Scores::EvaluateMatch());
 FlagRush_XmlRpc::Send_MatchEnd(MatchEndRequested);
 ***
 
@@ -416,10 +416,10 @@ if (S_UseWarmUp && !Progression::MapEndRequsted()) {
 
 ***EndMap***
 ***
-Progression::EndMap();
+declare Integer WinnerClan = Scores::EvaluateMap();
+Progression::EndMap(Scores::GetClanMapPoints(1), Scores::GetClanMapPoints(2), WinnerClan);
 declare Boolean MapIsValid = Progression::MapIsValid();
 FlagRush_XmlRpc::Send_MapEnd(MapIsValid);
-declare Integer WinnerClan = Scores::EvaluateMap();
 if (!MapIsValid) {
 	Scores::Clear(Scores::C_Level_Map);
 } else if (WinnerClan != 0) {
@@ -463,10 +463,10 @@ Private_RoundTimeRemaining = S_RoundTimeLimitSeconds * 1000;
 
 ***EndRound***
 ***
-Progression::EndRound();
+declare Integer WinnerClan = Scores::EvaluateRound();
+Progression::EndRound(Scores::GetClanRoundPoints(1), Scores::GetClanRoundPoints(2), WinnerClan);
 declare Boolean RoundIsValid = Progression::RoundIsValid();
 FlagRush_XmlRpc::Send_RoundEnd(RoundIsValid);
-declare Integer WinnerClan = Scores::EvaluateRound();
 if (!RoundIsValid) {
 	Scores::Clear(Scores::C_Level_Round);
 } else if (WinnerClan !=  0) {

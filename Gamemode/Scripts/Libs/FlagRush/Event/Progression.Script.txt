@@ -58,6 +58,8 @@
   Integer Type;
   Integer Segment;
   Boolean IsInvalid; // Using negative case so it defaults to being valid
+  Integer[] Scores; // Always 0 entries (segment that does not report scores) or 2 entries (for team 1 and two)
+  Integer WinnerClan; // 0 (Draw), 1 or 2
 }
 
 declare Boolean G_ServerIsRunning;
@@ -406,14 +408,16 @@ Void StartMatch() {
   });
 }
 
-Void EndMatch() {
+Void EndMatch(Integer _Team1Score, Integer _Team2Score, Integer _WinnerClan) {
   G_MatchIsRunning = False;
   declare netwrite Boolean Net_FlagRush_Progression_MatchIsRunning for Teams[0] = False;
   Net_FlagRush_Progression_MatchIsRunning = False;
   G_PendingEvents.add(K_Event{
     Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Match,
-    IsInvalid = !MatchIsValid()
+    IsInvalid = !MatchIsValid(),
+    Scores = [_Team1Score, _Team2Score],
+    WinnerClan = _WinnerClan
   });
 }
 
@@ -431,14 +435,16 @@ Void StartMap() {
   });
 }
 
-Void EndMap() {
+Void EndMap(Integer _Team1Score, Integer _Team2Score, Integer _WinnerClan) {
   G_MapIsRunning = False;
   declare netwrite Boolean Net_FlagRush_Progression_MapIsRunning for Teams[0] = False;
   Net_FlagRush_Progression_MapIsRunning = False;
   G_PendingEvents.add(K_Event{
     Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Map,
-    IsInvalid = !MapIsValid()
+    IsInvalid = !MapIsValid(),
+    Scores = [_Team1Score, _Team2Score],
+    WinnerClan = _WinnerClan
   });
 }
 
@@ -456,7 +462,7 @@ Void StartRound() {
   });
 }
 
-Void EndRound() {
+Void EndRound(Integer _Team1Score, Integer _Team2Score, Integer _WinnerClan) {
   if (G_OvertimeIsRunning) {
     G_OvertimeIsRunning = False;
     declare netwrite Boolean Net_FlagRush_Progression_OvertimeIsRunning for Teams[0] = False;
@@ -473,7 +479,9 @@ Void EndRound() {
   Net_FlagRush_Progression_RoundIsRunning = False;
   G_PendingEvents.add(K_Event{
     Type = C_EventType_SegmentEnd,
-    Segment = C_Segment_Round
+    Segment = C_Segment_Round,
+    Scores = [_Team1Score, _Team2Score],
+    WinnerClan = _WinnerClan
   });
 }
 

@@ -47,8 +47,6 @@
 #Include "Libs/FlagRush/Core/HandicapQueue.Script.txt"											as HandicapQueue
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt"														as Vehicles
 
-#Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"									as FlagRush_XmlRpc
-
 #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt"							as PlayerLifecycleEvents
 #Include "Libs/FlagRush/Event/Settings.Script.txt"													as Settings
 #Include "Libs/FlagRush/Event/Commands.Script.txt"													as Commands
@@ -299,7 +297,6 @@ Messages::SetFlagRushVersion(Version);
 UILayers::Load();
 
 // Misc
-FlagRush_XmlRpc::Load();
 Log::Load();
 if (S_Debug) {
 	Log::SetLevel(Log::C_Level_Debug);
@@ -333,7 +330,6 @@ Messages::Unload();
 UILayers::Unload();
 
 // Misc
-FlagRush_XmlRpc::Unload();
 Log::Unload();
 ***
 
@@ -372,13 +368,11 @@ Scores::StartMatch();
 ***StartMatch***
 ***
 Progression::StartMatch();
-FlagRush_XmlRpc::Send_MatchStart();
 ***
 
 ***EndMatch***
 ***
 Progression::EndMatch(Scores::GetClanMatchPoints(1), Scores::GetClanMatchPoints(2), Scores::EvaluateMatch());
-FlagRush_XmlRpc::Send_MatchEnd(MatchEndRequested);
 ***
 
 ***AfterEndMatch***
@@ -401,7 +395,6 @@ MB_Synchro();
 ***StartMap***
 ***
 Progression::StartMap();
-FlagRush_XmlRpc::Send_MapStart();
 if (!Map::IsValid()) {
 	Progression::InvalidateMap();
 	Progression::RequestMapEnd();
@@ -418,9 +411,7 @@ if (S_UseWarmUp && !Progression::MapEndRequsted()) {
 ***
 declare Integer WinnerClan = Scores::EvaluateMap();
 Progression::EndMap(Scores::GetClanMapPoints(1), Scores::GetClanMapPoints(2), WinnerClan);
-declare Boolean MapIsValid = Progression::MapIsValid();
-FlagRush_XmlRpc::Send_MapEnd(MapIsValid);
-if (!MapIsValid) {
+if (!Progression::MapIsValid()) {
 	Scores::Clear(Scores::C_Level_Map);
 } else if (WinnerClan != 0) {
 	Scores::OnClanMapWin(WinnerClan);
@@ -454,7 +445,6 @@ UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
 ***StartRound***
 ***
 Progression::StartRound();
-FlagRush_XmlRpc::Send_RoundStart();
 MB_Sleep(Durations::C_Segment_RoundStart);
 
 StartTime = Now;
@@ -465,9 +455,7 @@ Private_RoundTimeRemaining = S_RoundTimeLimitSeconds * 1000;
 ***
 declare Integer WinnerClan = Scores::EvaluateRound();
 Progression::EndRound(Scores::GetClanRoundPoints(1), Scores::GetClanRoundPoints(2), WinnerClan);
-declare Boolean RoundIsValid = Progression::RoundIsValid();
-FlagRush_XmlRpc::Send_RoundEnd(RoundIsValid);
-if (!RoundIsValid) {
+if (!Progression::RoundIsValid()) {
 	Scores::Clear(Scores::C_Level_Round);
 } else if (WinnerClan !=  0) {
 	Scores::OnClanRoundWin(WinnerClan);
@@ -546,7 +534,6 @@ if (Progression::OvertimeIsRunning()) {
 } else if (Private_RoundTimeLimitReached()) {
   if (Private_RoundIsTied() && S_UseOvertime) {
     Progression::StartOvertime();
-    FlagRush_XmlRpc::Send_Overtime();
   } else {
     Progression::SignalTimeLimitReached();
     MB_StopRound();
@@ -601,7 +588,6 @@ if (HasPodium) {
 ***Private_WarmUp***
 ***
 Progression::StartWarmUp();
-FlagRush_XmlRpc::Send_WarmUpStart();
 WarmUpReadyUp::Start(S_WarmUpWaitForApproval);
 MB_Sleep(Durations::C_Segment_WarmUpStart);
 
@@ -628,7 +614,6 @@ while(!WarmUpReadyUp::WarmUpShouldStop()) {
 
 Progression::SetEndTime(-1);
 Progression::EndWarmUp();
-FlagRush_XmlRpc::Send_WarmUpEnd();
 UIManager.UIAll.UISequence = PreviousSequence;
 MB_Sleep(Durations::C_Segment_WarmUpEnd);
 ***

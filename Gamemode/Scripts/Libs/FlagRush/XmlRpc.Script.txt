@@ -104,36 +104,36 @@
 #Const C_Position_Invalid <-1., -1., -1.>
 #Const C_Id_Invalid -1
 
-#Const C_EventType_Player_RequestedRespawn      "FlagRush.Player.RequestedRespawn"
-#Const C_EventType_Player_Spawned               "FlagRush.Player.Spawned"
-#Const C_EventType_Player_OutOfBounds           "FlagRush.Player.OutOfBounds"
-#Const C_EventType_Player_Died                  "FlagRush.Player.Died"
+#Const C_CallbackName_Player_RequestedRespawn      "FlagRush.Player.RequestedRespawn"
+#Const C_CallbackName_Player_Spawned               "FlagRush.Player.Spawned"
+#Const C_CallbackName_Player_OutOfBounds           "FlagRush.Player.OutOfBounds"
+#Const C_CallbackName_Player_Died                  "FlagRush.Player.Eliminated"
 
-#Const C_EventType_Flag_Reset                   "FlagRush.Flag.Reset"
-#Const C_EventType_Flag_PickedUp                "FlagRush.Flag.PickedUp"
-#Const C_EventType_Flag_Passed                  "FlagRush.Flag.Passed"
-#Const C_EventType_Flag_Dropped                 "FlagRush.Flag.Dropped"
-#Const C_EventType_Flag_OnCarrierTeleported     "FlagRush.Flag.CarrierTeleported"
-#Const C_EventType_Flag_Scored                  "FlagRush.Flag.Scored"
+#Const C_CallbackName_Flag_Reset                   "FlagRush.Flag.Reset"
+#Const C_CallbackName_Flag_PickedUp                "FlagRush.Flag.PickedUp"
+#Const C_CallbackName_Flag_Passed                  "FlagRush.Flag.Passed"
+#Const C_CallbackName_Flag_Dropped                 "FlagRush.Flag.Dropped"
+#Const C_CallbackName_Flag_OnCarrierTeleported     "FlagRush.Flag.CarrierTeleported"
+#Const C_CallbackName_Flag_Scored                  "FlagRush.Flag.Scored"
 
-#Const C_EventType_Progression_Server_Start     "FlagRush.Progression.Server.Start"
-#Const C_EventType_Progression_Server_End       "FlagRush.Progression.Server.End"
-#Const C_EventType_Progression_Match_Start      "FlagRush.Progression.Match.Start"
-#Const C_EventType_Progression_Match_End        "FlagRush.Progression.Match.End"
-#Const C_EventType_Progression_Map_Start        "FlagRush.Progression.Map.Start"
-#Const C_EventType_Progression_Map_End          "FlagRush.Progression.Map.End"
-#Const C_EventType_Progression_Round_Start      "FlagRush.Progression.Round.Start"
-#Const C_EventType_Progression_Round_End        "FlagRush.Progression.Round.End"
-#Const C_EventType_Progression_Turn_Start       "FlagRush.Progression.Turn.Start"
-#Const C_EventType_Progression_Turn_End         "FlagRush.Progression.Turn.End"
-#Const C_EventType_Progression_Overtime_Start   "FlagRush.Progression.Overtime.Start"
-#Const C_EventType_Progression_Overtime_End     "FlagRush.Progression.Overtime.End"
-#Const C_EventType_Progression_WarmUp_Start     "FlagRush.Progression.WarmUp.Start"
-#Const C_EventType_Progression_WarmUp_End       "FlagRush.Progression.WarmUp.End"
-#Const C_EventType_Progression_Pause_Start      "FlagRush.Progression.Pause.Start"
-#Const C_EventType_Progression_Pause_End        "FlagRush.Progression.Pause.End"
-#Const C_EventType_Progression_Podium_Start     "FlagRush.Progression.Podium.Start"
-#Const C_EventType_Progression_Podium_End       "FlagRush.Progression.Podium.End"
+#Const C_CallbackName_Progression_Server_Start     "FlagRush.Progression.Server.Start"
+#Const C_CallbackName_Progression_Server_End       "FlagRush.Progression.Server.End"
+#Const C_CallbackName_Progression_Match_Start      "FlagRush.Progression.Match.Start"
+#Const C_CallbackName_Progression_Match_End        "FlagRush.Progression.Match.End"
+#Const C_CallbackName_Progression_Map_Start        "FlagRush.Progression.Map.Start"
+#Const C_CallbackName_Progression_Map_End          "FlagRush.Progression.Map.End"
+#Const C_CallbackName_Progression_Round_Start      "FlagRush.Progression.Round.Start"
+#Const C_CallbackName_Progression_Round_End        "FlagRush.Progression.Round.End"
+#Const C_CallbackName_Progression_Turn_Start       "FlagRush.Progression.Turn.Start"
+#Const C_CallbackName_Progression_Turn_End         "FlagRush.Progression.Turn.End"
+#Const C_CallbackName_Progression_Overtime_Start   "FlagRush.Progression.Overtime.Start"
+#Const C_CallbackName_Progression_Overtime_End     "FlagRush.Progression.Overtime.End"
+#Const C_CallbackName_Progression_WarmUp_Start     "FlagRush.Progression.WarmUp.Start"
+#Const C_CallbackName_Progression_WarmUp_End       "FlagRush.Progression.WarmUp.End"
+#Const C_CallbackName_Progression_Pause_Start      "FlagRush.Progression.Pause.Start"
+#Const C_CallbackName_Progression_Pause_End        "FlagRush.Progression.Pause.End"
+#Const C_CallbackName_Progression_Podium_Start     "FlagRush.Progression.Podium.Start"
+#Const C_CallbackName_Progression_Podium_End       "FlagRush.Progression.Podium.End"
 
 #Const C_Player_Invalid K_Player{
   Name = "Invalid Player",
@@ -211,7 +211,7 @@ Void Private_OnPlayerRequestsRespawnButIsTooFast(Playloop::K_Event _Event) {
     Player = Private_CreatePlayerStruct(Player),
     Success = False
   };
-  Private_SendCallback(C_EventType_Player_RequestedRespawn, Event.tojson());
+  Private_SendCallback(C_CallbackName_Player_RequestedRespawn, Event.tojson());
 }
 
 Void Private_OnPlayerRespawned(Playloop::K_Event _Event) {
@@ -221,7 +221,7 @@ Void Private_OnPlayerRespawned(Playloop::K_Event _Event) {
     Player = Private_CreatePlayerStruct(Player),
     Success = True
   };
-  Private_SendCallback(C_EventType_Player_RequestedRespawn, Event.tojson());
+  Private_SendCallback(C_CallbackName_Player_RequestedRespawn, Event.tojson());
 }
 
 Void Private_OnPlayerSpawned(Playloop::K_Event _Event) {
@@ -231,7 +231,7 @@ Void Private_OnPlayerSpawned(Playloop::K_Event _Event) {
     Player = Private_CreatePlayerStruct(Player),
     Landmark = Private_CreateLandmarkStruct(_Event.Landmark)
   };
-  Private_SendCallback(C_EventType_Player_Spawned, Event.tojson());
+  Private_SendCallback(C_CallbackName_Player_Spawned, Event.tojson());
 }
 
 Void Private_OnPlayerOutOfBounds(Playloop::K_Event _Event) {
@@ -240,7 +240,7 @@ Void Private_OnPlayerOutOfBounds(Playloop::K_Event _Event) {
     Timestamp = Now,
     Player = Private_CreatePlayerStruct(Player)
   };
-  Private_SendCallback(C_EventType_Player_OutOfBounds, Event.tojson());
+  Private_SendCallback(C_CallbackName_Player_OutOfBounds, Event.tojson());
 }
 
 Void Private_OnPlayerDied(Playloop::K_Event _Event) {
@@ -249,7 +249,7 @@ Void Private_OnPlayerDied(Playloop::K_Event _Event) {
     Timestamp = Now,
     Player = Private_CreatePlayerStruct(Player)
   };
-  Private_SendCallback(C_EventType_Player_Died, Event.tojson());
+  Private_SendCallback(C_CallbackName_Player_Died, Event.tojson());
 }
 
 Void Private_OnFlagReset(Playloop::K_Event _Event) {
@@ -257,7 +257,7 @@ Void Private_OnFlagReset(Playloop::K_Event _Event) {
     Timestamp = Now,
     FlagSpawn = Private_CreateLandmarkStruct(_Event.Landmark)
   };
-  Private_SendCallback(C_EventType_Flag_Reset, Event.tojson());
+  Private_SendCallback(C_CallbackName_Flag_Reset, Event.tojson());
 }
 
 Void Private_OnFlagPickedUp(Playloop::K_Event _Event) {
@@ -266,7 +266,7 @@ Void Private_OnFlagPickedUp(Playloop::K_Event _Event) {
     Timestamp = Now,
     Carrier = Private_CreatePlayerStruct(Player)
   };
-  Private_SendCallback(C_EventType_Flag_PickedUp, Event.tojson());
+  Private_SendCallback(C_CallbackName_Flag_PickedUp, Event.tojson());
 }
 
 Void Private_OnFlagPassed(Playloop::K_Event _Event) {
@@ -277,7 +277,7 @@ Void Private_OnFlagPassed(Playloop::K_Event _Event) {
     NewCarrier = Private_CreatePlayerStruct(NewCarrier),
     PreviousCarrier = Private_CreatePlayerStruct(PreviousCarrier)
   };
-  Private_SendCallback(C_EventType_Flag_Passed, Event.tojson());
+  Private_SendCallback(C_CallbackName_Flag_Passed, Event.tojson());
 }
 
 Void Private_OnFlagDropped(Playloop::K_Event _Event) {
@@ -288,7 +288,7 @@ Void Private_OnFlagDropped(Playloop::K_Event _Event) {
     Position = _Event.Position,
     PreviousCarrier = Private_CreatePlayerStruct(PreviousCarrierScore)
   };
-  Private_SendCallback(C_EventType_Flag_Dropped, Event.tojson());
+  Private_SendCallback(C_CallbackName_Flag_Dropped, Event.tojson());
 }
 
 Void Private_OnFlagCarrierTeleported(Playloop::K_Event _Event) {
@@ -297,7 +297,7 @@ Void Private_OnFlagCarrierTeleported(Playloop::K_Event _Event) {
     Timestamp = Now,
     Carrier = Private_CreatePlayerStruct(Player)
   };
-  Private_SendCallback(C_EventType_Flag_OnCarrierTeleported, Event.tojson());
+  Private_SendCallback(C_CallbackName_Flag_OnCarrierTeleported, Event.tojson());
 }
 
 Void Private_OnFlagScored(Playloop::K_Event _Event) {
@@ -308,7 +308,7 @@ Void Private_OnFlagScored(Playloop::K_Event _Event) {
       Timestamp = Now,
       Scorer = Private_CreatePlayerStruct(Scorer)
     };
-    Private_SendCallback(C_EventType_Flag_Scored, Event.tojson());
+    Private_SendCallback(C_CallbackName_Flag_Scored, Event.tojson());
     return;
   }
 
@@ -317,28 +317,28 @@ Void Private_OnFlagScored(Playloop::K_Event _Event) {
     Scorer = Private_CreatePlayerStruct(Scorer),
     Assist = Private_CreatePlayerStruct(AssistScore)
   };
-  Private_SendCallback(C_EventType_Flag_Scored, Event.tojson());
+  Private_SendCallback(C_CallbackName_Flag_Scored, Event.tojson());
 }
 
 Void Private_OnServerStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_Server_Start, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Server_Start, Event.tojson());
 }
 
 Void Private_OnServerEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_Server_End, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Server_End, Event.tojson());
 }
 
 Void Private_OnMatchStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_Match_Start, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Match_Start, Event.tojson());
 }
 
 Void Private_OnMatchEnd(Progression::K_Event _Event) {
@@ -347,14 +347,14 @@ Void Private_OnMatchEnd(Progression::K_Event _Event) {
     Scores = _Event.Scores,
     WinnerClan = _Event.WinnerClan
   };
-  Private_SendCallback(C_EventType_Progression_Match_End, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Match_End, Event.tojson());
 }
 
 Void Private_OnMapStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_Map_Start, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Map_Start, Event.tojson());
 }
 
 Void Private_OnMapEnd(Progression::K_Event _Event) {
@@ -363,14 +363,14 @@ Void Private_OnMapEnd(Progression::K_Event _Event) {
     Scores = _Event.Scores,
     WinnerClan = _Event.WinnerClan
   };
-  Private_SendCallback(C_EventType_Progression_Map_End, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Map_End, Event.tojson());
 }
 
 Void Private_OnRoundStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_Round_Start, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Round_Start, Event.tojson());
 }
 
 Void Private_OnRoundEnd(Progression::K_Event _Event) {
@@ -379,77 +379,143 @@ Void Private_OnRoundEnd(Progression::K_Event _Event) {
     Scores = _Event.Scores,
     WinnerClan = _Event.WinnerClan
   };
-  Private_SendCallback(C_EventType_Progression_Round_End, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Round_End, Event.tojson());
 }
 
 Void Private_OnTurnStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_Turn_Start, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Turn_Start, Event.tojson());
 }
 
 Void Private_OnTurnEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_Turn_End, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Turn_End, Event.tojson());
 }
 
 Void Private_OnOvertimeStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_Overtime_Start, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Overtime_Start, Event.tojson());
 }
 
 Void Private_OnOvertimeEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_Overtime_End, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Overtime_End, Event.tojson());
 }
 
 Void Private_OnWarmUpStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_WarmUp_Start, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_WarmUp_Start, Event.tojson());
 }
 
 Void Private_OnWarmUpEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_WarmUp_End, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_WarmUp_End, Event.tojson());
 }
 
 Void Private_OnPauseStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_Pause_Start, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Pause_Start, Event.tojson());
 }
 
 Void Private_OnPauseEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_Pause_End, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Pause_End, Event.tojson());
 }
 
 Void Private_OnPodiumStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_Podium_Start, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Podium_Start, Event.tojson());
 }
 
 Void Private_OnPodiumEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
     Timestamp = Now
   };
-  Private_SendCallback(C_EventType_Progression_Podium_End, Event.tojson());
+  Private_SendCallback(C_CallbackName_Progression_Podium_End, Event.tojson());
+}
+
+Void Private_RegisterCallbacks() {
+  XmlRpc::RegisterCallback(C_CallbackName_Player_RequestedRespawn, "Called when a player requests to respawn.");
+  XmlRpc::RegisterCallback(C_CallbackName_Player_Spawned, "Called when a player spawns at a landmark.");
+  XmlRpc::RegisterCallback(C_CallbackName_Player_OutOfBounds, "Called when a player hits an out of bounds trigger.");
+  XmlRpc::RegisterCallback(C_CallbackName_Player_Died, "Called when a player is eliminated (due to moving blocks/items).");
+
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_Reset, "Called when the flag is reset to a spawn point.");
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_PickedUp, "Called when a player picks up the flag.");
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_Passed, "Called when the flag is passed between players.");
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_Dropped, "Called when the flag is dropped.");
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_OnCarrierTeleported, "Called when the flag carrier teleported further than the configured threshold.");
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_Scored, "Called when the flag is scored.");
+
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Server_Start, "Called when the server starts the game mode.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Server_End, "Called when the server shuts down the game mode.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Match_Start, "Called when a new match begins.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Match_End, "Called when a match ends.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Map_Start, "Called when a new map starts.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Map_End, "Called when a map ends.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Round_Start, "Called when a new round starts.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Round_End, "Called when a round ends.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Turn_Start, "Called when a turn begins.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Turn_End, "Called when a turn ends.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Overtime_Start, "Called when overtime begins.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Overtime_End, "Called when overtime ends.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_WarmUp_Start, "Called when a warm up starts.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_WarmUp_End, "Called when a warm up ends.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Pause_Start, "Called when the round is paused.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Pause_End, "Called when the round resumes from pause.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Podium_Start, "Called when the podium sequence starts.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Podium_End, "Called when the podium sequence ends.");
+}
+
+Void Private_UnregisterCallbacks() {
+  XmlRpc::UnregisterCallback(C_CallbackName_Player_RequestedRespawn);
+  XmlRpc::UnregisterCallback(C_CallbackName_Player_Spawned);
+  XmlRpc::UnregisterCallback(C_CallbackName_Player_OutOfBounds);
+  XmlRpc::UnregisterCallback(C_CallbackName_Player_Died);
+
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_Reset);
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_PickedUp);
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_Passed);
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_Dropped);
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_OnCarrierTeleported);
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_Scored);
+
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Server_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Server_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Match_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Match_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Map_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Map_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Round_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Round_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Turn_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Turn_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Overtime_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Overtime_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_WarmUp_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_WarmUp_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Pause_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Pause_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Podium_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Podium_End);
 }
 
 // MARK: Lifecycle
@@ -503,14 +569,15 @@ Void BeforeYield() {
   }
 }
 
-Void Yield() {
+Void Yield() { // @mslint-disable-line no-empty -- Kept for consistency
 
 }
 
 Void Unload() {
-
+  Private_UnregisterCallbacks();
 }
 
 Void Load() {
   Unload();
+  Private_RegisterCallbacks();
 }

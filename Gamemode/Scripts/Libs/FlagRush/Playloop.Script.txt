@@ -17,7 +17,6 @@
 #Include "Libs/FlagRush/Core/Vehicles.Script.txt" 						as Vehicles
 #Include "Libs/FlagRush/Core/HandicapQueue.Script.txt" 				as HandicapQueue
 #Include "Libs/FlagRush/Core/Scores.Script.txt" 							as Scores
-#Include "Libs/FlagRush/Core/FlagRush_RpcEvents.Script.txt"		as FlagRush_XmlRpc
 
 #Include "Libs/FlagRush/Event/Settings.Script.txt"						as Settings
 #Include "Libs/FlagRush/Event/Commands.Script.txt"						as Commands
@@ -122,14 +121,12 @@ Void Private_Flag_Reset(Boolean _Silent) {
 	declare CMapLandmark FlagSpawn = Map::GetRandomFlagSpawn();
 	Flag::SetAtLandmark(FlagSpawn);
 	Flag::InvalidateLastSafePosition();
-
 	G_PendingEvents.add(K_Event {
 		Type = C_EventType_FlagReset,
 		Landmark = FlagSpawn,
 		Position = FlagSpawn.Position,
 		Silent = _Silent
 	});
-	FlagRush_XmlRpc::Send_FlagReset();
 }
 
 Void Private_Flag_Reset() {
@@ -252,6 +249,7 @@ Void Private_FlagCarrier_PassFlag(CSmPlayer _ToPlayer) {
 		Scores::OnPlayerPassesFlag(OldCarrier.Score);
 	}
 	Private_Player_ResetHandicaps(OldCarrier);
+
 	// New Carrier
 	declare Integer StealResistanceEndDate = Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_FlagStealResistDurationSeconds) * 1000);
 	Flag::SetAtPlayer(_ToPlayer);
@@ -268,7 +266,6 @@ Void Private_FlagCarrier_PassFlag(CSmPlayer _ToPlayer) {
 		RelatedPlayer = Private_CreatePlayerRef(_ToPlayer),
 		Position = OldCarrier.Position
 	});
-	FlagRush_XmlRpc::Send_FlagPass(OldCarrier);
 }
 
 /**
@@ -293,7 +290,6 @@ Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
 		Flag::LockForPlayer(Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_DropFlagPickupPenalty) * 1000), OldCarrierPlayer);
 	}
 
-	declare CUser OldCarrierUser = Users.get(Flag::Get().Location.Player.UserId, Null);
 	declare Integer DropStateEndDate = Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_FlagDropStateDurationSeconds) * 1000);
 	Flag::SetDropTimer(DropStateEndDate);
 	Flag::SetAtPosition(_Position);
@@ -303,7 +299,6 @@ Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
 		Player = Private_CreatePlayerRef(OldCarrierPlayer),
 		Position = _Position
 	});
-	FlagRush_XmlRpc::Send_FlagDrop(OldCarrierUser);
 }
 
 Void Private_FlagCarrier_ScoreFlag(CMapLandmark _Base) {
@@ -328,12 +323,6 @@ Void Private_FlagCarrier_ScoreFlag(CMapLandmark _Base) {
 		Landmark = _Base,
 		Position = CarrierPlayer.Position
 	});
-
-	declare CUser AssistUser;
-	if (AssistScore != Null) {
-		AssistUser = AssistScore.User;
-	}
-	FlagRush_XmlRpc::Send_FlagScored(CarrierPlayer, AssistUser);
 
 	Private_Flag_Reset(True);
 }
@@ -368,13 +357,11 @@ Void Private_OnPlayerPicksUpFlag(CSmPlayer _Player) {
 	Flag::RemoveDropTimer();
 	Flag::Lock(StealResistanceEndDate);
 	Private_Player_ApplyHandicaps(_Player);
-
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerPickedUpFlag,
 		Player = Private_CreatePlayerRef(_Player),
 		Position = _Player.Position
 	});
-	FlagRush_XmlRpc::Send_FlagPickup();
 }
 
 Void Private_OnPlayerOutOfBound(CSmPlayer _Player) {
@@ -389,7 +376,6 @@ Void Private_OnPlayerOutOfBound(CSmPlayer _Player) {
 		Player = Private_CreatePlayerRef(_Player),
 		Position = _Player.Position
 	});
-	FlagRush_XmlRpc::Send_PlayerDeath(_Player);
 
 	if (_Player == Flag::GetPlayer()) {
 		Private_FlagCarrier_DropFlag(Flag::Get().Location.LastSafePosition);
@@ -410,7 +396,6 @@ Void Private_OnPlayerDeath(CSmPlayer _Player) {
 		Player = Private_CreatePlayerRef(_Player),
 		Position = _Player.Position
 	});
-	FlagRush_XmlRpc::Send_PlayerDeath(_Player);
 
 	if (_Player == Flag::GetPlayer()) {
 		Private_FlagCarrier_DropFlag(Flag::Get().Location.LastSafePosition);

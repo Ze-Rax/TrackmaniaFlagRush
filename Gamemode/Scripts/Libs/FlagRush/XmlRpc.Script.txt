@@ -46,7 +46,7 @@
   K_Player Player;
 }
 
-#Struct K_Event_Player_Died {
+#Struct K_Event_Player_Eliminated {
   Integer Timestamp;
   K_Player Player;
 }
@@ -107,7 +107,7 @@
 #Const C_CallbackName_Player_RequestedRespawn      "FlagRush.Player.RequestedRespawn"
 #Const C_CallbackName_Player_Spawned               "FlagRush.Player.Spawned"
 #Const C_CallbackName_Player_OutOfBounds           "FlagRush.Player.OutOfBounds"
-#Const C_CallbackName_Player_Died                  "FlagRush.Player.Eliminated"
+#Const C_CallbackName_Player_Eliminated            "FlagRush.Player.Eliminated"
 
 #Const C_CallbackName_Flag_Reset                   "FlagRush.Flag.Reset"
 #Const C_CallbackName_Flag_PickedUp                "FlagRush.Flag.PickedUp"
@@ -243,13 +243,13 @@ Void Private_OnPlayerOutOfBounds(Playloop::K_Event _Event) {
   Private_SendCallback(C_CallbackName_Player_OutOfBounds, Event.tojson());
 }
 
-Void Private_OnPlayerDied(Playloop::K_Event _Event) {
+Void Private_OnPlayerEliminated(Playloop::K_Event _Event) {
   declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
-  declare K_Event_Player_Died Event = K_Event_Player_Died{
+  declare K_Event_Player_Eliminated Event = K_Event_Player_Eliminated{
     Timestamp = Now,
     Player = Private_CreatePlayerStruct(Player)
   };
-  Private_SendCallback(C_CallbackName_Player_Died, Event.tojson());
+  Private_SendCallback(C_CallbackName_Player_Eliminated, Event.tojson());
 }
 
 Void Private_OnFlagReset(Playloop::K_Event _Event) {
@@ -456,7 +456,7 @@ Void Private_RegisterCallbacks() {
   XmlRpc::RegisterCallback(C_CallbackName_Player_RequestedRespawn, "Called when a player requests to respawn.");
   XmlRpc::RegisterCallback(C_CallbackName_Player_Spawned, "Called when a player spawns at a landmark.");
   XmlRpc::RegisterCallback(C_CallbackName_Player_OutOfBounds, "Called when a player hits an out of bounds trigger.");
-  XmlRpc::RegisterCallback(C_CallbackName_Player_Died, "Called when a player is eliminated (due to moving blocks/items).");
+  XmlRpc::RegisterCallback(C_CallbackName_Player_Eliminated, "Called when a player is eliminated (due to moving blocks/items).");
 
   XmlRpc::RegisterCallback(C_CallbackName_Flag_Reset, "Called when the flag is reset to a spawn point.");
   XmlRpc::RegisterCallback(C_CallbackName_Flag_PickedUp, "Called when a player picks up the flag.");
@@ -489,7 +489,7 @@ Void Private_UnregisterCallbacks() {
   XmlRpc::UnregisterCallback(C_CallbackName_Player_RequestedRespawn);
   XmlRpc::UnregisterCallback(C_CallbackName_Player_Spawned);
   XmlRpc::UnregisterCallback(C_CallbackName_Player_OutOfBounds);
-  XmlRpc::UnregisterCallback(C_CallbackName_Player_Died);
+  XmlRpc::UnregisterCallback(C_CallbackName_Player_Eliminated);
 
   XmlRpc::UnregisterCallback(C_CallbackName_Flag_Reset);
   XmlRpc::UnregisterCallback(C_CallbackName_Flag_PickedUp);
@@ -527,7 +527,7 @@ Void BeforeYield() {
       case Playloop::C_EventType_PlayerRespawned: Private_OnPlayerRespawned(Event);
       case Playloop::C_EventType_PlayerSpawned: Private_OnPlayerSpawned(Event);
       case Playloop::C_EventType_PlayerOutOfBounds: Private_OnPlayerOutOfBounds(Event);
-      case Playloop::C_EventType_PlayerDied: Private_OnPlayerDied(Event);
+      case Playloop::C_EventType_PlayerEliminated: Private_OnPlayerEliminated(Event);
       case Playloop::C_EventType_FlagReset: Private_OnFlagReset(Event);
       case Playloop::C_EventType_PlayerPickedUpFlag: Private_OnFlagPickedUp(Event);
       case Playloop::C_EventType_PlayerPassedFlag: Private_OnFlagPassed(Event);

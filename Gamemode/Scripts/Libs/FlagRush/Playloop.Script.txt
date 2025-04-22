@@ -40,7 +40,7 @@
 #Const C_EventType_PlayerRespawned 2
 #Const C_EventType_PlayerSpawned 3
 #Const C_EventType_PlayerOutOfBounds 4
-#Const C_EventType_PlayerDied 5
+#Const C_EventType_PlayerEliminated 5
 #Const C_EventType_FlagDropTimerExpired 6
 #Const C_EventType_FlagReset 7
 #Const C_EventType_PlayerPickedUpFlag 8
@@ -390,9 +390,9 @@ Void Private_OnPlayerRequestsClanChange(CSmPlayer _Player) {
 	SetPlayerClan(_Player, _Player.RequestedClan);
 }
 
-Void Private_OnPlayerDeath(CSmPlayer _Player) {
+Void Private_OnPlayerEliminated(CSmPlayer _Player) {
 	G_PendingEvents.add(K_Event{
-		Type = C_EventType_PlayerDied,
+		Type = C_EventType_PlayerEliminated,
 		Player = Private_CreatePlayerRef(_Player),
 		Position = _Player.Position
 	});
@@ -401,7 +401,7 @@ Void Private_OnPlayerDeath(CSmPlayer _Player) {
 		Private_FlagCarrier_DropFlag(Flag::Get().Location.LastSafePosition);
 	}
 	Private_Player_Unspawn(_Player);
-	Scores::OnPlayerDeath(_Player.Score);
+	Scores::OnPlayerEliminated(_Player.Score);
 }
 
 Void Private_OnPlayerRequestsRespawn(CSmPlayer _Player) {
@@ -599,7 +599,7 @@ Void Private_UpdatePlayers() {
     }
 
     if (Private_Player_IsDead(Player)) {
-      Private_OnPlayerDeath(Player);
+      Private_OnPlayerEliminated(Player);
     }
 
     if (Private_Player_CanSpawn(Player)) {
@@ -664,7 +664,7 @@ Void WarmUpLoop() {
 		if (Private_Player_RequestsClanChange(Player) || Private_Player_IsDead(Player)) {
 			if (Private_Player_IsDead(Player)) {
 				G_PendingEvents.add(K_Event{
-					Type = C_EventType_PlayerDied,
+					Type = C_EventType_PlayerEliminated,
 					Player = Private_CreatePlayerRef(Player),
 					Position = Player.Position
 				});

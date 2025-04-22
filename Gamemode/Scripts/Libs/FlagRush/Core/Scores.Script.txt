@@ -22,7 +22,7 @@
 #Const C_PlayerStatisticsKey_DistanceDriven			"DistanceDriven"
 #Const C_PlayerStatisticsKey_FlagPickUpLandmark	"PickUpFlagFromLandmark"
 #Const C_PlayerStatisticsKey_OutOfBounds				"OutOfBounds"
-#Const C_PlayerStatisticsKey_Deaths							"Deaths"
+#Const C_PlayerStatisticsKey_Eliminations				"Eliminations"
 #Const C_PlayerStatisticsKey_TopSpeed						"TopSpeed"
 #Const C_PlayerStatisticsKey_Airtime						"Airtime"
 
@@ -42,7 +42,7 @@
 	Real DistanceDriven;
 	Integer FlagsPickedUpFromLandmarks;
 	Integer OutOfBoundsCount;
-	Integer Deaths;
+	Integer Eliminations;
 	Real TopSpeed;
 	Integer AirtimeMs;
 }
@@ -160,7 +160,7 @@ K_FlagRushPlayerStatistics GetPlayerStatistics(CSmScore _Score, Integer _Level) 
 		DistanceDriven = PlayerStatistics::GetReal(_Score, C_PlayerStatisticsKey_DistanceDriven, _Level),
 		FlagsPickedUpFromLandmarks = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_FlagPickUpLandmark, _Level),
 		OutOfBoundsCount = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_OutOfBounds, _Level),
-		Deaths = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_Deaths, _Level),
+		Eliminations = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_Eliminations, _Level),
 		TopSpeed = PlayerStatistics::GetReal(_Score, C_PlayerStatisticsKey_TopSpeed, _Level),
 		AirtimeMs = PlayerStatistics::GetInteger(_Score, C_PlayerStatisticsKey_Airtime, _Level)
 	};
@@ -270,8 +270,8 @@ Void OnPlayerOutOfBounds(CSmScore _Score) {
 	PlayerStatistics::AddRound(_Score, C_PlayerStatisticsKey_OutOfBounds, 1);
 }
 
-Void OnPlayerDeath(CSmScore _Score) {
-	PlayerStatistics::AddRound(_Score, C_PlayerStatisticsKey_Deaths, 1);
+Void OnPlayerEliminated(CSmScore _Score) {
+	PlayerStatistics::AddRound(_Score, C_PlayerStatisticsKey_Eliminations, 1);
 }
 
 Void OnPlayerHasSpeed(CSmScore _Score, Real _Speed) {
@@ -425,7 +425,7 @@ Void Load() {
 		}
 	);
 	PlayerStatistics::Register(
-		C_PlayerStatisticsKey_Deaths,
+		C_PlayerStatisticsKey_Eliminations,
 		PlayerStatistics::K_Registration{
 			Type = PlayerStatistics::C_StatisticType_Integer,
 			AggregationFunction = PlayerStatistics::C_AggregationFunction_Add

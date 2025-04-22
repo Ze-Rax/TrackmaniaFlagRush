@@ -27,12 +27,6 @@
   Vec3 Position;
 }
 
-#Struct K_Flag {
-  K_Player Carrier;
-  K_Landmark Spawn;
-  Vec3 Position;
-}
-
 // Events
 
 #Struct K_Event_Player_RequestedRespawn {
@@ -59,23 +53,23 @@
 
 #Struct K_Event_Flag_Reset {
   Integer Timestamp;
-  K_Flag Flag;
+  K_Landmark FlagSpawn;
 }
 
 #Struct K_Event_Flag_PickedUp {
   Integer Timestamp;
-  K_Flag Flag;
+  K_Player Carrier;
 }
 
 #Struct K_Event_Flag_Passed {
   Integer Timestamp;
-  K_Flag Flag;
+  K_Player NewCarrier;
   K_Player PreviousCarrier;
 }
 
 #Struct K_Event_Flag_Dropped {
   Integer Timestamp;
-  K_Flag Flag;
+  Vec3 Position;
   K_Player PreviousCarrier;
 }
 
@@ -168,21 +162,6 @@ K_Landmark Private_CreateLandmarkStruct(CMapLandmark _Landmark) {
   };
 }
 
-K_Flag Private_CreateFlagStruct(CSmScore _CarrierScore, CMapLandmark _Landmark, Vec3 _Position) {
-  return K_Flag{
-    Carrier = Private_CreatePlayerStruct(_CarrierScore),
-    Spawn = Private_CreateLandmarkStruct(_Landmark),
-    Position = _Position
-  };
-}
-
-K_Flag Private_CreateFlagStruct(CSmPlayer _Carrier, CMapLandmark _Landmark, Vec3 _Position) {
-  if (_Carrier == Null) {
-    return Private_CreateFlagStruct(Null, _Landmark, _Position);
-  }
-  return Private_CreateFlagStruct(_Carrier.Score, _Landmark, _Position);
-}
-
 Void Private_SendCallback(Text _EventType, Text _EventDataJson) {
   XmlRpc::SendCallback(_EventType, _EventDataJson);
   Log::Debug("""XmlRpc: Sent callback "{{{ _EventType }}}" with data: {{{ _EventDataJson }}}""");
@@ -241,7 +220,7 @@ Void Private_OnPlayerDied(Playloop::K_Event _Event) {
 Void Private_OnFlagReset(Playloop::K_Event _Event) {
   declare K_Event_Flag_Reset Event = K_Event_Flag_Reset{
     Timestamp = Now,
-    Flag = Private_CreateFlagStruct(Null, _Event.Landmark, _Event.Landmark.Position)
+    FlagSpawn = Private_CreateLandmarkStruct(_Event.Landmark)
   };
   Private_SendCallback(C_EventType_Flag_Reset, Event.tojson());
 }
@@ -250,7 +229,7 @@ Void Private_OnFlagPickedUp(Playloop::K_Event _Event) {
   declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
   declare K_Event_Flag_PickedUp Event = K_Event_Flag_PickedUp{
     Timestamp = Now,
-    Flag = Private_CreateFlagStruct(Player, Null, Player.Position)
+    Carrier = Private_CreatePlayerStruct(Player)
   };
   Private_SendCallback(C_EventType_Flag_PickedUp, Event.tojson());
 }
@@ -260,7 +239,7 @@ Void Private_OnFlagPassed(Playloop::K_Event _Event) {
   declare CSmPlayer NewCarrier <=> Playloop::GetPlayer(_Event.RelatedPlayer);
   declare K_Event_Flag_Passed Event = K_Event_Flag_Passed{
     Timestamp = Now,
-    Flag = Private_CreateFlagStruct(NewCarrier, Null, NewCarrier.Position),
+    NewCarrier = Private_CreatePlayerStruct(NewCarrier),
     PreviousCarrier = Private_CreatePlayerStruct(PreviousCarrier)
   };
   Private_SendCallback(C_EventType_Flag_Passed, Event.tojson());
@@ -271,7 +250,7 @@ Void Private_OnFlagDropped(Playloop::K_Event _Event) {
   declare CSmScore PreviousCarrierScore <=> Playloop::GetScore(_Event.Player);
   declare K_Event_Flag_Dropped Event = K_Event_Flag_Dropped{
     Timestamp = Now,
-    Flag = Private_CreateFlagStruct(Null, Null, _Event.Position),
+    Position = _Event.Position,
     PreviousCarrier = Private_CreatePlayerStruct(PreviousCarrierScore)
   };
   Private_SendCallback(C_EventType_Flag_Dropped, Event.tojson());
@@ -326,64 +305,28 @@ Void BeforeYield() {
     switch (Event.Type) {
       case Progression::C_EventType_SegmentStart: {
         switch (Event.Segment) {
-          case Progression::C_Segment_Server: {
-            // Handle SegmentStart for Server
-          }
-          case Progression::C_Segment_Match: {
-            // Handle SegmentStart for Match
-          }
-          case Progression::C_Segment_Map: {
-            // Handle SegmentStart for Map
-          }
-          case Progression::C_Segment_Round: {
-            // Handle SegmentStart for Round
-          }
-          case Progression::C_Segment_Turn: {
-            // Handle SegmentStart for Turn
-          }
-          case Progression::C_Segment_Overtime: {
-            // Handle SegmentStart for Overtime
-          }
-          case Progression::C_Segment_WarmUp: {
-            // Handle SegmentStart for WarmUp
-          }
-          case Progression::C_Segment_Pause: {
-            // Handle SegmentStart for Pause
-          }
-          case Progression::C_Segment_Podium: {
-            // Handle SegmentStart for Podium
-          }
+          case Progression::C_Segment_Server: {}
+          case Progression::C_Segment_Match: {}
+          case Progression::C_Segment_Map: {}
+          case Progression::C_Segment_Round: {}
+          case Progression::C_Segment_Turn: {}
+          case Progression::C_Segment_Overtime: {}
+          case Progression::C_Segment_WarmUp: {}
+          case Progression::C_Segment_Pause: {}
+          case Progression::C_Segment_Podium: {}
         }
       }
       case Progression::C_EventType_SegmentEnd: {
         switch (Event.Segment) {
-          case Progression::C_Segment_Server: {
-            // Handle SegmentEnd for Server
-          }
-          case Progression::C_Segment_Match: {
-            // Handle SegmentEnd for Match
-          }
-          case Progression::C_Segment_Map: {
-            // Handle SegmentEnd for Map
-          }
-          case Progression::C_Segment_Round: {
-            // Handle SegmentEnd for Round
-          }
-          case Progression::C_Segment_Turn: {
-            // Handle SegmentEnd for Turn
-          }
-          case Progression::C_Segment_Overtime: {
-            // Handle SegmentEnd for Overtime
-          }
-          case Progression::C_Segment_WarmUp: {
-            // Handle SegmentEnd for WarmUp
-          }
-          case Progression::C_Segment_Pause: {
-            // Handle SegmentEnd for Pause
-          }
-          case Progression::C_Segment_Podium: {
-            // Handle SegmentEnd for Podium
-          }
+          case Progression::C_Segment_Server: {}
+          case Progression::C_Segment_Match: {}
+          case Progression::C_Segment_Map: {}
+          case Progression::C_Segment_Round: {}
+          case Progression::C_Segment_Turn: {}
+          case Progression::C_Segment_Overtime: {}
+          case Progression::C_Segment_WarmUp: {}
+          case Progression::C_Segment_Pause: {}
+          case Progression::C_Segment_Podium: {}
         }
       }
     }

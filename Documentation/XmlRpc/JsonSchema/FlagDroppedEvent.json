@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FlagDroppedEvent",
+  "description": "Emitted when the flag is dropped by a player.",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": "integer"
+    },
+    "position": {
+      "$ref": "Position.json"
+    },
+    "previousCarrier": {
+      "$ref": "Player.json"
+    }
+  },
+  "required": [
+    "timestamp",
+    "position",
+    "previousCarrier"
+  ]
+}

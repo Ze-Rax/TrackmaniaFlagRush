@@ -12,91 +12,100 @@
 
 // MARK: Structs
 
+// Structs use lower camelCase, as they are sent as Json.
+// It's just more common for Json.
+
 // Components
 
+#Struct K_Position {
+  Real x; // @mslint-disable-line id-length
+  Real y; // @mslint-disable-line id-length
+  Real z; // @mslint-disable-line id-length
+}
+
 #Struct K_Player {
-  Text Login;
-  Text WebServicesUserId;
-  Text Name;
-  Integer Clan;
-  Vec3 Position;
+  Text login;
+  Text webServicesUserId;
+  Text name;
+  Integer clan;
+  K_Position position;
 }
 
 #Struct K_Landmark {
-  Integer Id;
-  Vec3 Position;
+  Integer id;
+  K_Position position;
 }
 
 // Events
 
 #Struct K_Event_Player_RequestedRespawn {
-  Integer Timestamp;
-  K_Player Player;
-  Boolean Success;
+  Integer timestamp;
+  K_Player player;
+  Boolean success;
 }
 
 #Struct K_Event_Player_Spawned {
-  Integer Timestamp;
-  K_Player Player;
-  K_Landmark Landmark;
+  Integer timestamp;
+  K_Player player;
+  K_Landmark landmark;
 }
 
 #Struct K_Event_Player_OutOfBounds {
-  Integer Timestamp;
-  K_Player Player;
+  Integer timestamp;
+  K_Player player;
 }
 
 #Struct K_Event_Player_Eliminated {
-  Integer Timestamp;
-  K_Player Player;
+  Integer timestamp;
+  K_Player player;
 }
 
 #Struct K_Event_Flag_Reset {
-  Integer Timestamp;
-  K_Landmark FlagSpawn;
+  Integer timestamp;
+  K_Landmark flagSpawn;
 }
 
 #Struct K_Event_Flag_PickedUp {
-  Integer Timestamp;
-  K_Player Carrier;
+  Integer timestamp;
+  K_Player carrier;
 }
 
 #Struct K_Event_Flag_Passed {
-  Integer Timestamp;
-  K_Player NewCarrier;
-  K_Player PreviousCarrier;
+  Integer timestamp;
+  K_Player newCarrier;
+  K_Player previousCarrier;
 }
 
 #Struct K_Event_Flag_Dropped {
-  Integer Timestamp;
-  Vec3 Position;
-  K_Player PreviousCarrier;
+  Integer timestamp;
+  K_Position position;
+  K_Player previousCarrier;
 }
 
 #Struct K_Event_Flag_CarrierTeleported {
-  Integer Timestamp;
-  K_Player Carrier;
+  Integer timestamp;
+  K_Player carrier;
 }
 
 #Struct K_Event_Flag_Scored {
-  Integer Timestamp;
-  K_Player Scorer;
+  Integer timestamp;
+  K_Player scorer;
 }
 
 #Struct K_Event_Flag_ScoredWithAssist {
-  Integer Timestamp;
-  K_Player Scorer;
-  K_Player Assist;
+  Integer timestamp;
+  K_Player scorer;
+  K_Player assist;
 }
 
 #Struct K_Event_GenericSegment { // Used for all segment start and end events that do not have any important information.
-  Integer Timestamp;
+  Integer timestamp;
 }
 
 #Struct K_Event_SegmentEndWithScores {
-  Integer Timestamp;
-  Integer[] Scores; // Always exactly 2, one for each team
-  Integer WinnerClan; // 0 (Draw), 1 or 2
+  Integer timestamp;
+  Integer[] scores; // Always exactly 2, one for each team
+  Integer winnerClan; // 0 (Draw), 1 or 2
 }
 
 // MARK: Constants
@@ -136,12 +145,12 @@
 #Const C_CallbackName_Progression_Podium_End       "FlagRush.Progression.Podium.End"
 
 #Const C_Player_Invalid K_Player{
-  Name = "Invalid Player",
-  Position = <-1., -1., -1.>
+  name = "Invalid Player",
+  position = K_Position{ x = -1., y = -1., z = -1. }
 }
 #Const C_Landmark_Invalid K_Landmark{
-  Id = -1,
-  Position = <-1., -1., -1.>
+  id = -1,
+  position = K_Position{ x = -1., y = -1., z = -1. }
 }
 
 // MARK: Helper Functions
@@ -153,16 +162,24 @@ Integer Private_IdToInteger(Ident _Id) {
   return TL::ToInteger(TL::Replace("" ^ _Id, "#", ""));
 }
 
+K_Position Private_CreatePositionStruct(Vec3 _Position) {
+  return K_Position{
+    x = _Position.X,
+    y = _Position.Y,
+    z = _Position.Z
+  };
+}
+
 K_Player Private_CreatePlayerStruct(CSmPlayer _Player) {
   if (_Player == Null) {
     return C_Player_Invalid;
   }
   return K_Player{
-    Login = _Player.User.Login,
-    WebServicesUserId = _Player.User.WebServicesUserId,
-    Name = _Player.User.Name,
-    Clan = _Player.CurrentClan,
-    Position = _Player.Position
+    login = _Player.User.Login,
+    webServicesUserId = _Player.User.WebServicesUserId,
+    name = _Player.User.Name,
+    clan = _Player.CurrentClan,
+    position = Private_CreatePositionStruct(_Player.Position)
   };
 }
 
@@ -179,11 +196,11 @@ K_Player Private_CreatePlayerStruct(CSmScore _Score) {
   }
 
   return K_Player{
-    Login = _Score.User.Login,
-    WebServicesUserId = _Score.User.WebServicesUserId,
-    Name = _Score.User.Name,
-    Clan = _Score.TeamNum,
-    Position = C_Position_Invalid
+    login = _Score.User.Login,
+    webServicesUserId = _Score.User.WebServicesUserId,
+    name = _Score.User.Name,
+    clan = _Score.TeamNum,
+    position = Private_CreatePositionStruct(C_Position_Invalid)
   };
 }
 
@@ -192,8 +209,8 @@ K_Landmark Private_CreateLandmarkStruct(CMapLandmark _Landmark) {
     return C_Landmark_Invalid;
   }
   return K_Landmark{
-    Id = Private_IdToInteger(_Landmark.Id),
-    Position = _Landmark.Position
+    id = Private_IdToInteger(_Landmark.Id),
+    position = Private_CreatePositionStruct(_Landmark.Position)
   };
 }
 
@@ -207,9 +224,9 @@ Void Private_SendCallback(Text _EventType, Text _EventDataJson) {
 Void Private_OnPlayerRequestsRespawnButIsTooFast(Playloop::K_Event _Event) {
   declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
   declare K_Event_Player_RequestedRespawn Event = K_Event_Player_RequestedRespawn{
-    Timestamp = Now,
-    Player = Private_CreatePlayerStruct(Player),
-    Success = False
+    timestamp = Now,
+    player = Private_CreatePlayerStruct(Player),
+    success = False
   };
   Private_SendCallback(C_CallbackName_Player_RequestedRespawn, Event.tojson());
 }
@@ -217,9 +234,9 @@ Void Private_OnPlayerRequestsRespawnButIsTooFast(Playloop::K_Event _Event) {
 Void Private_OnPlayerRespawned(Playloop::K_Event _Event) {
   declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
   declare K_Event_Player_RequestedRespawn Event = K_Event_Player_RequestedRespawn{
-    Timestamp = Now,
-    Player = Private_CreatePlayerStruct(Player),
-    Success = True
+    timestamp = Now,
+    player = Private_CreatePlayerStruct(Player),
+    success = True
   };
   Private_SendCallback(C_CallbackName_Player_RequestedRespawn, Event.tojson());
 }
@@ -227,9 +244,9 @@ Void Private_OnPlayerRespawned(Playloop::K_Event _Event) {
 Void Private_OnPlayerSpawned(Playloop::K_Event _Event) {
   declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
   declare K_Event_Player_Spawned Event = K_Event_Player_Spawned{
-    Timestamp = Now,
-    Player = Private_CreatePlayerStruct(Player),
-    Landmark = Private_CreateLandmarkStruct(_Event.Landmark)
+    timestamp = Now,
+    player = Private_CreatePlayerStruct(Player),
+    landmark = Private_CreateLandmarkStruct(_Event.Landmark)
   };
   Private_SendCallback(C_CallbackName_Player_Spawned, Event.tojson());
 }
@@ -237,8 +254,8 @@ Void Private_OnPlayerSpawned(Playloop::K_Event _Event) {
 Void Private_OnPlayerOutOfBounds(Playloop::K_Event _Event) {
   declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
   declare K_Event_Player_OutOfBounds Event = K_Event_Player_OutOfBounds{
-    Timestamp = Now,
-    Player = Private_CreatePlayerStruct(Player)
+    timestamp = Now,
+    player = Private_CreatePlayerStruct(Player)
   };
   Private_SendCallback(C_CallbackName_Player_OutOfBounds, Event.tojson());
 }
@@ -246,16 +263,16 @@ Void Private_OnPlayerOutOfBounds(Playloop::K_Event _Event) {
 Void Private_OnPlayerEliminated(Playloop::K_Event _Event) {
   declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
   declare K_Event_Player_Eliminated Event = K_Event_Player_Eliminated{
-    Timestamp = Now,
-    Player = Private_CreatePlayerStruct(Player)
+    timestamp = Now,
+    player = Private_CreatePlayerStruct(Player)
   };
   Private_SendCallback(C_CallbackName_Player_Eliminated, Event.tojson());
 }
 
 Void Private_OnFlagReset(Playloop::K_Event _Event) {
   declare K_Event_Flag_Reset Event = K_Event_Flag_Reset{
-    Timestamp = Now,
-    FlagSpawn = Private_CreateLandmarkStruct(_Event.Landmark)
+    timestamp = Now,
+    flagSpawn = Private_CreateLandmarkStruct(_Event.Landmark)
   };
   Private_SendCallback(C_CallbackName_Flag_Reset, Event.tojson());
 }
@@ -263,8 +280,8 @@ Void Private_OnFlagReset(Playloop::K_Event _Event) {
 Void Private_OnFlagPickedUp(Playloop::K_Event _Event) {
   declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
   declare K_Event_Flag_PickedUp Event = K_Event_Flag_PickedUp{
-    Timestamp = Now,
-    Carrier = Private_CreatePlayerStruct(Player)
+    timestamp = Now,
+    carrier = Private_CreatePlayerStruct(Player)
   };
   Private_SendCallback(C_CallbackName_Flag_PickedUp, Event.tojson());
 }
@@ -273,9 +290,9 @@ Void Private_OnFlagPassed(Playloop::K_Event _Event) {
   declare CSmPlayer PreviousCarrier <=> Playloop::GetPlayer(_Event.Player);
   declare CSmPlayer NewCarrier <=> Playloop::GetPlayer(_Event.RelatedPlayer);
   declare K_Event_Flag_Passed Event = K_Event_Flag_Passed{
-    Timestamp = Now,
-    NewCarrier = Private_CreatePlayerStruct(NewCarrier),
-    PreviousCarrier = Private_CreatePlayerStruct(PreviousCarrier)
+    timestamp = Now,
+    newCarrier = Private_CreatePlayerStruct(NewCarrier),
+    previousCarrier = Private_CreatePlayerStruct(PreviousCarrier)
   };
   Private_SendCallback(C_CallbackName_Flag_Passed, Event.tojson());
 }
@@ -284,9 +301,9 @@ Void Private_OnFlagDropped(Playloop::K_Event _Event) {
   // Do not use player. Might be disconnected
   declare CSmScore PreviousCarrierScore <=> Playloop::GetScore(_Event.Player);
   declare K_Event_Flag_Dropped Event = K_Event_Flag_Dropped{
-    Timestamp = Now,
-    Position = _Event.Position,
-    PreviousCarrier = Private_CreatePlayerStruct(PreviousCarrierScore)
+    timestamp = Now,
+    position = Private_CreatePositionStruct(_Event.Position),
+    previousCarrier = Private_CreatePlayerStruct(PreviousCarrierScore)
   };
   Private_SendCallback(C_CallbackName_Flag_Dropped, Event.tojson());
 }
@@ -294,8 +311,8 @@ Void Private_OnFlagDropped(Playloop::K_Event _Event) {
 Void Private_OnFlagCarrierTeleported(Playloop::K_Event _Event) {
   declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
   declare K_Event_Flag_CarrierTeleported Event = K_Event_Flag_CarrierTeleported{
-    Timestamp = Now,
-    Carrier = Private_CreatePlayerStruct(Player)
+    timestamp = Now,
+    carrier = Private_CreatePlayerStruct(Player)
   };
   Private_SendCallback(C_CallbackName_Flag_OnCarrierTeleported, Event.tojson());
 }
@@ -305,149 +322,149 @@ Void Private_OnFlagScored(Playloop::K_Event _Event) {
   declare CSmScore AssistScore <=> Playloop::GetScore(_Event.RelatedPlayer);
   if (AssistScore == Null) {
     declare K_Event_Flag_Scored Event = K_Event_Flag_Scored{
-      Timestamp = Now,
-      Scorer = Private_CreatePlayerStruct(Scorer)
+      timestamp = Now,
+      scorer = Private_CreatePlayerStruct(Scorer)
     };
     Private_SendCallback(C_CallbackName_Flag_Scored, Event.tojson());
     return;
   }
 
   declare K_Event_Flag_ScoredWithAssist Event = K_Event_Flag_ScoredWithAssist{
-    Timestamp = Now,
-    Scorer = Private_CreatePlayerStruct(Scorer),
-    Assist = Private_CreatePlayerStruct(AssistScore)
+    timestamp = Now,
+    scorer = Private_CreatePlayerStruct(Scorer),
+    assist = Private_CreatePlayerStruct(AssistScore)
   };
   Private_SendCallback(C_CallbackName_Flag_Scored, Event.tojson());
 }
 
 Void Private_OnServerStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_Server_Start, Event.tojson());
 }
 
 Void Private_OnServerEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_Server_End, Event.tojson());
 }
 
 Void Private_OnMatchStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_Match_Start, Event.tojson());
 }
 
 Void Private_OnMatchEnd(Progression::K_Event _Event) {
   declare K_Event_SegmentEndWithScores Event = K_Event_SegmentEndWithScores{
-    Timestamp = Now,
-    Scores = _Event.Scores,
-    WinnerClan = _Event.WinnerClan
+    timestamp = Now,
+    scores = _Event.Scores,
+    winnerClan = _Event.WinnerClan
   };
   Private_SendCallback(C_CallbackName_Progression_Match_End, Event.tojson());
 }
 
 Void Private_OnMapStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_Map_Start, Event.tojson());
 }
 
 Void Private_OnMapEnd(Progression::K_Event _Event) {
   declare K_Event_SegmentEndWithScores Event = K_Event_SegmentEndWithScores{
-    Timestamp = Now,
-    Scores = _Event.Scores,
-    WinnerClan = _Event.WinnerClan
+    timestamp = Now,
+    scores = _Event.Scores,
+    winnerClan = _Event.WinnerClan
   };
   Private_SendCallback(C_CallbackName_Progression_Map_End, Event.tojson());
 }
 
 Void Private_OnRoundStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_Round_Start, Event.tojson());
 }
 
 Void Private_OnRoundEnd(Progression::K_Event _Event) {
   declare K_Event_SegmentEndWithScores Event = K_Event_SegmentEndWithScores{
-    Timestamp = Now,
-    Scores = _Event.Scores,
-    WinnerClan = _Event.WinnerClan
+    timestamp = Now,
+    scores = _Event.Scores,
+    winnerClan = _Event.WinnerClan
   };
   Private_SendCallback(C_CallbackName_Progression_Round_End, Event.tojson());
 }
 
 Void Private_OnTurnStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_Turn_Start, Event.tojson());
 }
 
 Void Private_OnTurnEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_Turn_End, Event.tojson());
 }
 
 Void Private_OnOvertimeStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_Overtime_Start, Event.tojson());
 }
 
 Void Private_OnOvertimeEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_Overtime_End, Event.tojson());
 }
 
 Void Private_OnWarmUpStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_WarmUp_Start, Event.tojson());
 }
 
 Void Private_OnWarmUpEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_WarmUp_End, Event.tojson());
 }
 
 Void Private_OnPauseStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_Pause_Start, Event.tojson());
 }
 
 Void Private_OnPauseEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_Pause_End, Event.tojson());
 }
 
 Void Private_OnPodiumStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_Podium_Start, Event.tojson());
 }
 
 Void Private_OnPodiumEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
   declare K_Event_GenericSegment Event = K_Event_GenericSegment{
-    Timestamp = Now
+    timestamp = Now
   };
   Private_SendCallback(C_CallbackName_Progression_Podium_End, Event.tojson());
 }

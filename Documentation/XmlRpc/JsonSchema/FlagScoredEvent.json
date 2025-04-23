@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FlagScoredEvent",
+  "description": "Emitted when a player scores with the flag. Includes optional assist.",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": "integer"
+    },
+    "scorer": {
+      "$ref": "Player.json"
+    },
+    "assist": {
+      "$ref": "Player.json"
+    }
+  },
+  "required": [
+    "timestamp",
+    "scorer"
+  ]
+}

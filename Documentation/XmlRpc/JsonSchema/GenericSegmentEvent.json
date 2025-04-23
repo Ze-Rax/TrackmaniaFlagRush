@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GenericSegmentEvent",
+  "description": "Generic event for a phase transition without metadata.",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "timestamp"
+  ]
+}

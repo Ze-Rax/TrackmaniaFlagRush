@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FlagResetEvent",
+  "description": "Emitted when the flag resets to its spawn location.",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": "integer"
+    },
+    "flagSpawn": {
+      "$ref": "Landmark.json"
+    }
+  },
+  "required": [
+    "timestamp",
+    "flagSpawn"
+  ]
+}

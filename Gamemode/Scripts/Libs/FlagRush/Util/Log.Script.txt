@@ -26,10 +26,7 @@ Void Private_Log(Text _Message, Integer _Level) {
 	}
 
 	declare Text Prefix = C_LevelPrefix.get(_Level, C_LevelPrefix[1]);
-	declare Text Date = TiL::FormatDate(TiL::GetCurrent(), TiL::EDateFormats::DateShort);
-	declare Text Time = TiL::FormatDate(TiL::GetCurrent(), TiL::EDateFormats::Time);
-	declare Text Timestamp = """{{{ Date }}} {{{ Time }}}""";
-	log("""{{{ Prefix }}} [FlagRush] [{{{ Timestamp }}}] {{{ _Message }}}""");
+	log("""{{{ Prefix }}} [FlagRush] [{{{ Now }}}] {{{ _Message }}}""");
 }
 
 // MARK: API

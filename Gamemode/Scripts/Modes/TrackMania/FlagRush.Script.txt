@@ -914,7 +914,7 @@ foreach (Command in Commands::GetPendingEvents()) {
 			UIManager.UIAll.QueueMessage(3000, 999, CUIConfig::EMessageDisplay::Big, Command.ValueText, CUIConfig::EUISound::Default, 1);
 			CommandText = """Message: $<{{{ Command.ValueText }}}$>""";
 		}
-		default: return;
+		default: continue;
 	}
 
 	declare Text UnprefixedCommandName = Command::RemovePrefix(Command.Name);

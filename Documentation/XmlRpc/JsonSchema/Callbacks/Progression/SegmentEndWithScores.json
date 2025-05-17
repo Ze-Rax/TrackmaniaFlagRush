@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "SegmentEndWithScoresEvent",
+  "title": "FlagRush.Progression.SegmentEndWithScores",
   "description": "Event marking end of a match/map/round, with scores.",
   "type": "object",
   "properties": {

@@ -1,22 +1,22 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "FlagPassedEvent",
-  "description": "Emitted when the flag is passed from one player to another.",
+  "title": "FlagRush.Flag.Dropped",
+  "description": "Emitted when the flag is dropped by a player.",
   "type": "object",
   "properties": {
     "timestamp": {
       "type": "integer"
     },
-    "newCarrier": {
-      "$ref": "Player.json"
+    "position": {
+      "$ref": "../../Position.json"
     },
     "previousCarrier": {
-      "$ref": "Player.json"
+      "$ref": "../../Player.json"
     }
   },
   "required": [
     "timestamp",
-    "newCarrier",
+    "position",
     "previousCarrier"
   ]
 }

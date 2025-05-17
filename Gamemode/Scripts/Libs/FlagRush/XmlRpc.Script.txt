@@ -1,6 +1,9 @@
 /**
  * Handles the FlagRush specific XmlRpc communication.
  *
+ * /!\ IMPORTANT DEVELOPMENT NOTE /!\
+ * When adjusting callbacks or methods or adding new ones, also update the schema in {Project Root}/Documentation/XmlRpc/JsonSchema accordingly!
+ *
  * #RequireContext CSmMode
  */
 
@@ -98,6 +101,11 @@
   K_Player assist;
 }
 
+#Struct K_Event_Flag_DropTimerExpired {
+  Integer timestamp;
+  K_Position position;
+}
+
 #Struct K_Event_GenericSegment { // Used for all segment start and end events that do not have any important information.
   Integer timestamp;
 }
@@ -124,6 +132,7 @@
 #Const C_CallbackName_Flag_Dropped                 "FlagRush.Flag.Dropped"
 #Const C_CallbackName_Flag_OnCarrierTeleported     "FlagRush.Flag.CarrierTeleported"
 #Const C_CallbackName_Flag_Scored                  "FlagRush.Flag.Scored"
+#Const C_CallbackName_Flag_DropTimerExpired        "FlagRush.Flag.DropTimerExpired"
 
 #Const C_CallbackName_Progression_Server_Start     "FlagRush.Progression.Server.Start"
 #Const C_CallbackName_Progression_Server_End       "FlagRush.Progression.Server.End"
@@ -215,8 +224,8 @@ K_Landmark Private_CreateLandmarkStruct(CMapLandmark _Landmark) {
 }
 
 Void Private_SendCallback(Text _EventType, Text _EventDataJson) {
+  Log::Debug("""XmlRpc: Send callback "{{{ _EventType }}}" with data: {{{ _EventDataJson }}}""");
   XmlRpc::SendCallback(_EventType, _EventDataJson);
-  Log::Debug("""XmlRpc: Sent callback "{{{ _EventType }}}" with data: {{{ _EventDataJson }}}""");
 }
 
 // MARK: Event Handlers
@@ -335,6 +344,14 @@ Void Private_OnFlagScored(Playloop::K_Event _Event) {
     assist = Private_CreatePlayerStruct(AssistScore)
   };
   Private_SendCallback(C_CallbackName_Flag_Scored, Event.tojson());
+}
+
+Void Private_OnFlagDropTimerExpired(Playloop::K_Event _Event) {
+  declare K_Event_Flag_DropTimerExpired Event = K_Event_Flag_DropTimerExpired{
+    timestamp = Now,
+    position = Private_CreatePositionStruct(_Event.Position)
+  };
+  Private_SendCallback(C_CallbackName_Flag_DropTimerExpired, Event.tojson());
 }
 
 Void Private_OnServerStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
@@ -481,6 +498,7 @@ Void Private_RegisterCallbacks() {
   XmlRpc::RegisterCallback(C_CallbackName_Flag_Dropped, "Called when the flag is dropped.");
   XmlRpc::RegisterCallback(C_CallbackName_Flag_OnCarrierTeleported, "Called when the flag carrier teleported further than the configured threshold.");
   XmlRpc::RegisterCallback(C_CallbackName_Flag_Scored, "Called when the flag is scored.");
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_DropTimerExpired, "Called when the flag drop timer expires.");
 
   XmlRpc::RegisterCallback(C_CallbackName_Progression_Server_Start, "Called when the server starts the game mode.");
   XmlRpc::RegisterCallback(C_CallbackName_Progression_Server_End, "Called when the server shuts down the game mode.");
@@ -514,6 +532,7 @@ Void Private_UnregisterCallbacks() {
   XmlRpc::UnregisterCallback(C_CallbackName_Flag_Dropped);
   XmlRpc::UnregisterCallback(C_CallbackName_Flag_OnCarrierTeleported);
   XmlRpc::UnregisterCallback(C_CallbackName_Flag_Scored);
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_DropTimerExpired);
 
   XmlRpc::UnregisterCallback(C_CallbackName_Progression_Server_Start);
   XmlRpc::UnregisterCallback(C_CallbackName_Progression_Server_End);
@@ -546,6 +565,7 @@ Void BeforeYield() {
       case Playloop::C_EventType_PlayerOutOfBounds: Private_OnPlayerOutOfBounds(Event);
       case Playloop::C_EventType_PlayerEliminated: Private_OnPlayerEliminated(Event);
       case Playloop::C_EventType_FlagReset: Private_OnFlagReset(Event);
+      case Playloop::C_EventType_FlagDropTimerExpired: Private_OnFlagDropTimerExpired(Event);
       case Playloop::C_EventType_PlayerPickedUpFlag: Private_OnFlagPickedUp(Event);
       case Playloop::C_EventType_PlayerPassedFlag: Private_OnFlagPassed(Event);
       case Playloop::C_EventType_PlayerDroppedFlag: Private_OnFlagDropped(Event);

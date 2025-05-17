@@ -1,18 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "FlagCarrierTeleportedEvent",
-  "description": "Emitted when a flag carrier is teleported beyond a defined threshold.",
+  "title": "FlagRush.Player.OutOfBounds",
+  "description": "Emitted when a player enters an out-of-bounds trigger.",
   "type": "object",
   "properties": {
     "timestamp": {
       "type": "integer"
     },
-    "carrier": {
-      "$ref": "Player.json"
+    "player": {
+      "$ref": "../../Player.json"
     }
   },
   "required": [
     "timestamp",
-    "carrier"
+    "player"
   ]
 }

@@ -1,18 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "PlayerOutOfBoundsEvent",
-  "description": "Emitted when a player enters an out-of-bounds trigger.",
+  "title": "FlagRush.Flag.Reset",
+  "description": "Emitted when the flag resets to its spawn location.",
   "type": "object",
   "properties": {
     "timestamp": {
       "type": "integer"
     },
-    "player": {
-      "$ref": "Player.json"
+    "flagSpawn": {
+      "$ref": "../../Landmark.json"
     }
   },
   "required": [
     "timestamp",
-    "player"
+    "flagSpawn"
   ]
 }

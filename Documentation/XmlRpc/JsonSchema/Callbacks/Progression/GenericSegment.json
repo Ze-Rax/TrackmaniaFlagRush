@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "GenericSegmentEvent",
+  "title": "FlagRush.Progression.GenericSegment",
   "description": "Generic event for a phase transition without metadata.",
   "type": "object",
   "properties": {

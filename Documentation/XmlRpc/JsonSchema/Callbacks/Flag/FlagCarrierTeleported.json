@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FlagRush.Flag.CarrierTeleported",
+  "description": "Emitted when a flag carrier is teleported beyond a defined threshold.",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": "integer"
+    },
+    "carrier": {
+      "$ref": "../../Player.json"
+    }
+  },
+  "required": [
+    "timestamp",
+    "carrier"
+  ]
+}

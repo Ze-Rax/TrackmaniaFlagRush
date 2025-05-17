@@ -201,6 +201,10 @@ Void Yield() {
 				Log::Warn("""VehicleSelection: Received event "{{{ C_EventType_SelectionChanged }}}" without parameter!""");
 				continue;
 			}
+			if (Event.UI == Null) {
+				Log::Warn("""VehicleSelection: Received event "{{{ C_EventType_SelectionChanged }}}" but UI is Null!""");
+				continue;
+			}
 			declare Text SelectedVehicleId = Event.CustomEventData[0];
 			G_PendingEvents.add(K_Event{
 				Player = GetPlayer(Event.UI),

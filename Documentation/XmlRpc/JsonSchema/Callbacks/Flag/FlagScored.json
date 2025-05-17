@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "FlagScoredEvent",
+  "title": "FlagRush.Flag.Scored",
   "description": "Emitted when a player scores with the flag. Includes optional assist.",
   "type": "object",
   "properties": {
@@ -8,10 +8,10 @@
       "type": "integer"
     },
     "scorer": {
-      "$ref": "Player.json"
+      "$ref": "../../Player.json"
     },
     "assist": {
-      "$ref": "Player.json"
+      "$ref": "../../Player.json"
     }
   },
   "required": [

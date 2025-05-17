@@ -1,18 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "PlayerEliminatedEvent",
-  "description": "Emitted when a player is eliminated.",
+  "title": "FlagRush.Flag.Dropped",
+  "description": "Emitted when the flag is dropped by a player.",
   "type": "object",
   "properties": {
     "timestamp": {
       "type": "integer"
     },
-    "player": {
-      "$ref": "Player.json"
+    "position": {
+      "$ref": "../../Position.json"
     }
   },
   "required": [
     "timestamp",
-    "player"
+    "position"
   ]
 }

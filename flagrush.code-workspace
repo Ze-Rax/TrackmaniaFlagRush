@@ -2,7 +2,6 @@
   "folders": [
     {
       "path": ".",
-			"name": "Root"
     },
     {
       "path": "DedicatedServer\\Scripts",

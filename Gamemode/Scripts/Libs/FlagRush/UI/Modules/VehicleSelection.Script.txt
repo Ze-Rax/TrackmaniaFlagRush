@@ -1,0 +1,224 @@
+/**
+ * Buttons on the scoreboard to allow players to select a vehicle.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "ColorLib" as CL
+
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" as Layers
+
+#Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
+#Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
+#Include "Libs/FlagRush/Util/Log.Script.txt" as Log
+
+#Struct K_Event {
+	CSmPlayer Player;
+	Vehicles::K_Vehicle SelectedVehicle;
+}
+
+#Const C_LayerName "FlagRush_VehicleSelection"
+#Const C_LayerType CUILayer::EUILayerType::ScoresTable
+
+#Const C_EventType_SelectionChanged "VehicleSelection_SelectionChanged"
+
+declare K_Event[] G_PendingEvents;
+declare Vehicles::K_Vehicle[] G_EnabledVehicles;
+
+Text GetManialink() {
+	declare Text VehicleFrameInstances;
+	foreach (Index => Vehicle in G_EnabledVehicles) {
+		VehicleFrameInstances ^= """<frameinstance modelid="vehicle-option" id="vehicle-option-{{{ Vehicle.Id }}}" pos="{{{ 6 + Index * 13 }}} 0" data-name="{{{ Vehicle.DisplayName }}}" data-icon="{{{ Vehicle.DisplayIcon }}}" data-id="{{{ Vehicle.Id }}}" />""";
+	}
+
+	return """
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="{{{ C_LayerName }}}">
+	<framemodel id="vehicle-option">
+		<quad id="background" size="12 12" halign="center" valign="center" opacity="{{{ Stylesheet::C_TransparentBackgroundOpacity }}}" bgcolor="{{{ CL::RgbToHex3(Stylesheet::C_NeutralDark) }}}"/>
+		<label id="icon" size="8 8" pos="0 2" halign="center" valign="center" text="?" textfont="GameFontSemiBold" textemboss="1" textsize="7" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}"/>
+		<label id="name" size="13 4" pos="0 -4" halign="center" valign="center" text="<VEHICLE NAME>" textfont="GameFontSemiBold" textemboss="1" textsize="1" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}"/>
+		<quad id="activator" size="15 15" halign="center" valign="center" opacity="0" scriptevents="1"/>
+	</framemodel>
+
+	<frame pos="-103 -47.5" id="vehicle-selection">
+		<frame id="vehicle-options" pos="0 -3.5">
+			{{{ VehicleFrameInstances }}}
+		</frame>
+	</frame>
+
+	<script><!--
+	#Include "MathLib" as ML
+
+	#Struct K_VehicleOptionControls {
+		CMlFrame Frame;
+		CMlQuad Background;
+		CMlQuad Activator;
+		CMlLabel Name;
+		CMlLabel Icon;
+	}
+
+	#Struct K_VehicleOption {
+		K_VehicleOptionControls Controls;
+		Text Name;
+		Text Icon;
+		Text Id;
+	}
+
+	declare CMlFrame G_VehicleSelectionFrame;
+	declare K_VehicleOption[] G_VehicleOptions;
+
+	{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
+
+	Void Init() {
+		G_VehicleSelectionFrame = (Page.GetFirstChild("vehicle-selection") as CMlFrame);
+		declare CMlFrame VehicleOptionsFrame = (Page.GetFirstChild("vehicle-options") as CMlFrame);
+		foreach (OptionFrameControl in VehicleOptionsFrame.Controls) {
+			declare CMlFrame OptionFrame = (OptionFrameControl as CMlFrame);
+			declare K_VehicleOptionControls OptionControls = K_VehicleOptionControls{
+				Frame = OptionFrame,
+				Background = (OptionFrame.GetFirstChild("background") as CMlQuad),
+				Activator = (OptionFrame.GetFirstChild("activator") as CMlQuad),
+				Name = (OptionFrame.GetFirstChild("name") as CMlLabel),
+				Icon = (OptionFrame.GetFirstChild("icon") as CMlLabel)
+			};
+			declare K_VehicleOption VehicleOption = K_VehicleOption{
+				Controls = OptionControls,
+				Name = OptionFrame.DataAttributeGet("name"),
+				Icon = OptionFrame.DataAttributeGet("icon"),
+				Id = OptionFrame.DataAttributeGet("id")
+			};
+
+			VehicleOption.Controls.Name.Value = VehicleOption.Name;
+			VehicleOption.Controls.Icon.Value = VehicleOption.Icon;
+			G_VehicleOptions.add(VehicleOption);
+		}
+	}
+
+	Void SetSelectedVehicleIndex(Integer _VehicleIndex) {
+		declare Text VehicleId = G_VehicleOptions.get(_VehicleIndex, K_VehicleOption{}).Id;
+		// Use a declare-for in order to persist selection between layer refreshes
+		declare Text FlagRush_VehicleSelection_SelectedVehicleId for UI = "";
+		FlagRush_VehicleSelection_SelectedVehicleId = VehicleId;
+		SendCustomEvent("{{{ C_EventType_SelectionChanged }}}", [VehicleId]);
+	}
+
+	Integer GetSelectedVehicleIndex() {
+		declare Text FlagRush_VehicleSelection_SelectedVehicleId for UI = "";
+		foreach (Index => Option in G_VehicleOptions) {
+			if (Option.Id == FlagRush_VehicleSelection_SelectedVehicleId) {
+				return Index;
+			}
+		}
+		SetSelectedVehicleIndex(0);
+		return 0;
+	}
+
+	Void UpdateSelection() {
+		declare Integer SelectedVehicleIndex = GetSelectedVehicleIndex();
+		foreach (Index => Option in G_VehicleOptions) {
+			if (Index == SelectedVehicleIndex && InputPlayer != Null) {
+				Option.Controls.Background.BgColor = Team_GetDarkColor(InputPlayer.RequestedClan);
+			} else {
+				Option.Controls.Background.BgColor = {{{ Stylesheet::C_NeutralDark }}};
+			}
+		}
+	}
+
+	Void HandleInput() {
+		// Mouse selection
+		foreach(Event in PendingEvents) {
+			if (Event.Type == CMlScriptEvent::Type::MouseClick) {
+				foreach (Index => Option in G_VehicleOptions) {
+					if (Event.Control == Option.Controls.Activator) {
+						SetSelectedVehicleIndex(Index);
+						break;
+					}
+				}
+			}
+		}
+
+		// Controller selection
+		foreach (Event in Input.PendingEvents) {
+			if (Event.Type == CInputEvent::EType::PadButtonPress) {
+				if (Event.Button == CInputEvent::EButton::RightStick_Right) {
+					declare SelectedVehicleIndex = ML::Clamp(GetSelectedVehicleIndex() + 1, 0, G_VehicleOptions.count - 1);
+					SetSelectedVehicleIndex(SelectedVehicleIndex);
+				} else if (Event.Button == CInputEvent::EButton::RightStick_Left) {
+					declare SelectedVehicleIndex = ML::Clamp(GetSelectedVehicleIndex() - 1, 0, G_VehicleOptions.count - 1);
+					SetSelectedVehicleIndex(SelectedVehicleIndex);
+				}
+			}
+		}
+	}
+
+	main() {
+		Init();
+		SetSelectedVehicleIndex(GetSelectedVehicleIndex()); // Handles layer updates
+
+		while (True) {
+			yield;
+			if (!PageIsVisible) {
+				continue;
+			}
+
+			if (IsSpectator || InputPlayer == Null) {
+				G_VehicleSelectionFrame.Hide();
+				continue;
+			}
+
+			G_VehicleSelectionFrame.Show();
+			UpdateSelection();
+			HandleInput();
+		}
+	}
+	--></script>
+</manialink>
+	""";
+}
+
+// MARK: API
+
+K_Event[] GetPendingEvents() {
+	return G_PendingEvents;
+}
+
+Void SetEnabledVehicles(Vehicles::K_Vehicle[] _Vehicles) {
+	G_EnabledVehicles = Vehicles::Sort(_Vehicles);
+	Layers::Update(C_LayerName, GetManialink());
+}
+
+// MARK: Lifecycle
+
+Void Yield() {
+	G_PendingEvents.clear();
+	foreach (Event in UIManager.PendingEvents) {
+		if (Event.CustomEventType == C_EventType_SelectionChanged) {
+			if (Event.CustomEventData.count == 0) {
+				Log::Warn("""VehicleSelection: Received event "{{{ C_EventType_SelectionChanged }}}" without parameter!""");
+				continue;
+			}
+			if (Event.UI == Null) {
+				Log::Warn("""VehicleSelection: Received event "{{{ C_EventType_SelectionChanged }}}" but UI is Null!""");
+				continue;
+			}
+			declare Text SelectedVehicleId = Event.CustomEventData[0];
+			G_PendingEvents.add(K_Event{
+				Player = GetPlayer(Event.UI),
+				SelectedVehicle = Vehicles::Get(SelectedVehicleId)
+			});
+		}
+	}
+}
+
+Void Unload() {
+	G_PendingEvents.clear();
+	G_EnabledVehicles.clear();
+}
+
+Void Load() {
+	Unload();
+}

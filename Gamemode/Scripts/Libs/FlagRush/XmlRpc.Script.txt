@@ -1,0 +1,620 @@
+/**
+ * Handles the FlagRush specific XmlRpc communication.
+ *
+ * /!\ IMPORTANT DEVELOPMENT NOTE /!\
+ * When adjusting callbacks or methods or adding new ones, also update the schema in {Project Root}/Documentation/XmlRpc/JsonSchema accordingly!
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "TextLib" as TL
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2.Script.txt" as XmlRpc
+#Include "Libs/FlagRush/Playloop.Script.txt" as Playloop
+#Include "Libs/FlagRush/Event/Progression.Script.txt" as Progression
+#Include "Libs/FlagRush/Util/Log.Script.txt" as Log
+
+// MARK: Structs
+
+// Structs use lower camelCase, as they are sent as Json.
+// It's just more common for Json.
+
+// Common Components
+
+#Struct K_Position {
+  Real x; // @mslint-disable-line id-length
+  Real y; // @mslint-disable-line id-length
+  Real z; // @mslint-disable-line id-length
+}
+
+#Struct K_Player {
+  Text login;
+  Text webServicesUserId;
+  Text name;
+  Integer clan;
+  K_Position position;
+}
+
+#Struct K_Landmark {
+  Integer id;
+  K_Position position;
+}
+
+// Callbacks
+
+#Struct K_CallbackData_Player_RequestedRespawn {
+  Integer timestamp;
+  K_Player player;
+  Boolean success;
+}
+
+#Struct K_CallbackData_Player_Spawned {
+  Integer timestamp;
+  K_Player player;
+  K_Landmark landmark;
+}
+
+#Struct K_CallbackData_Player_OutOfBounds {
+  Integer timestamp;
+  K_Player player;
+}
+
+#Struct K_CallbackData_Player_Eliminated {
+  Integer timestamp;
+  K_Player player;
+}
+
+#Struct K_CallbackData_Flag_Reset {
+  Integer timestamp;
+  K_Landmark flagSpawn;
+}
+
+#Struct K_CallbackData_Flag_PickedUp {
+  Integer timestamp;
+  K_Player carrier;
+}
+
+#Struct K_CallbackData_Flag_Passed {
+  Integer timestamp;
+  K_Player newCarrier;
+  K_Player previousCarrier;
+}
+
+#Struct K_CallbackData_Flag_Dropped {
+  Integer timestamp;
+  K_Position position;
+  K_Player previousCarrier;
+}
+
+#Struct K_CallbackData_Flag_CarrierTeleported {
+  Integer timestamp;
+  K_Player carrier;
+}
+
+#Struct K_CallbackData_Flag_Scored {
+  Integer timestamp;
+  K_Player scorer;
+}
+
+#Struct K_CallbackData_Flag_ScoredWithAssist {
+  Integer timestamp;
+  K_Player scorer;
+  K_Player assist;
+}
+
+#Struct K_CallbackData_Flag_DropTimerExpired {
+  Integer timestamp;
+  K_Position position;
+}
+
+#Struct K_CallbackData_GenericSegment { // Used for all segment start and end events that do not have any important information.
+  Integer timestamp;
+}
+
+#Struct K_CallbackData_SegmentEndWithScores {
+  Integer timestamp;
+  Integer[] scores; // Always exactly 2, one for each team
+  Integer winnerClan; // 0 (Draw), 1 or 2
+}
+
+// MARK: Constants
+
+#Const C_Position_Invalid <-1., -1., -1.>
+#Const C_Id_Invalid -1
+
+#Const C_CallbackName_Player_RequestedRespawn      "FlagRush.Player.RequestedRespawn"
+#Const C_CallbackName_Player_Spawned               "FlagRush.Player.Spawned"
+#Const C_CallbackName_Player_OutOfBounds           "FlagRush.Player.OutOfBounds"
+#Const C_CallbackName_Player_Eliminated            "FlagRush.Player.Eliminated"
+
+#Const C_CallbackName_Flag_Reset                   "FlagRush.Flag.Reset"
+#Const C_CallbackName_Flag_PickedUp                "FlagRush.Flag.PickedUp"
+#Const C_CallbackName_Flag_Passed                  "FlagRush.Flag.Passed"
+#Const C_CallbackName_Flag_Dropped                 "FlagRush.Flag.Dropped"
+#Const C_CallbackName_Flag_OnCarrierTeleported     "FlagRush.Flag.CarrierTeleported"
+#Const C_CallbackName_Flag_Scored                  "FlagRush.Flag.Scored"
+#Const C_CallbackName_Flag_DropTimerExpired        "FlagRush.Flag.DropTimerExpired"
+
+#Const C_CallbackName_Progression_Server_Start     "FlagRush.Progression.Server.Start"
+#Const C_CallbackName_Progression_Server_End       "FlagRush.Progression.Server.End"
+#Const C_CallbackName_Progression_Match_Start      "FlagRush.Progression.Match.Start"
+#Const C_CallbackName_Progression_Match_End        "FlagRush.Progression.Match.End"
+#Const C_CallbackName_Progression_Map_Start        "FlagRush.Progression.Map.Start"
+#Const C_CallbackName_Progression_Map_End          "FlagRush.Progression.Map.End"
+#Const C_CallbackName_Progression_Round_Start      "FlagRush.Progression.Round.Start"
+#Const C_CallbackName_Progression_Round_End        "FlagRush.Progression.Round.End"
+#Const C_CallbackName_Progression_Turn_Start       "FlagRush.Progression.Turn.Start"
+#Const C_CallbackName_Progression_Turn_End         "FlagRush.Progression.Turn.End"
+#Const C_CallbackName_Progression_Overtime_Start   "FlagRush.Progression.Overtime.Start"
+#Const C_CallbackName_Progression_Overtime_End     "FlagRush.Progression.Overtime.End"
+#Const C_CallbackName_Progression_WarmUp_Start     "FlagRush.Progression.WarmUp.Start"
+#Const C_CallbackName_Progression_WarmUp_End       "FlagRush.Progression.WarmUp.End"
+#Const C_CallbackName_Progression_Pause_Start      "FlagRush.Progression.Pause.Start"
+#Const C_CallbackName_Progression_Pause_End        "FlagRush.Progression.Pause.End"
+#Const C_CallbackName_Progression_Podium_Start     "FlagRush.Progression.Podium.Start"
+#Const C_CallbackName_Progression_Podium_End       "FlagRush.Progression.Podium.End"
+
+#Const C_Player_Invalid K_Player{
+  name = "Invalid Player",
+  position = K_Position{ x = -1., y = -1., z = -1. }
+}
+#Const C_Landmark_Invalid K_Landmark{
+  id = -1,
+  position = K_Position{ x = -1., y = -1., z = -1. }
+}
+
+// MARK: Helper Functions
+
+Integer Private_IdToInteger(Ident _Id) {
+  if (_Id == NullId) {
+    return C_Id_Invalid;
+  }
+  return TL::ToInteger(TL::Replace("" ^ _Id, "#", ""));
+}
+
+K_Position Private_CreatePositionStruct(Vec3 _Position) {
+  return K_Position{
+    x = _Position.X,
+    y = _Position.Y,
+    z = _Position.Z
+  };
+}
+
+K_Player Private_CreatePlayerStruct(CSmPlayer _Player) {
+  if (_Player == Null) {
+    return C_Player_Invalid;
+  }
+  return K_Player{
+    login = _Player.User.Login,
+    webServicesUserId = _Player.User.WebServicesUserId,
+    name = _Player.User.Name,
+    clan = _Player.CurrentClan,
+    position = Private_CreatePositionStruct(_Player.Position)
+  };
+}
+
+K_Player Private_CreatePlayerStruct(CSmScore _Score) {
+  if (_Score == Null) {
+    return C_Player_Invalid;
+  }
+
+  // Try to find player for the score
+  foreach (Player in Players) {
+    if (Player.Score == _Score) {
+      return Private_CreatePlayerStruct(Player);
+    }
+  }
+
+  return K_Player{
+    login = _Score.User.Login,
+    webServicesUserId = _Score.User.WebServicesUserId,
+    name = _Score.User.Name,
+    clan = _Score.TeamNum,
+    position = Private_CreatePositionStruct(C_Position_Invalid)
+  };
+}
+
+K_Landmark Private_CreateLandmarkStruct(CMapLandmark _Landmark) {
+  if (_Landmark == Null) {
+    return C_Landmark_Invalid;
+  }
+  return K_Landmark{
+    id = Private_IdToInteger(_Landmark.Id),
+    position = Private_CreatePositionStruct(_Landmark.Position)
+  };
+}
+
+Void Private_SendCallback(Text _EventType, Text _EventDataJson) {
+  Log::Debug("""XmlRpc: Send callback "{{{ _EventType }}}" with data: {{{ _EventDataJson }}}""");
+  XmlRpc::SendCallback(_EventType, _EventDataJson);
+}
+
+// MARK: Event Handlers
+
+Void Private_OnPlayerRequestsRespawnButIsTooFast(Playloop::K_Event _Event) {
+  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare K_CallbackData_Player_RequestedRespawn Event = K_CallbackData_Player_RequestedRespawn{
+    timestamp = Now,
+    player = Private_CreatePlayerStruct(Player),
+    success = False
+  };
+  Private_SendCallback(C_CallbackName_Player_RequestedRespawn, Event.tojson());
+}
+
+Void Private_OnPlayerRespawned(Playloop::K_Event _Event) {
+  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare K_CallbackData_Player_RequestedRespawn Event = K_CallbackData_Player_RequestedRespawn{
+    timestamp = Now,
+    player = Private_CreatePlayerStruct(Player),
+    success = True
+  };
+  Private_SendCallback(C_CallbackName_Player_RequestedRespawn, Event.tojson());
+}
+
+Void Private_OnPlayerSpawned(Playloop::K_Event _Event) {
+  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare K_CallbackData_Player_Spawned Event = K_CallbackData_Player_Spawned{
+    timestamp = Now,
+    player = Private_CreatePlayerStruct(Player),
+    landmark = Private_CreateLandmarkStruct(_Event.Landmark)
+  };
+  Private_SendCallback(C_CallbackName_Player_Spawned, Event.tojson());
+}
+
+Void Private_OnPlayerOutOfBounds(Playloop::K_Event _Event) {
+  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare K_CallbackData_Player_OutOfBounds Event = K_CallbackData_Player_OutOfBounds{
+    timestamp = Now,
+    player = Private_CreatePlayerStruct(Player)
+  };
+  Private_SendCallback(C_CallbackName_Player_OutOfBounds, Event.tojson());
+}
+
+Void Private_OnPlayerEliminated(Playloop::K_Event _Event) {
+  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare K_CallbackData_Player_Eliminated Event = K_CallbackData_Player_Eliminated{
+    timestamp = Now,
+    player = Private_CreatePlayerStruct(Player)
+  };
+  Private_SendCallback(C_CallbackName_Player_Eliminated, Event.tojson());
+}
+
+Void Private_OnFlagReset(Playloop::K_Event _Event) {
+  declare K_CallbackData_Flag_Reset Event = K_CallbackData_Flag_Reset{
+    timestamp = Now,
+    flagSpawn = Private_CreateLandmarkStruct(_Event.Landmark)
+  };
+  Private_SendCallback(C_CallbackName_Flag_Reset, Event.tojson());
+}
+
+Void Private_OnFlagPickedUp(Playloop::K_Event _Event) {
+  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare K_CallbackData_Flag_PickedUp Event = K_CallbackData_Flag_PickedUp{
+    timestamp = Now,
+    carrier = Private_CreatePlayerStruct(Player)
+  };
+  Private_SendCallback(C_CallbackName_Flag_PickedUp, Event.tojson());
+}
+
+Void Private_OnFlagPassed(Playloop::K_Event _Event) {
+  declare CSmPlayer PreviousCarrier <=> Playloop::GetPlayer(_Event.Player);
+  declare CSmPlayer NewCarrier <=> Playloop::GetPlayer(_Event.RelatedPlayer);
+  declare K_CallbackData_Flag_Passed Event = K_CallbackData_Flag_Passed{
+    timestamp = Now,
+    newCarrier = Private_CreatePlayerStruct(NewCarrier),
+    previousCarrier = Private_CreatePlayerStruct(PreviousCarrier)
+  };
+  Private_SendCallback(C_CallbackName_Flag_Passed, Event.tojson());
+}
+
+Void Private_OnFlagDropped(Playloop::K_Event _Event) {
+  // Do not use player. Might be disconnected
+  declare CSmScore PreviousCarrierScore <=> Playloop::GetScore(_Event.Player);
+  declare K_CallbackData_Flag_Dropped Event = K_CallbackData_Flag_Dropped{
+    timestamp = Now,
+    position = Private_CreatePositionStruct(_Event.Position),
+    previousCarrier = Private_CreatePlayerStruct(PreviousCarrierScore)
+  };
+  Private_SendCallback(C_CallbackName_Flag_Dropped, Event.tojson());
+}
+
+Void Private_OnFlagCarrierTeleported(Playloop::K_Event _Event) {
+  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare K_CallbackData_Flag_CarrierTeleported Event = K_CallbackData_Flag_CarrierTeleported{
+    timestamp = Now,
+    carrier = Private_CreatePlayerStruct(Player)
+  };
+  Private_SendCallback(C_CallbackName_Flag_OnCarrierTeleported, Event.tojson());
+}
+
+Void Private_OnFlagScored(Playloop::K_Event _Event) {
+  declare CSmPlayer Scorer <=> Playloop::GetPlayer(_Event.Player);
+  declare CSmScore AssistScore <=> Playloop::GetScore(_Event.RelatedPlayer);
+  if (AssistScore == Null) {
+    declare K_CallbackData_Flag_Scored Event = K_CallbackData_Flag_Scored{
+      timestamp = Now,
+      scorer = Private_CreatePlayerStruct(Scorer)
+    };
+    Private_SendCallback(C_CallbackName_Flag_Scored, Event.tojson());
+    return;
+  }
+
+  declare K_CallbackData_Flag_ScoredWithAssist Event = K_CallbackData_Flag_ScoredWithAssist{
+    timestamp = Now,
+    scorer = Private_CreatePlayerStruct(Scorer),
+    assist = Private_CreatePlayerStruct(AssistScore)
+  };
+  Private_SendCallback(C_CallbackName_Flag_Scored, Event.tojson());
+}
+
+Void Private_OnFlagDropTimerExpired(Playloop::K_Event _Event) {
+  declare K_CallbackData_Flag_DropTimerExpired Event = K_CallbackData_Flag_DropTimerExpired{
+    timestamp = Now,
+    position = Private_CreatePositionStruct(_Event.Position)
+  };
+  Private_SendCallback(C_CallbackName_Flag_DropTimerExpired, Event.tojson());
+}
+
+Void Private_OnServerStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_Server_Start, Event.tojson());
+}
+
+Void Private_OnServerEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_Server_End, Event.tojson());
+}
+
+Void Private_OnMatchStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_Match_Start, Event.tojson());
+}
+
+Void Private_OnMatchEnd(Progression::K_Event _Event) {
+  declare K_CallbackData_SegmentEndWithScores Event = K_CallbackData_SegmentEndWithScores{
+    timestamp = Now,
+    scores = _Event.Scores,
+    winnerClan = _Event.WinnerClan
+  };
+  Private_SendCallback(C_CallbackName_Progression_Match_End, Event.tojson());
+}
+
+Void Private_OnMapStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_Map_Start, Event.tojson());
+}
+
+Void Private_OnMapEnd(Progression::K_Event _Event) {
+  declare K_CallbackData_SegmentEndWithScores Event = K_CallbackData_SegmentEndWithScores{
+    timestamp = Now,
+    scores = _Event.Scores,
+    winnerClan = _Event.WinnerClan
+  };
+  Private_SendCallback(C_CallbackName_Progression_Map_End, Event.tojson());
+}
+
+Void Private_OnRoundStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_Round_Start, Event.tojson());
+}
+
+Void Private_OnRoundEnd(Progression::K_Event _Event) {
+  declare K_CallbackData_SegmentEndWithScores Event = K_CallbackData_SegmentEndWithScores{
+    timestamp = Now,
+    scores = _Event.Scores,
+    winnerClan = _Event.WinnerClan
+  };
+  Private_SendCallback(C_CallbackName_Progression_Round_End, Event.tojson());
+}
+
+Void Private_OnTurnStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_Turn_Start, Event.tojson());
+}
+
+Void Private_OnTurnEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_Turn_End, Event.tojson());
+}
+
+Void Private_OnOvertimeStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_Overtime_Start, Event.tojson());
+}
+
+Void Private_OnOvertimeEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_Overtime_End, Event.tojson());
+}
+
+Void Private_OnWarmUpStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_WarmUp_Start, Event.tojson());
+}
+
+Void Private_OnWarmUpEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_WarmUp_End, Event.tojson());
+}
+
+Void Private_OnPauseStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_Pause_Start, Event.tojson());
+}
+
+Void Private_OnPauseEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_Pause_End, Event.tojson());
+}
+
+Void Private_OnPodiumStart(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_Podium_Start, Event.tojson());
+}
+
+Void Private_OnPodiumEnd(Progression::K_Event _Event) { // @mslint-disable-line no-unused-variables
+  declare K_CallbackData_GenericSegment Event = K_CallbackData_GenericSegment{
+    timestamp = Now
+  };
+  Private_SendCallback(C_CallbackName_Progression_Podium_End, Event.tojson());
+}
+
+Void Private_RegisterCallbacks() {
+  XmlRpc::RegisterCallback(C_CallbackName_Player_RequestedRespawn, "Called when a player requests to respawn.");
+  XmlRpc::RegisterCallback(C_CallbackName_Player_Spawned, "Called when a player spawns at a landmark.");
+  XmlRpc::RegisterCallback(C_CallbackName_Player_OutOfBounds, "Called when a player hits an out of bounds trigger.");
+  XmlRpc::RegisterCallback(C_CallbackName_Player_Eliminated, "Called when a player is eliminated (due to moving blocks/items).");
+
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_Reset, "Called when the flag is reset to a spawn point.");
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_PickedUp, "Called when a player picks up the flag.");
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_Passed, "Called when the flag is passed between players.");
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_Dropped, "Called when the flag is dropped.");
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_OnCarrierTeleported, "Called when the flag carrier teleported further than the configured threshold.");
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_Scored, "Called when the flag is scored.");
+  XmlRpc::RegisterCallback(C_CallbackName_Flag_DropTimerExpired, "Called when the flag drop timer expires.");
+
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Server_Start, "Called when the server starts the game mode.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Server_End, "Called when the server shuts down the game mode.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Match_Start, "Called when a new match begins.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Match_End, "Called when a match ends.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Map_Start, "Called when a new map starts.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Map_End, "Called when a map ends.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Round_Start, "Called when a new round starts.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Round_End, "Called when a round ends.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Turn_Start, "Called when a turn begins.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Turn_End, "Called when a turn ends.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Overtime_Start, "Called when overtime begins.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Overtime_End, "Called when overtime ends.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_WarmUp_Start, "Called when a warm up starts.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_WarmUp_End, "Called when a warm up ends.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Pause_Start, "Called when the round is paused.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Pause_End, "Called when the round resumes from pause.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Podium_Start, "Called when the podium sequence starts.");
+  XmlRpc::RegisterCallback(C_CallbackName_Progression_Podium_End, "Called when the podium sequence ends.");
+}
+
+Void Private_UnregisterCallbacks() {
+  XmlRpc::UnregisterCallback(C_CallbackName_Player_RequestedRespawn);
+  XmlRpc::UnregisterCallback(C_CallbackName_Player_Spawned);
+  XmlRpc::UnregisterCallback(C_CallbackName_Player_OutOfBounds);
+  XmlRpc::UnregisterCallback(C_CallbackName_Player_Eliminated);
+
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_Reset);
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_PickedUp);
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_Passed);
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_Dropped);
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_OnCarrierTeleported);
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_Scored);
+  XmlRpc::UnregisterCallback(C_CallbackName_Flag_DropTimerExpired);
+
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Server_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Server_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Match_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Match_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Map_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Map_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Round_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Round_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Turn_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Turn_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Overtime_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Overtime_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_WarmUp_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_WarmUp_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Pause_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Pause_End);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Podium_Start);
+  XmlRpc::UnregisterCallback(C_CallbackName_Progression_Podium_End);
+}
+
+// MARK: Lifecycle
+
+Void BeforeYield() {
+  foreach (Event in Playloop::GetPendingEvents()) {
+    switch (Event.Type) {
+      case Playloop::C_EventType_PlayerRequestedRespawnButIsTooFast: Private_OnPlayerRequestsRespawnButIsTooFast(Event);
+      case Playloop::C_EventType_PlayerRespawned: Private_OnPlayerRespawned(Event);
+      case Playloop::C_EventType_PlayerSpawned: Private_OnPlayerSpawned(Event);
+      case Playloop::C_EventType_PlayerOutOfBounds: Private_OnPlayerOutOfBounds(Event);
+      case Playloop::C_EventType_PlayerEliminated: Private_OnPlayerEliminated(Event);
+      case Playloop::C_EventType_FlagReset: Private_OnFlagReset(Event);
+      case Playloop::C_EventType_FlagDropTimerExpired: Private_OnFlagDropTimerExpired(Event);
+      case Playloop::C_EventType_PlayerPickedUpFlag: Private_OnFlagPickedUp(Event);
+      case Playloop::C_EventType_PlayerPassedFlag: Private_OnFlagPassed(Event);
+      case Playloop::C_EventType_PlayerDroppedFlag: Private_OnFlagDropped(Event);
+      case Playloop::C_EventType_FlagCarrierTeleported: Private_OnFlagCarrierTeleported(Event);
+      case Playloop::C_EventType_PlayerScoredFlag: Private_OnFlagScored(Event);
+    }
+  }
+
+  foreach (Event in Progression::GetPendingEvents()) {
+    switch (Event.Type) {
+      case Progression::C_EventType_SegmentStart: {
+        switch (Event.Segment) {
+          case Progression::C_Segment_Server: Private_OnServerStart(Event);
+          case Progression::C_Segment_Match: Private_OnMatchStart(Event);
+          case Progression::C_Segment_Map: Private_OnMapStart(Event);
+          case Progression::C_Segment_Round: Private_OnRoundStart(Event);
+          case Progression::C_Segment_Turn: Private_OnTurnStart(Event);
+          case Progression::C_Segment_Overtime: Private_OnOvertimeStart(Event);
+          case Progression::C_Segment_WarmUp: Private_OnWarmUpStart(Event);
+          case Progression::C_Segment_Pause: Private_OnPauseStart(Event);
+          case Progression::C_Segment_Podium: Private_OnPodiumStart(Event);
+        }
+      }
+      case Progression::C_EventType_SegmentEnd: {
+        switch (Event.Segment) {
+          case Progression::C_Segment_Server: Private_OnServerEnd(Event);
+          case Progression::C_Segment_Match: Private_OnMatchEnd(Event);
+          case Progression::C_Segment_Map: Private_OnMapEnd(Event);
+          case Progression::C_Segment_Round: Private_OnRoundEnd(Event);
+          case Progression::C_Segment_Turn: Private_OnTurnEnd(Event);
+          case Progression::C_Segment_Overtime: Private_OnOvertimeEnd(Event);
+          case Progression::C_Segment_WarmUp: Private_OnWarmUpEnd(Event);
+          case Progression::C_Segment_Pause: Private_OnPauseEnd(Event);
+          case Progression::C_Segment_Podium: Private_OnPodiumEnd(Event);
+        }
+      }
+    }
+  }
+}
+
+Void Yield() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void Unload() {
+  Private_UnregisterCallbacks();
+}
+
+Void Load() {
+  Unload();
+  Private_RegisterCallbacks();
+}

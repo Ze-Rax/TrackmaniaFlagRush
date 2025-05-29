@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Position",
+  "description": "3D vector position.",
+  "type": "object",
+  "properties": {
+    "x": {
+      "type": "number",
+      "description": "X coordinate"
+    },
+    "y": {
+      "type": "number",
+      "description": "Y coordinate"
+    },
+    "z": {
+      "type": "number",
+      "description": "Z coordinate"
+    }
+  },
+  "required": [
+    "x",
+    "y",
+    "z"
+  ]
+}

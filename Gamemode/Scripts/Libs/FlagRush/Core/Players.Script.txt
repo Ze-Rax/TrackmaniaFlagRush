@@ -1,0 +1,129 @@
+/**
+ * Manages FlagRush specific player states.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
+#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" as PlayerLifecycleEvents
+
+
+#Struct K_Player {
+  Ident PlayerId;
+  Vehicles::K_Vehicle SelectedVehicle;
+  Integer SpawnDate;
+}
+
+declare K_Player[Ident] G_Players; // By PlayerId
+
+// MARK: Helper Functions
+
+Void Private_Initilialize(Ident _PlayerId) {
+  declare K_Player Player = K_Player {
+    PlayerId = _PlayerId,
+    SelectedVehicle = Vehicles::C_Vehicle_Invalid,
+    SpawnDate = -1
+  };
+  G_Players[_PlayerId] = Player;
+}
+
+Void Private_Net_SendPositionAndYaw(CSmPlayer _Player) {
+  declare netwrite Vec3 Net_FlagRush_Position for _Player = <0., 0., 0.>;
+	Net_FlagRush_Position = _Player.Position;
+	declare netwrite Real Net_FlagRush_Yaw for _Player = 0.;
+	Net_FlagRush_Yaw = _Player.AimYaw;
+}
+
+// MARK: API
+
+Vehicles::K_Vehicle GetSelectedVehicle(CSmPlayer _Player) {
+  if (_Player == Null || !G_Players.existskey(_Player.Id)) {
+    return Vehicles::C_Vehicle_Invalid;
+  }
+  return G_Players[_Player.Id].SelectedVehicle;
+}
+
+Void SetSelectedVehicle(CSmPlayer _Player, Vehicles::K_Vehicle _Vehicle) {
+  if (_Player == Null || !G_Players.existskey(_Player.Id)) {
+    return;
+  }
+  G_Players[_Player.Id].SelectedVehicle = _Vehicle;
+}
+
+Integer GetSpawnDate(CSmPlayer _Player) {
+  if (_Player == Null || !G_Players.existskey(_Player.Id)) {
+    return -1;
+  }
+  return G_Players[_Player.Id].SpawnDate;
+}
+
+Void SetSpawnDate(CSmPlayer _Player, Integer _SpawnDate) {
+  if (_Player == Null || !G_Players.existskey(_Player.Id)) {
+    return;
+  }
+  G_Players[_Player.Id].SpawnDate = _SpawnDate;
+  declare netwrite Integer Net_FlagRush_SpawnDate for _Player = -1;
+  Net_FlagRush_SpawnDate = _SpawnDate;
+}
+
+Text DefineLayerFunction_Player_GetSpawnDate() {
+  return """
+    Integer Player_GetSpawnDate(CSmPlayer _Player) {
+      declare netread Integer Net_FlagRush_SpawnDate for _Player = -1;
+      return Net_FlagRush_SpawnDate;
+    }
+  """;
+}
+
+Text DefineLayerFunction_Player_GetPosition() {
+  return """
+    Vec3 Player_GetPosition(CSmPlayer _Player) {
+      if (_Player == InputPlayer || !_Player.UseCrudeExtrapolation) {
+        return _Player.Position;
+      }
+      declare netread Vec3 Net_FlagRush_Position for _Player = <0., 0., 0.>;
+      return Net_FlagRush_Position;
+    }
+  """;
+}
+
+Text DefineLayerFunction_Player_GetYaw() {
+  return """
+    Real Player_GetYaw(CSmPlayer _Player) {
+      if (_Player == InputPlayer || !_Player.UseCrudeExtrapolation) {
+        return _Player.AimYaw;
+      }
+      declare netread Real Net_FlagRush_Yaw for _Player = 0.;
+      return Net_FlagRush_Yaw;
+    }
+  """;
+}
+
+// MARK: Lifecycle
+
+Void BeforeYield() {
+  foreach (Event in PlayerLifecycleEvents::GetPendingEvents()) {
+    switch (Event.Type) {
+      case PlayerLifecycleEvents::C_EventType_PlayerAdded: {
+        Private_Initilialize(Event.Player.PlayerId);
+      }
+      case PlayerLifecycleEvents::C_EventType_PlayerRemoved: {
+        G_Players.removekey(Event.Player.PlayerId);
+      }
+    }
+  }
+}
+
+Void Yield() {
+  foreach (Player in Players) {
+    Private_Net_SendPositionAndYaw(Player);
+  }
+}
+
+Void Unload() {
+  G_Players.clear();
+}
+
+Void Load() {
+  Unload();
+}

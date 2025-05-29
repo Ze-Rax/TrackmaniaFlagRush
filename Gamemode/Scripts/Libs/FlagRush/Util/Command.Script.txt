@@ -1,0 +1,129 @@
+/**
+ * Utility library to unify handling of commands from different sources, like ModeScriptCommands, UI commands or other sources.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "TextLib" as TL
+
+#Const C_CommandPrefix "Command_"
+
+#Const C_SourceType_Gamemode 1
+#Const C_SourceType_XmlRpc 2
+#Const C_SourceType_Player 3
+
+#Const C_SourceNameByType [
+	1 => "Gamemode",
+	2 => "XmlRpc",
+	3 => "Player"
+]
+#Const C_SourceName_UnknownPlayer "Unknown Player"
+
+#Struct K_Source {
+	Integer Type;
+	Text Name;
+	Text Login;
+}
+
+#Struct K_Command {
+	Text			Name;
+	Text[]		Params;
+	Boolean		ValueBoolean;
+	Integer		ValueInteger;
+	Real			ValueReal;
+	Text			ValueText;
+	Vec2			ValueVec2;
+	Vec3			ValueVec3;
+	Int2			ValueInt2;
+	Int3			ValueInt3;
+	K_Source	Source;
+}
+
+/**
+ * Removes the Command_ prefix from a given command name.
+ */
+Text RemovePrefix(Text _CommandName) {
+	return TL::Replace(_CommandName, C_CommandPrefix, "");
+}
+
+/**
+ * Transfroms a Text and Params into a Command
+ */
+K_Command FromNameAndParams(Text _Name, Text[] _Params, K_Source _Source) {
+	declare K_Command Command = K_Command {
+		Name = _Name,
+		Params = _Params,
+		Source = _Source,
+		ValueText = TL::Join(" ", _Params)
+	};
+
+	switch(_Params.count) {
+		case 1: {
+			Command.ValueBoolean	= _Params[0] == "True";
+			Command.ValueInteger	= TL::ToInteger(_Params[0]);
+			Command.ValueReal			= TL::ToReal(_Params[0]);
+		}
+		case 2: {
+			Command.ValueVec2.X		= TL::ToReal(_Params[0]);
+			Command.ValueVec2.Y		= TL::ToReal(_Params[1]);
+			Command.ValueInt2.X		= TL::ToInteger(_Params[0]);
+			Command.ValueInt2.Y		= TL::ToInteger(_Params[1]);
+		}
+		case 3: {
+			Command.ValueVec3.X		= TL::ToReal(_Params[0]);
+			Command.ValueVec3.Y		= TL::ToReal(_Params[1]);
+			Command.ValueVec3.Z		= TL::ToReal(_Params[2]);
+			Command.ValueInt3.X		= TL::ToInteger(_Params[0]);
+			Command.ValueInt3.Y		= TL::ToInteger(_Params[1]);
+			Command.ValueInt3.Z		= TL::ToInteger(_Params[2]);
+		}
+	}
+
+	return Command;
+}
+
+/**
+ * Transforms a Text into a Command
+ */
+K_Command FromText(Text _CommandText, K_Source _Source) {
+	declare Text[] CommandSplit = TL::Split(" ", _CommandText);
+	if(CommandSplit.count >= 1) {
+		return FromNameAndParams(CommandSplit[0], CommandSplit.slice(1, CommandSplit.count - 1), _Source);
+	}
+	return K_Command{};
+}
+
+/**
+ * Transforms a CSmModeEvent into a Command struct.
+ */
+K_Command FromEvent(CSmModeEvent _Event) {
+	return K_Command {
+		Name					= _Event.CommandName,
+		ValueBoolean	= _Event.CommandValueBoolean,
+		ValueInteger	= _Event.CommandValueInteger,
+		ValueReal			= _Event.CommandValueReal,
+		ValueText			= _Event.CommandValueText,
+		ValueVec2			= _Event.CommandValueVec2,
+		ValueVec3			= _Event.CommandValueVec3,
+		ValueInt2			= _Event.CommandValueInt2,
+		ValueInt3			= _Event.CommandValueInt3,
+		Source				= K_Source{ Type = C_SourceType_Gamemode, Name = C_SourceNameByType[C_SourceType_Gamemode] }
+	};
+}
+
+/**
+ * Transforms a CUIConfigEvent into a Command struct.
+ */
+K_Command FromEvent(CUIConfigEvent _Event) {
+	declare K_Source Source;
+	Source.Type = C_SourceType_Player;
+	Source.Name = C_SourceName_UnknownPlayer;
+	if(_Event.UI != Null) {
+		declare CSmPlayer Player = GetPlayer(_Event.UI);
+		if (Player != Null) {
+			Source.Login = Player.User.Login;
+			Source.Name = Player.User.Name;
+		}
+	}
+	return FromNameAndParams(_Event.CustomEventType, _Event.CustomEventData, Source);
+}

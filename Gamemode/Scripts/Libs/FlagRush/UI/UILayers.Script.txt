@@ -1,0 +1,334 @@
+/**
+ * This library manages all the layers and their lifecycle, including updating them when needed or requested.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "TextLib" as TL
+
+#Include "Libs/Nadeo/CMGame/Modes/Legacy/Layers2.Script.txt" 						as Layers
+
+#Include "Libs/FlagRush/Playloop.Script.txt" 														as Playloop
+
+#Include "Libs/FlagRush/Const/CommandNames.Script.txt"									as CommandNames
+#Include "Libs/FlagRush/Const/SettingNames.Script.txt"									as SettingNames
+
+#Include "Libs/FlagRush/Core/Players.Script.txt"												as Players
+
+// Event
+#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" 				as PlayerLifecycleEvents
+#Include "Libs/FlagRush/Event/Progression.Script.txt"										as Progression
+#Include "Libs/FlagRush/Event/Settings.Script.txt"											as Settings
+#Include "Libs/FlagRush/Event/Commands.Script.txt"											as Commands
+#Include "Libs/FlagRush/Event/EnabledVehicles.Script.txt"								as EnabledVehicles
+
+// Modules
+#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"								as UIModule_EventFeed
+#Include "Libs/FlagRush/UI/Modules/FlagMarker.Script.txt"								as UIModule_FlagMarker
+#Include "Libs/FlagRush/UI/Modules/FlagPossessionIndicator.Script.txt"	as UIModule_FlagPossessionIndicator
+#Include "Libs/FlagRush/UI/Modules/MapMarkers.Script.txt"								as UIModule_MapMarkers
+#Include "Libs/FlagRush/UI/Modules/Menu.Script.txt"											as UIModule_Menu
+#Include "Libs/FlagRush/UI/Modules/ModeCommands.Script.txt"							as UIModule_ModeCommands
+#Include "Libs/FlagRush/UI/Modules/PodiumBackground.Script.txt"					as UIModule_PodiumBackground
+#Include "Libs/FlagRush/UI/Modules/PodiumStatistics.Script.txt"					as UIModule_PodiumStatistics
+#Include "Libs/FlagRush/UI/Modules/Radar.Script.txt"										as UIModule_Radar
+#Include "Libs/FlagRush/UI/Modules/RespawnFlash.Script.txt"							as UIModule_RespawnFlash
+#Include "Libs/FlagRush/UI/Modules/RespawnTimer.Script.txt"							as UIModule_RespawnTimer
+#Include "Libs/FlagRush/UI/Modules/ScoresHeader.Script.txt"							as UIModule_ScoresHeader
+#Include "Libs/FlagRush/UI/Modules/ScoresTable.Script.txt"							as UIModule_ScoresTable
+#Include "Libs/FlagRush/UI/Modules/Sounds.Script.txt"										as UIModule_Sounds
+#Include "Libs/FlagRush/UI/Modules/SpectatorControls.Script.txt"				as UIModule_SpectatorControls
+#Include "Libs/FlagRush/UI/Modules/VehicleSelection.Script.txt"					as UIModule_VehicleSelection
+
+#Include "Libs/FlagRush/UI/SharedNetVars.Script.txt"										as SharedNetVars
+
+#Const C_AttachId_Podium "16x9_StadiumSmall"
+
+Void Private_LoadModules() {
+	UIModule_EventFeed::Load();
+	UIModule_FlagMarker::Load();
+	UIModule_FlagPossessionIndicator::Load();
+	UIModule_MapMarkers::Load();
+	UIModule_Menu::Load();
+	UIModule_ModeCommands::Load();
+	UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_EndWarmup, "UICommon64_1", "Play_light");
+	UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_PauseRound, "UICommon64_1", "Pause_light");
+	UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_SkipRound, "UICommon64_1", "FastForward_light");
+	UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_SkipMap, "UICommon64_1", "GoLastFrame_light");
+	UIModule_ModeCommands::AddQuickCommand(CommandNames::Command_ResetFlag, "UICommon64_1", "Flag_light");
+	UIModule_PodiumBackground::Load();
+	UIModule_PodiumStatistics::Load();
+	UIModule_Radar::Load();
+	UIModule_RespawnFlash::Load();
+	UIModule_RespawnTimer::Load();
+	UIModule_ScoresHeader::Load();
+	UIModule_ScoresTable::Load();
+	UIModule_Sounds::Load();
+	UIModule_SpectatorControls::Load();
+	UIModule_VehicleSelection::Load();
+}
+
+Void Private_UnloadModules() {
+	UIModule_EventFeed::Unload();
+	UIModule_FlagMarker::Unload();
+	UIModule_FlagPossessionIndicator::Unload();
+	UIModule_MapMarkers::Unload();
+	UIModule_Menu::Unload();
+	UIModule_ModeCommands::Unload();
+	UIModule_PodiumBackground::Unload();
+	UIModule_PodiumStatistics::Unload();
+	UIModule_Radar::Unload();
+	UIModule_RespawnFlash::Unload();
+	UIModule_RespawnTimer::Unload();
+	UIModule_ScoresHeader::Unload();
+	UIModule_ScoresTable::Unload();
+	UIModule_Sounds::Unload();
+	UIModule_SpectatorControls::Unload();
+	UIModule_VehicleSelection::Unload();
+}
+
+Void Private_CreateModuleLayers() {
+	// Event Feed
+	Layers::Create(UIModule_EventFeed::C_LayerName, UIModule_EventFeed::GetManialink());
+	Layers::SetType(UIModule_EventFeed::C_LayerName, UIModule_EventFeed::C_LayerType);
+	Layers::Attach(UIModule_EventFeed::C_LayerName);
+
+	// Flag Marker
+	Layers::Create(UIModule_FlagMarker::C_LayerName, UIModule_FlagMarker::GetManialink());
+	Layers::SetType(UIModule_FlagMarker::C_LayerName, UIModule_FlagMarker::C_LayerType);
+	Layers::Attach(UIModule_FlagMarker::C_LayerName);
+
+	// Flag Possession Indicator
+	Layers::Create(UIModule_FlagPossessionIndicator::C_LayerName, UIModule_FlagPossessionIndicator::GetManialink());
+	Layers::SetType(UIModule_FlagPossessionIndicator::C_LayerName, UIModule_FlagPossessionIndicator::C_LayerType);
+	Layers::Attach(UIModule_FlagPossessionIndicator::C_LayerName);
+
+	// Map Markers
+	Layers::Create(UIModule_MapMarkers::C_LayerName, UIModule_MapMarkers::GetManialink());
+	Layers::SetType(UIModule_MapMarkers::C_LayerName, UIModule_MapMarkers::C_LayerType);
+	Layers::Attach(UIModule_MapMarkers::C_LayerName);
+
+	// Menu
+	Layers::Create(UIModule_Menu::C_LayerName, UIModule_Menu::GetManialink());
+	Layers::SetType(UIModule_Menu::C_LayerName, UIModule_Menu::C_LayerType);
+	Layers::Attach(UIModule_Menu::C_LayerName);
+
+	// Mode Commands
+	Layers::Create(UIModule_ModeCommands::C_LayerName, UIModule_ModeCommands::GetManialink());
+	Layers::SetType(UIModule_ModeCommands::C_LayerName, UIModule_ModeCommands::C_LayerType);
+	Layers::Attach(UIModule_ModeCommands::C_LayerName);
+
+	// Podium Background
+	Layers::Create(UIModule_PodiumBackground::C_LayerName, UIModule_PodiumBackground::GetManialink());
+	Layers::SetType(UIModule_PodiumBackground::C_LayerName, UIModule_PodiumBackground::C_LayerType);
+	Layers::Get(UIModule_PodiumBackground::C_LayerName).AttachId = C_AttachId_Podium;
+	// Don't attach yet; only explicitly during podium
+
+	// Podium Statistics
+	Layers::Create(UIModule_PodiumStatistics::C_LayerName, UIModule_PodiumStatistics::GetManialink());
+	Layers::SetType(UIModule_PodiumStatistics::C_LayerName, UIModule_PodiumStatistics::C_LayerType);
+	// Don't attach yet; only explicitly during podium
+
+	// Radar
+	Layers::Create(UIModule_Radar::C_LayerName, UIModule_Radar::GetManialink());
+	Layers::SetType(UIModule_Radar::C_LayerName, UIModule_Radar::C_LayerType);
+	Layers::Attach(UIModule_Radar::C_LayerName);
+
+	// Respawn Flash
+	Layers::Create(UIModule_RespawnFlash::C_LayerName, UIModule_RespawnFlash::GetManialink());
+	Layers::SetType(UIModule_RespawnFlash::C_LayerName, UIModule_RespawnFlash::C_LayerType);
+	Layers::Attach(UIModule_RespawnFlash::C_LayerName);
+
+	// Respawn Timer
+	Layers::Create(UIModule_RespawnTimer::C_LayerName, UIModule_RespawnTimer::GetManialink());
+	Layers::SetType(UIModule_RespawnTimer::C_LayerName, UIModule_RespawnTimer::C_LayerType);
+	Layers::Attach(UIModule_RespawnTimer::C_LayerName);
+
+	// Scores header
+	Layers::Create(UIModule_ScoresHeader::C_LayerName, UIModule_ScoresHeader::GetManialink());
+	Layers::SetType(UIModule_ScoresHeader::C_LayerName, UIModule_ScoresHeader::C_LayerType);
+	Layers::Attach(UIModule_ScoresHeader::C_LayerName);
+
+	// Scores table
+	Layers::Create(UIModule_ScoresTable::C_LayerName, UIModule_ScoresTable::GetManialink());
+	Layers::SetType(UIModule_ScoresTable::C_LayerName, UIModule_ScoresTable::C_LayerType);
+	Layers::Attach(UIModule_ScoresTable::C_LayerName);
+
+	// Sounds
+	Layers::Create(UIModule_Sounds::C_LayerName, UIModule_Sounds::GetManialink());
+	Layers::SetType(UIModule_Sounds::C_LayerName, UIModule_Sounds::C_LayerType);
+	Layers::Attach(UIModule_Sounds::C_LayerName);
+
+	// Spectator controls
+	Layers::Create(UIModule_SpectatorControls::C_LayerName, UIModule_SpectatorControls::GetManialink());
+	Layers::SetType(UIModule_SpectatorControls::C_LayerName, UIModule_SpectatorControls::C_LayerType);
+	Layers::Attach(UIModule_SpectatorControls::C_LayerName);
+
+	// Spectator controls
+	Layers::Create(UIModule_VehicleSelection::C_LayerName, UIModule_VehicleSelection::GetManialink());
+	Layers::SetType(UIModule_VehicleSelection::C_LayerName, UIModule_VehicleSelection::C_LayerType);
+	Layers::Attach(UIModule_VehicleSelection::C_LayerName);
+}
+
+Void Private_DestroyModuleLayers() {
+	Layers::Destroy(UIModule_EventFeed::C_LayerName);
+	Layers::Destroy(UIModule_FlagMarker::C_LayerName);
+	Layers::Destroy(UIModule_FlagPossessionIndicator::C_LayerName);
+	Layers::Destroy(UIModule_MapMarkers::C_LayerName);
+	Layers::Destroy(UIModule_Menu::C_LayerName);
+	Layers::Destroy(UIModule_ModeCommands::C_LayerName);
+	Layers::Destroy(UIModule_PodiumBackground::C_LayerName);
+	Layers::Destroy(UIModule_Radar::C_LayerName);
+	Layers::Destroy(UIModule_RespawnFlash::C_LayerName);
+	Layers::Destroy(UIModule_RespawnTimer::C_LayerName);
+	Layers::Destroy(UIModule_ScoresHeader::C_LayerName);
+	Layers::Destroy(UIModule_ScoresTable::C_LayerName);
+	Layers::Destroy(UIModule_Sounds::C_LayerName);
+	Layers::Destroy(UIModule_SpectatorControls::C_LayerName);
+	Layers::Destroy(UIModule_VehicleSelection::C_LayerName);
+}
+
+// MARK: Lifecycle
+
+Void BeforeYield() {
+	foreach (Event in Playloop::GetPendingEvents()) {
+		switch (Event.Type) {
+			case Playloop::C_EventType_FlagReset,
+					Playloop::C_EventType_PlayerPickedUpFlag,
+					Playloop::C_EventType_PlayerPassedFlag,
+					Playloop::C_EventType_PlayerDroppedFlag: {
+				UIModule_FlagMarker::Update();
+			}
+			case Playloop::C_EventType_PlayerRequestedRespawnButIsTooFast: {
+				declare CSmPlayer Player = Playloop::GetPlayer(Event.Player);
+				if (Player != Null) {
+					UIModule_RespawnFlash::Flash(Player);
+				}
+			}
+		}
+	}
+
+	foreach (Event in Progression::GetPendingEvents()) {
+		switch (Event.Type) {
+			case Progression::C_EventType_SegmentStart: {
+				switch (Event.Segment) {
+					case Progression::C_Segment_Map: {
+						UIModule_MapMarkers::Update();
+					}
+					case Progression::C_Segment_WarmUp: {
+						UIModule_MapMarkers::ShowFlagSpawnMarkers();
+					}
+					case Progression::C_Segment_Podium: {
+						UIModule_MapMarkers::Hide();
+						declare CSmScore[] PodiumPlayerScores;
+						declare Text[] PodiumPlayerLogins;
+						for (I, 0, 2) {
+							if (!Scores.existskey(I)) {
+								break;
+							}
+							PodiumPlayerScores.add(Scores[I]);
+							PodiumPlayerLogins.add(Scores[I].User.Login);
+						}
+						UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
+						UIModule_PodiumBackground::SetContent(PodiumPlayerScores);
+						Layers::Attach(UIModule_PodiumBackground::C_LayerName);
+						UIModule_PodiumStatistics::Update();
+						Layers::Attach(UIModule_PodiumStatistics::C_LayerName);
+						Layers::Detach(UIModule_ScoresHeader::C_LayerName);
+					}
+				}
+			}
+			case Progression::C_EventType_SegmentEnd: {
+				switch (Event.Segment) {
+					case Progression::C_Segment_Turn: {
+						UIModule_FlagMarker::Update();
+					}
+					case Progression::C_Segment_WarmUp: {
+						UIModule_MapMarkers::HideFlagSpawnMarkers();
+					}
+					case Progression::C_Segment_Podium: {
+						UIModule_MapMarkers::Show();
+						Layers::Detach(UIModule_PodiumBackground::C_LayerName);
+						Layers::Detach(UIModule_PodiumStatistics::C_LayerName);
+						Layers::Attach(UIModule_ScoresHeader::C_LayerName);
+					}
+				}
+			}
+		}
+	}
+
+	// React to events
+	foreach (Event in Settings::GetPendingEvents()) {
+		switch (Event.Name) {
+			case SettingNames::S_ModeCommands_AdminLoginsCsv: {
+				UIModule_ModeCommands::RemoveAllUserPermissions();
+				declare Text[] ModeCommandsAdminLogins = TL::Split(",", Event.NewValue.ValueText);
+				foreach(Login in ModeCommandsAdminLogins) {
+					UIModule_ModeCommands::SetSuperAdmin(Login);
+				}
+			}
+			case SettingNames::S_NbMapsToWinMatch: {
+				SharedNetVars::SetNbMapsToWinMatch(Event.NewValue.ValueInteger);
+			}
+			case SettingNames::S_NbRoundsToWinMap: {
+				SharedNetVars::SetNbRoundsToWinMap(Event.NewValue.ValueInteger);
+			}
+			case SettingNames::S_NbFlagsToWinRound: {
+				SharedNetVars::SetNbFlagsToWinRound(Event.NewValue.ValueInteger);
+			}
+		}
+	}
+
+	declare Boolean UpdateRadar = False;
+	foreach (Event in PlayerLifecycleEvents::GetPendingEvents()) {
+		switch (Event.Type) {
+			case PlayerLifecycleEvents::C_EventType_PlayerAdded: {
+				if (Players.existskey(Event.Player.PlayerId)) {
+					UpdateRadar = True;
+				}
+			}
+			case PlayerLifecycleEvents::C_EventType_PlayerRemoved: {
+				if (!Event.Player.Previously.WasSpectator) {
+					UpdateRadar = True;
+				}
+			}
+			case PlayerLifecycleEvents::C_EventType_PlayerToSpectator, PlayerLifecycleEvents::C_EventType_SpectatorToPlayer: {
+				UpdateRadar = True;
+			}
+		}
+	}
+
+	if (UpdateRadar) {
+		Layers::Update(UIModule_Radar::C_LayerName, UIModule_Radar::GetManialink());
+	}
+
+	foreach (Event in EnabledVehicles::GetPendingEvents()) {
+		UIModule_VehicleSelection::SetEnabledVehicles(Event.EnabledVehicles);
+	}
+}
+
+Void Yield() {
+	UIModule_ModeCommands::Yield();
+	foreach (Command in UIModule_ModeCommands::GetPendingCommands()) {
+		Commands::Publish(Command);
+	}
+
+	UIModule_VehicleSelection::Yield();
+	foreach (Event in UIModule_VehicleSelection::GetPendingEvents()) {
+		Players::SetSelectedVehicle(Event.Player, Event.SelectedVehicle);
+	}
+}
+
+Void Unload() {
+	Private_DestroyModuleLayers();
+	Private_UnloadModules();
+}
+
+Void Load() {
+	Unload();
+	Private_LoadModules();
+}
+
+Void LoadHud() {
+	Private_CreateModuleLayers();
+}

@@ -1,0 +1,653 @@
+/**
+ * Custom scores table.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "ColorLib" as CL
+
+#Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
+
+#Include "Libs/FlagRush/Event/Progression.Script.txt" as Progression
+
+#Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
+#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include "Libs/FlagRush/UI/SharedNetVars.Script.txt" as SharedNetVars
+
+#Const C_LayerName "FlagRush_ScoresTable"
+#Const C_LayerType CUILayer::EUILayerType::ScoresTable
+
+#Const C_PlayersPerPage 5
+#Const C_PlayerCard_NameDefaultPosition <-37.5, 0.>
+#Const C_PlayerCard_NameOffset <0., 1.2>
+#Const C_PlayerCard_ClubTagOffset <0., -2.5>
+
+/** Return Manialink */
+Text GetManialink() {
+	return """
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="{{{ C_LayerName }}}">
+	{{{ UIShared::GetLogoTransparentFramemodel() }}}
+	{{{ UIShared::GetGradientFramemodel() }}}
+
+	<!-- The playercard is supposed to be transparent; Hard to do with our usual gradients; Instead use specific gradient without base and 100% gradient width -->
+	<framemodel id="playercard-gradient">
+		<quad pos="0 0" z-index="-1" size="100 100" bgcolor="c44" id="base" halign="center" valign="center" hidden="1"/>
+		<quad id="gradient-left" pos="-50 0" z-index="0" size="100 100" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b24" opacity="{{{ Stylesheet::C_TransparentBackgroundOpacity }}}" valign="center" halign="left"/>
+		<quad id="gradient-right" pos="50 0" z-index="0" size="100 100" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b42" opacity="{{{ Stylesheet::C_TransparentBackgroundOpacity }}}" valign="center" halign="left" rot="180"/>
+	</framemodel>
+
+	<framemodel id="playerstatistic-card">
+		<quad size="10 10.25" opacity="{{{ Stylesheet::C_TransparentBackgroundOpacity }}}" halign="center" valign="center" style="UICommon128_1" substyle="BgFrame1" modulatecolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralDark) }}}" z-index="-1" id="background"/>
+		<label pos="0 1" z-index="0" size="10 5" text="0" textfont="GameFontExtraBold" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}" textsize="3" halign="center" valign="center2" id="total"/>
+		<label pos="0 -3" z-index="0" size="10 5" text="0" textprefix="+" textfont="GameFontSemiBold" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}" halign="center" valign="center2" textsize="1" id="add"/>
+	</framemodel>
+
+	<framemodel id="playercard">
+		<!-- Background -->
+		<frame size="100 10" halign="center" valign="center" id="background-gradient" z-index="-1">
+			<frameinstance modelid="playercard-gradient" id="gradient" scale="1"/>
+		</frame>
+
+		<!-- Stat cards -->
+		<frameinstance modelid="playerstatistic-card" pos="7" id="playerstatistic-points"/>
+		<frameinstance modelid="playerstatistic-card" pos="19" id="playerstatistic-flagsscored"/>
+		<frameinstance modelid="playerstatistic-card" pos="31" id="playerstatistic-flagsstolen"/>
+		<frameinstance modelid="playerstatistic-card" pos="43" id="playerstatistic-assists"/>
+
+		<!-- Data -->
+		<quad pos="-49 0" z-index="1" size="8 8" bgcolor="FFF" halign="left" valign="center" id="avatar" keepratio="Fit"/>
+		<quad pos="-50 0" z-index="0" size="10 10" bgcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralDark) }}}" opacity="{{{ Stylesheet::C_TransparentBackgroundOpacity }}}" halign="left" valign="center" />
+		<label pos="-37.5 0" z-index="0" size="30 10" text="Player Name" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}" halign="left" valign="center2" textfont="GameFontSemiBold" textemboss="1" id="name" textsize="2.5" />
+		<label pos="-37.5 0" z-index="0" size="30 10" text="Clubtag" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}" halign="left" valign="center2" textfont="GameFontRegular" id="clubtag" textsize="0.75" hidden="1" />
+		<quad  z-index="0" pos="-3" size="5 5" bgcolor="FFF" halign="center" valign="center" style="UICommon64_1" substyle="Camera_light" id="status" hidden="1"/>
+
+		<!-- BoundingBox -->
+		<quad pos="-50" z-index="2" size="100 10" bgcolor="0000" halign="left" valign="center" scriptevents="1" id="boundingbox"/>
+		</framemodel>
+
+	<framemodel id="playerlist">
+		<quad  z-index="-1" size="102 60" bgcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralDark) }}}" opacity="{{{ Stylesheet::C_TransparentBackgroundOpacity }}}" halign="center" valign="top" pos="0" id="background"/>
+
+		<frame id="legend">
+			<label pos="7 -2.5" z-index="0" size="10 5" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}" text="Points" textfont="GameFontSemiBold" valign="center2" halign="center" textsize="1"/>
+			<label pos="19 -2.5" z-index="0" size="10 5" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}" text="Scored" textfont="GameFontSemiBold" valign="center2" halign="center" textsize="1"/>
+			<label pos="31 -2.5" z-index="0" size="10 5" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}" text="Stolen" textfont="GameFontSemiBold" valign="center2" halign="center" textsize="1"/>
+			<label pos="43 -2.5" z-index="0" size="10 5" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}" text="Assists" textfont="GameFontSemiBold" valign="center2" halign="center" textsize="1"/>
+		</frame>
+
+		<frame id="playercards" pos="0 -10">
+			<frameinstance modelid="playercard" pos="0 0" id="playercard-0" hidden="1"/>
+			<frameinstance modelid="playercard" pos="0 -11" id="playercard-1" hidden="1"/>
+			<frameinstance modelid="playercard" pos="0 -22" id="playercard-2" hidden="1"/>
+			<frameinstance modelid="playercard" pos="0 -33" id="playercard-3" hidden="1"/>
+			<frameinstance modelid="playercard" pos="0 -44" id="playercard-4" hidden="1"/>
+		</frame>
+	</framemodel>
+
+	<framemodel id="teamstatistics-card">
+		<frame>
+			<quad pos="0 -5" z-index="-1" size="25 10" opacity="{{{ Stylesheet::C_TransparentBackgroundOpacity }}}" id="background" halign="center" valign="center" modulatecolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralDark) }}}" style="UICommon128_1" substyle="BgFrame1"/>
+			<label pos="0 -3.5" z-index="0" size="20 5" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}" text="Value" valign="center2" halign="center" textfont="GameFontExtraBold" textsize="2" id="value"/>
+			<label pos="0 -7.5" z-index="0" size="20 5" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}" text="Statistic Name" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="1" id="name"/>
+		</frame>
+	</framemodel>
+
+	<framemodel id="teamstatistics">
+		<quad pos="0 0" z-index="-1" size="102 10" bgcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralDark) }}}" opacity="{{{ Stylesheet::C_TransparentBackgroundOpacity }}}" halign="center" valign="top"/>
+
+		<frameinstance modelid="teamstatistics-card" pos="-35" id="points"/>
+		<frameinstance modelid="teamstatistics-card" id="round-wins"/>
+		<frameinstance modelid="teamstatistics-card" pos="35" id="map-wins"/>
+	</framemodel>
+
+	<framemodel id="scorestable-team">
+		<frameinstance modelid="teamstatistics"  id="teamstatistics" pos="0 -11"/>
+		<frameinstance modelid="playerlist" id="playerlist" pos="0 -22"/>
+	</framemodel>
+
+	<frame id="scorestable" pos="0 44">
+		<frame id="header">
+			<frame id="background" size="206 10" halign="center" valign="top" z-index="-1">
+				<frameinstance modelid="gradient" id="gradient-team-0" rot="-25" scale="1.1" pos="-60.5 27.5" />
+				<frameinstance modelid="gradient" id="gradient-team-1" rot="155" scale="1.1" pos="60.5 -37.5" />
+
+				<quad pos="0 -5" z-index="1" size="30 1" bgcolor="000" halign="center" valign="center" rot="-25"/>
+
+				<frameinstance modelid="flagrush-logo" id="logo" z-index="2" pos="0 -4.5" />
+			</frame>
+			<frame id="teamnames" pos="0">
+				<label pos="-52 -5.5" z-index="0" size="100 10" text="Team Name" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="5" textemboss="1" id="teamname-0"/>
+				<label pos="52 -5.5" z-index="0" size="100 45" text="Team Name" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="5" textemboss="1" id="teamname-1"/>
+			</frame>
+		</frame>
+
+		<frameinstance modelid="scorestable-team" id="scorestable-team-0" pos="-52" />
+		<frameinstance modelid="scorestable-team" id="scorestable-team-1" pos="52" />
+
+		<frame id="footer" pos="0 -83">
+			<quad pos="0" z-index="-1" size="206 5" bgcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralDark) }}}" opacity="{{{ Stylesheet::C_TransparentBackgroundOpacity }}}" halign="center" valign="top"/>
+			<frame id="pagecontrols" pos="0 -2.5">
+				<quad pos="-1" size="5 5" halign="right" valign="center" style="UICommon64_2" substyle="ArrowUpSlim_light" scriptevents="1" id="page-previous"/>
+				<quad pos="1" size="5 5" halign="left" valign="center" style="UICommon64_2" substyle="ArrowDownSlim_light" scriptevents="1" id="page-next"/>
+			</frame>
+
+			<frame id="scorestoggle" pos="82 -2.5">
+				<label id="scorestogglelabel" halign="center" valign="center2" text="Map scores    Match scores" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}" textfont="GameFontRegular" textsize="1" scriptevents="1"/>
+			</frame>
+		</frame>
+	</frame>
+
+	<script><!--
+	#Include "TextLib" as TL
+	#Include "MathLib" as ML
+
+	#Const C_CounterGlyphFilled ""
+	#Const C_CounterGlyphEmpty ""
+
+	#Const C_ToggleLabelIcons [True => "", False => ""]
+
+	#Const C_PlayerStatus_Spectator ["style" => "UICommon64_1", "substyle" => "Camera_light"]
+	#Const C_PlayerStatus_Disconnected ["style" => "Icons64x64_2", "substyle" => "Disconnected"]
+
+	#Struct K_BackgroundGradient {
+		CMlQuad Base;
+		CMlQuad LeftGradient;
+		CMlQuad RightGradient;
+	}
+
+	#Struct K_PlayerStatistic {
+		CMlFrame Frame;
+		CMlLabel Total;
+		CMlLabel Add;
+	}
+
+	#Struct K_PlayerCard {
+		CMlFrame Frame;
+		K_BackgroundGradient BackgroundGradient;
+		CMlQuad Avatar;
+		CMlLabel Name;
+		CMlLabel ClubTag;
+		CMlQuad Status;
+		K_PlayerStatistic Points;
+		K_PlayerStatistic FlagsScored;
+		K_PlayerStatistic FlagsStolen;
+		K_PlayerStatistic Assists;
+	}
+
+	#Struct K_TeamStatistic {
+		CMlFrame Frame;
+		CMlLabel Name;
+		CMlLabel Value;
+	}
+
+	#Struct K_TeamScoreboard {
+		CMlLabel TeamName;
+		K_BackgroundGradient TeamNameBackgroundGradient;
+		CMlFrame TeamBoard;
+		CMlFrame Playerlist;
+		K_TeamStatistic FlagsScored;
+		K_TeamStatistic RoundWins;
+		K_TeamStatistic MapWins;
+		K_PlayerCard[] Playercards;
+	}
+
+	#Struct K_PageControls {
+		Integer PagesCount;
+		Integer CurrentPageIndex;
+		CMlFrame Frame;
+		CMlQuad Next;
+		CMlQuad Previous;
+	}
+
+	#Struct K_ScoresToggle {
+		CMlFrame Frame;
+		CMlLabel Label;
+		Boolean State;
+	}
+
+	#Struct K_Footer {
+		CMlFrame Frame;
+		K_PageControls PageControls;
+		K_ScoresToggle ScoresToggle;
+	}
+
+	{{{ dumptype(Scores::K_FlagRushPlayerStatistics) }}}
+
+	/**
+	 * Everything that needs to be access in the scorestable should be available in here.
+	 */
+	declare K_TeamScoreboard[] TeamScoreboards;
+	declare K_Footer Footer;
+
+	{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
+
+	{{{ SharedNetVars::DefineLayerFunction_GetNbMapsToWinMatch() }}}
+	{{{ SharedNetVars::DefineLayerFunction_GetNbRoundsToWinMap() }}}
+	{{{ SharedNetVars::DefineLayerFunction_GetNbFlagsToWinRound() }}}
+	{{{ Progression::DefineLayerFunction_WarmUpIsRunning() }}}
+
+	/**
+	 * Gets the player object for a given login.
+	 * Returns Null if the player was not found.
+	 */
+	CSmPlayer GetPlayer(Text Login) {
+		foreach (Player in Players) if (Player.User.Login == Login) return Player;
+		return Null;
+	}
+
+	/**
+	 * Assigns all needed MlControl references and builds the scoreboard structure. Everything is accessible through TeamScoreboards.
+	 */
+	Void AssignMlControlReferences() {
+		for (TeamIndex, 0, 1) {
+			declare CMlLabel TeamName = (Page.GetFirstChild("teamname-" ^ TeamIndex) as CMlLabel);
+			declare CMlFrame TeamBoard = (Page.GetFirstChild("scorestable-team-" ^ TeamIndex) as CMlFrame);
+
+			// Header Background Gradient
+			declare CMlFrame GradientFrame = (Page.GetFirstChild("gradient-team-" ^ TeamIndex) as CMlFrame);
+			declare K_BackgroundGradient TeamNameBackgroundGradient = K_BackgroundGradient {
+				Base = (GradientFrame.GetFirstChild("base") as CMlQuad),
+				LeftGradient = (GradientFrame.GetFirstChild("gradient-left") as CMlQuad),
+				RightGradient = (GradientFrame.GetFirstChild("gradient-right") as CMlQuad)
+			};
+
+			// Team Statistics
+			declare CMlFrame TeamStatisticsFrame = (TeamBoard.GetFirstChild("teamstatistics") as CMlFrame);
+
+			declare CMlFrame TeamPointsStatisticFrame = (TeamStatisticsFrame.GetFirstChild("points") as CMlFrame);
+			declare K_TeamStatistic TeamPointsStatistic = K_TeamStatistic {
+				Frame = TeamPointsStatisticFrame,
+				Name = (TeamPointsStatisticFrame.GetFirstChild("name") as CMlLabel),
+				Value = (TeamPointsStatisticFrame.GetFirstChild("value") as CMlLabel)
+			};
+			declare CMlFrame TeamRoundWinsStatisticFrame = (TeamStatisticsFrame.GetFirstChild("round-wins") as CMlFrame);
+			declare K_TeamStatistic TeamRoundWinsStatistic = K_TeamStatistic {
+				Frame = TeamRoundWinsStatisticFrame,
+				Name = (TeamRoundWinsStatisticFrame.GetFirstChild("name") as CMlLabel),
+				Value = (TeamRoundWinsStatisticFrame.GetFirstChild("value") as CMlLabel)
+			};
+			declare CMlFrame TeamMapWinsStatisticFrame = (TeamStatisticsFrame.GetFirstChild("map-wins") as CMlFrame);
+			declare K_TeamStatistic TeamMapWinsStatistic = K_TeamStatistic {
+				Frame = TeamMapWinsStatisticFrame,
+				Name = (TeamMapWinsStatisticFrame.GetFirstChild("name") as CMlLabel),
+				Value = (TeamMapWinsStatisticFrame.GetFirstChild("value") as CMlLabel)
+			};
+
+			// Playercards
+			declare K_PlayerCard[] Playercards = [];
+			declare CMlFrame PlayerList = (TeamBoard.GetFirstChild("playerlist") as CMlFrame);
+			for (CardIndex, 0, 4) {
+				declare CMlFrame PlayercardFrame = (PlayerList.GetFirstChild("playercard-"^CardIndex) as CMlFrame);
+
+				// Name, Clubtag, Avatar, Status
+				declare CMlLabel PlayerName = (PlayercardFrame.GetFirstChild("name") as CMlLabel);
+				declare CMlLabel PlayerClubtag = (PlayercardFrame.GetFirstChild("clubtag") as CMlLabel);
+				declare CMlQuad PlayerAvatar = (PlayercardFrame.GetFirstChild("avatar") as CMlQuad);
+				declare CMlQuad PlayerStatus = (PlayercardFrame.GetFirstChild("status") as CMlQuad);
+
+				// Player Statistics
+				declare CMlFrame PlayerStatisticPointsFrame = (PlayercardFrame.GetFirstChild("playerstatistic-points") as CMlFrame);
+				declare K_PlayerStatistic PlayerStatisticPoints = K_PlayerStatistic {
+					Frame = PlayerStatisticPointsFrame,
+					Total = (PlayerStatisticPointsFrame.GetFirstChild("total") as CMlLabel),
+					Add = (PlayerStatisticPointsFrame.GetFirstChild("add") as CMlLabel)
+				};
+				declare CMlFrame PlayerStatisticFlagsScoredFrame = (PlayercardFrame.GetFirstChild("playerstatistic-flagsscored") as CMlFrame);
+				declare K_PlayerStatistic PlayerStatisticFlagsScored = K_PlayerStatistic {
+					Frame = PlayerStatisticFlagsScoredFrame,
+					Total = (PlayerStatisticFlagsScoredFrame.GetFirstChild("total") as CMlLabel),
+					Add = (PlayerStatisticFlagsScoredFrame.GetFirstChild("add") as CMlLabel)
+				};
+				declare CMlFrame PlayerStatisticFlagsStolenFrame = (PlayercardFrame.GetFirstChild("playerstatistic-flagsstolen") as CMlFrame);
+				declare K_PlayerStatistic PlayerStatisticFlagsStolen = K_PlayerStatistic {
+					Frame = PlayerStatisticFlagsStolenFrame,
+					Total = (PlayerStatisticFlagsStolenFrame.GetFirstChild("total") as CMlLabel),
+					Add = (PlayerStatisticFlagsStolenFrame.GetFirstChild("add") as CMlLabel)
+				};
+				declare CMlFrame PlayerStatisticAssistsFrame = (PlayercardFrame.GetFirstChild("playerstatistic-assists") as CMlFrame);
+				declare K_PlayerStatistic PlayerStatisticAssists = K_PlayerStatistic {
+					Frame = PlayerStatisticAssistsFrame,
+					Total = (PlayerStatisticAssistsFrame.GetFirstChild("total") as CMlLabel),
+					Add = (PlayerStatisticAssistsFrame.GetFirstChild("add") as CMlLabel)
+				};
+
+				// Background Gradient
+				declare CMlFrame BackgroundGradientFrame = (PlayercardFrame.GetFirstChild("gradient") as CMlFrame);
+				declare K_BackgroundGradient PlayercardBackgroundGradient = K_BackgroundGradient {
+					Base = (BackgroundGradientFrame.GetFirstChild("base") as CMlQuad),
+					LeftGradient = (BackgroundGradientFrame.GetFirstChild("gradient-left") as CMlQuad),
+					RightGradient = (BackgroundGradientFrame.GetFirstChild("gradient-right") as CMlQuad)
+				};
+
+				Playercards.add(K_PlayerCard {
+					Frame = PlayercardFrame,
+					BackgroundGradient = PlayercardBackgroundGradient,
+					Avatar = PlayerAvatar,
+					Name = PlayerName,
+					ClubTag = PlayerClubtag,
+					Status = PlayerStatus,
+					Points = PlayerStatisticPoints,
+					FlagsScored = PlayerStatisticFlagsScored,
+					FlagsStolen = PlayerStatisticFlagsStolen,
+					Assists = PlayerStatisticAssists
+				});
+			}
+
+			TeamScoreboards.add(K_TeamScoreboard {
+				TeamName = TeamName,
+				TeamNameBackgroundGradient = TeamNameBackgroundGradient,
+				TeamBoard = TeamBoard,
+				Playerlist = PlayerList,
+				FlagsScored = TeamPointsStatistic,
+				RoundWins = TeamRoundWinsStatistic,
+				MapWins = TeamMapWinsStatistic,
+				Playercards = Playercards
+			});
+
+			// Footer
+			Footer.Frame <=> (Page.GetFirstChild("footer") as CMlFrame);
+
+			declare CMlFrame ScoresToggleFrame <=> (Footer.Frame.GetFirstChild("scorestoggle") as CMlFrame);
+			Footer.ScoresToggle = K_ScoresToggle{
+				Frame = ScoresToggleFrame,
+				Label = (ScoresToggleFrame.GetFirstChild("scorestogglelabel") as CMlLabel)
+			};
+
+			declare CMlFrame PageControlsFrame <=> (Footer.Frame.GetFirstChild("pagecontrols") as CMlFrame);
+			Footer.PageControls = K_PageControls {
+				Frame = PageControlsFrame,
+				Next = (PageControlsFrame.GetFirstChild("page-next") as CMlQuad),
+				Previous = (PageControlsFrame.GetFirstChild("page-previous") as CMlQuad)
+			};
+		}
+	}
+
+	Void InitGradients() {
+		for (Clan, 1, 2) {
+			declare K_BackgroundGradient TeamNameBackgroundGradient = TeamScoreboards[Clan - 1].TeamNameBackgroundGradient;
+			TeamNameBackgroundGradient.Base.BgColor = Team_GetMidColor(Clan);
+			TeamNameBackgroundGradient.LeftGradient.ModulateColor = Team_GetDarkColor(Clan);
+			TeamNameBackgroundGradient.RightGradient.ModulateColor = Team_GetLightColor(Clan);
+
+			for (CardIndex, 0, 4) {
+				declare K_PlayerCard Playercard = TeamScoreboards[Clan - 1].Playercards[CardIndex];
+				Playercard.Avatar.BgColor = Team_GetMidColor(Clan);
+				declare K_BackgroundGradient PlayercardBackgroundGradient = Playercard.BackgroundGradient;
+				PlayercardBackgroundGradient.LeftGradient.ModulateColor = Team_GetDarkColor(Clan);
+				PlayercardBackgroundGradient.RightGradient.ModulateColor = Team_GetLightColor(Clan);
+			}
+		}
+	}
+
+	/**
+	 * Set the default values for all controls.
+	 */
+	Void InitMlControls() {
+		for (TeamIndex, 0, 1) {
+			TeamScoreboards[TeamIndex].FlagsScored.Name.Value = "Flags scored";
+			TeamScoreboards[TeamIndex].FlagsScored.Value.Value = "0";
+			TeamScoreboards[TeamIndex].RoundWins.Name.Value = "Round wins";
+			TeamScoreboards[TeamIndex].RoundWins.Value.Value = C_CounterGlyphEmpty;
+			TeamScoreboards[TeamIndex].MapWins.Name.Value = "Map wins";
+			TeamScoreboards[TeamIndex].MapWins.Value.Value = C_CounterGlyphEmpty;
+		}
+		Footer.ScoresToggle.Label.Value = "Map scores  " ^ C_ToggleLabelIcons[Footer.ScoresToggle.State] ^ "  Match scores";
+		InitGradients();
+	}
+
+	/**
+	 * Transforms a team statistic to glyph or ratio formatting. Ratio if Max > 3.
+	 */
+	Text TeamScoreToGlyphsOrRatio(Integer Score, Integer Max) {
+		if (Max > 3) return Score ^ "/" ^ Max;
+
+		declare Integer Max1 = ML::Max(1, Max); // If Max is <= 1, clamp it to 1
+		declare Text[] Glyphs = [];
+		for (I, 1, Score) Glyphs.add(C_CounterGlyphFilled);
+		for (I, 1, Max1 - Score) Glyphs.add(C_CounterGlyphEmpty);
+		return TL::Join(" ", Glyphs);
+	}
+
+	/**
+	 * Updates the team statistics (Scored point, round wins, map wins).
+	 */
+	Void UpdateTeamStatistics() {
+		declare Integer NbFlagsToWinRound = GetNbFlagsToWinRound();
+		declare Integer NbRoundsToWinMap = GetNbRoundsToWinMap();
+		declare Integer NbMapsToWinMatch = GetNbMapsToWinMatch();
+
+		for (TeamIndex, 0, 1) {
+			declare netread Integer Net_FlagRush_TeamRoundScore for Teams[TeamIndex];
+			if (NbFlagsToWinRound > 0) {
+				TeamScoreboards[TeamIndex].FlagsScored.Value.Value = Net_FlagRush_TeamRoundScore ^ "/" ^ NbFlagsToWinRound;
+			} else {
+				TeamScoreboards[TeamIndex].FlagsScored.Value.Value = TL::ToText(Net_FlagRush_TeamRoundScore);
+			}
+
+
+			declare netread Integer Net_FlagRush_TeamMapScore for Teams[TeamIndex];
+			TeamScoreboards[TeamIndex].RoundWins.Value.Value = TeamScoreToGlyphsOrRatio(Net_FlagRush_TeamMapScore, NbRoundsToWinMap);
+
+			declare netread Integer Net_FlagRush_TeamMatchScore for Teams[TeamIndex];
+			TeamScoreboards[TeamIndex].MapWins.Value.Value = TeamScoreToGlyphsOrRatio(Net_FlagRush_TeamMatchScore, NbMapsToWinMatch);
+		}
+	}
+
+	/**
+	 * Updates a playercard with given index in the respective team.
+	 */
+	Void UpdatePlayercard(K_PlayerCard Playercard, CSmScore Score) {
+		declare netread Boolean[Text] Net_WarmUpReadyUp_ReadyStates for Teams[0];
+
+		// SpectatorInfo
+		Playercard.Frame.DataAttributeSet("playerlogin", Score.User.Login);
+
+		// Basic information: Nama, Avatar, Status
+		Playercard.Name.Value = Score.User.Name;
+		Playercard.ClubTag.Visible = Score.User.ClubTag != "";
+		if(Score.User.ClubTag != "") {
+			Playercard.Name.RelativePosition_V3 = {{{ C_PlayerCard_NameDefaultPosition }}} + {{{ C_PlayerCard_NameOffset }}};
+			Playercard.ClubTag.RelativePosition_V3 = {{{ C_PlayerCard_NameDefaultPosition }}} + {{{ C_PlayerCard_ClubTagOffset }}};
+			Playercard.ClubTag.Value = TL::RegexReplace("[\\r\\n\\t]", Score.User.ClubTag, "g", "");
+		} else {
+			Playercard.Name.RelativePosition_V3 = {{{ C_PlayerCard_NameDefaultPosition }}};
+		}
+
+		if (WarmUpIsRunning() && Net_WarmUpReadyUp_ReadyStates.get(Score.User.Login, False)) {
+			Playercard.BackgroundGradient.LeftGradient.ModulateColor = {{{ Stylesheet::C_Success }}};
+		} else {
+			Playercard.BackgroundGradient.LeftGradient.ModulateColor = Team_GetDarkColor(Score.TeamNum);
+		}
+
+		Playercard.Avatar.ImageUrl = Score.User.CountryFlagUrl;
+
+		declare CSmPlayer ScorePlayer <=> GetPlayer(Score.User.Login);
+		if (ScorePlayer == Null) {	// Disconnected
+			Playercard.Status.Style = C_PlayerStatus_Disconnected["style"];
+			Playercard.Status.Substyle = C_PlayerStatus_Disconnected["substyle"];
+			Playercard.Status.Show();
+		} else if (ScorePlayer.RequestsSpectate) {	// Spectator
+			Playercard.Status.Style = C_PlayerStatus_Spectator["style"];
+			Playercard.Status.Substyle = C_PlayerStatus_Spectator["substyle"];
+			Playercard.Status.Show();
+		} else {
+			Playercard.Status.Hide();
+		}
+
+		// Statistics
+		declare netread K_FlagRushPlayerStatistics[Integer] Net_FlagRush_PlayerStatistics for Score = [];
+		Playercard.Points.Add.Value = TL::ToText(Score.RoundPoints);
+		Playercard.FlagsScored.Add.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Round }}}, K_FlagRushPlayerStatistics{}).FlagsScored);
+		Playercard.FlagsStolen.Add.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Round }}}, K_FlagRushPlayerStatistics{}).FlagsStolen);
+		Playercard.Assists.Add.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Round }}}, K_FlagRushPlayerStatistics{}).FlagScoreAssists);
+
+		if (Footer.ScoresToggle.State) {
+			declare netread Integer Net_FlagRush_Points_Match for Score;
+			Playercard.Points.Total.Value = TL::ToText(Net_FlagRush_Points_Match);
+			Playercard.FlagsScored.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Match }}}, K_FlagRushPlayerStatistics{}).FlagsScored);
+			Playercard.FlagsStolen.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Match }}}, K_FlagRushPlayerStatistics{}).FlagsStolen);
+			Playercard.Assists.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Match }}}, K_FlagRushPlayerStatistics{}).FlagScoreAssists);
+		} else {
+			Playercard.Points.Total.Value = TL::ToText(Score.Points);
+			Playercard.FlagsScored.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Map }}}, K_FlagRushPlayerStatistics{}).FlagsScored);
+			Playercard.FlagsStolen.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Map }}}, K_FlagRushPlayerStatistics{}).FlagsStolen);
+			Playercard.Assists.Total.Value = TL::ToText(Net_FlagRush_PlayerStatistics.get({{{ Scores::C_Level_Map }}}, K_FlagRushPlayerStatistics{}).FlagScoreAssists);
+		}
+
+
+	}
+
+	/**
+	 * Updates all the playercards withg the scores of the currently selected page.
+	 */
+	Void UpdatePlayerCards(CSmScore[][Integer] ScoresToDisplay) {
+		foreach (TeamIndex => TeamScoreboard in TeamScoreboards) {
+			declare CSmScore[] TeamScores = ScoresToDisplay[TeamIndex + 1];
+			foreach (PlayerIndex => Playercard in TeamScoreboard.Playercards)	 {
+				declare Integer ScoreIndex = Footer.PageControls.CurrentPageIndex * {{{ C_PlayersPerPage }}} + PlayerIndex;
+				if(TeamScores.existskey(ScoreIndex)) {
+					Playercard.Frame.Show();
+					UpdatePlayercard(Playercard, TeamScores[ScoreIndex]);
+				} else {
+					Playercard.Frame.Hide();
+				}
+
+			}
+		}
+	}
+
+	/**
+	 * Filters out scores that should not be displayed:
+	 *     - Do not display disconnected players or spectators with less than one point.
+	 *     - Do not display disconnected players or spectators in warmup, regardless of points.
+	 * Scores are returned in an array with the clan number as key.
+	 */
+	CSmScore[][Integer] FilterScoresToDisplay() {
+		declare CSmScore[][Integer] ScoresToDisplay = [1 => [], 2 => []];
+		foreach (Score in Scores) {
+			if (Score.TeamNum <= 0 || Score.TeamNum > 2) continue;
+			declare CSmPlayer ScorePlayer <=> GetPlayer(Score.User.Login);
+			declare Boolean PlayerIsDisconnectedOrSpectator = ScorePlayer == Null || ScorePlayer.RequestsSpectate;
+
+			// In warmup, do not show disonnected or spectating players.
+			// Outside of warmup, do not show disconnected or spectating players with no points.
+			if (PlayerIsDisconnectedOrSpectator && (WarmUpIsRunning() || Score.Points + Score.RoundPoints <= 0)) {
+				continue;
+			}
+			ScoresToDisplay[Score.TeamNum].add(Score);
+		}
+		return ScoresToDisplay;
+	}
+
+	/**
+	 * Updates page count and page index and manages the page control visibility.
+	 */
+	Void UpdatePageState(CSmScore[][Integer] ScoresToDisplay) {
+		Footer.PageControls.PagesCount	= ((ML::Max(ScoresToDisplay[1].count, ScoresToDisplay[2].count) - 1) / {{{ C_PlayersPerPage }}}) + 1;
+		Footer.PageControls.CurrentPageIndex = ML::Clamp(Footer.PageControls.CurrentPageIndex, 0, Footer.PageControls.PagesCount - 1);
+
+		// Show page controls if there is more than one page
+		Footer.PageControls.Frame.Visible = Footer.PageControls.PagesCount >= 2;
+		Footer.PageControls.Previous.Visible = Footer.PageControls.CurrentPageIndex >= 1;
+		Footer.PageControls.Next.Visible = Footer.PageControls.CurrentPageIndex < Footer.PageControls.PagesCount - 1;
+	}
+
+	/**
+	 * Requests the next page to be displayed.
+	 */
+	Void NextPage() {
+		Footer.PageControls.CurrentPageIndex += 1;
+	}
+
+	/**
+	 * Requests the previous page to be displayed.
+	 */
+	Void PreviousPage() {
+		Footer.PageControls.CurrentPageIndex -= 1;
+	}
+
+	/**
+	 * Toggles between displaying map and match scores.
+	 */
+	Void ToggleScores() {
+		Footer.ScoresToggle.State = !Footer.ScoresToggle.State;
+		Footer.ScoresToggle.Label.Value = "Map scores  " ^ C_ToggleLabelIcons[Footer.ScoresToggle.State] ^ "  Match scores";
+	}
+
+	Void UpdateFooter() {
+		declare Integer NbMapsToWinMatch = GetNbMapsToWinMatch();
+		Footer.ScoresToggle.Frame.Visible = NbMapsToWinMatch > 1;
+		Footer.Frame.Visible = Footer.PageControls.Frame.Visible || Footer.ScoresToggle.Frame.Visible;
+	}
+
+	/**
+	 * Handles all user input events that can occur on the scoreboard.
+	 */
+	Void HandleEvents() {
+		foreach(Event in PendingEvents) {
+			switch(Event.Type) {
+				case CMlScriptEvent::Type::KeyPress: {
+					switch(Event.KeyCode) {
+						case 104: PreviousPage(); // Page up key
+						case 79: NextPage();	// Page down key
+					}
+				}
+				case CMlScriptEvent::Type::MouseClick: {
+					switch(Event.ControlId) {
+						case "boundingbox": SetSpectateTarget(Event.Control.Parent.DataAttributeGet("playerlogin"));
+						case "page-previous": PreviousPage();
+						case "page-next": NextPage();
+						case "scorestogglelabel": ToggleScores();
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Updates the names of the teams in the header of the scoreboard.
+	 */
+	Void UpdateTeamNames() {
+		for (Index, 0, 1) TeamScoreboards[Index].TeamName.Value = Teams[Index].Name;
+	}
+
+	main() {
+		AssignMlControlReferences();
+		InitMlControls();
+
+		while(True) {
+			yield;
+			if(!PageIsVisible) {
+				continue;
+			}
+
+			HandleEvents();
+			InitGradients();
+			UpdateTeamNames();
+			UpdateTeamStatistics();
+
+			declare CSmScore[][Integer] ScoresToDisplay = FilterScoresToDisplay();
+			UpdatePageState(ScoresToDisplay);
+			UpdatePlayerCards(ScoresToDisplay);
+			UpdateFooter();
+		}
+	}
+	--></script>
+
+</manialink>
+	""";
+}
+
+// MARK: Lifecycle
+
+Void Unload() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void Load() {
+	Unload();
+}

@@ -1,0 +1,63 @@
+/**
+ * Aggregator for commands from different sources.
+ *
+ * Collects and manages commands from different sources, like CSmModeEvents, XmlRpc or the ModeCommandsUI.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "Libs/FlagRush/Const/CommandNames.Script.txt" as CommandNames
+#Include "Libs/FlagRush/Util/Command.Script.txt" as Command
+
+// Need to alias associative arrays of library, else accessing by index causes compilation error
+#Const Command::C_SourceNameByType as C_SourceNameByType
+
+declare Command::K_Command[] G_PendingEvents;
+
+// MARK: API
+
+Command::K_Command[] GetPendingEvents() {
+  return G_PendingEvents;
+}
+
+Void Publish(Command::K_Command _Command) {
+  G_PendingEvents.add(_Command);
+}
+
+// MARK: Lifecycle
+
+Void Unload() {
+  G_PendingEvents.clear();
+}
+
+Void Load() {
+  Unload();
+}
+
+Void Yield() {
+  G_PendingEvents.clear();
+
+  // XmlRpc
+  foreach (XmlRpcEvent in XmlRpc.PendingEvents) {
+  	switch (XmlRpcEvent.Type) {
+  		case CXmlRpcEvent::EType::CallbackArray: {
+  			switch (XmlRpcEvent.ParamArray1) {
+  				case "Trackmania.ForceEndRound": {
+  					declare Command::K_Source Source = Command::K_Source{
+              Type = Command::C_SourceType_XmlRpc,
+              Name = C_SourceNameByType[Command::C_SourceType_XmlRpc]
+            };
+  					G_PendingEvents.add(Command::FromNameAndParams(CommandNames::Command_SkipRound, [], Source));
+  				}
+  			}
+  		}
+  	}
+  }
+
+  // CSmModeEvent Commands
+  foreach (Event in PendingEvents) {
+  	if (Event.Type == CSmModeEvent::EType::OnCommand) {
+  		G_PendingEvents.add(Command::FromEvent(Event));
+  	}
+  }
+}

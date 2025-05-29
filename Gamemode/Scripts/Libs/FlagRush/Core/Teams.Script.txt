@@ -1,0 +1,325 @@
+/**
+ * Manages the configuration for the teams in FlagRush.
+ *
+ * Determines properties like Team name and Hue depending on the FlagRush Map and team members.
+ * To use skins of the appropriate team color, this library's LoadItems function should be called on server start when the item list is created.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "MathLib" as ML
+#Include "TextLib" as TL
+
+#Include "Libs/FlagRush/CommonLibs/Rx/NiceColors.Script.txt"	as NCL
+
+#Const C_Color_Invalid			<1., 1., 1.>
+#Const C_Hue_UseDefault			-1
+#Const C_DefaultTeamHue			120
+#Const C_DefaultTeamHues		[0 => 240, 1 => 0]
+
+#Struct K_TeamPresetConfig {
+	Text TeamName;
+	Text SkinName;
+}
+
+#Const C_HueToTeamPresetLut [
+	K_TeamPresetConfig{ TeamName = "Red", SkinName = "https://core.trackmania.nadeo.live/storageObjects/f94a342c-cbd2-4136-953c-b5da764b487e" },
+	K_TeamPresetConfig{ TeamName = "Orange", SkinName = "https://core.trackmania.nadeo.live/storageObjects/b9f750a2-38d5-4ef8-b9c4-7e2820014b2c" },
+	K_TeamPresetConfig{ TeamName = "Yellow", SkinName = "https://core.trackmania.nadeo.live/storageObjects/edf2a1fd-3326-460e-ae27-babe0d501ee9" },
+	K_TeamPresetConfig{ TeamName = "Lime", SkinName = "https://core.trackmania.nadeo.live/storageObjects/6a7361fe-483e-4cab-92de-5276438764dc" },
+	K_TeamPresetConfig{ TeamName = "Green", SkinName = "https://core.trackmania.nadeo.live/storageObjects/779dfacc-5b75-4619-abbd-1d698e25813d" },
+	K_TeamPresetConfig{ TeamName = "Teal", SkinName = "https://core.trackmania.nadeo.live/storageObjects/808f84d2-d41d-4fb6-8df7-2b7f404463ef" },
+	K_TeamPresetConfig{ TeamName = "Cyan", SkinName = "https://core.trackmania.nadeo.live/storageObjects/370a2a6a-1847-4e2a-ac17-4bcef7568cbc" },
+	K_TeamPresetConfig{ TeamName = "Azure", SkinName = "https://core.trackmania.nadeo.live/storageObjects/570227b5-418b-4cee-b704-1221d3105f58" },
+	K_TeamPresetConfig{ TeamName = "Blue", SkinName = "https://core.trackmania.nadeo.live/storageObjects/1842cac7-75e2-4457-a2f4-fad48d67ef03" },
+	K_TeamPresetConfig{ TeamName = "Purple", SkinName = "https://core.trackmania.nadeo.live/storageObjects/d2260262-6fbb-4488-af6a-a01ed5279188" },
+	K_TeamPresetConfig{ TeamName = "Magenta", SkinName = "https://core.trackmania.nadeo.live/storageObjects/e8e53aa9-7072-4f02-9dba-3a9bf0d7ddd6" },
+	K_TeamPresetConfig{ TeamName = "Rose", SkinName = "https://core.trackmania.nadeo.live/storageObjects/750eb055-6913-4cdd-a8b7-6c1fad72fd78" },
+	K_TeamPresetConfig{ TeamName = "Red", SkinName = "https://core.trackmania.nadeo.live/storageObjects/f94a342c-cbd2-4136-953c-b5da764b487e" }
+]
+
+#Struct K_TeamConfig {
+	Text ClubTag;
+	Text Name;
+	Integer Hue;
+	Text SkinName;
+	Ident ItemId;
+	Vec3 LightColor;
+	Vec3 MidColor;
+	Vec3 DarkColor;
+}
+
+declare K_TeamConfig[Integer] G_TeamConfigs;
+declare Text[Integer] G_TeamNameOverrides;
+declare Integer[Integer] G_TeamHueOverrides;
+declare Ident[Integer] G_SkinIds;
+declare Boolean G_UseClubTags;
+
+// MARK: Helper Functions
+
+Integer Private_GetClosestLutIndex(Integer _Hue) {
+	declare Integer LutIdx = 0;
+	declare Integer Dist = 400;
+	for (I, 0, 12) {
+		declare Integer PresetHue = I * 30;
+		declare Integer PresetDist = ML::Abs(_Hue - PresetHue);
+		if (PresetDist < Dist){
+			Dist = PresetDist;
+			LutIdx = I;
+		}
+	}
+	return LutIdx;
+}
+
+Text Private_GetDefaultTeamName(Integer _Clan) {
+	declare Text Teamname = "???";
+	if (G_TeamConfigs.existskey(_Clan)) {
+		declare Integer Idx = Private_GetClosestLutIndex(G_TeamConfigs[_Clan].Hue);
+		Teamname = C_HueToTeamPresetLut[Idx].TeamName;
+	}
+	return "Team " ^ Teamname;
+}
+
+Integer Private_GetDefaultTeamHue(Integer _Clan) {
+	return C_DefaultTeamHues.get(_Clan - 1, C_DefaultTeamHue);
+}
+
+Void Private_SetTeamNamesFromClubTags(){
+	for (Clan, 1, 2) {
+		declare Boolean ClubTagMissmatch;
+		declare Text[] ClubTagsTeam;
+		foreach (Player in Players) {
+			if (Player.CurrentClan == Clan && !Player.RequestsSpectate) { // Is playing
+				if (ClubTagsTeam.count == 0) {
+					ClubTagsTeam.add(Player.User.ClubTag);
+				} else if (!ClubTagsTeam.exists(Player.User.ClubTag)) {
+					ClubTagMissmatch = True;
+					break;
+				}
+			}
+		}
+
+		if (!ClubTagMissmatch && ClubTagsTeam.count == 1) {
+			G_TeamConfigs[Clan].ClubTag = ClubTagsTeam[0];
+			G_TeamConfigs[Clan].Name = TL::StripFormatting(ClubTagsTeam[0]);
+		}
+	}
+}
+
+Void Private_SetTeamHueFromMap() {
+	declare metadata Real[Integer] FlagRush_Meta_TeamHues for Map = [];
+	for (Clan, 1, 2) {
+		declare Integer Hue = C_Hue_UseDefault;
+		if (FlagRush_Meta_TeamHues.existskey(Clan)) {
+			if (FlagRush_Meta_TeamHues[Clan] < 0) {
+				Hue = C_Hue_UseDefault;
+			} else {
+				declare Real HueReal = ML::Min(FlagRush_Meta_TeamHues[Clan], 1.);
+				Hue = ML::NearestInteger(HueReal * 360);
+			}
+		}
+		G_TeamConfigs[Clan].Hue = Hue;
+	}
+}
+
+Void Private_ApplyToTeams() {
+	for (Clan, 1, 2) {
+		Teams[Clan - 1].Name = G_TeamConfigs[Clan].Name;
+
+		declare Integer Hue = G_TeamConfigs[Clan].Hue;
+
+		G_TeamConfigs[Clan].LightColor = NCL::GetLightColor(Hue * 1.);
+		G_TeamConfigs[Clan].MidColor = NCL::GetMidColor(Hue * 1.);
+		G_TeamConfigs[Clan].DarkColor = NCL::GetDarkColor(Hue * 1.);
+
+		Teams[Clan - 1].ColorPrimary = G_TeamConfigs[Clan].MidColor;
+		Teams[Clan - 1].ColorSecondary = G_TeamConfigs[Clan].MidColor;
+		Teams[Clan - 1].ColorUI = G_TeamConfigs[Clan].MidColor;
+
+		declare netwrite Vec3 Net_FlagRush_LightColor for Teams[Clan - 1] = C_Color_Invalid;
+		Net_FlagRush_LightColor = G_TeamConfigs[Clan].LightColor;
+		declare netwrite Vec3 Net_FlagRush_MidColor for Teams[Clan - 1] = C_Color_Invalid;
+		Net_FlagRush_MidColor = G_TeamConfigs[Clan].MidColor;
+		declare netwrite Vec3 Net_FlagRush_DarkColor for Teams[Clan - 1] = C_Color_Invalid;
+		Net_FlagRush_DarkColor = G_TeamConfigs[Clan].DarkColor;
+
+		declare Integer LutIdx = Private_GetClosestLutIndex(Hue);
+		G_TeamConfigs[Clan].SkinName = C_HueToTeamPresetLut[LutIdx].SkinName;
+		G_TeamConfigs[Clan].ItemId = G_SkinIds.get(LutIdx, NullId);
+	}
+}
+
+Void Private_OverrideForcedOrEmptyFields() {
+	for(Clan, 1, 2) {
+		if (G_TeamHueOverrides.get(Clan, C_Hue_UseDefault) != C_Hue_UseDefault) { // Forced
+			G_TeamConfigs[Clan].Hue = G_TeamHueOverrides[Clan];
+		} else if (G_TeamConfigs[Clan].Hue == C_Hue_UseDefault) { // Was empty => Use default
+			G_TeamConfigs[Clan].Hue = Private_GetDefaultTeamHue(Clan);
+		}
+
+		if (G_TeamNameOverrides.get(Clan, "") != "") { // Forced
+			G_TeamConfigs[Clan].Name = G_TeamNameOverrides[Clan];
+		} else if (G_TeamConfigs[Clan].Name == "") { // Was empty => Use default
+			G_TeamConfigs[Clan].Name = Private_GetDefaultTeamName(Clan);
+		}
+	}
+}
+
+// MARK: API
+
+Void SetTeam1NameOverride(Text _Name) {
+	G_TeamNameOverrides[1] = _Name;
+}
+
+Void SetTeam2NameOverride(Text _Name) {
+	G_TeamNameOverrides[2] = _Name;
+}
+
+Void SetTeam1HueOverride(Integer _Hue) {
+	if (_Hue < 0) {
+		G_TeamHueOverrides[1] = C_Hue_UseDefault;
+	} else {
+		G_TeamHueOverrides[1] = ML::Min(_Hue, 360);
+	}
+}
+
+Void SetTeam2HueOverride(Integer _Hue) {
+	if (_Hue < 0) {
+		G_TeamHueOverrides[2] = C_Hue_UseDefault;
+	} else {
+		G_TeamHueOverrides[2] = ML::Min(_Hue, 360);
+	}
+}
+
+Void UseClubTags(Boolean _UseClubTags) {
+	G_UseClubTags = _UseClubTags;
+}
+
+Ident GetSkinModelIdForTeam(Integer _Clan) {
+	if (G_TeamConfigs.existskey(_Clan)) {
+		return G_TeamConfigs[_Clan].ItemId;
+	}
+	return NullId;
+}
+
+Text GetSkinNameForTeam(Integer _Clan) {
+	if (G_TeamConfigs.existskey(_Clan)) {
+		return G_TeamConfigs[_Clan].SkinName;
+	}
+	return "";
+}
+
+Vec3 GetLightColor(Integer _Clan) {
+	if (!G_TeamConfigs.existskey(_Clan)) {
+		return C_Color_Invalid;
+	}
+	return G_TeamConfigs[_Clan].LightColor;
+}
+
+Vec3 GetMidColor(Integer _Clan) {
+	if (!G_TeamConfigs.existskey(_Clan)) {
+		return C_Color_Invalid;
+	}
+	return G_TeamConfigs[_Clan].MidColor;
+}
+
+Vec3 GetDarkColor(Integer _Clan) {
+	if (!G_TeamConfigs.existskey(_Clan)) {
+		return C_Color_Invalid;
+	}
+	return G_TeamConfigs[_Clan].DarkColor;
+}
+
+Boolean IsTeamSkin(Ident _ModelId) {
+	return G_SkinIds.exists(_ModelId);
+}
+
+// Layer function definitions to get colors from team
+
+Text DefineLayerFunction_Team_GetLightColor() {
+  return """
+    Vec3 Team_GetLightColor(CTeam Team) {
+      if (Team == Null) {
+        return {{{ C_Color_Invalid }}};
+      }
+      declare netread Vec3 Net_FlagRush_LightColor for Team;
+      return Net_FlagRush_LightColor;
+    }
+
+    Vec3 Team_GetLightColor(Integer Clan) {
+      if (Clan <= 0 || Clan > Teams.count) {
+        return {{{ C_Color_Invalid }}};
+      }
+      return Team_GetLightColor(Teams[Clan-1]);
+    }
+  """;
+}
+
+Text DefineLayerFunction_Team_GetMidColor() {
+  return """
+    Vec3 Team_GetMidColor(CTeam Team) {
+      if (Team == Null) {
+        return {{{ C_Color_Invalid }}};
+      }
+      declare netread Vec3 Net_FlagRush_MidColor for Team;
+      return Net_FlagRush_MidColor;
+    }
+
+    Vec3 Team_GetMidColor(Integer Clan) {
+      if (Clan <= 0 || Clan > Teams.count) {
+        return {{{ C_Color_Invalid }}};
+      }
+      return Team_GetMidColor(Teams[Clan-1]);
+    }
+  """;
+}
+
+Text DefineLayerFunction_Team_GetDarkColor() {
+  return """
+    Vec3 Team_GetDarkColor(CTeam Team) {
+      if (Team == Null) {
+        return {{{ C_Color_Invalid }}};
+      }
+      declare netread Vec3 Net_FlagRush_DarkColor for Team;
+      return Net_FlagRush_DarkColor;
+    }
+
+    Vec3 Team_GetDarkColor(Integer Clan) {
+      if (Clan <= 0 || Clan > Teams.count) {
+        return {{{ C_Color_Invalid }}};
+      }
+      return Team_GetDarkColor(Teams[Clan-1]);
+    }
+  """;
+}
+
+Void Init() {
+	G_TeamConfigs = [1 => K_TeamConfig{ Hue = C_Hue_UseDefault }, 2 => K_TeamConfig{ Hue = C_Hue_UseDefault }];
+	if (Map != Null) {
+		Private_SetTeamHueFromMap();
+	}
+	if (G_UseClubTags) {
+		Private_SetTeamNamesFromClubTags();
+	}
+	Private_OverrideForcedOrEmptyFields();
+	Private_ApplyToTeams();
+}
+
+// MARK: Lifecycle
+
+Void LoadItems() {
+	foreach (Index => TeamColor in C_HueToTeamPresetLut) {
+		G_SkinIds[Index] = ItemList_AddWithSkin("CarSport", TeamColor.SkinName);
+	}
+}
+
+Void Unload() {
+	G_TeamConfigs.clear();
+	G_TeamNameOverrides.clear();
+	G_TeamHueOverrides.clear();
+	G_UseClubTags = False;
+}
+
+Void Load() {
+	Unload();
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FlagRush.Flag.Passed",
+  "description": "Emitted when the flag is passed from one player to another.",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": "integer"
+    },
+    "newCarrier": {
+      "$ref": "../../Player.json"
+    },
+    "previousCarrier": {
+      "$ref": "../../Player.json"
+    }
+  },
+  "required": [
+    "timestamp",
+    "newCarrier",
+    "previousCarrier"
+  ]
+}

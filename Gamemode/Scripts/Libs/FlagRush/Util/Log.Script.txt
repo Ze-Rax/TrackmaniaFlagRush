@@ -1,0 +1,62 @@
+/**
+ * Simple prefixed logging for FlagRush.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "TimeLib" as TiL
+
+#Const C_Level_Debug 0
+#Const C_Level_Info 1
+#Const C_Level_Warning 2
+#Const C_Level_Error 3
+
+#Const C_LevelPrefix [
+	0 => "DEBUG",
+	1 => "INFO",
+	2 => "WARN",
+	3 => "ERROR"
+]
+
+declare Integer G_LogLevel;
+
+Void Private_Log(Text _Message, Integer _Level) {
+	if (_Level < G_LogLevel) {
+		return;
+	}
+
+	declare Text Prefix = C_LevelPrefix.get(_Level, C_LevelPrefix[1]);
+	log("""{{{ Prefix }}} [FlagRush] [{{{ Now }}}] {{{ _Message }}}""");
+}
+
+// MARK: API
+
+Void Debug(Text _Message) {
+	Private_Log(_Message, C_Level_Debug);
+}
+
+Void Info(Text _Message) {
+	Private_Log(_Message, C_Level_Info);
+}
+
+Void Warn(Text _Message) {
+	Private_Log(_Message, C_Level_Warning);
+}
+
+Void Error(Text _Message) {
+	Private_Log(_Message, C_Level_Error);
+}
+
+Void SetLevel(Integer _Level) {
+	G_LogLevel = _Level;
+}
+
+// MARK: Lifecycle
+
+Void Unload() {
+	G_LogLevel = C_Level_Info;
+}
+
+Void Load() {
+	Unload();
+}

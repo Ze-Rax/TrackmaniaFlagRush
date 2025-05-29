@@ -1,0 +1,68 @@
+/**
+ * Indicator showing that respawning is not allowed when too fast.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Const C_LayerName "FlagRush_RespawnFlash"
+#Const C_LayerType CUILayer::EUILayerType::Normal
+
+/**
+ * Gets the manialink
+ */
+Text GetManialink() {
+	return """<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3" name="{{{ C_LayerName }}}">
+	<frame id="respawn" z-index="0">
+		<label pos="0 10" z-index="0" size="30 20" text="" halign="center" valign="center2" textsize="19" textemboss="1" opacity="0" />
+		<label pos="0 -3" z-index="0" size="120 6" text="Respawn restricted!" textfont="GameFontBlack" textemboss="1" halign="center" valign="center2" opacity="0"/>
+		<label pos="0 -9" z-index="0" size="120 6" textsize="1.5" text="You must slow down to respawn." textfont="GameFontRegular" textemboss="1" halign="center" valign="center2" opacity="0"/>
+	</frame>
+	<script><!--
+
+	Void FlashRespawn() {
+		declare CMlFrame Frame = (Page.GetFirstChild("respawn") as CMlFrame);
+		foreach (Elem in Frame.Controls) {
+			declare CMlLabel Label = (Elem as CMlLabel);
+			Label.Opacity = 1.;
+			AnimMgr.Add(Label, "<elem opacity=\"0\" />", 1500,  CAnimManager::EAnimManagerEasing::CubicIn);
+		}
+	}
+
+	main() {
+		declare netread Integer Net_FlagRush_RespawnFlash_UpdateTimestamp for UI;
+		declare Integer LastUpdate = Net_FlagRush_RespawnFlash_UpdateTimestamp;
+
+		while(True) {
+			yield;
+			if (Net_FlagRush_RespawnFlash_UpdateTimestamp > LastUpdate) {
+				LastUpdate = Net_FlagRush_RespawnFlash_UpdateTimestamp;
+				FlashRespawn();
+			}
+		}
+	}
+	--></script>
+	</manialink>
+	""";
+}
+
+// MARK: Api
+
+/**
+ * Flahes the respawn restriction UI for a given player.
+ */
+ Void Flash(CSmPlayer _Player) {
+	declare CUIConfig UI = UIManager.GetUI(_Player);
+	declare netwrite Integer Net_FlagRush_RespawnFlash_UpdateTimestamp for UI = Now;
+	Net_FlagRush_RespawnFlash_UpdateTimestamp = Now;
+}
+
+// MARK: Lifecycle
+
+Void Unload() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void Load() {
+	Unload();
+}

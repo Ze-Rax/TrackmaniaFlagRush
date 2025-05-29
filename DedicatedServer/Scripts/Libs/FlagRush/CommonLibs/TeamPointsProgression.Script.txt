@@ -1,0 +1,89 @@
+/**
+ * Library for tracking Match Score/Points Progression throughout a multiround/-map match.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "Libs/Nadeo/TMGame/Modes/Scores.Script.txt" as Scores // Only used for aliasing reset levels
+
+#Const Scores::C_Level_Match as C_Level_Match
+#Const Scores::C_Level_Map as C_Level_Map
+#Const Scores::C_Level_Round as C_Level_Round
+
+declare Integer[Integer] G_ClanTurnsWon;
+declare Integer[Integer] G_ClanRoundsWon;
+declare Integer[Integer] G_ClanMapsWon;
+
+Void Clear(Integer _Level) {
+	if(_Level <= C_Level_Match) G_ClanMapsWon = [];
+	if(_Level <= C_Level_Map) G_ClanRoundsWon = [];
+	if(_Level <= C_Level_Round) G_ClanTurnsWon = [];
+}
+
+/* Turns */
+
+Integer GetClanTurnsWon(Integer _Clan) {
+	return G_ClanTurnsWon.get(_Clan, 0);
+}
+
+Void SetClanTurnsWon(Integer _Clan, Integer _TurnsWon) {
+	G_ClanTurnsWon[_Clan] = _TurnsWon;
+}
+
+Void AddClanTurnsWon(Integer _Clan, Integer _TurnsWonAdd) {
+	SetClanTurnsWon(_Clan, GetClanTurnsWon(_Clan) + _TurnsWonAdd);
+}
+
+/* Rounds */
+
+Integer GetClanRoundsWon(Integer _Clan) {
+	return G_ClanRoundsWon.get(_Clan, 0);
+}
+
+Void SetClanRoundsWon(Integer _Clan, Integer _RoundsWon) {
+	G_ClanRoundsWon[_Clan] = _RoundsWon;
+}
+
+Void AddClanRoundsWon(Integer _Clan, Integer _RoundsWonAdd) {
+	SetClanRoundsWon(_Clan, GetClanRoundsWon(_Clan) + _RoundsWonAdd);
+}
+
+/* Maps */
+
+Integer GetClanMapsWon(Integer _Clan) {
+	return G_ClanMapsWon.get(_Clan, 0);
+}
+
+Void SetClanMapsWon(Integer _Clan, Integer _MapsWon) {
+	G_ClanMapsWon[_Clan] = _MapsWon;
+}
+
+Void AddClanMapsWon(Integer _Clan, Integer _MapsWonAdd) {
+	SetClanMapsWon(_Clan, GetClanMapsWon(_Clan) + _MapsWonAdd);
+}
+
+/* Match progression */
+
+Void StartMatch() {
+	Clear(C_Level_Match);
+}
+
+Void EndMatch() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void StartMap() {
+	Clear(C_Level_Map);
+}
+
+Void EndMap() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void StartRound() {
+	Clear(C_Level_Round);
+}
+
+Void EndRound() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}

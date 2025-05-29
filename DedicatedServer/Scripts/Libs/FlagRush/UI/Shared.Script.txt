@@ -1,0 +1,43 @@
+/**
+ * A collection of shared functionality to be used in UI Layers.
+ */
+
+#Const C_FlagMarkerHeightIndicatorThreshold	7.
+
+/**
+ * Manialink script functions to map a login to different objects.
+ */
+Text GetLoginMappingFunctions() {
+	return """
+		CSmPlayer GetPlayer(Text Login) {
+			foreach (Player in Players) if (Player.User.Login == Login) return Player;
+			return Null;
+		}
+	""";
+}
+
+/**
+ * Returns the manialink framemodel with a transparent for the logo of FlagRush
+ */
+Text GetLogoTransparentFramemodel() {
+	return """
+	<framemodel id="flagrush-logo">
+		<label size="20 5" text="$i$sFlag" valign="center" halign="right" textfont="GameFontExtraBold" pos="-4 2"/>
+		<label size="10 10" text="$i$s" valign="center" halign="center" textfont="GameFontExtraBold" textsize="6"/>
+		<label size="20 5" text="$i$sRush" valign="center" halign="left" textfont="GameFontExtraBold" pos="4 -2"/>
+	</framemodel>
+	""";
+}
+
+/**
+ * Returns a framemodel for gradients with base size 100x100 and modelid "gradient"
+ */
+Text GetGradientFramemodel() {
+	return """
+	<framemodel id="gradient">
+		<quad pos="0 0" z-index="-1" size="100 100" bgcolor="c44" id="base" halign="center" valign="center"/>
+		<quad pos="-50 0" z-index="0" size="50 100" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b24" id="gradient-left" valign="center" halign="left"/>
+		<quad pos="50 0" z-index="0" size="50 100" image="file://Media/Painter/Stencils/15-Stripes/_Stripe0Grad/Brush.tga" modulatecolor="b42" id="gradient-right" valign="center" halign="left" rot="180"/>
+	</framemodel>
+	""";
+}

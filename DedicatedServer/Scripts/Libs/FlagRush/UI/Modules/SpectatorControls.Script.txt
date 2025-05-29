@@ -1,0 +1,209 @@
+/**
+ * Spectator controls to follow the flag carrier.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "ColorLib" as CL
+
+#Include "Libs/FlagRush/Core/Flag.Script.txt" as Flag
+
+#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
+#Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
+
+#Const C_LayerName "FlagRush_SpectatorControls"
+#Const C_LayerType CUILayer::EUILayerType::Normal
+
+Text GetManialink() {
+	return """
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="{{{ C_LayerName }}}">
+	<frame id="spectatorbutton" pos="135 -40" scale="0.75">
+		<quad size="50 10" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" colorize="{{{ CL::RgbToHex6(Stylesheet::C_NeutralDark) }}}" opacity="{{{ Stylesheet::C_TransparentBackgroundOpacity }}}"/>
+		<quad pos="20 0" z-index="1" size="10 10" halign="center" valign="center" style="UICommon64_1" substyle="BgFrame1" id="buttonstate-background"/>
+		<label pos="20 0" z-index="2" size="10 10" halign="center" valign="center" text="" id="buttonstate-icon" textsize="4" textfont="GameFontBlack" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}"/>
+		<label pos="-4 0" z-index="2" size="40 8" halign="center" valign="center" text="Follow Flag Carrier" textsize="2" textfont="GameFontSemiBold" textcolor="{{{ CL::RgbToHex6(Stylesheet::C_NeutralLight) }}}"/>
+
+		<quad pos="-2.5 0" z-index="5" size="50 10" id="button-activator" style="UICommon64_1" substyle="BgFrame1" halign="center" valign="center" opacity="0" scriptevents="1"/>
+	</frame>
+
+	<script><!--
+	#Include "TextLib" as TL
+	#Include "MathLib" as ML
+	#Include "ColorLib" as CL
+
+	#Const C_Color_Follow {{{ Stylesheet::C_Enabled }}}
+	#Const C_Color_NoFollow {{{ Stylesheet::C_Disabled }}}
+
+	#Const C_LabelIcon_Follow ""
+	#Const C_LabelIcon_NoFollow ""
+
+	#Struct K_SpectatorButton {
+		CMlFrame Frame;
+		CMlQuad ButtonStateBackground;
+		CMlLabel ButtonStateIconLabel;
+		CMlQuad ButtonActivator;
+		Boolean Hover;
+	}
+
+	{{{ Flag::DumpNetFlagStructs() }}}
+
+	declare K_SpectatorButton SpectatorButton;
+
+	/**
+	 * Assigns all the needed CMlControl references.
+	 */
+	***AssignMlControlReferences***
+	***
+	declare CMlFrame SpectatorButtonFrame = (Page.GetFirstChild("spectatorbutton") as CMlFrame);
+	SpectatorButton = K_SpectatorButton {
+		Frame = SpectatorButtonFrame,
+		ButtonStateBackground = (SpectatorButtonFrame.GetFirstChild("buttonstate-background") as CMlQuad),
+		ButtonStateIconLabel = (SpectatorButtonFrame.GetFirstChild("buttonstate-icon") as CMlLabel),
+		ButtonActivator = (SpectatorButtonFrame.GetFirstChild("button-activator") as CMlQuad)
+	};
+	***
+
+	/**
+	 * Inits all MlControls. This includes setting slider ranges and default values.
+	 */
+	***InitMlControls***
+	***
+	+++UpdateButton+++
+	***
+
+	/**
+	 * Updates the target for the spectator. Disables auto target if follow mode is disabled.
+	 */
+	***UpdateSpectatorTarget***
+	***
+	if (FlagRush_AutoFollow) {
+		declare CSmPlayer CarrierPlayer <=> GetPlayer(Net_FlagRush_Flag.Location.Player.Login);
+		if (CarrierPlayer != Null) {	// Spectator flag carrier
+			ClientUI.Spectator_SetForcedTarget_Entity(CarrierPlayer);
+			ClientUI.SpectatorForceCameraType = 1;
+		} else {	// Spectate full map / all players overview
+			ClientUI.Spectator_SetForcedTarget_AllPlayers();
+			ClientUI.SpectatorForceCameraType = -1;
+		}
+	} else {	// No auto follow
+		ClientUI.Spectator_SetForcedTarget_Clear();
+		ClientUI.SpectatorForceCameraType = -1;
+	}
+	***
+
+	/**
+	 * Updates the visual appearance of the button.
+	 */
+	***UpdateButton***
+	***
+	SpectatorButton.ButtonStateBackground.Colorize = GetSpectatorButtonColor(FlagRush_AutoFollow, SpectatorButton.Hover);
+	if (FlagRush_AutoFollow) SpectatorButton.ButtonStateIconLabel.Value = C_LabelIcon_Follow;
+	else SpectatorButton.ButtonStateIconLabel.Value = C_LabelIcon_NoFollow;
+	***
+
+	/**
+	 * Handles interaction with the button.
+	 */
+	***HandleEvents***
+	***
+	foreach (Event in PendingEvents) {
+		if (Event.Control == SpectatorButton.ButtonActivator) {
+			switch (Event.Type) {
+				case CMlScriptEvent::Type::MouseOver: {
+					SpectatorButton.Hover = True;
+					+++UpdateButton+++
+				}
+				case CMlScriptEvent::Type::MouseOut: {
+					SpectatorButton.Hover = False;
+					+++UpdateButton+++
+				}
+				case CMlScriptEvent::Type::MouseClick: {
+					FlagRush_AutoFollow = !FlagRush_AutoFollow;
+					+++UpdateSpectatorTarget+++
+					+++UpdateButton+++
+				}
+			}
+		}
+	}
+	***
+
+	{{{ UIShared::GetLoginMappingFunctions() }}}
+
+	/**
+	 * Transforms a given base RGB BaseColor with a given HSV Transformation.
+	 * Copied from Nadeos ColorPalette.
+	 */
+	Vec3 TransformColor(Vec3 _BaseColor, Vec3 _Transformation) {
+		declare NewColor = _BaseColor;
+		NewColor = CL::RgbToHsv(NewColor);
+		NewColor.X = NewColor.X + _Transformation.X;
+		if (NewColor.X < 0.) NewColor.X += 1.;
+		if (NewColor.X > 1.) NewColor.X -= 1.;
+		NewColor.Y = ML::Clamp(NewColor.Y + _Transformation.Y, 0., 1.);
+		NewColor.Z = ML::Clamp(NewColor.Z + _Transformation.Z, 0., 1.);
+
+		return CL::HsvToRgb(NewColor);
+	}
+
+	/**
+	 * Get the focus state color for a given BaseColor.
+	 */
+	Vec3 GetFocusColor(Vec3 _Color) {
+		return TransformColor(_Color, <-.0194, 0., -.57>);
+	}
+
+	/**
+	 * Determines the color for the specator button, given it active and hover states.
+	 */
+	Vec3 GetSpectatorButtonColor(Boolean Active, Boolean Hover) {
+		declare Vec3 ButtonColor;
+		if (Active) ButtonColor = C_Color_Follow;
+		else ButtonColor = C_Color_NoFollow;
+
+		if (Hover) ButtonColor = GetFocusColor(ButtonColor);
+		return ButtonColor;
+	}
+
+	main() {
+		declare netread K_Net_Flag Net_FlagRush_Flag for Teams[0] = K_Net_Flag{};
+		declare Boolean FlagRush_AutoFollow for LocalUser;
+		declare LastFollowedLogin = "";
+
+		+++AssignMlControlReferences+++
+		+++InitMlControls+++
+
+		while(True) {
+			yield;
+
+			// Determine spectator UI visibility
+			if (InputPlayer == Null || !InputPlayer.RequestsSpectate) {
+				SpectatorButton.Frame.Hide();
+				continue;
+			} else if (!SpectatorButton.Frame.Visible) {
+				SpectatorButton.Frame.Show();
+			}
+
+			+++HandleEvents+++
+
+			// Update target when carrier changed
+			if (FlagRush_AutoFollow && LastFollowedLogin != Net_FlagRush_Flag.Location.Player.Login) {
+				LastFollowedLogin = Net_FlagRush_Flag.Location.Player.Login;
+				+++UpdateSpectatorTarget+++
+			}
+		}
+	}
+	--></script>
+</manialink>
+	""";
+}
+
+// MARK: Lifecycle
+
+Void Unload() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void Load() {
+	Unload();
+}

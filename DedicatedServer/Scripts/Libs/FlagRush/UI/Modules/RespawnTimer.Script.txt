@@ -1,0 +1,81 @@
+/**
+ * Indicator showing when the respawn process is finished.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "Libs/FlagRush/Const/Durations.Script.txt" as Durations
+
+#Include "Libs/FlagRush/Core/Players.Script.txt" as Players
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
+
+#Const C_LayerName "FlagRush_RespawnTimer"
+#Const C_LayerType CUILayer::EUILayerType::Normal
+
+Text GetManialink() {
+	return """
+	<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+	<manialink version="3" name="{{{ C_LayerName }}}">
+		<frame pos="-40 -50" id="rs-frame" hidden="1">
+			<label pos="40 -5" z-index="2" size="80 6" text="" halign="center" style="TextCardSmall" textsize="3" valign="center2" id="rs-label" textcolor="fff"/>
+			<frame id="rs-gauge-frame" z-index="1" size="80 10">
+				<quad pos="0 0" size="80 10" id="rs-gauge" style="UICommon64_1" substyle="BgFrame1" colorize="004" opacity="0.7"/>
+			</frame>
+		<quad pos="0 0" z-index="0" size="80 10" id="rs-gauge2" style="UICommon64_1" substyle="BgFrame1" colorize="000" opacity="0.7"/>
+		</frame>
+
+	<script><!--
+	#Include "MathLib" as ML
+
+	{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
+	{{{ Players::DefineLayerFunction_Player_GetSpawnDate() }}}
+
+	main() {
+		declare CMlFrame RespawnFrame = (Page.GetFirstChild("rs-frame") as CMlFrame);
+		declare CMlFrame GaugeFrame = (Page.GetFirstChild("rs-gauge-frame") as CMlFrame);
+		declare CMlLabel RespawnLabel = (Page.GetFirstChild("rs-label") as CMlLabel);
+		declare CMlQuad  RespawnQuad = (Page.GetFirstChild("rs-gauge") as CMlQuad);
+
+		wait(InputPlayer != Null);
+		declare Integer TotalRespawnTime = -1;
+
+		while (True) {
+			yield;
+
+			declare Integer SpawnDate = Player_GetSpawnDate(InputPlayer);
+			declare Integer MillisRemaining = SpawnDate - GameTime + {{{ Durations::C_SpawnAnimation }}};
+			if (SpawnDate <= 0 || MillisRemaining <= 0 || IsSpectator) {
+				RespawnFrame.Hide();
+				TotalRespawnTime = -1;
+				continue;
+			}
+
+			if (TotalRespawnTime <= 0) {
+				TotalRespawnTime = MillisRemaining;
+			}
+			declare Real Ratio = ML::NearestReal(MillisRemaining) / TotalRespawnTime;
+
+			// Display
+			declare Integer SecondsRemaining = MillisRemaining / 1000 + 1;
+			GaugeFrame.Size.X = ML::Clamp(80. * Ratio, 0., 80.);
+			RespawnQuad.Colorize = Team_GetDarkColor(InputPlayer.CurrentClan);
+			RespawnLabel.SetText("Respawning in " ^ SecondsRemaining ^ "...");
+			RespawnFrame.Show();
+		}
+	}
+	--></script>
+	</manialink>
+	""";
+}
+
+// MARK: Lifecycle
+
+Void Unload() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void Load() {
+	Unload();
+}

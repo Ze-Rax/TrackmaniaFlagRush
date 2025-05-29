@@ -1,0 +1,201 @@
+/**
+ * Library used to track changes in gamemode settings.
+ *
+ * If the value of the setting changed compared to the last yield, then the library will create an event.
+ * Events can be retrieved with GetPendingEvents().
+ *
+ * Every yield, the gamemode should send it's current value using Uppdate(SettingName, SettingValue).
+ * No setting with the given name is registered yet, then it will be registered with that name. First registrations will also create an event.
+ * Registrations contain the name and type of the settings. Trying to update a registered setting with a different type will raise an assertion error.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Const C_Type_Integer 1
+#Const C_Type_Real 2
+#Const C_Type_Boolean 3
+#Const C_Type_Text 4
+
+#Const C_TypeNames [
+    1 => "Integer",
+    2 => "Real",
+    3 => "Boolean",
+    4 => "Text"
+]
+
+#Const C_Default_Integer 0
+#Const C_Default_Real 0.
+#Const C_Default_Boolean False
+#Const C_Default_Text ""
+
+#Struct K_SettingUpdateEventValue {
+    Integer ValueInteger;
+    Real ValueReal;
+    Boolean ValueBoolean;
+    Text ValueText;
+}
+
+#Struct K_SettingUpdateEvent {
+    Text Name;
+    Integer Type;
+    K_SettingUpdateEventValue PreviousValue;
+    K_SettingUpdateEventValue NewValue;
+}
+
+// =============
+// MARK: Globals
+// =============
+
+declare Integer[Text] G_RegisteredSettings; // Name => Type
+declare Integer[Text] G_IntegerSettings; // Name => Value
+declare Real[Text] G_RealSettings;
+declare Boolean[Text] G_BooleanSettings;
+declare Text[Text] G_TextSettings;
+
+declare K_SettingUpdateEvent[] G_UpdateEvents;
+
+// =====================
+// MARK: Private helpers
+// =====================
+
+Void Private_AssertNotExists(Text _Name) {
+    assert(!G_RegisteredSettings.existskey(_Name), """Setting with name "{{{ _Name }}}" already exists""");
+}
+
+Void Private_AssertExists(Text _Name) {
+    assert(G_RegisteredSettings.existskey(_Name), """Setting with name "{{{ _Name }}}" does not exist""");
+}
+
+Void Private_AssertType(Text _Name, Integer _ExpectedType) {
+    Private_AssertExists(_Name);
+    assert(G_RegisteredSettings[_Name] == _ExpectedType, """Expected setting with type "{{{ C_TypeNames[_ExpectedType] }}}" but was "{{{ C_TypeNames[G_RegisteredSettings[_Name]] }}}" """);
+}
+
+Boolean Private_RegisterIfNotPresent(Text _Name, Integer _Type) {
+    if (G_RegisteredSettings.existskey(_Name)) {
+        return False;
+    }
+    G_RegisteredSettings[_Name] = _Type;
+    return True;
+}
+
+// =========
+// MARK: API
+// =========
+
+K_SettingUpdateEvent[] GetPendingEvents() {
+    return G_UpdateEvents;
+}
+
+// Integer
+Integer GetInteger(Text _Name) {
+    Private_AssertType(_Name, C_Type_Integer);
+    return G_IntegerSettings.get(_Name, C_Default_Integer);
+}
+
+Void Track(Text _Name, Integer _Value) {
+    declare Boolean NewRegisteration = Private_RegisterIfNotPresent(_Name, C_Type_Integer);
+    Private_AssertType(_Name, C_Type_Integer);
+    if (!NewRegisteration && G_IntegerSettings[_Name] == _Value) {
+        return;
+    }
+
+    declare K_SettingUpdateEvent UpdateEvent = K_SettingUpdateEvent {
+        Name = _Name,
+        Type = C_Type_Integer,
+        PreviousValue = K_SettingUpdateEventValue { ValueInteger = G_IntegerSettings.get(_Name, C_Default_Integer) },
+        NewValue = K_SettingUpdateEventValue { ValueInteger = _Value }
+    };
+    G_UpdateEvents.add(UpdateEvent);
+    G_IntegerSettings[_Name] = _Value;
+}
+
+// Real
+Real GetReal(Text _Name) {
+    Private_AssertType(_Name, C_Type_Real);
+    return G_RealSettings.get(_Name, C_Default_Real);
+}
+
+Void Track(Text _Name, Real _Value) {
+    declare Boolean NewRegisteration = Private_RegisterIfNotPresent(_Name, C_Type_Real);
+    Private_AssertType(_Name, C_Type_Real);
+    if (!NewRegisteration && G_RealSettings[_Name] == _Value) {
+        return;
+    }
+
+    declare K_SettingUpdateEvent UpdateEvent = K_SettingUpdateEvent {
+        Name = _Name,
+        Type = C_Type_Real,
+        PreviousValue = K_SettingUpdateEventValue { ValueReal = G_RealSettings.get(_Name, C_Default_Real) },
+        NewValue = K_SettingUpdateEventValue { ValueReal = _Value }
+    };
+    G_UpdateEvents.add(UpdateEvent);
+    G_RealSettings[_Name] = _Value;
+}
+
+// Boolean
+Boolean GetBoolean(Text _Name) {
+    Private_AssertType(_Name, C_Type_Boolean);
+    return G_BooleanSettings.get(_Name, C_Default_Boolean);
+}
+
+Void Track(Text _Name, Boolean _Value) {
+    declare Boolean NewRegisteration = Private_RegisterIfNotPresent(_Name, C_Type_Boolean);
+    Private_AssertType(_Name, C_Type_Boolean);
+    if (!NewRegisteration && G_BooleanSettings[_Name] == _Value) {
+        return;
+    }
+
+    declare K_SettingUpdateEvent UpdateEvent = K_SettingUpdateEvent {
+        Name = _Name,
+        Type = C_Type_Boolean,
+        PreviousValue = K_SettingUpdateEventValue { ValueBoolean = G_BooleanSettings.get(_Name, C_Default_Boolean) },
+        NewValue = K_SettingUpdateEventValue { ValueBoolean = _Value }
+    };
+    G_UpdateEvents.add(UpdateEvent);
+    G_BooleanSettings[_Name] = _Value;
+}
+
+// Text
+Text GetText(Text _Name) {
+    Private_AssertType(_Name, C_Type_Text);
+    return G_TextSettings.get(_Name, C_Default_Text);
+}
+
+Void Track(Text _Name, Text _Value) {
+    declare Boolean NewRegisteration = Private_RegisterIfNotPresent(_Name, C_Type_Text);
+    Private_AssertType(_Name, C_Type_Text);
+    if (!NewRegisteration && G_TextSettings[_Name] == _Value) {
+        return;
+    }
+
+    declare K_SettingUpdateEvent UpdateEvent = K_SettingUpdateEvent {
+        Name = _Name,
+        Type = C_Type_Text,
+        PreviousValue = K_SettingUpdateEventValue { ValueText = G_TextSettings.get(_Name, C_Default_Text) },
+        NewValue = K_SettingUpdateEventValue { ValueText = _Value }
+    };
+    G_UpdateEvents.add(UpdateEvent);
+    G_TextSettings[_Name] = _Value;
+}
+
+// ===============
+// MARK: Lifycycle
+// ===============
+
+Void Unload() {
+    G_RegisteredSettings.clear();
+    G_UpdateEvents.clear();
+    G_IntegerSettings.clear();
+    G_RealSettings.clear();
+    G_BooleanSettings.clear();
+    G_TextSettings.clear();
+}
+
+Void Load() {
+    Unload();
+}
+
+Void Yield() {
+    G_UpdateEvents.clear();
+}

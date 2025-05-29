@@ -1,0 +1,262 @@
+/**
+ * Background for the Podium screen showing statistics for the most valuable players of the match.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "Libs/FlagRush/CommonLibs/PlayerStatistics.Script.txt" as PlayerStatistics
+
+#Include "Libs/FlagRush/Core/Scores.Script.txt" as Scores
+#Include "Libs/FlagRush/Core/Teams.Script.txt" as Teams
+
+#Include "Libs/FlagRush/UI/Stylesheet.Script.txt" as Stylesheet
+#Include "Libs/FlagRush/UI/Shared.Script.txt" as UIShared
+
+#Const C_LayerName	"FlagRush_PosiumBackground"
+#Const C_LayerType CUILayer::EUILayerType::ScreenIn3d
+
+#Struct K_PodiumPlaceConfig {
+	Boolean Present;
+	Text Name;
+	Text Avatar;
+	Integer Clan;
+	Integer Points;
+	Integer FlagsScored;
+	Integer FlagsScoredPlacement;
+	Integer Assists;
+	Integer AssistsPlacement;
+	Integer FlagsStolen;
+	Integer FlagsStolenPlacement;
+}
+
+Text GetManialink() {
+	return """
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="{{{ C_LayerName }}}">
+	{{{ UIShared::GetGradientFramemodel() }}}
+
+	<framemodel id="statistic">
+		<label id="name" pos="0 0" z-index="0" size="50 5" text="$iStatistic:" valign="center2" textfont="GameFontSemiBold" halign="right" textsize="6" textemboss="1"/>
+		<label id="value" text="$i0" valign="center2" textfont="GameFontSemiBold" halign="left" pos="10" textsize="6" size="50" textemboss="1"/>
+	</framemodel>
+
+	<framemodel id="player">
+		<quad z-index="0" pos="0 5" size="90 15" bgcolor="000" opacity="0.7" halign="center" valign="center"/>
+		<label id="points" text="0" textprefix="P$n $mo$n $mi$n $mn$n $mt$n $ms$n $m:$n  $m" valign="center2" halign="center" pos="0 5" size="100" textfont="GameFontBlack" textsize="10" textemboss="1"/>
+
+		<frame pos="0 -11">
+			<quad z-index="0" pos="0 -9" size="90 30" bgcolor="000" opacity="0.7" halign="center" valign="center"/>
+			<frameinstance modelid="statistic" id="flags-scored" data-name="Flags scored" pos="15 0"/>
+			<frameinstance modelid="statistic" id="assists" data-name="Assists" pos="15 -9"/>
+			<frameinstance modelid="statistic" id="flags-stolen" data-name="Flags stolen" pos="15 -18"/>
+		</frame>
+
+		<frame pos="0 -45">
+			<quad id="card-background" z-index="0" size="90 15" bgcolor="000" opacity="0.7" halign="center" valign="center"/>
+			<quad id="avatar" pos="-44" z-index="1" size="13 13" bgcolor="FFF" halign="left" valign="center" keepratio="Fit"/>
+			<label id="playername" pos="0" z-index="1" size="55 15" text="Playername" halign="center" valign="center2" textfont="GameFontSemiBold" textsize="8" textemboss="1"/>
+		</frame>
+	</framemodel>
+
+	<frame id="background" z-index="-1">
+		<frame size="{{{ 320 / 3 }}} 180" pos="0" halign="center" valign="center">
+			<frameinstance id="background-pos-1" modelid="gradient" rot="-90" scale="1.8"/>
+		</frame>
+		<frame size="{{{ 320 / 3 }}} 180" pos="{{{ -320 / 3 }}}" halign="center" valign="center">
+			<frameinstance id="background-pos-2" modelid="gradient" rot="-90" scale="1.8"/>
+		</frame>
+		<frame size="{{{ 320 / 3 }}} 180" pos="{{{ 320 / 3 }}}" halign="center" valign="center">
+			<frameinstance id="background-pos-3" modelid="gradient" rot="-90" scale="1.8"/>
+		</frame>
+
+		<frame>
+			<quad image="file://Media/Painter/Stencils/28-Checker5A/Brush.tga" pos="190 -140" size="180 180" opacity="0.3" halign="right" valign="bottom" blend="add"/>
+			<quad image="file://Media/Painter/Stencils/28-Checker5A/Brush.tga" pos="-190 140" size="180 180" opacity="0.3" rot="180" halign="right" valign="bottom" blend="add" />
+		</frame>
+
+		<quad id="divider-1-2" pos="{{{ -160 / 3 }}}" z-index="0" size="1 180" bgcolor="000" valign="center" halign="center"/>
+		<quad id="divider-1-3" pos="{{{ 160 / 3 }}}" z-index="0" size="1 180" bgcolor="000" valign="center" halign="center"/>
+	</frame>
+
+	<frame id="content">
+		<label pos="0 50" z-index="0" size="100 25" text="M$n $mV$n $mP" halign="center" valign="center2" textfont="GameFontBlack" textsize="25" textemboss="1"/>
+
+		<frameinstance id="pos-1" modelid="player" pos="0 25"/>
+		<frameinstance id="pos-2" modelid="player" pos="-106 25"/>
+		<frameinstance id="pos-3" modelid="player" pos="106 25"/>
+	</frame>
+
+
+	<script><!--
+	#Include "TextLib" as TL
+
+	#Struct K_PodiumPlaceConfig {
+		Boolean Present;
+		Text Name;
+		Text Avatar;
+		Integer Clan;
+		Integer Points;
+		Integer FlagsScored;
+		Integer FlagsScoredPlacement;
+		Integer Assists;
+		Integer AssistsPlacement;
+		Integer FlagsStolen;
+		Integer FlagsStolenPlacement;
+	}
+
+	#Struct K_Gradient {
+		CMlFrame Frame;
+		CMlQuad Base;
+		CMlQuad Left;
+		CMlQuad Right;
+	}
+
+	#Struct K_Player {
+		K_Gradient BackgroundGradient;
+		CMlFrame ContentFrame;
+		CMlQuad CardBackground;
+		CMlLabel Name;
+		CMlQuad Avatar;
+		CMlLabel Points;
+		CMlLabel FlagsScored;
+		CMlLabel Assists;
+		CMlLabel FlagsStolen;
+	}
+
+	declare K_Player[] G_Players;
+
+	{{{ Teams::DefineLayerFunction_Team_GetLightColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetMidColor() }}}
+	{{{ Teams::DefineLayerFunction_Team_GetDarkColor() }}}
+
+	Vec3 PlacementToTextColor(Integer Placement) {
+		switch (Placement) {
+			case 1: return {{{ Stylesheet::C_Gold }}};
+			case 2: return {{{ Stylesheet::C_Silver }}};
+			case 3: return {{{ Stylesheet::C_Bronze }}};
+		}
+		return {{{ Stylesheet::C_NeutralLight }}};
+	}
+
+	Void InitMlControls() {
+		// Get references
+		declare CMlFrame BackgroundFrame <=> (Page.GetFirstChild("background") as CMlFrame);
+		declare CMlFrame ContentFrame <=> (Page.GetFirstChild("content") as CMlFrame);
+
+		for (I, 1, 3) {
+			declare CMlFrame GradientFrame = (BackgroundFrame.GetFirstChild("background-pos-" ^ I) as CMlFrame);
+			declare K_Gradient Gradient = K_Gradient{
+				Frame = GradientFrame,
+				Base = (GradientFrame.GetFirstChild("base") as CMlQuad),
+				Left = (GradientFrame.GetFirstChild("gradient-left") as CMlQuad),
+				Right = (GradientFrame.GetFirstChild("gradient-right") as CMlQuad)
+			};
+
+			declare CMlFrame PlayerFrame = (ContentFrame.GetFirstChild("pos-" ^ I) as CMlFrame);
+			declare CMlFrame FlagsScoredFrame = (PlayerFrame.GetFirstChild("flags-scored") as CMlFrame);
+			declare CMlFrame AssistsFrame = (PlayerFrame.GetFirstChild("assists") as CMlFrame);
+			declare CMlFrame FlagsStolenFrame = (PlayerFrame.GetFirstChild("flags-stolen") as CMlFrame);
+
+			// Save references
+			declare K_Player Player = K_Player{
+				BackgroundGradient = Gradient,
+				ContentFrame = PlayerFrame,
+				CardBackground = (ContentFrame.GetFirstChild("card-background") as CMlQuad),
+				Name = (PlayerFrame.GetFirstChild("playername") as CMlLabel),
+				Avatar = (PlayerFrame.GetFirstChild("avatar") as CMlQuad),
+				Points = (PlayerFrame.GetFirstChild("points") as CMlLabel),
+				FlagsScored = (FlagsScoredFrame.GetFirstChild("value") as CMlLabel),
+				Assists = (AssistsFrame.GetFirstChild("value") as CMlLabel),
+				FlagsStolen = (FlagsStolenFrame.GetFirstChild("value") as CMlLabel)
+			};
+			G_Players.add(Player);
+
+			// Initalize texts of statistic
+			(FlagsScoredFrame.GetFirstChild("name") as CMlLabel).Value = FlagsScoredFrame.DataAttributeGet("name") ^ ":";
+			(AssistsFrame.GetFirstChild("name") as CMlLabel).Value = AssistsFrame.DataAttributeGet("name") ^ ":";
+			(FlagsStolenFrame.GetFirstChild("name") as CMlLabel).Value = FlagsStolenFrame.DataAttributeGet("name") ^ ":";
+		}
+	}
+
+	Void UpdateContent() {
+		declare netread K_PodiumPlaceConfig[Integer] Net_FlagRush_PodiumBackground_PlacementConfigs for Teams[0];
+		foreach (Index => Player in G_Players) {
+			declare K_PodiumPlaceConfig Config = Net_FlagRush_PodiumBackground_PlacementConfigs.get(Index + 1, K_PodiumPlaceConfig{ Present = False });
+			if (!Config.Present) {
+				Player.ContentFrame.Hide();
+				Player.BackgroundGradient.Base.BgColor = <0.1, 0.1, 0.1>;
+				Player.BackgroundGradient.Left.ModulateColor = <0., 0., 0.>;
+				Player.BackgroundGradient.Right.ModulateColor = <0.2, 0.2, 0.2>;
+				continue;
+			}
+
+			Player.BackgroundGradient.Base.BgColor = Team_GetMidColor(Config.Clan);
+			Player.BackgroundGradient.Left.ModulateColor = Team_GetDarkColor(Config.Clan);
+			Player.BackgroundGradient.Right.ModulateColor = Team_GetLightColor(Config.Clan);
+			Player.Name.Value = Config.Name;
+			Player.Avatar.BgColor = Team_GetMidColor(Config.Clan);
+			Player.Avatar.ImageUrl = Config.Avatar;
+			Player.Points.Value = TL::ToText(Config.Points);
+			Player.Points.TextColor = PlacementToTextColor(Index + 1);
+			Player.FlagsScored.Value = TL::ToText(Config.FlagsScored);
+			Player.FlagsScored.TextColor = PlacementToTextColor(Config.FlagsScoredPlacement);
+			Player.Assists.Value = TL::ToText(Config.Assists);
+			Player.Assists.TextColor = PlacementToTextColor(Config.AssistsPlacement);
+			Player.FlagsStolen.Value = TL::ToText(Config.FlagsStolen);
+			Player.FlagsStolen.TextColor = PlacementToTextColor(Config.FlagsStolenPlacement);
+		}
+	}
+
+	main() {
+		InitMlControls();
+		while (True) {
+			yield;
+			UpdateContent();
+		}
+	}
+	--></script>
+</manialink>
+	""";
+}
+
+// MARK: API
+
+Void SetContent(CSmScore[] _PodiumScores) {
+	declare CSmScore[] FlagsScoredMatchRanking = PlayerStatistics::SortBy(Scores::C_PlayerStatisticsKey_FlagsScored);
+	declare CSmScore[] AssistsMatchRanking = PlayerStatistics::SortBy(Scores::C_PlayerStatisticsKey_FlagScoreAssists);
+	declare CSmScore[] FlagsStolenMatchRanking = PlayerStatistics::SortBy(Scores::C_PlayerStatisticsKey_FlagsStolen);
+
+	declare netwrite K_PodiumPlaceConfig[Integer] Net_FlagRush_PodiumBackground_PlacementConfigs for Teams[0] = [];
+	for (Placement, 1, 3) {
+		declare Integer ScoreIndex = Placement - 1;
+		if (_PodiumScores.existskey(ScoreIndex)) {
+			declare CSmScore PlacementScore <=> _PodiumScores[ScoreIndex];
+			declare Scores::K_FlagRushPlayerStatistics PlayerStatistics = Scores::GetPlayerMatchStatistics(PlacementScore);
+			Net_FlagRush_PodiumBackground_PlacementConfigs[Placement] = K_PodiumPlaceConfig{
+				Present = True,
+				Name = PlacementScore.User.Name,
+				Avatar = PlacementScore.User.CountryFlagUrl,
+				Clan = PlacementScore.TeamNum,
+				Points = Scores::GetPlayerMatchPoints(PlacementScore),
+				FlagsScored = PlayerStatistics.FlagsScored,
+				FlagsScoredPlacement = FlagsScoredMatchRanking.keyof(PlacementScore) + 1,
+				Assists = PlayerStatistics.FlagScoreAssists,
+				AssistsPlacement = AssistsMatchRanking.keyof(PlacementScore) + 1,
+				FlagsStolen = PlayerStatistics.FlagsStolen,
+				FlagsStolenPlacement = FlagsStolenMatchRanking.keyof(PlacementScore) + 1
+			};
+		} else {
+			Net_FlagRush_PodiumBackground_PlacementConfigs[Placement] = K_PodiumPlaceConfig{ Present = False };
+		}
+	}
+}
+
+// MARK: Lifecycle
+
+Void Unload() { // @mslint-disable-line no-empty -- Kept for consistency
+
+}
+
+Void Load() {
+	Unload();
+}

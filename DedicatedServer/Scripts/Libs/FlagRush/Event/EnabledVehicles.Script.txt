@@ -1,0 +1,73 @@
+#Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
+
+#Struct K_Event {
+  Vehicles::K_Vehicle[] EnabledVehicles;
+}
+
+declare K_Event[] G_PendingEvents;
+
+declare Vehicles::K_Vehicle[] G_MapEnabledVehicles;
+declare Vehicles::K_Vehicle[] G_ForcedEnabledVehicles;
+
+// MARK: API
+
+K_Event[] GetPendingEvents() {
+  return G_PendingEvents;
+}
+
+Vehicles::K_Vehicle[] Get() {
+  if (G_ForcedEnabledVehicles.count > 0) {
+    return G_ForcedEnabledVehicles;
+  }
+
+  if (G_MapEnabledVehicles.count > 0) {
+    return G_MapEnabledVehicles;
+  }
+
+  return Vehicles::GetAll();
+}
+
+Boolean IsEnabled(Text _VehicleId) {
+  foreach (EnabledVehicle in Get()) {
+    if (EnabledVehicle.Id == _VehicleId) {
+      return True;
+    }
+  }
+  return False;
+}
+
+Boolean IsEnabled(Vehicles::K_Vehicle _Vehicle) {
+  return IsEnabled(_Vehicle.Id);
+}
+
+/**
+ * Should only be called form the main mode, when the Setting changes.
+ */
+Void Mode_ForceEnabledVehicles(Vehicles::K_Vehicle[] _Vehicles) {
+  G_ForcedEnabledVehicles = _Vehicles;
+  G_PendingEvents.add(K_Event{ EnabledVehicles = Get() });
+}
+
+/**
+ * Should only be called from the main mode, when the map is initialized.
+ */
+Void Mode_SetMapEnabledVehicles(Vehicles::K_Vehicle[] _Vehicles) {
+  G_MapEnabledVehicles = _Vehicles;
+  G_PendingEvents.add(K_Event{ EnabledVehicles = Get() });
+}
+
+// MARK: Lifecycle
+
+Void Yield() {
+	G_PendingEvents.clear();
+}
+
+Void Unload() {
+  G_PendingEvents.clear();
+	G_MapEnabledVehicles.clear();
+	G_ForcedEnabledVehicles.clear();
+}
+
+Void Load() {
+	Unload();
+}

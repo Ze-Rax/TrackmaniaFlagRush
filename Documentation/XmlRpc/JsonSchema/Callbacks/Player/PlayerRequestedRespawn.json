@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FlagRush.Player.RequestedRespawn",
+  "description": "Emitted when a player enters an out-of-bounds trigger.",
+  "type": "object",
+  "properties": {
+    "timestamp": {
+      "type": "integer"
+    },
+    "player": {
+      "$ref": "../../Player.json"
+    },
+    "success": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "timestamp",
+    "player",
+    "success"
+  ]
+}

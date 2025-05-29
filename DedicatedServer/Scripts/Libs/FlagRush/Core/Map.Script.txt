@@ -1,0 +1,189 @@
+/**
+ * Extracts relevant information from a FlagRush map, as landmarks (Spawns, Bases, FlagSpawn), allowed vehicles and default team hues.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "MathLib" as ML
+#Include "Libs/FlagRush/Util/Log.Script.txt" as Log
+#Include "Libs/FlagRush/Core/Vehicles.Script.txt" as Vehicles
+
+#Const C_LandmarkTag_SpawnTeam1											"SpawnTeam1"
+#Const C_LandmarkTag_SpawnTeam2											"SpawnTeam2"
+#Const C_LandmarkTag_BaseTeam1											"BaseTeam1"
+#Const C_LandmarkTag_BaseTeam2											"BaseTeam2"
+#Const C_LandmarkTag_FlagSpawn											"FlagSpawn"
+#Const C_LandmarkTag_DefaultFlagSpawn								"DefaultFlagSpawn"
+#Const C_LandmarkTag_OutOfBoundsTrigger							"OutOfBoundsTrigger"
+#Const C_LandmarkTag_OutOfBoundsTrigger_Deprecated	"FlagResetTrigger"
+
+declare CMapLandmark						G_DefaultFlagSpawn;
+declare CMapLandmark[]					G_FlagSpawns;
+declare CMapLandmark[Integer]		G_Spawns;
+declare CMapLandmark[][Integer]	G_Bases;
+declare Boolean									G_Valid;
+
+// MARK: API
+
+/**
+ * Gets the default flag spawn.
+ */
+CMapLandmark GetDefaultFlagSpawn() {
+	return G_DefaultFlagSpawn;
+}
+
+/**
+ * Gets all flagspawns.
+ */
+CMapLandmark[] GetFlagSpawns() {
+	return G_FlagSpawns;
+}
+
+/**
+ * Gets the spawn for a specific clan.
+ */
+CMapLandmark GetSpawn(Integer _Clan) {
+	return G_Spawns.get(_Clan, Null);
+}
+
+/**
+ * Gets the spawn for a specific player.
+ */
+CMapLandmark GetSpawn(CSmPlayer _Player) {
+	return G_Spawns.get(_Player.CurrentClan, Null);
+}
+
+/**
+ * Gets the bases for a specific clan.
+ */
+CMapLandmark[] GetBases(Integer _Clan) {
+	return G_Bases.get(_Clan, []);
+}
+
+/**
+ * Check if the given landmark is a base that belongs to the given clan.
+ */
+Boolean IsBase(CMapLandmark _Landmark, Integer _Clan) {
+	return GetBases(_Clan).exists(_Landmark);
+}
+
+/**
+ * Chooses a random flag spawn.
+ */
+CMapLandmark GetRandomFlagSpawn() {
+	declare Integer RandomIndex = ML::Rand(0, G_FlagSpawns.count - 1, Now);
+	return G_FlagSpawns[RandomIndex];
+}
+
+/**
+ * Returns a list of all vehicles that have been enabled by the mapper.
+ * If the mapper did not explciitly enable any vehicles, all vehicles will be considered enabled.
+ */
+Vehicles::K_Vehicle[] GetEnabledVehicles() {
+	if (Map == Null) {
+		return Vehicles::GetAll();
+	}
+
+	declare metadata Text[] FlagRush_Meta_Vehicles for Map = [];
+	declare Vehicles::K_Vehicle[] EnabledVehicles;
+
+	foreach (VehicleId in FlagRush_Meta_Vehicles) {
+		if (Vehicles::IsValid(VehicleId)) {
+			EnabledVehicles.add(Vehicles::Get(VehicleId));
+		}
+	}
+
+	if (EnabledVehicles.count > 0) {
+		return EnabledVehicles;
+	}
+	return Vehicles::GetAll();
+}
+
+/**
+ * Checks if the vehicle with the given id is enabled by the mapper
+ * @see GetEnabledVehiclew
+ */
+Boolean IsVehicleEnabled(Text _VehicleId) {
+	foreach (Vehicle in GetEnabledVehicles()) {
+		if (Vehicle.Id == _VehicleId) {
+			return True;
+		}
+	}
+	return False;
+}
+
+/**
+ * Checks whether a landmark is a flag reset trigger.
+ */
+Boolean IsOutOfBoundsTrigger(CMapLandmark _Landmark) {
+	return _Landmark.Tag == C_LandmarkTag_OutOfBoundsTrigger || _Landmark.Tag == C_LandmarkTag_OutOfBoundsTrigger_Deprecated;
+}
+
+/**
+ * Looks through all the landmarks on the map and assigns them to the corresponding variables.
+ */
+Boolean InitLandmarks() {
+	Log::Debug("Map: Initialising Landmarks...");
+	G_DefaultFlagSpawn = Null;
+	G_FlagSpawns.clear();
+	G_Bases = [1 => [], 2 => []];
+	G_Spawns.clear();
+
+	foreach (Landmark in MapLandmarks) {
+		switch (Landmark.Tag) {
+			case C_LandmarkTag_SpawnTeam1: if (Landmark.PlayerSpawn != Null) G_Spawns[1] = Landmark;
+			case C_LandmarkTag_SpawnTeam2: if (Landmark.PlayerSpawn != Null) G_Spawns[2] = Landmark;
+			case C_LandmarkTag_BaseTeam1: if (Landmark.Waypoint != Null) G_Bases[1].add(Landmark);
+			case C_LandmarkTag_BaseTeam2: if (Landmark.Waypoint != Null) G_Bases[2].add(Landmark);
+			case C_LandmarkTag_FlagSpawn: if (Landmark.Waypoint != Null) G_FlagSpawns.add(Landmark);
+			case C_LandmarkTag_DefaultFlagSpawn: if (Landmark.Waypoint != Null) {
+				G_FlagSpawns.add(Landmark);
+				G_DefaultFlagSpawn = Landmark;
+			}
+		}
+	}
+
+	declare Boolean FoundSpawnTeam1 = G_Spawns[1] != Null;
+	declare Boolean FoundSpawnTeam2 = G_Spawns[2] != Null;
+	declare Boolean FoundBaseTeam1 = G_Bases[1].count > 0;
+	declare Boolean FoundBaseTeam2 = G_Bases[2].count > 0;
+	declare Boolean FoundFlagSpawn = G_FlagSpawns.count > 0;
+	declare Boolean FoundDefaultFlagSpawn = G_DefaultFlagSpawn != Null;
+	declare Boolean SameAmountBases = G_Bases[1].count == G_Bases[2].count;
+
+	G_Valid = FoundSpawnTeam1 && FoundSpawnTeam2 && FoundBaseTeam1 && FoundBaseTeam2 && FoundFlagSpawn && FoundDefaultFlagSpawn && SameAmountBases;
+
+	if (G_Valid) {
+		Log::Debug("Map: All Landmarks found!");
+	} else {
+		Log::Warn("""Map: Could not find all landmarks!
+	{{{ "\t" }}}{{{ C_LandmarkTag_SpawnTeam1 }}}: {{{ FoundSpawnTeam1 }}}
+	{{{ "\t" }}}{{{ C_LandmarkTag_SpawnTeam2 }}}: {{{ FoundSpawnTeam2 }}}
+	{{{ "\t" }}}{{{ C_LandmarkTag_BaseTeam1 }}} : {{{ FoundBaseTeam1 }}}
+	{{{ "\t" }}}{{{ C_LandmarkTag_BaseTeam2 }}} : {{{ FoundBaseTeam2 }}}
+	{{{ "\t" }}}{{{ C_LandmarkTag_FlagSpawn }}} : {{{ FoundFlagSpawn }}}
+	{{{ "\t" }}}{{{ C_LandmarkTag_DefaultFlagSpawn }}} : {{{ FoundDefaultFlagSpawn }}}
+	{{{ "\t" }}}Same amount of bases per team: {{{ SameAmountBases }}}"""
+		);
+	}
+
+	return G_Valid;
+}
+
+Boolean IsValid() {
+	return G_Valid;
+}
+
+// MARK: Lifecycle
+
+Void Unload() {
+	G_DefaultFlagSpawn = Null;
+	G_FlagSpawns.clear();
+	G_Spawns.clear();
+	G_Bases.clear();
+	G_Valid = False;
+}
+
+Void Load() {
+	Unload();
+}

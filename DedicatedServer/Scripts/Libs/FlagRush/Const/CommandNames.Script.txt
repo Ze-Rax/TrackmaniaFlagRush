@@ -1,0 +1,33 @@
+/**
+ * Constants for all the available FlagRush Commands, both progression and main gamemode commands.
+ *
+ * Command names are also used for non ModeScriptCommand sources, like UIs.
+ * Constants value has to be the same as the name of the respective command without the Command_ prefix.
+ * The Parameter for the Command has to be sent with the Event in the Params array.
+ * In case of Vec2/Vec3/Int2/Int3 commands, X, Y & Z each take a seperate entry in the params array.
+ */
+
+ // Progression
+#Const Command_PauseRound "Command_PauseRound"
+#Const Command_EndWarmup "Command_EndWarmup"
+#Const Command_SkipRound "Command_SkipRound"
+#Const Command_SkipMap "Command_SkipMap"
+#Const Command_ApproveWarmUpEnd "Command_ApproveWarmUpEnd"
+#Const Command_SetTimeLeft "Command_SetTimeLeft"
+
+// Scores
+#Const Command_SetTeam1RoundScore "Command_SetTeam1RoundScore"
+#Const Command_SetTeam2RoundScore "Command_SetTeam2RoundScore"
+#Const Command_SetTeam1MapScore "Command_SetTeam1MapScore"
+#Const Command_SetTeam2MapScore "Command_SetTeam2MapScore"
+#Const Command_SetTeam1MatchScore "Command_SetTeam1MatchScore"
+#Const Command_SetTeam2MatchScore "Command_SetTeam2MatchScore"
+#Const Command_ClearScores "Command_ClearScores"
+
+// Gameplay
+#Const Command_ResetFlag "Command_ResetFlag"
+
+// Misc
+#Const Command_Announce "Command_Announce"
+#Const Command_BalanceTeams "Command_BalanceTeams"
+#Const Command_SetBots "Command_SetBots"

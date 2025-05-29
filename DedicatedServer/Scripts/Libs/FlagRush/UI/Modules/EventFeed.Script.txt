@@ -1,0 +1,202 @@
+/**
+ * Simple feed to show a sequence of events as messages.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "Libs/FlagRush/Util/Log.Script.txt" as Log
+
+#Struct K_FeedMessage {
+	Text Message;
+	Text IconStyle;
+	Text IconSubstyle;
+	Vec3 IconColor;
+	Integer Timestamp;
+}
+
+#Const C_LayerName "FlagRush_EventFeed"
+#Const C_LayerType CUILayer::EUILayerType::Normal
+
+#Const C_IconName_Info "info"
+#Const C_IconName_Chrono "chrono"
+#Const C_IconName_Flag "flag"
+#Const C_IconName_Reload "reload"
+#Const C_IconName_Error "error"
+
+#Const C_MaxMessageCount 8
+
+declare K_FeedMessage[] G_FeedMessages;
+
+Text GetManialink() {
+	declare Text MessageInstances = "";
+	for (i, 0, C_MaxMessageCount - 1) {
+		MessageInstances ^= """<frameinstance modelid="message"/>{{{ "\n"}}}""";
+	}
+
+	return """
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<manialink version="3" name="{{{ C_LayerName }}}">
+	<framemodel id="message">
+		<quad size="3 3" pos="0 -1.5" halign="center" valign="center"/>
+		<label size="60 3" pos="1.5 -1.5" text="" textsize="1" textfont="GameFontSemiBold" halign="left" valign="center2" opacity="0" textemboss="1" />
+	</framemodel>
+	<frame id="Events" pos="-158 10" >
+		{{{ MessageInstances }}}
+	</frame>
+
+	<script><!--
+	#Include "MathLib" as ML
+
+	{{{ dumptype(K_FeedMessage) }}}
+
+	declare Integer G_Counter;
+	declare Integer G_LastUpdate;
+
+	Void AddMessage(K_FeedMessage _Message) {
+		declare CMlFrame Frame = (Page.GetFirstChild("Events") as CMlFrame);
+		declare Idx = G_Counter % {{{ C_MaxMessageCount }}};
+
+		for (I, 0, {{{ C_MaxMessageCount }}}) {
+			declare Key = (Idx + I) % {{{ C_MaxMessageCount }}};
+			Frame.Controls[Key].RelativePosition_V3.Y = -I * 4.;
+		}
+		G_Counter += 1;
+
+		if (!Frame.Controls.existskey(Idx)) {
+			return;
+		}
+
+		declare CMlFrame Elem = Frame.Controls[Idx] as CMlFrame;
+		declare CMlLabel Label = Elem.Controls[1] as CMlLabel;
+
+		Label.Value = _Message.Message;
+		Label.RelativeScale = 1.2;
+		Label.Opacity = 0.;
+
+		AnimMgr.Flush(Label);
+		AnimMgr.Add(Label, "<label scale=\"1\" opacity=\"1\" pos=\"1.5 " ^ Label.RelativePosition_V3.Y ^ "\" />", 750, CAnimManager::EAnimManagerEasing::CircOut);
+		AnimMgr.Add(Label, "<label opacity=\"0\" scale=\"1.1\"/>", Now + 5500, 1000, CAnimManager::EAnimManagerEasing::CircOut);
+
+		declare CMlQuad Quad = Elem.Controls[0] as CMlQuad;
+		Quad.RelativeScale = 1.2;
+		Quad.Opacity = 0.;
+		Quad.Style = _Message.IconStyle;
+		Quad.Substyle = _Message.IconSubstyle;
+		Quad.Colorize = _Message.IconColor;
+		AnimMgr.Flush(Quad);
+		AnimMgr.Add(Quad, "<label scale=\"1\" opacity=\"1\" pos=\"0 " ^ Label.RelativePosition_V3.Y ^ "\" />", 750, CAnimManager::EAnimManagerEasing::CircOut);
+		AnimMgr.Add(Quad, "<label opacity=\"0\" scale=\"1.1\"/>", Now + 5500, 1000, CAnimManager::EAnimManagerEasing::CircOut);
+	}
+
+	Void ProcessMessages(Integer _SinceTimestamp) {
+		declare netread K_FeedMessage[] Net_EventFeed_Messages for UI = [];
+		foreach (Message in Net_EventFeed_Messages) {
+			if (Message.Timestamp >= _SinceTimestamp) {
+				AddMessage(Message);
+			}
+		}
+	}
+
+
+	main() {
+
+		declare netread Integer Net_EventFeed_Update for UI;
+		declare CMlFrame frame = (Page.GetFirstChild("Events") as CMlFrame);
+		G_LastUpdate = GameTime;
+		G_Counter = 0;
+
+		while(True) {
+			yield;
+
+			if (Net_EventFeed_Update <= G_LastUpdate) {
+				continue;
+			}
+			G_LastUpdate = Net_EventFeed_Update;
+			ProcessMessages(Net_EventFeed_Update);
+		}
+	}
+	--></script>
+</manialink>
+	""";
+}
+
+// MARK: API
+
+Void ClearMessages() {
+	G_FeedMessages.clear();
+	foreach (Player in AllPlayers) {
+		declare CUIConfig UI = UIManager.GetUI(Player);
+		if (UI != Null) {
+			declare netwrite K_FeedMessage[] Net_EventFeed_Messages for UI = [];
+			declare netwrite Integer Net_EventFeed_Update for UI = Now;
+			Net_EventFeed_Messages = G_FeedMessages;
+			Net_EventFeed_Update = Now;
+		}
+	}
+}
+
+/**
+ * Adds Message to event Feed
+ * @param _Message:Text = main message, displayed in white without colorcodes, supports game colorcodes syntax
+ * @param _Style:Text = Style of the quad
+ * @param _Substyle:Text = Substyle of the quad
+ * @param _Color:Text = Color of the quad
+ */
+Void SendMessage(Text _Message, Text _Style, Text _Substyle, Vec3 _Color) {
+	G_FeedMessages.addfirst(K_FeedMessage{
+		Message = _Message,
+		IconStyle = _Style,
+		IconSubstyle = _Substyle,
+		IconColor = _Color,
+		Timestamp = Now
+	});
+	G_FeedMessages = G_FeedMessages.slice(0, C_MaxMessageCount);
+
+	foreach(Player in AllPlayers) {
+		declare CUIConfig UI = UIManager.GetUI(Player);
+		if (UI != Null) {
+			declare netwrite K_FeedMessage[] Net_EventFeed_Messages for UI = [];
+			declare netwrite Integer Net_EventFeed_Update for UI = Now;
+			Net_EventFeed_Update = Now;
+			Net_EventFeed_Messages = G_FeedMessages;
+		}
+	}
+}
+
+/**
+ * Adds Message to event Feed
+ * @param _Message:Text = main message, displayed in white without colorcodes, supports game colorcodes syntax
+ * @param _Icon:Text = icon to show
+ * @param _Color:Vec3
+ */
+Void SendMessage(Text _Message, Text _Icon, Vec3 _Color) {
+	switch (_Icon) {
+		case C_IconName_Flag: SendMessage(_Message, "UICommon64_1", "Flag_light", _Color);
+		case C_IconName_Info: SendMessage(_Message, "UICommon64_1", "Info_light", _Color);
+		case C_IconName_Chrono: SendMessage(_Message, "UICommon64_1", "Chrono_light", _Color);
+		case C_IconName_Reload: SendMessage(_Message, "UICommon64_1", "Reload_light", _Color);
+		case C_IconName_Error: SendMessage(_Message, "UICommon64_1", "Error_light", _Color);
+		default: {
+			Log::Warn("""EventFeed: Unknown icon with name "{{{ _Icon }}}".""");
+			SendMessage(_Message, "", "", _Color);
+		}
+	}
+}
+
+Void SendMessage(Text _Message, Text _Icon) {
+	SendMessage(_Message, _Icon, <1., 1., 1.>);
+}
+
+Void SendMessage(Text _Message) {
+	SendMessage(_Message, "", "", <1., 1., 1.>);
+}
+
+// MARK: Lifecycle
+
+Void Unload() {
+	ClearMessages();
+}
+
+Void Load() {
+	Unload();
+}

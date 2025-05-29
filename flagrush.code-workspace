@@ -1,13 +1,12 @@
 {
   "folders": [
     {
-      "path": "."
+      "path": ".",
+			"name": "Root"
     },
     {
-      "path": "DedicatedServer\\Scripts"
-    },
-    {
-      "path": "../../../OpenplanetNext/Extract/Titles/Trackmania/Scripts"
+      "path": "DedicatedServer\\Scripts",
+			"name": "Gamemode Scripts"
     }
   ],
   "settings": {

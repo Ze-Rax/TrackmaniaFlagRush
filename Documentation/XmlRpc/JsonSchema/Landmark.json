@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Landmark",
+  "description": "Identifies a landmark (e.g., spawn point).",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Landmark ID"
+    },
+    "position": {
+      "$ref": "Position.json"
+    }
+  },
+  "required": [
+    "id",
+    "position"
+  ]
+}

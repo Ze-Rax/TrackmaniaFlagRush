@@ -1,0 +1,434 @@
+/**
+ * A Facade with functions for constructing and displaying FlagRush related messages in different parts of the UI:
+ * - BigMessage
+ * - Event Feed
+ * - Chat
+ * - Sounds
+ *
+ * #RequireContext CSmMode
+ */
+
+#Include "ColorLib" as CL
+
+#Include "Libs/FlagRush/CommonLibs/Nadeo/Message.Script.txt"								as Message
+#Include "Libs/FlagRush/CommonLibs/WarmUpReadyUp/WarmUpReadyUp.Script.txt"	as WarmUpReadyUp
+
+#Include "Libs/FlagRush/Playloop.Script.txt"																as Playloop
+
+#Include "Libs/FlagRush/Const/Durations.Script.txt"													as Durations
+#Include "Libs/FlagRush/Const/SettingNames.Script.txt"											as SettingNames
+
+#Include "Libs/FlagRush/Core/Teams.Script.txt"															as Teams
+#Include "Libs/FlagRush/Core/Scores.Script.txt"															as Scores
+
+#Include "Libs/FlagRush/Event/Progression.Script.txt"												as Progression
+#Include "Libs/FlagRush/Event/Settings.Script.txt" 													as Settings
+#Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" 						as PlayerLifecycleEvents
+
+#Include "Libs/FlagRush/UI/Stylesheet.Script.txt"														as Stylesheet
+#Include "Libs/FlagRush/UI/Modules/EventFeed.Script.txt"										as UIModule_EventFeed
+#Include "Libs/FlagRush/UI/Modules/Sounds.Script.txt"												as UIModule_Sound
+
+#Include "Libs/FlagRush/Util/Chat.Script.txt"																as Chat
+
+#Const C_MessagePriority_Default			1
+#Const C_MessagePriority_Event				2
+#Const C_MessagePriority_Progression	3
+
+#Const C_TimeLimitWarning_Seconds [60, 30]
+
+declare Text G_FlagRushVersion;
+declare Boolean[Integer] G_TimeLimitWarningsEnabled;
+
+// MARK: Helper Functions
+
+Void Private_EnableTimeLimitWarning() {
+	G_TimeLimitWarningsEnabled.clear();
+	foreach (WarningSeconds in C_TimeLimitWarning_Seconds) {
+		G_TimeLimitWarningsEnabled[WarningSeconds] = Settings::GetInteger(SettingNames::S_RoundTimeLimitSeconds) > WarningSeconds;
+	}
+}
+
+Void Private_ClearAllMessages() {
+	UIManager.UIAll.ClearMessages();
+	foreach (Player in AllPlayers) {
+		declare CUIConfig UI <=> UIManager.GetUI(Player);
+		if (UI != Null) {
+			UI.ClearMessages();
+		}
+	}
+}
+
+Text Private_GetTeamColorCode(Integer _Clan) {
+	return """${{{ CL::RgbToHex3(Teams::GetMidColor(_Clan)) }}}""";
+}
+
+Text Private_GetColoredTeamName(Integer _Clan) {
+	return """$<${{{ CL::RgbToHex3(Teams::GetMidColor(_Clan)) }}}{{{ Teams[_Clan-1].Name }}}$>""";
+}
+
+Text Private_GetColoredPlayerName(CSmPlayer _Player) {
+	return """$<{{{ Private_GetTeamColorCode(_Player.CurrentClan) }}}{{{ _Player.User.Name }}}$>""";
+}
+
+Void Private_QueueBigMessage(Text _Message, Integer _Duration, Integer _Priority, CUIConfig::EUISound _Sound) {
+	// Private_ClearAllMessages();
+	// UIManager.UIAll.QueueMessage(_Duration, _Priority, CUIConfig::EMessageDisplay::Big, _Message, _Sound, 0);
+	// Using Message library to make it possible to replace big messages instantly (for example when flag changes carrier often in a short timeframe)
+	Message::CleanBigMessages();
+	Message::SendBigMessage(_Message, _Duration, _Priority, _Sound, 0);
+}
+
+Void SetFlagRushVersion(Text _Version) {
+	G_FlagRushVersion = _Version;
+}
+
+// MARK: Event Handlers
+
+Void Private_Welcome(CSmPlayer _Player) {
+	declare CUIConfig UI = UIManager.GetUI(_Player);
+	UI.SendChat("""Welcome to $44f[$fffFlagRush$f44] $g[v{{{ G_FlagRushVersion }}}]!{{{ "\n" }}}Join us on $l[https://discord.gg/J6ApdyRqEZ]$99fDiscord $g$l.""");
+}
+
+Void Private_TimeLimitWarning(Integer _SecondsRemaining, Integer _Duration) {
+	declare Text Message ="""$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}{{{ _SecondsRemaining }}} seconds remaining$>""";
+	Private_QueueBigMessage(Message, _Duration, C_MessagePriority_Event, CUIConfig::EUISound::TiePoint);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Chrono);
+}
+
+Void Private_OnMatchWon(Integer _WinnerClan) {
+	declare Text Message = """{{{ Private_GetColoredTeamName(_WinnerClan) }}} won the match""";
+	Private_QueueBigMessage(Message, Durations::C_Segment_MatchEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnMatchDraw() {
+	declare Text Message = """Match draw""";
+	Private_QueueBigMessage(Message, Durations::C_Segment_MatchEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndMatch);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnMatchSkipped() {
+	declare Text Message = "Match skipped";
+	Private_QueueBigMessage(Message, Durations::C_Segment_MatchEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnMapWon(Integer _WinnerClan) {
+	declare Text Message = """{{{ Private_GetColoredTeamName(_WinnerClan) }}} won the map""";
+	Private_QueueBigMessage(Message, Durations::C_Segment_MapEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnMapDraw() {
+	declare Text Message = "Map draw";
+	Private_QueueBigMessage(Message, Durations::C_Segment_MapEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnMapSkipped() {
+	declare Text Message = "Map skipped";
+	Private_QueueBigMessage(Message, Durations::C_Segment_MapEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnRoundStarted(Integer _NbRound) {
+	declare Text Message = """Round {{{ _NbRound }}} start""";
+	Private_QueueBigMessage(Message, Durations::C_Segment_RoundStart, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnRoundWon(Integer _WinnerClan)  {
+	declare Text Message = """{{{ Private_GetColoredTeamName(_WinnerClan) }}} won the round""";
+	Private_QueueBigMessage(Message, Durations::C_Segment_RoundEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnRoundDraw() {
+	declare Text Message = "Round draw";
+	Private_QueueBigMessage(Message, Durations::C_Segment_RoundEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnRoundSkipped() {
+	declare Text Message = "Round skipped";
+	Private_QueueBigMessage(Message, Durations::C_Segment_RoundEnd, C_MessagePriority_Progression, CUIConfig::EUISound::EndRound);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnOvertimeStarted() {
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}Overtime$>""";
+	Private_QueueBigMessage(Message, Durations::C_EventMessage, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnWarmUpStarted() {
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}WarmUp$>""";
+	Private_QueueBigMessage(Message, Durations::C_Segment_WarmUpStart, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnWarmUpEnded() {
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}WarmUp end$>""";
+	Private_QueueBigMessage(Message, Durations::C_Segment_WarmUpEnd, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnWarmUpWaitForApproval() {
+	declare Text Message = """$<${{{CL::RgbToHex3(Stylesheet::C_Warning)}}}Waiting for admin confirmation to start the match.$>""";
+	Chat::Send(Message);
+}
+
+Void Private_OnWarmUpEndApproved() {
+	declare Text Message = """$<${{{CL::RgbToHex3(Stylesheet::C_Success)}}}The match can start.$>""";
+	Chat::Send(Message);
+}
+
+Void Private_OnPauseStarted() {
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}The round was paused$>""";
+	Private_QueueBigMessage(Message, Durations::C_Segment_PauseStart, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnPauseEnded() {
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}The round continues$>""";
+	Private_QueueBigMessage(Message, Durations::C_Segment_PauseEnd, C_MessagePriority_Progression, CUIConfig::EUISound::PhaseChange);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnFlagPickedUp(CSmPlayer _Player) {
+	declare Text Message = """{{{ Private_GetColoredPlayerName(_Player) }}} has the $<{{{ Private_GetTeamColorCode(_Player.CurrentClan) }}}flag$>""";
+	declare Vec3 TeamColor = Teams::GetMidColor(_Player.CurrentClan);
+	Private_QueueBigMessage(Message, Durations::C_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag, TeamColor);
+}
+
+Void Private_OnFlagScored(CSmPlayer _Scorer) {
+	declare Text Message = """{{{ Private_GetColoredPlayerName(_Scorer) }}} scored for {{{ Private_GetColoredTeamName(_Scorer.CurrentClan) }}}""";
+	declare Vec3 TeamColor = Teams::GetMidColor(_Scorer.CurrentClan);
+	Private_QueueBigMessage(Message, Durations::C_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Finish);
+	UIModule_Sound::Play(["file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/KnockOutPlayer_01.wav", "file://Media/Manialinks/Nadeo/CMGame/Utils/AudioManager/Game/ShowWinners.wav"]);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag, TeamColor);
+}
+
+Void Private_OnFlagDropped(CSmScore _OldCarrierScore /* Player might have disconnected, but we need their clan */) {
+	declare Text PlayerName = """$<{{{ Private_GetTeamColorCode(_OldCarrierScore.TeamNum) }}}{{{ _OldCarrierScore.User.Name }}}$>""";
+	declare Text Message = """{{{ PlayerName }}} dropped the flag$>""";
+	Private_QueueBigMessage(Message, Durations::C_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Checkpoint);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag);
+}
+
+Void Private_OnFlagReset() {
+	declare Text Message = "The flag was reset";
+	Private_QueueBigMessage(Message, Durations::C_EventMessage, C_MessagePriority_Event, CUIConfig::EUISound::Warning);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Flag);
+}
+
+Void Private_OnFlagCarrierTeleported() {
+	declare Text Message = "Flag carrier teleported!";
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Info);
+}
+
+Void Private_OnPlayerOutOfBounds(CSmPlayer _Player) {
+	declare Text Message = """{{{ Private_GetColoredPlayerName(_Player) }}} went out of bounds""";
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Error);
+	// Play a Sound for the dead player
+	declare CUIConfig UI = UIManager.GetUI(_Player);
+	if (UI != Null) UI.QueueMessage(2000, 1, CUIConfig::EMessageDisplay::Small, "", CUIConfig::EUISound::Capture, 1);
+}
+
+Void Private_OnPlayerRespawned(CSmPlayer _Player) {
+	declare Text Message = """{{{ Private_GetColoredPlayerName(_Player) }}} respawned""";
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Reload);
+}
+
+Void Private_OnTimeLimitReached() {
+	declare Text Message = """Time is up!""";
+	Private_QueueBigMessage(Message, Durations::C_EventMessage, C_MessagePriority_Progression, CUIConfig::EUISound::VictoryPoint);
+	UIModule_EventFeed::SendMessage(Message, UIModule_EventFeed::C_IconName_Chrono);
+}
+
+Void Private_OnTurnRestartedDueToCriticalSettingChanged() {
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}A critical setting was updated! Restarting the the current turn...$>""";
+	Chat::Send(Message);
+}
+
+Void Private_OnInvalidMap() {
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Error) }}}The map does not conform to the FlagRush map specification. Skipping...$>""";
+	Chat::Send(Message);
+}
+
+Void Private_OnMatchSkippedDueToNoPlayersLeft() {
+	declare Text Message = """$<${{{ CL::RgbToHex3(Stylesheet::C_Warning) }}}All players left, skipping match...$>""";
+	Chat::Send(Message);
+}
+
+// MARK: Lifecycle
+
+Void Unload() {
+	G_FlagRushVersion = "";
+	Message::Unload();
+}
+
+Void Load() {
+	Message::Load();
+}
+
+Void BeforeYield() {
+	foreach (Event in Playloop::GetPendingEvents()) {
+		switch (Event.Type) {
+			case Playloop::C_EventType_FlagReset: {
+				if (!Event.Silent) {
+					Private_OnFlagReset();
+				}
+			}
+			case Playloop::C_EventType_PlayerPickedUpFlag: {
+				Private_OnFlagPickedUp(Playloop::GetPlayer(Event.Player));
+			}
+			case Playloop::C_EventType_PlayerPassedFlag: {
+				// Note that the event is from the perspective of the old carrier who passed the flag
+				Private_OnFlagPickedUp(Playloop::GetPlayer(Event.RelatedPlayer));
+			}
+			case Playloop::C_EventType_PlayerDroppedFlag: {
+				Private_OnFlagDropped(Playloop::GetScore(Event.Player));
+			}
+			case Playloop::C_EventType_PlayerScoredFlag: {
+				Private_OnFlagScored(Playloop::GetPlayer(Event.Player));
+			}
+			case Playloop::C_EventType_FlagCarrierTeleported: {
+				Private_OnFlagCarrierTeleported();
+			}
+			case Playloop::C_EventType_PlayerOutOfBounds: {
+				Private_OnPlayerOutOfBounds(Playloop::GetPlayer(Event.Player));
+			}
+			case Playloop::C_EventType_PlayerRespawned: {
+				Private_OnPlayerRespawned(Playloop::GetPlayer(Event.Player));
+			}
+		}
+	}
+
+	foreach (Event in Progression::GetPendingEvents()) {
+		switch (Event.Type) {
+			// Segment Start
+			case Progression::C_EventType_SegmentStart: {
+				switch (Event.Segment) {
+					case Progression::C_Segment_Round: {
+						Private_OnRoundStarted(Progression::GetRoundNumber());
+						Private_EnableTimeLimitWarning();
+					}
+					case Progression::C_Segment_Overtime: {
+						Private_OnOvertimeStarted();
+					}
+					case Progression::C_Segment_MatchEndScoresTable: {
+						if (Event.IsInvalid) {
+							Private_OnMatchSkipped();
+							break;
+						}
+						declare Integer WinnerClan = Scores::EvaluateRound();
+						if (WinnerClan == 0) {
+							Private_OnMatchDraw();
+						} else {
+							Private_OnMatchWon(WinnerClan);
+						}
+					}
+					case Progression::C_Segment_WarmUp: {
+						Private_OnWarmUpStarted();
+						if (Settings::GetBoolean(SettingNames::S_WarmUpWaitForApproval)) {
+							Private_OnWarmUpWaitForApproval();
+						}
+					}
+					case Progression::C_Segment_Pause: {
+						Private_OnPauseStarted();
+					}
+				}
+			}
+			// Segment End
+			case Progression::C_EventType_SegmentEnd: {
+				switch (Event.Segment) {
+					case Progression::C_Segment_Map: {
+						if (Event.IsInvalid) {
+							Private_OnMapSkipped();
+							break;
+						}
+						declare Integer WinnerClan = Scores::EvaluateMap();
+						if (WinnerClan == 0) {
+							Private_OnMapDraw();
+						} else {
+							Private_OnMapWon(WinnerClan);
+						}
+					}
+					case Progression::C_Segment_Round: {
+						if (Event.IsInvalid) {
+							Private_OnRoundSkipped();
+							break;
+						}
+						declare Integer WinnerClan = Scores::EvaluateRound();
+						if (WinnerClan == 0) {
+							Private_OnRoundDraw();
+						} else {
+							Private_OnRoundWon(WinnerClan);
+						}
+					}
+					case Progression::C_Segment_WarmUp: {
+						Private_OnWarmUpEnded();
+					}
+					case Progression::C_Segment_Pause: {
+						Private_OnPauseEnded();
+					}
+				}
+			}
+			// Segment Invalid
+			case Progression::C_EventType_SegmentInvalid: {
+				switch (Event.Segment) {
+					case Progression::C_Segment_Map: {
+						Private_OnInvalidMap();
+					}
+				}
+			}
+			// Time limit reached
+			case Progression::C_EventType_TimeLimitReached: {
+				Private_OnTimeLimitReached();
+			}
+			// Warm Up Approval changed
+			case Progression::C_EventType_WarmUpApprovalChanged: {
+				if (WarmUpReadyUp::IsWarmUpEndApproved()) {
+					Private_OnWarmUpEndApproved();
+				} else {
+					Private_OnWarmUpWaitForApproval();
+				}
+			}
+			//  Match skipped due to no players being left
+			case Progression::C_EventType_MatchSkippedDueToNoPlayersLeft: {
+				Private_OnMatchSkippedDueToNoPlayersLeft();
+			}
+			// Restart due to critical mode setting changes
+			case Progression::C_EventType_RestartTurnDueToCriticalModeSettingChanged: {
+				Private_OnTurnRestartedDueToCriticalSettingChanged();
+			}
+		}
+	}
+
+	foreach (Event in PlayerLifecycleEvents::GetPendingEvents()) {
+		if (Event.Type == PlayerLifecycleEvents::C_EventType_PlayerAdded) {
+			declare CSmPlayer Player <=> AllPlayers.get(Event.Player.PlayerId, Null);
+			if (Player != Null) {
+				Private_Welcome(Player);
+			}
+		}
+	}
+}
+
+Void Yield() {
+	Message::Yield();
+
+	// Time warnings
+	if (Progression::TurnIsRunning()) {
+		foreach (WarningSeconds => Enabled in G_TimeLimitWarningsEnabled) {
+			if (!Enabled || (EndTime - Now) / 1000 > WarningSeconds) {
+				continue;
+			}
+			G_TimeLimitWarningsEnabled[WarningSeconds] = False;
+			Private_TimeLimitWarning(WarningSeconds, Durations::C_EventMessage);
+		}
+	}
+}

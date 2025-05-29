@@ -1,0 +1,645 @@
+/**
+ * Events for the general progression of the FlagRush mode.
+ *
+ * Provides events for begin and end of different segments, like warmup, maps, matches, etc.
+ * Consuming scripts should only access the pending using the GetPendingEvents function.
+ * Events are published from the respective mode using the Mode_PublishEvent function. They should not be used by consuming scripts.
+ * This script therefore only serves as a point that is accessible to libraries, as they cannot access members from the main mode file.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Const C_EventType_SegmentStart 1
+#Const C_EventType_SegmentEnd 2
+#Const C_EventType_SegmentInvalid 3
+#Const C_EventType_EndTimeChanged 4
+#Const C_EventType_TimeLimitReached 5
+#Const C_EventType_WarmUpApprovalChanged 6
+#Const C_EventType_MatchSkippedDueToNoPlayersLeft 7
+#Const C_EventType_RestartTurnDueToCriticalModeSettingChanged 8
+
+#Const C_Segment_Server 1
+#Const C_Segment_Match 2
+#Const C_Segment_Map 3
+#Const C_Segment_Round 4
+#Const C_Segment_Turn 5
+#Const C_Segment_Overtime 6
+#Const C_Segment_WarmUp 7
+#Const C_Segment_Pause 8
+#Const C_Segment_Podium 9
+#Const C_Segment_MatchEndScoresTable 10 ///< Unfortunately, the match winner is determined during the podium sequence which happens before match end, so we need a special segment
+
+#Const C_EventTypeNames [
+	1 => "SegmentStart",
+	2 => "SegmentEnd",
+	3 => "SegmentInvalid",
+	4 => "EndTimeChanged",
+	5 => "TimeLimitReached",
+	6 => "WarmUpApprovalChanged",
+	7 => "MatchSkippedDueToNoPlayersLeft",
+	8 => "RestartTurnDueToCriticalModeSettingChanged"
+]
+
+#Const C_SegmentNames [
+	1 => "Server",
+	2 => "Match",
+	3 => "Map",
+	4 => "Round",
+	5 => "Turn",
+	6 => "Overtime",
+	7 => "WarmUp",
+	8 => "Pause",
+	9 => "Podium",
+	10 => "MatchEndScoresTable"
+]
+
+
+#Struct K_Event {
+  Integer Type;
+  Integer Segment;
+  Boolean IsInvalid; // Using negative case so it defaults to being valid
+  Integer[] Scores; // Always 0 entries (segment that does not report scores) or 2 entries (for team 1 and two)
+  Integer WinnerClan; // 0 (Draw), 1 or 2
+}
+
+declare Boolean G_ServerIsRunning;
+declare Boolean G_MatchIsRunning;
+declare Boolean G_MapIsRunning;
+declare Boolean G_RoundIsRunning;
+declare Boolean G_TurnIsRunning;
+declare Boolean G_OvertimeIsRunning;
+declare Boolean G_WarmUpIsRunning;
+declare Boolean G_PauseIsRunning;
+declare Boolean G_PodiumIsRunning;
+
+declare Boolean G_MatchIsValid;
+declare Boolean G_MapIsValid;
+declare Boolean G_RoundIsValid;
+
+declare Boolean G_MatchEndRequested;
+declare Boolean G_RoundPauseRequested;
+declare Boolean G_RoundEndRequested;
+
+declare Integer G_MatchCounter;
+declare Integer G_MapCounter;
+declare Integer G_RoundCounter;
+declare Integer G_TurnCounter;
+
+declare K_Event[] G_PendingEvents;
+
+// MARK: API
+
+K_Event[] GetPendingEvents() {
+  return G_PendingEvents;
+}
+
+// Segment running states
+
+Boolean ServerIsRunning() {
+  return G_ServerIsRunning;
+}
+
+Boolean MatchIsRunning() {
+  return G_MatchIsRunning;
+}
+
+Boolean MapIsRunning() {
+  return G_MapIsRunning;
+}
+
+Boolean RoundIsRunning() {
+  return G_RoundIsRunning;
+}
+
+Boolean TurnIsRunning() {
+  return G_TurnIsRunning;
+}
+
+Boolean OvertimeIsRunning() {
+  return G_OvertimeIsRunning;
+}
+
+Boolean WarmUpIsRunning() {
+  return G_WarmUpIsRunning;
+}
+
+Boolean PauseIsRunning() {
+  return G_PauseIsRunning;
+}
+
+Boolean PodiumIsRunning() {
+  return G_PodiumIsRunning;
+}
+
+Boolean SegmentIsRunning(Integer _Segment) {
+  switch(_Segment) {
+    case C_Segment_Server: return ServerIsRunning();
+    case C_Segment_Match: return MatchIsRunning();
+    case C_Segment_Map: return MapIsRunning();
+    case C_Segment_Round: return RoundIsRunning();
+    case C_Segment_Turn: return TurnIsRunning();
+    case C_Segment_Overtime: return OvertimeIsRunning();
+    case C_Segment_WarmUp: return WarmUpIsRunning();
+    case C_Segment_Pause: return PauseIsRunning();
+    case C_Segment_Podium: return PodiumIsRunning();
+  }
+  return False;
+}
+
+// Segment counts
+
+Integer GetMatchNumber() {
+  return G_MatchCounter;
+}
+
+Integer GetMapNumber() {
+  return G_MapCounter;
+}
+
+Integer GetRoundNumber() {
+  return G_RoundCounter;
+}
+
+Integer GetTurnNumber() {
+  return G_TurnCounter;
+}
+
+// Segment end requests
+
+Boolean MatchEndRequested() {
+  return G_MatchEndRequested;
+}
+
+Void RequestMatchEnd() {
+  G_MatchEndRequested = True;
+}
+
+Boolean MapEndRequsted() {
+  // Contradictory to its name, CSmMode::MatchEndRequested is generally used to skip a map, not the whole match.
+  return MatchEndRequested() || MatchEndRequested;
+}
+
+Void RequestMapEnd() {
+  MatchEndRequested = True;
+}
+
+Boolean RoundEndRequested() {
+  return MapEndRequsted() || G_RoundEndRequested;
+}
+
+Void RequestRoundEnd() {
+  G_RoundEndRequested = True;
+}
+
+Boolean RoundPauseRequested() {
+  return G_RoundPauseRequested;
+}
+
+Void RequestRoundPause() {
+  G_RoundPauseRequested = True;
+}
+
+// Segment validities
+
+Boolean MatchIsValid() {
+  return G_MatchIsValid;
+}
+
+Void InvalidateMatch() {
+  G_MatchIsValid = False;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentInvalid,
+    Segment = C_Segment_Match
+  });
+}
+
+Boolean MapIsValid() {
+  return MatchIsValid() && G_MapIsValid && !MapEndRequsted();
+}
+
+Void InvalidateMap() {
+  G_MapIsValid = False;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentInvalid,
+    Segment = C_Segment_Map
+  });
+}
+
+Boolean RoundIsValid() {
+  return MapIsValid() && G_RoundIsValid && !RoundEndRequested();
+}
+
+Void InvalidateRound() {
+  G_RoundIsValid = False;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentInvalid,
+    Segment = C_Segment_Round
+  });
+}
+
+// EndTime
+
+Integer GetEndTime() {
+  return EndTime;
+}
+
+Void SetEndTime(Integer _EndTime) {
+  EndTime = _EndTime;
+  declare netwrite Integer Net_FlagRush_Progression_EndTime for Teams[0] = -1;
+	Net_FlagRush_Progression_EndTime = EndTime;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_EndTimeChanged
+  });
+}
+
+Void SignalTimeLimitReached() {
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_TimeLimitReached,
+    Segment = C_Segment_Round
+  });
+}
+
+Void SignalWarmUpApprovalChanged() {
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_WarmUpApprovalChanged,
+    Segment = C_Segment_WarmUp
+  });
+}
+
+Void SignalMatchSkippedDueToNoPlayersLeft() {
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_MatchSkippedDueToNoPlayersLeft,
+    Segment = C_Segment_Match
+  });
+}
+
+Void SignalRestartTurnDueToCriticalModeSettingChanged() {
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_RestartTurnDueToCriticalModeSettingChanged,
+    Segment = C_Segment_Turn
+  });
+}
+
+// Layer function definitions
+
+Text DefineLayerFunction_ServerIsRunning() {
+  return """
+    Boolean ServerIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_ServerIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_ServerIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_MatchIsRunning() {
+  return """
+    Boolean MatchIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_MatchIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_MatchIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_MapIsRunning() {
+  return """
+    Boolean MapIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_MapIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_MapIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_RoundIsRunning() {
+  return """
+    Boolean RoundIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_RoundIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_RoundIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_TurnIsRunning() {
+  return """
+    Boolean TurnIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_TurnIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_TurnIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_OvertimeIsRunning() {
+  return """
+    Boolean OvertimeIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_OvertimeIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_OvertimeIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_WarmUpIsRunning() {
+  return """
+    Boolean WarmUpIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_WarmUpIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_WarmUpIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_PauseIsRunning() {
+  return """
+    Boolean PauseIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_PauseIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_PauseIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_PodiumIsRunning() {
+  return """
+    Boolean PodiumIsRunning(){
+      declare netread Boolean Net_FlagRush_Progression_PodiumIsRunning for Teams[0] = False;
+      return Net_FlagRush_Progression_PodiumIsRunning;
+    }
+  """;
+}
+
+Text DefineLayerFunction_GetEndTime() {
+  return """
+    Integer GetEndTime(){
+      declare netread Integer Net_FlagRush_Progression_EndTime for Teams[0] = -1;
+      return Net_FlagRush_Progression_EndTime;
+    }
+  """;
+}
+
+// MARK: Lifecycle
+
+Void StartServer() {
+  G_ServerIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_ServerIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_ServerIsRunning = True;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentStart,
+    Segment = C_Segment_Server
+  });
+}
+
+Void EndServer() {
+  G_ServerIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_ServerIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_ServerIsRunning = False;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_Server
+  });
+}
+
+Void StartMatch() {
+  G_MatchCounter += 1;
+  G_MapCounter = 0;
+  G_MatchIsValid = True;
+  G_MatchEndRequested = False;
+  G_MatchIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_MatchIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_MatchIsRunning = True;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentStart,
+    Segment = C_Segment_Match
+  });
+}
+
+Void EndMatch(Integer _Team1Score, Integer _Team2Score, Integer _WinnerClan) {
+  G_MatchIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_MatchIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_MatchIsRunning = False;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_Match,
+    IsInvalid = !MatchIsValid(),
+    Scores = [_Team1Score, _Team2Score],
+    WinnerClan = _WinnerClan
+  });
+}
+
+Void StartMap() {
+  G_MapCounter += 1;
+  G_RoundCounter = 0;
+  G_MapIsValid = True;
+  MatchEndRequested = False; // This is actually used for map end
+  G_MapIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_MapIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_MapIsRunning = True;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentStart,
+    Segment = C_Segment_Map
+  });
+}
+
+Void EndMap(Integer _Team1Score, Integer _Team2Score, Integer _WinnerClan) {
+  G_MapIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_MapIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_MapIsRunning = False;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_Map,
+    IsInvalid = !MapIsValid(),
+    Scores = [_Team1Score, _Team2Score],
+    WinnerClan = _WinnerClan
+  });
+}
+
+Void StartRound() {
+  G_RoundCounter += 1;
+  G_TurnCounter = 0;
+  G_RoundIsValid = True;
+  G_RoundEndRequested = False;
+  G_RoundIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_RoundIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_RoundIsRunning = True;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentStart,
+    Segment = C_Segment_Round
+  });
+}
+
+Void EndRound(Integer _Team1Score, Integer _Team2Score, Integer _WinnerClan) {
+  if (G_OvertimeIsRunning) {
+    G_OvertimeIsRunning = False;
+    declare netwrite Boolean Net_FlagRush_Progression_OvertimeIsRunning for Teams[0] = False;
+    Net_FlagRush_Progression_OvertimeIsRunning = False;
+    G_PendingEvents.add(K_Event{
+      Type = C_EventType_SegmentEnd,
+      Segment = C_Segment_Overtime,
+      IsInvalid = !RoundIsValid()
+    });
+  }
+
+  G_RoundIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_RoundIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_RoundIsRunning = False;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_Round,
+    Scores = [_Team1Score, _Team2Score],
+    WinnerClan = _WinnerClan
+  });
+}
+
+Void StartTurn() {
+  G_TurnCounter += 1;
+  G_TurnIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_TurnIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_TurnIsRunning = True;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentStart,
+    Segment = C_Segment_Turn
+  });
+}
+
+Void EndTurn() {
+  G_TurnIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_TurnIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_TurnIsRunning = False;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_Turn
+  });
+}
+
+Void StartOvertime() {
+  G_OvertimeIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_OvertimeIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_OvertimeIsRunning = True;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentStart,
+    Segment = C_Segment_Overtime
+  });
+}
+
+Void StartWarmUp() {
+  G_WarmUpIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_WarmUpIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_WarmUpIsRunning = True;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentStart,
+    Segment = C_Segment_WarmUp
+  });
+}
+
+Void EndWarmUp() {
+  G_WarmUpIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_WarmUpIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_WarmUpIsRunning = False;
+  G_RoundPauseRequested = False;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_WarmUp
+  });
+}
+
+Void StartPause() {
+  G_PauseIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_PauseIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_PauseIsRunning = True;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentStart,
+    Segment = C_Segment_Pause
+  });
+}
+
+Void EndPause() {
+  G_PauseIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_PauseIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_PauseIsRunning = False;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_Pause
+  });
+}
+
+Void StartPodium() {
+  G_PodiumIsRunning = True;
+  declare netwrite Boolean Net_FlagRush_Progression_PodiumIsRunning for Teams[0] = True;
+  Net_FlagRush_Progression_PodiumIsRunning = True;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentStart,
+    Segment = C_Segment_Podium
+  });
+}
+
+Void EndPodium() {
+  G_PodiumIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_PodiumIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_PodiumIsRunning = False;
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_Podium
+  });
+}
+
+Void StartMatchEndScoresTable() {
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentStart,
+    Segment = C_Segment_MatchEndScoresTable
+  });
+}
+
+Void EndMatchEndScoresTable() {
+  G_PendingEvents.add(K_Event{
+    Type = C_EventType_SegmentEnd,
+    Segment = C_Segment_MatchEndScoresTable
+  });
+}
+
+Void Yield() {
+  G_PendingEvents.clear();
+}
+
+Void Unload() {
+  G_PendingEvents.clear();
+
+  G_ServerIsRunning = False;
+  G_MatchIsRunning = False;
+  G_MapIsRunning = False;
+  G_RoundIsRunning = False;
+  G_TurnIsRunning = False;
+  G_OvertimeIsRunning = False;
+  G_WarmUpIsRunning = False;
+  G_PauseIsRunning = False;
+
+  G_MatchIsValid = False;
+  G_MapIsValid = False;
+  G_RoundIsValid = False;
+
+  G_MatchEndRequested = False;
+  G_RoundEndRequested = False;
+  G_RoundPauseRequested = False;
+
+  G_MatchCounter = 0;
+  G_MapCounter = 0;
+  G_RoundCounter = 0;
+  G_TurnCounter = 0;
+
+  declare netwrite Boolean Net_FlagRush_Progression_ServerIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_ServerIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_MatchIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_MatchIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_MapIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_MapIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_RoundIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_RoundIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_TurnIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_TurnIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_OvertimeIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_OvertimeIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_WarmUpIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_WarmUpIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_PauseIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_PauseIsRunning = False;
+  declare netwrite Boolean Net_FlagRush_Progression_PodiumIsRunning for Teams[0] = False;
+  Net_FlagRush_Progression_PodiumIsRunning = False;
+}
+
+Void Load() {
+  Unload();
+}

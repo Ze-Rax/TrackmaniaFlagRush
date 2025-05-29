@@ -1,0 +1,131 @@
+/**
+ * Tracks Changes in the Players, Spectators and AllPlayers arrays and produces events accordingly.
+ *
+ * Produces events when a player joins or leaves the server, requests a clan change or clan is changed or if a player switches between being a player and a spectator.
+ * Should be Loaded and Unloaded in ModeBase LoadLibraries and UnloadLibraries, as well as being yielded in Yield plugs.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Const C_EventType_PlayerAdded 1
+#Const C_EventType_PlayerRemoved 2 ///< Note: Player in event will be null, as the player already left and the instance was removed
+#Const C_EventType_SpectatorToPlayer 3
+#Const C_EventType_PlayerToSpectator 4
+#Const C_EventType_PlayerClanChangeRequest 5
+#Const C_EventType_PlayerClanChange 6
+
+// For debugging purposes; Should be kept in sync with C_EventType constants
+#Const C_EventNamesByType [
+	1 => "PlayerAdded",
+	2 => "PlayerRemoved",
+	3 => "SpectatorToPlayer",
+	4 => "PlayerToSpectator",
+	5 => "PlayerClanChangeRequest",
+	6 => "PlayerClanChange"
+]
+
+#Struct K_PlayerPreviously {
+	Boolean WasSpectator;
+	Integer Clan;
+	Integer RequestedClan;
+}
+
+#Struct K_PlayerRef {
+	Ident PlayerId;
+	Ident UserId;
+	K_PlayerPreviously Previously;
+}
+
+#Struct K_Event {
+	Integer Type;
+	K_PlayerRef Player;
+}
+
+declare K_PlayerRef[Ident] G_LastConnectedPlayersByUserId; // By UserId for easier access
+declare K_Event[] G_PendingEvents;
+
+/**
+ * Get all pending events. Pending events should be flushed and collected every yield.
+ */
+K_Event[] GetPendingEvents() {
+	return G_PendingEvents;
+}
+
+/**
+ * Flushes pending events and collects new events from state of Player, Spectators and AllPlayers.
+ */
+Void Yield() {
+	G_PendingEvents.clear();
+	if (!MapLoaded) { // Players are removed and added when map (un)loads, causing unnecessary events
+		return;
+	}
+
+	declare K_PlayerRef[Ident] CurrentConnectedPlayersByUserId;
+
+	// Check for new players (Present in Players, but not in last connected)
+	foreach (Player in AllPlayers) {
+		declare CUser User <=> Player.User;
+		if (G_LastConnectedPlayersByUserId.existskey(User.Id)) {
+			CurrentConnectedPlayersByUserId[User.Id] = G_LastConnectedPlayersByUserId[User.Id];
+			continue;
+		}
+
+		declare K_PlayerRef PlayerStruct = K_PlayerRef {
+			PlayerId = Player.Id,
+			UserId = User.Id,
+			Previously = K_PlayerPreviously {
+				WasSpectator = Spectators.existskey(Player.Id),
+				Clan = Player.CurrentClan,
+				RequestedClan = Player.RequestedClan
+			}
+		};
+		CurrentConnectedPlayersByUserId[User.Id] = PlayerStruct;
+		G_PendingEvents.add(K_Event{ Type = C_EventType_PlayerAdded, Player = PlayerStruct });
+	}
+
+	// Check for players that left (Present in last connected, but not in current)
+	foreach (LastConnectedUserId => LastConnectedPlayer in G_LastConnectedPlayersByUserId) {
+		if (!CurrentConnectedPlayersByUserId.existskey(LastConnectedUserId)) {
+			G_PendingEvents.add(K_Event{ Type = C_EventType_PlayerRemoved, Player = LastConnectedPlayer });
+		}
+  }
+
+	foreach (Player in Players) {
+		// Check for Spectators becoming Players
+		if (CurrentConnectedPlayersByUserId[Player.User.Id].Previously.WasSpectator) {
+			G_PendingEvents.add(K_Event{ Type = C_EventType_SpectatorToPlayer, Player = CurrentConnectedPlayersByUserId[Player.User.Id] });
+			CurrentConnectedPlayersByUserId[Player.User.Id].Previously.WasSpectator = False;
+		}
+
+		// Check for Clan change requests
+		if (CurrentConnectedPlayersByUserId[Player.User.Id].Previously.RequestedClan != Player.RequestedClan) {
+			G_PendingEvents.add(K_Event {Type = C_EventType_PlayerClanChangeRequest, Player = CurrentConnectedPlayersByUserId[Player.User.Id] });
+			CurrentConnectedPlayersByUserId[Player.User.Id].Previously.RequestedClan = Player.RequestedClan;
+		}
+
+		// Check for actual Clan changes
+		if (CurrentConnectedPlayersByUserId[Player.User.Id].Previously.Clan != Player.CurrentClan) {
+			G_PendingEvents.add(K_Event { Type = C_EventType_PlayerClanChange, Player = CurrentConnectedPlayersByUserId[Player.User.Id] });
+			CurrentConnectedPlayersByUserId[Player.User.Id].Previously.Clan = Player.CurrentClan;
+		}
+	}
+
+	// Check for Players becoming Spectators
+	foreach (Spectator in Spectators) {
+		if (!CurrentConnectedPlayersByUserId[Spectator.User.Id].Previously.WasSpectator) {
+			G_PendingEvents.add(K_Event{ Type = C_EventType_PlayerToSpectator, Player = CurrentConnectedPlayersByUserId[Spectator.User.Id] });
+			CurrentConnectedPlayersByUserId[Spectator.User.Id].Previously.WasSpectator = True;
+		}
+	}
+
+	G_LastConnectedPlayersByUserId = CurrentConnectedPlayersByUserId;
+}
+
+Void Unload() {
+	G_LastConnectedPlayersByUserId.clear();
+	G_PendingEvents.clear();
+}
+
+Void Load() {
+	Unload();
+}

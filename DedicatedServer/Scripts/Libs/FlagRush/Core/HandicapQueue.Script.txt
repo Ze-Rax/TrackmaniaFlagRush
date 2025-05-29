@@ -1,0 +1,142 @@
+/**
+ * Handles safe applying of effects using the engine SetPlayer_Delayed functions.
+ *
+ * The engine limit the amount of effects that can be applied at a given time, see SetPlayer_DelayedIsFull.
+ * This libray aims to record a queue of effects to apply, and if the limit is reached, it defers the applying to following yields on a per-player basis.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Const C_Type_Fragile "Fragile"
+#Const C_Type_AccelCoef "AccelCoef"
+#Const C_Type_AdherenceCoef "AdherenceCoef"
+#Const C_Type_ControlCoef "ControlCoef"
+
+#Struct K_HandicapValue {
+	Real ValueReal;
+	Boolean ValueBoolean;
+}
+
+declare K_HandicapValue[Text][Ident] G_QueuedHandicaps;
+declare Ident[] G_QueuedResets;
+
+Void Private_HandicapQueueSet(Ident _PlayerId, Text _HandicapType, K_HandicapValue _HandicapValue) {
+	if (G_QueuedHandicaps.existskey(_PlayerId)) {
+		G_QueuedHandicaps[_PlayerId][_HandicapType] = _HandicapValue;
+	} else {
+		G_QueuedHandicaps[_PlayerId] = [_HandicapType => _HandicapValue];
+	}
+}
+
+Void Queue_Fragile(CSmPlayer _Player, Boolean _Active) {
+	Private_HandicapQueueSet(_Player.Id, C_Type_Fragile, K_HandicapValue{ ValueBoolean = _Active });
+}
+
+Void Queue_AccelCoef(CSmPlayer _Player, Real _Value) {
+	Private_HandicapQueueSet(_Player.Id, C_Type_AccelCoef, K_HandicapValue{ ValueReal = _Value });
+}
+
+Void Queue_AdherenceCoef(CSmPlayer _Player, Real _Value) {
+	Private_HandicapQueueSet(_Player.Id, C_Type_AdherenceCoef, K_HandicapValue{ ValueReal = _Value });
+}
+
+Void Queue_ControlCoef(CSmPlayer _Player, Real _Value) {
+	Private_HandicapQueueSet(_Player.Id, C_Type_ControlCoef, K_HandicapValue{ ValueReal = _Value });
+}
+
+Void Queue_Reset(CSmPlayer _Player) {
+	if (!G_QueuedResets.exists(_Player.Id)) G_QueuedResets.add(_Player.Id);
+	G_QueuedHandicaps.removekey(_Player.Id);
+}
+
+Void ClearQueue() {
+	G_QueuedHandicaps = [];
+	G_QueuedResets = [];
+}
+
+/**
+ * Applies queued resets and cleans up the queue afterwards.
+ */
+Void Private_TryApplyResets() {
+	declare Ident[] PlayersAppliedOrNotFound;
+
+	foreach (PlayerId in G_QueuedResets) {
+		if (!Players.existskey(PlayerId)) { // Player left
+			PlayersAppliedOrNotFound.add(PlayerId);
+			continue;
+		}
+		declare CSmPlayer Player <=> Players[PlayerId];
+		if (SetPlayer_DelayedIsFull(Player)) { // Try next yield
+			continue;
+		}
+		SetPlayer_Delayed_Reset(Player);
+		PlayersAppliedOrNotFound.add(PlayerId);
+	}
+
+	foreach (PlayerId in PlayersAppliedOrNotFound) {
+		G_QueuedResets.remove(PlayerId);
+	}
+}
+
+/**
+ * Applies queued handicaps and clears up the queue afterwards.
+ */
+Void Private_TryApplyHandicaps() {
+	declare Ident[] PlayersEmptyQueueOrNotFound;
+
+	foreach (PlayerId => PlayerHandicaps in G_QueuedHandicaps) {
+		if (!Players.existskey(PlayerId)) { // Player left
+			PlayersEmptyQueueOrNotFound.add(PlayerId);
+			continue;
+		}
+
+		declare CSmPlayer Player <=> Players[PlayerId];
+		declare Text[] AppliedHandicapTypes;
+		foreach(HandicapType => HandicapValue in PlayerHandicaps) {
+			if (SetPlayer_DelayedIsFull(Player)) { // Try next yield
+				break; // Can't apply anymore other types aswell
+			}
+
+			switch (HandicapType) {
+				case C_Type_Fragile: {
+					SetPlayer_Delayed_Fragile(Player, HandicapValue.ValueBoolean);
+				}
+				case C_Type_AccelCoef: {
+					SetPlayer_Delayed_AccelCoef(Player, HandicapValue.ValueReal);
+				}
+				case C_Type_AdherenceCoef: {
+					SetPlayer_Delayed_AdherenceCoef(Player, HandicapValue.ValueReal);
+				}
+				case C_Type_ControlCoef: {
+					SetPlayer_Delayed_ControlCoef(Player, HandicapValue.ValueReal);
+				}
+			}
+			AppliedHandicapTypes.add(HandicapType);
+		}
+
+		// Remove all handicaps that were applied above
+		foreach (Type in AppliedHandicapTypes) G_QueuedHandicaps[PlayerId].removekey(Type);
+		if (G_QueuedHandicaps[PlayerId].count == 0) PlayersEmptyQueueOrNotFound.add(PlayerId);
+	}
+
+	foreach (PlayerId in PlayersEmptyQueueOrNotFound) {
+		G_QueuedHandicaps.removekey(PlayerId);
+	}
+}
+
+Void Unload() {
+	ClearQueue();
+}
+
+Void Load() {
+	Unload();
+}
+
+/**
+ * Tries to apply resets and handicaps for each player.
+ * If the engine delayed-queue is full it will try again next yield.
+ */
+Void Yield() {
+	Private_TryApplyResets();
+	Private_TryApplyHandicaps();
+}

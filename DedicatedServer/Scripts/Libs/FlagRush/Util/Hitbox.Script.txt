@@ -4,7 +4,7 @@
 #Include "MathLib" as ML
 #Include "Libs/FlagRush/CommonLibs/OBB.Script.txt" as OBB
 
-#Const C_FlagColliderRadius 0.25
+#Const C_FlagColliderRadius 1.
 
 #Struct K_OBBTransform {
 	Vec3 Extents; //left up forward
@@ -47,8 +47,8 @@ Boolean AreColliding(CSmPlayer _PlayerA, K_OBBTransform _ObbTransformA, CSmPlaye
 	//if both players are less than MinDistance away from each other there is no case where they do NOT collide
 	if (ML::Distance(_PlayerA.Position, _PlayerB.Position)  < MinDistance) return True;
 
-	declare OBB::K_OBB ObbA = Private_ComputeOBB(_PlayerA);
-	declare OBB::K_OBB ObbB = Private_ComputeOBB(_PlayerB);
+	declare OBB::K_OBB ObbA = Private_ComputeOBB(_PlayerA, _ObbTransformA);
+	declare OBB::K_OBB ObbB = Private_ComputeOBB(_PlayerB, _ObbTransformB);
 	return OBB::TestOBBOBB(ObbA,ObbB);
 }
 
@@ -58,7 +58,7 @@ Boolean AreColliding(CSmPlayer _PlayerA, K_OBBTransform _ObbTransformA, CSmPlaye
 Boolean AreColliding(CSmPlayer _Player, K_OBBTransform _ObbTransform, Vec3 _FlagPos) {
 
 
-	if (ML::Distance(_Player.Position, _FlagPos)  < C_MinDistFlag) return True;
+	if (ML::Distance(_Player.Position, _FlagPos)  < 2 * C_FlagColliderRadius) return True;
 
 
 	return False;

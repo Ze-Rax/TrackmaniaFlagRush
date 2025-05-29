@@ -4,7 +4,7 @@
 #Include "MathLib" as ML
 #Include "Libs/FlagRush/CommonLibs/OBB.Script.txt" as OBB
 
-#Const C_FlagColliderRadius 1.
+#Const C_FlagColliderRadius 0.5
 
 #Struct K_OBBTransform {
 	Vec3 Extents; //left up forward
@@ -39,16 +39,18 @@ OBB::K_OBB Private_ComputeOBB(CSmPlayer _Player, K_OBBTransform _ObbTransform) {
  * Checks if two players collide
  */
 Boolean AreColliding(CSmPlayer _PlayerA, K_OBBTransform _ObbTransformA, CSmPlayer _PlayerB, K_OBBTransform _ObbTransformB) {
-	declare Real MaxDistance = ML::Length(_ObbTransformA.Extents + _ObbTransformB.Extents);
-	//if both players are more than MaxDistance away from each other there is no case where they do collide
-	if (ML::Distance(_PlayerA.Position, _PlayerB.Position)  > MaxDistance) return False;
-
-	declare Real MinDistance = Private_MinComponent(_ObbTransformA.Extents) + Private_MinComponent(_ObbTransformB.Extents);
-	//if both players are less than MinDistance away from each other there is no case where they do NOT collide
-	if (ML::Distance(_PlayerA.Position, _PlayerB.Position)  < MinDistance) return True;
 
 	declare OBB::K_OBB ObbA = Private_ComputeOBB(_PlayerA, _ObbTransformA);
 	declare OBB::K_OBB ObbB = Private_ComputeOBB(_PlayerB, _ObbTransformB);
+
+	declare Real MaxDistance = ML::Length(ObbA.HW + ObbB.HW);
+	//if both players are more than MaxDistance away from each other there is no case where they do collide
+	if (ML::Distance(ObbA.C, ObbB.C)  > MaxDistance) return False;
+
+	declare Real MinDistance = Private_MinComponent(ObbA.HW) + Private_MinComponent(ObbB.HW);
+	//if both players are less than MinDistance away from each other there is no case where they do NOT collide
+	if (ML::Distance(ObbA.C, ObbB.C)  < MinDistance) return True;
+
 	return OBB::TestOBBOBB(ObbA,ObbB);
 }
 
@@ -57,9 +59,17 @@ Boolean AreColliding(CSmPlayer _PlayerA, K_OBBTransform _ObbTransformA, CSmPlaye
  */
 Boolean AreColliding(CSmPlayer _Player, K_OBBTransform _ObbTransform, Vec3 _FlagPos) {
 
+	declare OBB::K_OBB PlayerOBB = Private_ComputeOBB(_Player, _ObbTransform);
+	declare OBB::K_Sphere FlagSphere = OBB::K_Sphere{ Center = _FlagPos, Radius = C_FlagColliderRadius };
 
-	if (ML::Distance(_Player.Position, _FlagPos)  < 2 * C_FlagColliderRadius) return True;
+	declare Real MaxDistance = ML::Length(PlayerOBB.HW) + FlagSphere.Radius;
+	//if both players are more than MaxDistance away from each other there is no case where they do collide
+	if (ML::Distance(PlayerOBB.C, FlagSphere.Center)  > MaxDistance) return False;
+
+	declare Real MinDistance = Private_MinComponent(PlayerOBB.HW) + FlagSphere.Radius;
+	//if both players are less than MinDistance away from each other there is no case where they do NOT collide
+	if (ML::Distance(PlayerOBB.C, FlagSphere.Center)  < MinDistance) return True;
 
 
-	return False;
+	return OBB::TestObbSphere(PlayerOBB, FlagSphere);
 }

@@ -1,7 +1,12 @@
 {
   "folders": [
     {
-      "path": "."
+      "path": ".",
+			"name": "Root"
+    },
+    {
+      "path": "DedicatedServer\\Scripts",
+			"name": "Gamemode Scripts"
     }
   ],
   "settings": {

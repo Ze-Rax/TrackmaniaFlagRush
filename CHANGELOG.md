@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.7.0
+
+### General
+* Completely reworked XmlRpc Callbacks. Check the [XmlRpc Documentation](./Documentation/XmlRpc/XmlRpc.md) for the new specification
+
+### Bugs and crashes
+* Fixed a typo for the "Thief" statistic on the Podium.
+* Fixed stadium vehicle tunings not being applied.
+
 ## 1.6.0
 
 ### General
@@ -10,7 +19,7 @@
 - Removed setting `S_RandomizeFlagSpawn`.
 + Added a statistics panel to the podium sequence to show the best players in various categories, like "Most distance driven", "Most airtime" and several others.
 + Added support for the new desert car.
-+ Added vehicle specific tunings for balancing with respective settings (`S_Tuning<Car><Tuning type>`, see [Mode settings](./Mode%20settings.md/#vehicle-tuning-settings)).
++ Added vehicle specific tunings for balancing with respective settings (`S_Tuning<Car><Tuning type>`, see [Mode settings](./Documentation/Mode%20settings.md/#vehicle-tuning-settings)).
 + Added a setting `S_UseLightTrails` to toggle light trails for the flag carrier.
 
 ### Bugs and crashes

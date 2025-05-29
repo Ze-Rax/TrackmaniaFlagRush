@@ -106,7 +106,7 @@
 #Setting S_RespawnSpeedLimitKmh							30.			as "<hidden>" // Speed limit for player to respawn
 #Setting S_RespawnDelayPerPlayer						1.0 		as "Respawn delay (seconds) per player in a team"
 #Setting S_DropFlagPickupPenalty						3.			as "<hidden>" // Flag pickup cooldown after dropping (seconds)
-#Setting S_TeleportDetectionThreshold				8.			as "<hidden>" // Maximum allowed distance (meters) to teleport (lag) before dropping the flag
+#Setting S_TeleportDetectionThreshold				32.			as "<hidden>" // Maximum allowed distance (meters) to teleport (lag) before dropping the flag
 #Setting S_UseCollisions										False		as "Use collisions (experimental)"
 #Setting S_UseLightTrails										True		as "<hidden>" // Use light trails for the flag carrier
 
@@ -118,7 +118,7 @@
 #Setting S_TuningSnowAcceleration						1.0 		as "<hidden>"
 #Setting S_TuningSnowAdherence							1.0 		as "<hidden>"
 #Setting S_TuningSnowControl								1.0 		as "<hidden>"
-#Setting S_TuningRallyAcceleration					0.7 		as "<hidden>"
+#Setting S_TuningRallyAcceleration					0.75 		as "<hidden>"
 #Setting S_TuningRallyAdherence							1.0 		as "<hidden>"
 #Setting S_TuningRallyControl								1.0 		as "<hidden>"
 #Setting S_TuningDesertAcceleration					0.66 		as "<hidden>"
@@ -128,8 +128,8 @@
 // Misc
 #Setting S_UseCrudeExtrapolation						True		as "<hidden>"
 #Setting S_TrustClientSimu									True		as "<hidden>"
-#Setting S_ModeCommands_AdminLoginsCsv 			"W2ZNWNzVQV6z3hXuNgRMRg" 			as "<hidden>" // Admin logins for the mode commands ui // TODO: Remove own login
-#Setting S_Debug														True		as "<hidden>" // TODO: Disable
+#Setting S_ModeCommands_AdminLoginsCsv 			"" 			as "<hidden>" // Admin logins for the mode commands ui
+#Setting S_Debug														False		as "<hidden>"
 
 //////////////
 // Commands //

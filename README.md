@@ -1,56 +1,50 @@
-![FlagRush Logo](Assets/png/mark.png)
+# ![FlagRush Logo](Assets/png/mark.png)
 
-**`FlagRush`** is a Trackmania gamemode, where two teams compete in an arena to capture a flag and bring it to the opposing team base. The mode plays best with a team size of 4 players per team.
+*FlagRush* is a community made Trackmania gamemode, in which two teams compete in an arena to capture a flag from a flagspawn near the center of the map and score it in the base of the opposing team. The mode is recommended to be played with balanced teams of about 4 players each.
 
-# Maps
+## Where to play?
+As of today, we're hosting a couple of public server in the [Official Trackmania FlagRush Club](https://www.trackmania.com/clubs/42) in game. You are free to join and casually play with your friends or with other players that happen to be present.
 
-## Creating maps for the mode
+If you want to host your own server, the following section explains how to set up a server.
 
-An explanation on how to create map for the FlagRush gamemode can be found in the [Mapping guide](./Mapping%20guide.md).
+## Server How-to
+Setting up a dedicated server with FlagRush is not much more complicated than setting up a server with a regular official gamemode. This guide will not go into detail about how to set up regular server, so please refer to [this wiki](https://wiki.trackmania.io/en/dedicated-server) for more details.
 
-## Download existing maps for the mode
+To host the FlagRush gamemode on your dedicated server you have to add the necessary script files to it. The script files are included in this repository. We recommend downloading our dedicated server resources from the assets sections of the [latest release](https://github.com/Ze-Rax/TrackmaniaFlagRush/releases/latest), where an appropriately named zip-file should be available. Simply Extract its content into the `UserData` directory of your dedicated server.
 
-We recommend starting with our officially reviewed mapppacks:
-- Curated Mappack: https://trackmania.exchange/mappack/view/1155/flagrush-curated-map-pool
-	- Maps which have been deemed to be of good quality by the players and developers
-- Proving Grounds Mappack: https://trackmania.exchange/mappack/view/1151/flagrush-proving-grounds
-	- Maps which are fully functional but not up to the quality expectations of the curated mappack (yet)
+> ℹ️ If you want to use the current development state of the gamemode, you may also clone or download the repository directly and copy the contents of the [`DedicatedServer`](https://github.com/Ze-Rax/TrackmaniaFlagRush/tree/dev/DedicatedServer) directory to your dedicated server instead. The development branch should be stable.
 
-You can find other compatible maps on Maniaexchange:
-- All FlagRush maps on TMX: https://trackmania.exchange/mapsearch2?mtype=FlagRushArena
+With the dedicated server resources added to your server, you can now adjust the server configuraiton to start the server with the FlagRush gamemode. To do so, you can simply adjust an existing match settings configuration or create a new one and set the script name to our gamemode.
 
-# Server How-to
+```
+<?xml version="1.0" encoding="utf-8" ?>
+<playlist>
+	<gameinfos>
+		<script_name>Modes/TrackMania/FlagRush.Script.txt</script_name>
+	</gameinfos>
 
-1. Setup Trackmania2020 dedicated server. ([Tutorial](https://wiki.trackmania.io/en/dedicated-server/Setup/Windows))
-2. Download gamemode: [main.zip](https://github.com/Ze-Rax/TrackmaniaFlagRush/archive/refs/heads/main.zip), then extract the zip archive.
-	- or clone the repository, if you have `git` installed: \
-  	`git clone https://github.com/Ze-Rax/TrackmaniaFlagRush`
-3. Place the contents of `DedicatedServer` folder into your dedicated server's `UserData` folder.
-	- A minimal FlagRush matchsettings file is already included in `Map/MatchSettings/FlagRush.MatchSettings.txt` together with a map.
-	- The gamemode behaviour can be customized with settings that are applied through the match settings file, see [Mode settings documentation](./Mode%20settings.md).
-4. Start the server:
-
-Linux:
-```bash
-./TrackmaniaServer /game_settings=MatchSettings/FlagRush.MatchSettings.txt /dedicated_cfg=dedicated_cfg.txt
+	<!-- Other configuration... -->
+</playlist>
 ```
 
-Windows:
-```powershell
-TrackmaniaServer.exe /game_settings=MatchSettings/FlagRush.MatchSettings.txt /dedicated_cfg=dedicated_cfg.txt
-```
+You also need to provide at least one valid FlagRush map for the server to start. A [curated list](https://trackmania.exchange/mappackshow/1155) of FlagRush maps can be found on ManiaExchange.
 
-# Community
+The gamemode exposes an extensive list of settings to adjust several aspects of the gameplay experience. These can also be adjusted in the match settings configuration file. Refer to the documentation for a [list of the available settings together with their description](./Documentation/Mode%20settings.md).
 
-Huge thanks to everyone who helped this project to become reality:
+> ℹ️ We provide a simple default configuration and a map in the dedicated server resources that should work out of the box: [`FlagRush.MatchSettings.txt`](./DedicatedServer/Maps/MatchSettings/FlagRush.MatchSettings.txt). You may use it when starting your server or adjust it to your liking.
 
-- `Geekid` - for ideas and contributing code
-- `Reaby` - for ideas and contributing code
-- `Rxelux` - for ideas and contributing code
-- `RealSpace` - for maps, mapping tutorial and support, map management and ideas
-- `Nalax` - for map management and mapping support
-- `TuplaJ` - for mapping
+## Maps
+A [curated list](https://trackmania.exchange/mappackshow/1155) of FlagRush maps is available on ManiaExchange. A list of all compatible maps on ManiaExchange can be found [here](https://trackmania.exchange/mapsearch2?query=maptype%3A+flagrusharena).
 
-Join us in our [Discord Server](https://discord.gg/J6ApdyRqEZ)!
+Additionally, you can also create your own maps. A detailed [Mapping Guide](./Documentation/Mapping%20guide.md) can be found in the documentation.
+
+## Community
+Join us in our [Discord Server](https://discord.gg/J6ApdyRqEZ)! Also join our [Trackmania FlagRush Club](https://www.trackmania.com/clubs/42).
+
+Mode developed and managed by the FlagRush-Team:
+- Ze-Rax
+- Reaby
+- Geekid
+- Rxelux
 
 The project is licensed under the [MIT License](LICENSE).

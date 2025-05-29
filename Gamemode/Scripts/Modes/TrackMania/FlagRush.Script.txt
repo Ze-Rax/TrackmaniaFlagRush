@@ -129,7 +129,7 @@
 #Setting S_UseCrudeExtrapolation						True		as "<hidden>"
 #Setting S_TrustClientSimu									True		as "<hidden>"
 #Setting S_ModeCommands_AdminLoginsCsv 			"W2ZNWNzVQV6z3hXuNgRMRg" 			as "<hidden>" // Admin logins for the mode commands ui // TODO: Remove own login
-#Setting S_Debug														True		as "<hidden>"
+#Setting S_Debug														True		as "<hidden>" // TODO: Disable
 
 //////////////
 // Commands //

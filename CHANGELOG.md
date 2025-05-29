@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.7.0
+
+### General
+* Completely reworked XmlRpc Callbacks. Check the [XmlRpc Documentation](./Documentation/XmlRpc/XmlRpc.md) for the new specification
+
+### Bugs and crashes
+* Fixed a typo for the "Thief" statistic on the Podium.
+* Fixed stadium vehicle tunings not being applied.
+
 ## 1.6.0
 
 ### General

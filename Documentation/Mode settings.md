@@ -41,7 +41,7 @@ These settings change how the gameplay in a round behaves.
 | S_UseCollisions                  | Boolean | False         | Whether or not to use physics based collisions between players. This setting is EXPERIMENTAL: Player collisions can feel and be weird and inconsistent. If enabled, server will also switch to server side simulation (See S_TrustClientSimu) and disable crude extrapolation (See S_UseCrudeExtrapolation). |
 | S_UseLightTrails                 | Boolean | True          | Whether to use light trails for the player carrying the flag. |
 
-## Vehicles
+## Vehicle Settings
 
 These settings change vehicle characteristic for balancing.
 

@@ -17,22 +17,16 @@
 		<!-- Default : <setting name="S_NbRoundsToWinMap" type="integer" value="2"/> -->
 		<!-- Default : <setting name="S_NbFlagsToWinRound" type="integer" value="3"/> -->
 		<!-- Default : <setting name="S_RoundTimeLimitSeconds" type="integer" value="360"/> -->
-		<!-- Default : <setting name="S_UseTurns" type="boolean" value="0"/> -->
 		<!-- Default : <setting name="S_UseOvertime" type="boolean" value="1"/> -->
 		<!-- Default : <setting name="S_UseWarmUp" type="boolean" value="1"/> -->
 		<!-- Default : <setting name="S_WarmUpWaitForApproval" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_SkipMatchOnLastPlayerLeave" type="boolean" value="1"/> -->
 		<!-- Default : <setting name="S_Team1Name" type="text" value=""/> -->
 		<!-- Default : <setting name="S_Team1Hue" type="integer" value="-1"/> -->
 		<!-- Default : <setting name="S_Team2Name" type="text" value=""/> -->
 		<!-- Default : <setting name="S_Team2Hue" type="integer" value="-1"/> -->
 		<!-- Default : <setting name="S_UseClubTags" type="boolean" value="1"/> -->
 		<!-- Default : <setting name="S_UseTeamSkins" type="boolean" value="1"/> -->
-		<!-- Default : <setting name="S_SkipMatchOnLastPlayerLeave" type="boolean" value="1"/> -->
-		<!-- Default : <setting name="S_ModeCommands_AdminLoginsCsv" type="text" value=""/> -->
-		<!-- Default : <setting name="S_UseReversedBases" type="boolean" value="0"/> -->
-		<!-- Default : <setting name="S_RandomizeFlagSpawn" type="boolean" value="1"/> -->
-		<!-- Default : <setting name="S_FlagInitialSpawnDelaySeconds" type="real" value="0"/> -->
-		<!-- Default : <setting name="S_FlagRespawnDelaySeconds" type="real" value="0"/> -->
 		<!-- Default : <setting name="S_FlagDropStateDurationSeconds" type="real" value="8"/> -->
 		<!-- Default : <setting name="S_FlagStealResistDurationSeconds" type="real" value="1"/> -->
 		<!-- Default : <setting name="S_FlagSameTeamSteal" type="boolean" value="1"/> -->
@@ -44,9 +38,24 @@
 		<!-- Default : <setting name="S_RespawnSpeedLimitKmh" type="real" value="30"/> -->
 		<!-- Default : <setting name="S_RespawnDelayPerPlayer" type="real" value="1"/> -->
 		<!-- Default : <setting name="S_DropFlagPickupPenalty" type="real" value="3"/> -->
-		<!-- Default : <setting name="S_TeleportDetectionThreshold" type="real" value="8"/> -->
+		<!-- Default : <setting name="S_TeleportDetectionThreshold" type="real" value="32"/> -->
 		<!-- Default : <setting name="S_UseCollisions" type="boolean" value="0"/> -->
+		<!-- Default : <setting name="S_UseLightTrails" type="boolean" value="1"/> -->
 		<!-- Default : <setting name="S_ForceEnabledVehiclesCsv" type="text" value=""/> -->
+		<!-- Default : <setting name="S_TuningStadiumAcceleration" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_TuningStadiumAdherence" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_TuningStadiumControl" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_TuningSnowAcceleration" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_TuningSnowAdherence" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_TuningSnowControl" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_TuningRallyAcceleration" type="real" value="0.75"/> -->
+		<!-- Default : <setting name="S_TuningRallyAdherence" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_TuningRallyControl" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_TuningDesertAcceleration" type="real" value="0.66"/> -->
+		<!-- Default : <setting name="S_TuningDesertAdherence" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_TuningDesertControl" type="real" value="1"/> -->
+		<!-- Default : <setting name="S_ModeCommands_AdminLoginsCsv" type="text" value="W2ZNWNzVQV6z3hXuNgRMRg"/> -->
+		<!-- Default : <setting name="S_Debug" type="boolean" value="1"/> -->
 	</mode_script_settings>
 
 	<startindex>0</startindex>

@@ -1,6 +1,1 @@
 .vscode
-DedicatedServer/docker-compose.yaml
-DedicatedServer/config/
-DedicatedServer/pyplanet/
-DedicatedServer/Maps/MatchSettings/cfg_tracklist.xml
-DedicatedServer/Maps/*

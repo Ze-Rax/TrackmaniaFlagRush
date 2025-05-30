@@ -6,7 +6,7 @@
 
 #Const C_FlagColliderRadius 0.5
 
-#Struct K_OBBTransform {
+#Struct K_Hitbox {
 	Vec3 Extents; //left up forward
 	Vec3 Offsets; //0 up forward
 }
@@ -23,25 +23,25 @@ Vec3[] Private_ComputeBasis(CSmPlayer _Player) {
 	];
 }
 
-OBB::K_OBB Private_ComputeOBB(CSmPlayer _Player, K_OBBTransform _ObbTransform) {
+OBB::K_OBB Private_ComputeOBB(CSmPlayer _Player, K_Hitbox _Hitbox) {
 	declare Vec3[] Basis = Private_ComputeBasis(_Player);
 	// Ignore Offset.X as we assume that the bounding box is center on the X (left right) axis
-	declare Vec3 Center = _Player.Position + Basis[1] * _ObbTransform.Offsets.Y + Basis[2] * _ObbTransform.Offsets.Z;
+	declare Vec3 Center = _Player.Position + Basis[1] * _Hitbox.Offsets.Y + Basis[2] * _Hitbox.Offsets.Z;
 
 	return OBB::K_OBB {
 		C = Center,
 		M = Basis,
-		HW = _ObbTransform.Extents
+		HW = _Hitbox.Extents
 	};
 }
 
 /**
  * Checks if two players collide
  */
-Boolean AreColliding(CSmPlayer _PlayerA, K_OBBTransform _ObbTransformA, CSmPlayer _PlayerB, K_OBBTransform _ObbTransformB) {
+Boolean AreColliding(CSmPlayer _PlayerA, K_Hitbox _HitboxA, CSmPlayer _PlayerB, K_Hitbox _HitboxB) {
 
-	declare OBB::K_OBB ObbA = Private_ComputeOBB(_PlayerA, _ObbTransformA);
-	declare OBB::K_OBB ObbB = Private_ComputeOBB(_PlayerB, _ObbTransformB);
+	declare OBB::K_OBB ObbA = Private_ComputeOBB(_PlayerA, _HitboxA);
+	declare OBB::K_OBB ObbB = Private_ComputeOBB(_PlayerB, _HitboxB);
 
 	declare Real MaxDistance = ML::Length(ObbA.HW + ObbB.HW);
 	//if both players are more than MaxDistance away from each other there is no case where they do collide
@@ -51,15 +51,15 @@ Boolean AreColliding(CSmPlayer _PlayerA, K_OBBTransform _ObbTransformA, CSmPlaye
 	//if both players are less than MinDistance away from each other there is no case where they do NOT collide
 	if (ML::Distance(ObbA.C, ObbB.C)  < MinDistance) return True;
 
-	return OBB::TestOBBOBB(ObbA,ObbB);
+	return OBB::TestObbObb(ObbA,ObbB);
 }
 
 /**
  * Checks if a player and the flag collide
  */
-Boolean AreColliding(CSmPlayer _Player, K_OBBTransform _ObbTransform, Vec3 _FlagPos) {
+Boolean AreColliding(CSmPlayer _Player, K_Hitbox _Hitbox, Vec3 _FlagPos) {
 
-	declare OBB::K_OBB PlayerOBB = Private_ComputeOBB(_Player, _ObbTransform);
+	declare OBB::K_OBB PlayerOBB = Private_ComputeOBB(_Player, _Hitbox);
 	declare OBB::K_Sphere FlagSphere = OBB::K_Sphere{ Center = _FlagPos, Radius = C_FlagColliderRadius };
 
 	declare Real MaxDistance = ML::Length(PlayerOBB.HW) + FlagSphere.Radius;

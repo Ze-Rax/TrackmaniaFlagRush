@@ -15,7 +15,8 @@
 	Text ModelName;
 	Text DisplayName;
 	Text DisplayIcon;
-	Hitbox::K_OBBTransform OBB;
+	Hitbox::K_Hitbox Hitbox;
+	Hitbox::K_Hitbox HitboxWithCollisions;
 }
 
 #Struct K_Tuning {
@@ -30,9 +31,13 @@
 	ModelName = "",
 	DisplayName = "Invalid",
 	DisplayIcon = "?" ,
-	OBB = Hitbox::K_OBBTransform{
-		Extents = <1.0,1.0,1.0>,
-		Offsets = <0.0,0.0,0.0>
+	Hitbox = Hitbox::K_Hitbox{
+		Extents = <1.0, 1.0, 1.0>,
+		Offsets = <0.0, 0.0, 0.0>
+	},
+	HitboxWithCollisions = Hitbox::K_Hitbox{
+		Extents = <1.0, 1.0, 1.0>,
+		Offsets = <0.0, 0.0, 0.0>
 	}
 }
 #Const C_Vehicle_Stadium K_Vehicle{
@@ -41,9 +46,13 @@
   ModelName = "CarSport",
 	DisplayName = "Stadium",
 	DisplayIcon = "",
-	OBB = Hitbox::K_OBBTransform{
-		Extents = <1.06,0.4,1.9>,
-		Offsets = <0.0,0.4,0.28>
+	Hitbox = Hitbox::K_Hitbox{
+		Extents = <1.06, 0.4, 1.9>,
+		Offsets = <0.0, 0.4, 0.28>
+	},
+	HitboxWithCollisions = Hitbox::K_Hitbox{
+		Extents = <1.26, 0.6, 2.2>,
+		Offsets = <0.0, 0.4, 0.28>
 	}
 }
 
@@ -53,9 +62,13 @@
   ModelName = "CarSnow",
 	DisplayName = "Snow",
 	DisplayIcon = "❄",
-	OBB = Hitbox::K_OBBTransform{
-		Extents = <0.84,0.94,1.78>,
-		Offsets = <0.0,0.74,0.15>
+	Hitbox = Hitbox::K_Hitbox{
+		Extents = <0.84, 0.94, 1.78>,
+		Offsets = <0.0, 0.74, 0.15>
+	},
+	HitboxWithCollisions = Hitbox::K_Hitbox{
+		Extents = <1.04, 1.14, 1.98>,
+		Offsets = <0.0, 0.74, 0.15>
 	}
 }
 #Const C_Vehicle_Rally K_Vehicle{
@@ -64,9 +77,13 @@
   ModelName = "CarRally",
 	DisplayName = "Rally",
 	DisplayIcon = "",
-	OBB = Hitbox::K_OBBTransform{
-		Extents = <0.96,0.74,1.92>,
-		Offsets = <0.0,0.7,0.46>
+	Hitbox = Hitbox::K_Hitbox{
+		Extents = <0.96, 0.74, 1.92>,
+		Offsets = <0.0, 0.7, 0.46>
+	},
+	HitboxWithCollisions = Hitbox::K_Hitbox{
+		Extents = <1.16, 0.94, 2.12>,
+		Offsets = <0.0, 0.7, 0.46>
 	}
 }
 #Const C_Vehicle_Desert K_Vehicle{
@@ -75,9 +92,13 @@
 	ModelName = "CarDesert",
 	DisplayName = "Desert",
 	DisplayIcon = "",
-	OBB = Hitbox::K_OBBTransform{
-		Extents = <0.96,0.76,2.48>,
-		Offsets = <0.0,0.78,0.2>
+	Hitbox = Hitbox::K_Hitbox{
+		Extents = <0.96, 0.76, 2.48>,
+		Offsets = <0.0, 0.78, 0.2>
+	},
+	HitboxWithCollisions = Hitbox::K_Hitbox{
+		Extents = <1.16, 0.96, 2.68>,
+		Offsets = <0.0, 0.78, 0.2>
 	}
 }
 

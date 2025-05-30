@@ -117,10 +117,20 @@ CSmPlayer Private_GetFirstCollidingPlayer_OpponentPriority(CSmPlayer _ReferenceP
 	declare CSmPlayer FirstCollidingPlayer;
 	declare Vehicles::K_Vehicle ReferencePlayerVehicle = Private_Player_GetVehicle(_ReferencePlayer);
 	foreach (Player in Players) {
-		declare Vehicles::K_Vehicle OtherPlayerVehicle = Private_Player_GetVehicle(Player);
-		if (Player == _ReferencePlayer || !Hitbox::AreColliding(_ReferencePlayer, ReferencePlayerVehicle.OBB, Player, OtherPlayerVehicle.OBB)) {
-      continue;
+		if (Player == _ReferencePlayer) {
+			continue;
     }
+
+		declare Vehicles::K_Vehicle OtherPlayerVehicle = Private_Player_GetVehicle(Player);
+		declare Boolean AreColliding = False;
+		if (Settings::GetBoolean(SettingNames::S_UseCollisions)) {
+			AreColliding = Hitbox::AreColliding(_ReferencePlayer, ReferencePlayerVehicle.HitboxWithCollisions, Player, OtherPlayerVehicle.HitboxWithCollisions);
+		} else {
+			AreColliding = Hitbox::AreColliding(_ReferencePlayer, ReferencePlayerVehicle.Hitbox, Player, OtherPlayerVehicle.Hitbox);
+		}
+		if (!AreColliding) {
+			continue;
+		}
 
 		declare Boolean IsOpponent = Player.CurrentClan != _ReferencePlayer.CurrentClan;
     if (IsOpponent) {
@@ -246,7 +256,7 @@ Boolean Private_Player_CanPickUpDroppedFlag(CSmPlayer _Player) {
   }
 	declare Boolean IsLocked = Flag::IsLockedForPlayer(_Player);
 	declare Vehicles::K_Vehicle ReferencePlayerVehicle = Private_Player_GetVehicle(_Player);
-	return Flag::IsAtPosition() && !IsLocked && Hitbox::AreColliding(_Player, ReferencePlayerVehicle.OBB, Flag::Get().Location.Position);
+	return Flag::IsAtPosition() && !IsLocked && Hitbox::AreColliding(_Player, ReferencePlayerVehicle.Hitbox, Flag::Get().Location.Position);
 }
 
 Void Private_FlagCarrier_PassFlag(CSmPlayer _ToPlayer) {

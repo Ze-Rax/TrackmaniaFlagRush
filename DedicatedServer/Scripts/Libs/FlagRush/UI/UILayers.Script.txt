@@ -116,7 +116,7 @@ Void Private_CreateModuleLayers() {
 	// Mode Commands
 	Layers::Create(UIModule_ModeCommands::C_LayerName, UIModule_ModeCommands::GetManialink());
 	Layers::SetType(UIModule_ModeCommands::C_LayerName, UIModule_ModeCommands::C_LayerType);
-	Layers::Attach(UIModule_ModeCommands::C_LayerName);
+	// Do not attach; let ModeCommands library handle attaching the layer
 
 	// Podium Background
 	Layers::Create(UIModule_PodiumBackground::C_LayerName, UIModule_PodiumBackground::GetManialink());

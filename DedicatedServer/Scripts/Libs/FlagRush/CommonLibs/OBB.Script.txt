@@ -1,0 +1,145 @@
+#Include "MathLib" as ML
+
+#Const C_EPSILON 0.0001
+
+#Struct K_OBB {
+	Vec3 C; // OBB center point
+	Vec3[] M; // Local x-, y-, and z-axes
+	Vec3 HW; // Positive halfwidth extents of OBB along each axis
+}
+
+#Struct K_Sphere {
+	Vec3 Center;
+	Real Radius;
+}
+
+Vec3[] Private_Transpose(Vec3[] _M) {
+	return [
+		<_M[0].X, _M[1].X, _M[2].X>,
+		<_M[0].Y, _M[1].Y, _M[2].Y>,
+		<_M[0].Z, _M[1].Z, _M[2].Z>
+	];
+}
+
+Vec3 Private_MatrixVectorMult(Vec3[] _M, Vec3 _V) {
+	return <
+		ML::DotProduct(_M[0], _V),
+		ML::DotProduct(_M[1], _V),
+		ML::DotProduct(_M[2], _V)
+	>;
+}
+
+Vec3 Private_ClampPointToObb(K_OBB _OBB, Vec3 _V) {
+	return <
+		ML::Clamp(_V.X, -_OBB.HW.X, _OBB.HW.X),
+		ML::Clamp(_V.Y, -_OBB.HW.Y, _OBB.HW.Y),
+		ML::Clamp(_V.Z, -_OBB.HW.Z, _OBB.HW.Z)
+	>;
+}
+
+Vec3 Abs(Vec3 A){
+	return <ML::Abs(A.X), ML::Abs(A.Y), ML::Abs(A.Z)>;
+}
+
+Boolean TestObbObb(K_OBB _A, K_OBB _B){
+	declare Real Ra;
+	declare Real Rb;
+	declare Vec3[] R = [ <0., 0., 0.>, <0., 0., 0.>, <0., 0., 0.>];
+	declare Vec3[] AbsR = [ <0., 0., 0.>, <0., 0., 0.>, <0., 0., 0.>];
+	// Compute rotation matrix expressing _B in a’s coordinate frame
+	for (I, 0, 2) {
+		R[I].X = ML::DotProduct(_A.M[I], _B.M[0]);
+		R[I].Y = ML::DotProduct(_A.M[I], _B.M[1]);
+		R[I].Z = ML::DotProduct(_A.M[I], _B.M[2]);
+	}
+	// Compute translation vector T
+	declare Vec3 T = _B.C - _A.C;
+	// Bring translation into a’s coordinate frame
+	T = <ML::DotProduct(T, _A.M[0]), ML::DotProduct(T, _A.M[1]), ML::DotProduct(T, _A.M[2])>;
+	// Compute common subexpressions. Add in an epsilon term to
+	// counteract arithmetic errors when two edges are parallel and
+	// their cross product is (near) null (see text for details)
+	for (I, 0, 2) {
+		AbsR[I] = Abs(R[I]) + <C_EPSILON, C_EPSILON, C_EPSILON>;
+	}
+
+	/*	To make the OBB-OBB test as efficient as possible, it is important that the axes are
+	tested in the order given. The first reason for using this order is that by
+	testing three orthogonal axes first there is little spatial redundancy in the tests, and
+	the entire space is quickly covered. Second, with the setup given here, where A is
+	transformed to the origin and aligned with the coordinate system axes, testing the
+	axes of A is about half the cost of testing the axes of B. Although it is not done here,
+	the calculations of R and AbsR should be interleaved with the first three tests, so that
+	they are not unnecessarily performed in their entirety when the OBB test exits in one
+	of the first few if statements. */
+
+	// Test axes L = A0, L = A1, L = A2
+	Ra = _A.HW.X;
+	Rb = _B.HW.X * AbsR[0].X + _B.HW.Y * AbsR[0].Y + _B.HW.Z * AbsR[0].Z;
+	if (ML::Abs(T.X) > Ra + Rb) return False;
+	Ra = _A.HW.Y;
+	Rb = _B.HW.X * AbsR[1].X + _B.HW.Y * AbsR[1].Y + _B.HW.Z * AbsR[1].Z;
+	if (ML::Abs(T.Y) > Ra + Rb) return False;
+	Ra = _A.HW.Z;
+	Rb = _B.HW.X * AbsR[2].X + _B.HW.Y * AbsR[2].Y + _B.HW.Z * AbsR[2].Z;
+	if (ML::Abs(T.Z) > Ra + Rb) return False;
+
+	// Test axes L = B0, L = B1, L = B2
+	Ra = _A.HW.X* AbsR[0].X + _A.HW.Y * AbsR[1].X + _A.HW.Z * AbsR[2].X;
+	Rb = _B.HW.X;
+	if (ML::Abs(T.X * R[0].X + T.Y * R[1].X + T.Z * R[2].X) > Ra + Rb) return False;
+	Ra = _A.HW.X* AbsR[0].Y + _A.HW.Y* AbsR[1].Y + _A.HW.Z* AbsR[2].Y;
+	Rb = _B.HW.Y;
+	if (ML::Abs(T.X * R[0].Y + T.Y * R[1].Y + T.Z * R[2].Y) > Ra + Rb) return False;
+	Ra = _A.HW.X* AbsR[0].Z + _A.HW.Y* AbsR[1].Z + _A.HW.Z* AbsR[2].Z;
+	Rb = _B.HW.Z;
+	if (ML::Abs(T.X * R[0].Z + T.Y * R[1].Z + T.Z * R[2].Z) > Ra + Rb) return False;
+
+	// Test axis L = A0 x B0
+	Ra = _A.HW.Y * AbsR[2].X + _A.HW.Z * AbsR[1].X;
+	Rb = _B.HW.Y * AbsR[0].Z + _B.HW.Z * AbsR[0].Y;
+	if (ML::Abs(T.Z * R[1].X - T.Y * R[2].X) > Ra + Rb) return False;
+	// Test axis L = A0 x B1
+	Ra = _A.HW.Y * AbsR[2].Y + _A.HW.Z * AbsR[1].Y;
+	Rb = _B.HW.X * AbsR[0].Z + _B.HW.Z * AbsR[0].X;
+	if (ML::Abs(T.Z * R[1].Y - T.Y * R[2].Y) > Ra + Rb) return False;
+	// Test axis L = A0 x B2
+	Ra = _A.HW.Y * AbsR[2].Z + _A.HW.Z * AbsR[1].Z;
+	Rb = _B.HW.X * AbsR[0].Y + _B.HW.Y * AbsR[0].X;
+	if (ML::Abs(T.Z * R[1].Z - T.Y * R[2].Z) > Ra + Rb) return False;
+	// Test axis L = A1 x B0
+	Ra = _A.HW.X * AbsR[2].X + _A.HW.Z * AbsR[0].X;
+	Rb = _B.HW.Y * AbsR[1].Z + _B.HW.Z * AbsR[1].Y;
+	if (ML::Abs(T.X * R[2].X - T.Z * R[0].X) > Ra + Rb) return False;
+	// Test axis L = A1 x B1
+	Ra = _A.HW.X * AbsR[2].Y + _A.HW.Z * AbsR[0].Y;
+	Rb = _B.HW.X * AbsR[1].Z + _B.HW.Z * AbsR[1].X;
+	if (ML::Abs(T.X * R[2].Y - T.Z * R[0].Y) > Ra + Rb) return False;
+	// Test axis L = A1 x B2
+	Ra = _A.HW.X * AbsR[2].Z + _A.HW.Z * AbsR[0].Z;
+	Rb = _B.HW.X * AbsR[1].Y + _B.HW.Y * AbsR[1].X;
+	if (ML::Abs(T.X * R[2].Z - T.Z * R[0].Z) > Ra + Rb) return False;
+	// Test axis L = A2 x B0
+	Ra = _A.HW.X * AbsR[1].X + _A.HW.Y * AbsR[0].X;
+	Rb = _B.HW.Y * AbsR[2].Z + _B.HW.Z * AbsR[2].Y;
+	if (ML::Abs(T.Y * R[0].X - T.X * R[1].X) > Ra + Rb) return False;
+	// Test axis L = A2 x B1
+	Ra = _A.HW.X * AbsR[1].Y + _A.HW.Y * AbsR[0].Y;
+	Rb = _B.HW.X * AbsR[2].Z + _B.HW.Z * AbsR[2].X;
+	if (ML::Abs(T.Y * R[0].Y - T.X * R[1].Y) > Ra + Rb) return False;
+	// Test axis L = A2 x B2
+	Ra = _A.HW.X * AbsR[1].Z + _A.HW.Y * AbsR[0].Z;
+	Rb = _B.HW.X * AbsR[2].Y + _B.HW.Y * AbsR[2].X;
+	if (ML::Abs(T.Y * R[0].Z - T.X * R[1].Z) > Ra + Rb) return False;
+	// Since no separating axis is found, the OBBs must be intersecting
+	return True;
+}
+
+Boolean TestObbSphere(K_OBB _OBB, K_Sphere _Sphere) {
+	declare Vec3 ObbToSphereOffset = _Sphere.Center - _OBB.C;
+	declare Vec3[] ObbBasisTranspose = Private_Transpose(_OBB.M);
+	declare Vec3 SphereCenterObbSpace = Private_MatrixVectorMult(ObbBasisTranspose, ObbToSphereOffset);
+	declare Vec3 ClampedSphereCenter = Private_ClampPointToObb(_OBB, SphereCenterObbSpace);
+	declare Real Dist = ML::Distance(ClampedSphereCenter, SphereCenterObbSpace);
+	return Dist <= _Sphere.Radius;
+}

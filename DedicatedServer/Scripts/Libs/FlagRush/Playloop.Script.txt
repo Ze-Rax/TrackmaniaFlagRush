@@ -98,12 +98,39 @@ K_PlayerRef Private_CreatePlayerRef(CSmScore _Score) {
 	};
 }
 
+Vehicles::K_Tuning Private_Player_GetVehicleTuning(CSmPlayer _Player) {
+	// Team skin Ids are not available in Vehicles lib
+	if (Teams::IsTeamSkin(_Player.ForceModelId)) {
+		return Vehicles::GetTuning(C_Vehicle_Stadium.Id);
+	}
+	return Vehicles::GetTuning(_Player.ForceModelId);
+}
+
+Vehicles::K_Vehicle Private_Player_GetVehicle(CSmPlayer _Player) {
+	if (Teams::IsTeamSkin(_Player.ForceModelId)) {
+		return C_Vehicle_Stadium;
+	}
+	return Vehicles::Get(_Player.ForceModelId);
+}
+
 CSmPlayer Private_GetFirstCollidingPlayer_OpponentPriority(CSmPlayer _ReferencePlayer) {
 	declare CSmPlayer FirstCollidingPlayer;
+	declare Vehicles::K_Vehicle ReferencePlayerVehicle = Private_Player_GetVehicle(_ReferencePlayer);
 	foreach (Player in Players) {
-		if (Player == _ReferencePlayer || !Hitbox::AreColliding(_ReferencePlayer, Player)) {
-      continue;
+		if (Player == _ReferencePlayer) {
+			continue;
     }
+
+		declare Vehicles::K_Vehicle OtherPlayerVehicle = Private_Player_GetVehicle(Player);
+		declare Boolean AreColliding = False;
+		if (Settings::GetBoolean(SettingNames::S_UseCollisions)) {
+			AreColliding = Hitbox::AreColliding(_ReferencePlayer, ReferencePlayerVehicle.HitboxWithCollisions, Player, OtherPlayerVehicle.HitboxWithCollisions);
+		} else {
+			AreColliding = Hitbox::AreColliding(_ReferencePlayer, ReferencePlayerVehicle.Hitbox, Player, OtherPlayerVehicle.Hitbox);
+		}
+		if (!AreColliding) {
+			continue;
+		}
 
 		declare Boolean IsOpponent = Player.CurrentClan != _ReferencePlayer.CurrentClan;
     if (IsOpponent) {
@@ -151,14 +178,6 @@ Ident Private_Player_GetSelectedVehicleModelId(CSmPlayer _Player) {
 
 Boolean Private_Player_RequestsClanChange(CSmPlayer _Player) {
 	return _Player.CurrentClan != _Player.RequestedClan;
-}
-
-Vehicles::K_Tuning Private_Player_GetVehicleTuning(CSmPlayer _Player) {
-	// Team skin Ids are not available in Vehicles lib
-	if (Teams::IsTeamSkin(_Player.ForceModelId)) {
-		return Vehicles::GetTuning(C_Vehicle_Stadium.Id);
-	}
-	return Vehicles::GetTuning(_Player.ForceModelId);
 }
 
 Void Private_Player_ApplyVehicleTuning(CSmPlayer _Player) {
@@ -236,7 +255,8 @@ Boolean Private_Player_CanPickUpDroppedFlag(CSmPlayer _Player) {
     return False;
   }
 	declare Boolean IsLocked = Flag::IsLockedForPlayer(_Player);
-	return Flag::IsAtPosition() && !IsLocked && Hitbox::AreColliding(_Player, Flag::Get().Location.Position);
+	declare Vehicles::K_Vehicle ReferencePlayerVehicle = Private_Player_GetVehicle(_Player);
+	return Flag::IsAtPosition() && !IsLocked && Hitbox::AreColliding(_Player, ReferencePlayerVehicle.Hitbox, Flag::Get().Location.Position);
 }
 
 Void Private_FlagCarrier_PassFlag(CSmPlayer _ToPlayer) {

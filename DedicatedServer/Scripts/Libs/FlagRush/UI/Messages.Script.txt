@@ -18,6 +18,7 @@
 #Include "Libs/FlagRush/Const/Durations.Script.txt"													as Durations
 #Include "Libs/FlagRush/Const/SettingNames.Script.txt"											as SettingNames
 
+#Include "Libs/FlagRush/Core/Map.Script.txt"																as Map
 #Include "Libs/FlagRush/Core/Teams.Script.txt"															as Teams
 #Include "Libs/FlagRush/Core/Scores.Script.txt"															as Scores
 
@@ -381,7 +382,9 @@ Void BeforeYield() {
 			case Progression::C_EventType_SegmentInvalid: {
 				switch (Event.Segment) {
 					case Progression::C_Segment_Map: {
-						Private_OnInvalidMap();
+						if (!Map::IsValid()) {
+							Private_OnInvalidMap();
+						}
 					}
 				}
 			}

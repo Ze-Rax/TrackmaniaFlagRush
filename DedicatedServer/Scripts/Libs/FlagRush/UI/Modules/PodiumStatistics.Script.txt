@@ -42,7 +42,7 @@
 #Const Scores::C_PlayerStatisticsKey_FlagPickUpLandmark as C_Key_MostFlagPickupsFromLandmark
 #Const C_Definition_MostOutOfBounds K_StatisticDefinition{ Title = "the Clumsy", DescriptionFormat = "Went out of bounds %1 time(s)", MinValue = 1.0, Factor = 1. }
 #Const Scores::C_PlayerStatisticsKey_OutOfBounds as C_Key_MostOutOfBounds
-#Const C_Definition_MostEliminations K_StatisticDefinition{ Title = "the Squishy", DescriptionFormat = "Got eleminated by moving blocks %1 time(s)", MinValue = 1.0, Factor = 1. }
+#Const C_Definition_MostEliminations K_StatisticDefinition{ Title = "the Squishy", DescriptionFormat = "Got eliminated by moving blocks %1 time(s)", MinValue = 1.0, Factor = 1. }
 #Const Scores::C_PlayerStatisticsKey_Eliminations as C_Key_MostEliminations
 #Const C_Definition_TopSpeed K_StatisticDefinition{ Title = "the Speed Demon", DescriptionFormat = "Reached a top speed of %1km/h", MinValue = 250.0, Factor = 3.6 }
 #Const Scores::C_PlayerStatisticsKey_TopSpeed as C_Key_TopSpeed

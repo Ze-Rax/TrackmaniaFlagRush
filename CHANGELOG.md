@@ -4,9 +4,10 @@
 
 ### General
 * Completely reworked XmlRpc Callbacks. Check the [XmlRpc Documentation](./Documentation/XmlRpc/XmlRpc.md) for the new specification
+* Implemented new vehicle specific hitboxes based on object-oriented bounding boxes.
 
 ### Bugs and crashes
-* Fixed a typo for the "Thief" statistic on the Podium.
+* Fixed some minor typos.
 * Fixed stadium vehicle tunings not being applied.
 
 ## 1.6.0

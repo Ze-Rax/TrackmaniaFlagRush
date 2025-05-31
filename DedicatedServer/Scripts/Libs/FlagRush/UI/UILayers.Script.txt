@@ -14,6 +14,7 @@
 #Include "Libs/FlagRush/Const/SettingNames.Script.txt"									as SettingNames
 
 #Include "Libs/FlagRush/Core/Players.Script.txt"												as Players
+#Include "Libs/FlagRush/Core/Scores.Script.txt"													as Scores
 
 // Event
 #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" 				as PlayerLifecycleEvents
@@ -188,6 +189,27 @@ Void Private_DestroyModuleLayers() {
 	Layers::Destroy(UIModule_VehicleSelection::C_LayerName);
 }
 
+Void Private_UpdatePodiumPlayers() {
+	declare CSmScore[] PodiumPlayerScores;
+	declare Text[] PodiumPlayerLogins;
+
+	foreach(Score in Scores) {
+		if (Score.Points == 0 && !Scores::IsActivePlayer(Score)) {
+			continue;
+		}
+
+		PodiumPlayerScores.add(Score);
+		PodiumPlayerLogins.add(Score.User.Login);
+
+		if (PodiumPlayerScores.count >= 3) {
+			break;
+		}
+	}
+
+	UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
+	UIModule_PodiumBackground::SetContent(PodiumPlayerScores);
+}
+
 // MARK: Lifecycle
 
 Void BeforeYield() {
@@ -220,17 +242,7 @@ Void BeforeYield() {
 					}
 					case Progression::C_Segment_Podium: {
 						UIModule_MapMarkers::Hide();
-						declare CSmScore[] PodiumPlayerScores;
-						declare Text[] PodiumPlayerLogins;
-						for (I, 0, 2) {
-							if (!Scores.existskey(I)) {
-								break;
-							}
-							PodiumPlayerScores.add(Scores[I]);
-							PodiumPlayerLogins.add(Scores[I].User.Login);
-						}
-						UIManager.UIAll.UISequence_PodiumPlayersWin = TL::Join(",", PodiumPlayerLogins);
-						UIModule_PodiumBackground::SetContent(PodiumPlayerScores);
+						Private_UpdatePodiumPlayers();
 						Layers::Attach(UIModule_PodiumBackground::C_LayerName);
 						UIModule_PodiumStatistics::Update();
 						Layers::Attach(UIModule_PodiumStatistics::C_LayerName);

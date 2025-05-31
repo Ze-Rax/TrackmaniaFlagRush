@@ -122,6 +122,14 @@ Integer EvaluateMatch() {
 
 /* Players */
 
+Boolean IsActivePlayer(CSmScore _Score) {
+	declare CSmPlayer Player = GetPlayer(_Score.User.Login);
+	if (Player == Null) {
+		return False;
+	}
+	return Players.exists(Player);
+}
+
 Integer GetPlayerPoints(CSmScore _Score, Integer _Level) {
 	switch (_Level) {
 		case C_Level_Match: {

@@ -258,19 +258,11 @@ K_StatisticDefinition Private_GetDefinition(Text _StatisticsKey) {
 	return Private_GetDefinitions().get(_StatisticsKey, K_StatisticDefinition{});
 }
 
-Boolean Private_IsActivePlayer(CSmScore _Score) {
-	declare CSmPlayer Player = GetPlayer(_Score.User.Login);
-	if (Player == Null) {
-		return False;
-	}
-	return Players.exists(Player);
-}
-
 CSmScore[][Integer] Private_SortScoresByClan() {
 	declare CSmScore[][Integer] ScoresByClan;
 	foreach (Score in Scores) {
 		// Ignore Scores of spectators that have no points
-		if (Score.Points == 0 && !Private_IsActivePlayer(Score)) {
+		if (Score.Points == 0 && !Scores::IsActivePlayer(Score)) {
 			continue;
 		}
 

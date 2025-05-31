@@ -4,7 +4,7 @@
 #Include "MathLib" as ML
 #Include "Libs/FlagRush/CommonLibs/OBB.Script.txt" as OBB
 
-#Const C_FlagColliderRadius 0.5
+#Const C_FlagColliderRadius 0.75
 
 #Struct K_Hitbox {
 	Vec3 Extents; //left up forward

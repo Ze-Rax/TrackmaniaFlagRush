@@ -263,6 +263,7 @@ Settings::Track(SettingNames::S_TuningDesertControl, S_TuningDesertControl);
 Settings::Track(SettingNames::S_UseCrudeExtrapolation, S_UseCrudeExtrapolation);
 Settings::Track(SettingNames::S_TrustClientSimu, S_TrustClientSimu);
 Settings::Track(SettingNames::S_ModeCommands_AdminLoginsCsv, S_ModeCommands_AdminLoginsCsv);
+Settings::Track(SettingNames::S_Debug, S_Debug);
 ***
 
 ***LoadLibraries***

@@ -31,6 +31,7 @@
 #Include "Libs/FlagRush/UI/Modules/Sounds.Script.txt"												as UIModule_Sound
 
 #Include "Libs/FlagRush/Util/Chat.Script.txt"																as Chat
+#Include "Libs/FlagRush/Util/PlayerRef.Script.txt"													as PlayerRef
 
 #Const C_MessagePriority_Default			1
 #Const C_MessagePriority_Event				2
@@ -284,26 +285,26 @@ Void BeforeYield() {
 				}
 			}
 			case Playloop::C_EventType_PlayerPickedUpFlag: {
-				Private_OnFlagPickedUp(Playloop::GetPlayer(Event.Player));
+				Private_OnFlagPickedUp(PlayerRef::GetPlayer(Event.Player));
 			}
 			case Playloop::C_EventType_PlayerPassedFlag: {
 				// Note that the event is from the perspective of the old carrier who passed the flag
-				Private_OnFlagPickedUp(Playloop::GetPlayer(Event.RelatedPlayer));
+				Private_OnFlagPickedUp(PlayerRef::GetPlayer(Event.RelatedPlayer));
 			}
 			case Playloop::C_EventType_PlayerDroppedFlag: {
-				Private_OnFlagDropped(Playloop::GetScore(Event.Player));
+				Private_OnFlagDropped(PlayerRef::GetScore(Event.Player));
 			}
 			case Playloop::C_EventType_PlayerScoredFlag: {
-				Private_OnFlagScored(Playloop::GetPlayer(Event.Player));
+				Private_OnFlagScored(PlayerRef::GetPlayer(Event.Player));
 			}
 			case Playloop::C_EventType_FlagCarrierTeleported: {
 				Private_OnFlagCarrierTeleported();
 			}
 			case Playloop::C_EventType_PlayerOutOfBounds: {
-				Private_OnPlayerOutOfBounds(Playloop::GetPlayer(Event.Player));
+				Private_OnPlayerOutOfBounds(PlayerRef::GetPlayer(Event.Player));
 			}
 			case Playloop::C_EventType_PlayerRespawned: {
-				Private_OnPlayerRespawned(Playloop::GetPlayer(Event.Player));
+				Private_OnPlayerRespawned(PlayerRef::GetPlayer(Event.Player));
 			}
 		}
 	}

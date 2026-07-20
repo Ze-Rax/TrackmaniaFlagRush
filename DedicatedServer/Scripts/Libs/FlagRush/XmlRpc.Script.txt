@@ -12,6 +12,7 @@
 #Include "Libs/FlagRush/Playloop.Script.txt" as Playloop
 #Include "Libs/FlagRush/Event/Progression.Script.txt" as Progression
 #Include "Libs/FlagRush/Util/Log.Script.txt" as Log
+#Include "Libs/FlagRush/Util/PlayerRef.Script.txt" as PlayerRef
 
 // MARK: Structs
 
@@ -231,7 +232,7 @@ Void Private_SendCallback(Text _EventType, Text _EventDataJson) {
 // MARK: Event Handlers
 
 Void Private_OnPlayerRequestsRespawnButIsTooFast(Playloop::K_Event _Event) {
-  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare CSmPlayer Player <=> PlayerRef::GetPlayer(_Event.Player);
   declare K_CallbackData_Player_RequestedRespawn Event = K_CallbackData_Player_RequestedRespawn{
     timestamp = Now,
     player = Private_CreatePlayerStruct(Player),
@@ -241,7 +242,7 @@ Void Private_OnPlayerRequestsRespawnButIsTooFast(Playloop::K_Event _Event) {
 }
 
 Void Private_OnPlayerRespawned(Playloop::K_Event _Event) {
-  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare CSmPlayer Player <=> PlayerRef::GetPlayer(_Event.Player);
   declare K_CallbackData_Player_RequestedRespawn Event = K_CallbackData_Player_RequestedRespawn{
     timestamp = Now,
     player = Private_CreatePlayerStruct(Player),
@@ -251,7 +252,7 @@ Void Private_OnPlayerRespawned(Playloop::K_Event _Event) {
 }
 
 Void Private_OnPlayerSpawned(Playloop::K_Event _Event) {
-  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare CSmPlayer Player <=> PlayerRef::GetPlayer(_Event.Player);
   declare K_CallbackData_Player_Spawned Event = K_CallbackData_Player_Spawned{
     timestamp = Now,
     player = Private_CreatePlayerStruct(Player),
@@ -261,7 +262,7 @@ Void Private_OnPlayerSpawned(Playloop::K_Event _Event) {
 }
 
 Void Private_OnPlayerOutOfBounds(Playloop::K_Event _Event) {
-  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare CSmPlayer Player <=> PlayerRef::GetPlayer(_Event.Player);
   declare K_CallbackData_Player_OutOfBounds Event = K_CallbackData_Player_OutOfBounds{
     timestamp = Now,
     player = Private_CreatePlayerStruct(Player)
@@ -270,7 +271,7 @@ Void Private_OnPlayerOutOfBounds(Playloop::K_Event _Event) {
 }
 
 Void Private_OnPlayerEliminated(Playloop::K_Event _Event) {
-  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare CSmPlayer Player <=> PlayerRef::GetPlayer(_Event.Player);
   declare K_CallbackData_Player_Eliminated Event = K_CallbackData_Player_Eliminated{
     timestamp = Now,
     player = Private_CreatePlayerStruct(Player)
@@ -287,7 +288,7 @@ Void Private_OnFlagReset(Playloop::K_Event _Event) {
 }
 
 Void Private_OnFlagPickedUp(Playloop::K_Event _Event) {
-  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare CSmPlayer Player <=> PlayerRef::GetPlayer(_Event.Player);
   declare K_CallbackData_Flag_PickedUp Event = K_CallbackData_Flag_PickedUp{
     timestamp = Now,
     carrier = Private_CreatePlayerStruct(Player)
@@ -296,8 +297,8 @@ Void Private_OnFlagPickedUp(Playloop::K_Event _Event) {
 }
 
 Void Private_OnFlagPassed(Playloop::K_Event _Event) {
-  declare CSmPlayer PreviousCarrier <=> Playloop::GetPlayer(_Event.Player);
-  declare CSmPlayer NewCarrier <=> Playloop::GetPlayer(_Event.RelatedPlayer);
+  declare CSmPlayer PreviousCarrier <=> PlayerRef::GetPlayer(_Event.Player);
+  declare CSmPlayer NewCarrier <=> PlayerRef::GetPlayer(_Event.RelatedPlayer);
   declare K_CallbackData_Flag_Passed Event = K_CallbackData_Flag_Passed{
     timestamp = Now,
     newCarrier = Private_CreatePlayerStruct(NewCarrier),
@@ -308,7 +309,7 @@ Void Private_OnFlagPassed(Playloop::K_Event _Event) {
 
 Void Private_OnFlagDropped(Playloop::K_Event _Event) {
   // Do not use player. Might be disconnected
-  declare CSmScore PreviousCarrierScore <=> Playloop::GetScore(_Event.Player);
+  declare CSmScore PreviousCarrierScore <=> PlayerRef::GetScore(_Event.Player);
   declare K_CallbackData_Flag_Dropped Event = K_CallbackData_Flag_Dropped{
     timestamp = Now,
     position = Private_CreatePositionStruct(_Event.Position),
@@ -318,7 +319,7 @@ Void Private_OnFlagDropped(Playloop::K_Event _Event) {
 }
 
 Void Private_OnFlagCarrierTeleported(Playloop::K_Event _Event) {
-  declare CSmPlayer Player <=> Playloop::GetPlayer(_Event.Player);
+  declare CSmPlayer Player <=> PlayerRef::GetPlayer(_Event.Player);
   declare K_CallbackData_Flag_CarrierTeleported Event = K_CallbackData_Flag_CarrierTeleported{
     timestamp = Now,
     carrier = Private_CreatePlayerStruct(Player)
@@ -327,8 +328,8 @@ Void Private_OnFlagCarrierTeleported(Playloop::K_Event _Event) {
 }
 
 Void Private_OnFlagScored(Playloop::K_Event _Event) {
-  declare CSmPlayer Scorer <=> Playloop::GetPlayer(_Event.Player);
-  declare CSmScore AssistScore <=> Playloop::GetScore(_Event.RelatedPlayer);
+  declare CSmPlayer Scorer <=> PlayerRef::GetPlayer(_Event.Player);
+  declare CSmScore AssistScore <=> PlayerRef::GetScore(_Event.RelatedPlayer);
   if (AssistScore == Null) {
     declare K_CallbackData_Flag_Scored Event = K_CallbackData_Flag_Scored{
       timestamp = Now,

@@ -1,0 +1,104 @@
+/**
+ * Utility library to create and resolve references to player related objects (CSmPlayer, CSmScore, CUser).
+ * This can be relevant when references are stored accross yields and when the those objects are cleared from memory.
+ *
+ * #RequireContext CSmMode
+ */
+
+#Struct K_Ref {
+	Ident Id;
+	Ident UserId;
+	Ident ScoreId;
+}
+
+#Const C_NullRef K_Ref{}
+
+/**
+ * Creates a reference struct for the given player.
+ * Returns C_NullRef if _Player is Null.
+ */
+K_Ref CreateFor(CSmPlayer _Player) {
+	if (_Player == Null) {
+		return C_NullRef;
+	}
+
+	return K_Ref{
+		Id = _Player.Id,
+		UserId = _Player.User.Id,
+		ScoreId = _Player.Score.Id
+	};
+}
+
+/**
+ * Creates a reference struct for the given score.
+ * Returns C_NullRef if _Score is Null.
+ */
+K_Ref CreateFor(CSmScore _Score) {
+	if (_Score == Null) {
+		return C_NullRef;
+	}
+
+	declare CSmPlayer Player = GetPlayer(_Score.User.Login);
+	if (Player != Null) {
+		return CreateFor(Player);
+	}
+
+	return K_Ref{
+		Id = NullId, // Disconnected
+		UserId = _Score.User.Id,
+		ScoreId = _Score.Id
+	};
+}
+
+/**
+ * Creates a reference struct for the given user.
+ * Returns C_NullRef if _User is Null.
+ */
+K_Ref CreateFor(CUser _User) {
+	if (_User == Null) {
+		return C_NullRef;
+	}
+
+	declare CSmPlayer Player = GetPlayer(_User.Login);
+	if (Player != Null) {
+		return CreateFor(Player);
+	}
+
+	return K_Ref{
+		Id = NullId, // Disconnected
+		UserId = _User.Id,
+		ScoreId = NullId
+	};
+}
+
+/**
+ * Resolves the CSmPlayer from the given reference.
+ * Returns Null if the reference does not contain a valid player id, that is NullId or the player already disconnected.
+ */
+CSmPlayer GetPlayer(K_Ref _PlayerRef) {
+	return AllPlayers.get(_PlayerRef.Id, Null);
+}
+
+/**
+ * Resolves the CSmScore from the given reference.
+ * Returns Null if the reference does not contain a valid score id, that is NullId or the player already disconnected and the score was cleared.
+ */
+CSmScore GetScore(K_Ref _PlayerRef) {
+	return Scores.get(_PlayerRef.ScoreId, Null);
+}
+
+/**
+ * Resolves the CUser from the given reference.
+ * Returns Null if the reference does not contain a valid user id, that is NullId or the player already disconnected and the user was cleared.
+ */
+CUser GetUser(K_Ref _PlayerRef) {
+	return Users.get(_PlayerRef.UserId, Null);
+}
+
+/**
+ * Checks if the given reference is a null reference.
+ * A player reference is considered a null reference if all contained reference ids are NullIds.
+ */
+Boolean IsNull(K_Ref _PlayerRef) {
+	return _PlayerRef == C_NullRef;
+}

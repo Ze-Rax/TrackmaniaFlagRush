@@ -265,7 +265,7 @@
 	*	@param	_Time											The duration of the sleep
 	*/
  Void MB_Sleep(Integer _Duration) {
-	 declare End = Now + _Duration;
+	 declare Integer End = Now + _Duration;
 	 while (Now < End && MB_ServerIsRunning()) MB_Yield();
  }
 
@@ -277,7 +277,7 @@
 	*	@param	_Time											The duration of the sleep
 	*/
  Void MB_Sleep(Integer _Level, Integer _Duration) {
-	 declare End = Now + _Duration;
+	 declare Integer End = Now + _Duration;
 	 switch (_Level) {
 		 case C_LoopLevel_Match: {
 			 while (Now < End && MB_MatchIsRunning()) MB_Yield();
@@ -313,14 +313,14 @@
 
  /// Do a synchronization
  Void MB_Synchro() {
-	 declare Barrier = Synchro_AddBarrier();
+	 declare Integer Barrier = Synchro_AddBarrier();
 	 while (!Synchro_BarrierReached(Barrier) && !ServerShutdownRequested) MB_Yield();
  }
 
  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
  /// Play the intro sequence
  Void MB_Private_IntroSequence() {
-	 declare PrevUISequence = UIManager.UIAll.UISequence;
+	 declare CUIConfig::EUISequence PrevUISequence = UIManager.UIAll.UISequence;
 	 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Intro;
 	 while (MB_MapIsRunning() && !UIManager.UIAll.UISequenceIsCompleted) {
 		 MB_Yield();
@@ -334,7 +334,7 @@
 	*	Podium + Scores table
 	*/
  Void MB_Private_PodiumSequence() {
-	 declare PrevUISequence = UIManager.UIAll.UISequence;
+	 declare CUIConfig::EUISequence PrevUISequence = UIManager.UIAll.UISequence;
 	 UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
 	 MB_Sleep((S_ChatTime*1000)/2);
 	 UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
@@ -358,12 +358,12 @@
  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
  // Script start
  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
- main() {
+ main() { // @mslint-disable-line max-statements
 	 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 	 MB_Private_RunSection_Server = True;
 
-	 declare MB_Private_ServerModeName for This = "";
-	 declare MB_Private_ServerModeUpdated = False;
+	 declare Text MB_Private_ServerModeName for This = "";
+	 declare Boolean MB_Private_ServerModeUpdated = False;
 	 if (MB_Private_ServerModeName != "" && MB_Private_ServerModeName != ServerModeName) {
 		 MB_Private_ServerModeUpdated = True;
 	 }
@@ -381,8 +381,8 @@
 		 MB_Private_SectionCount_Turn = 0;
 		 MB_Private_RunSection_Script = True;
 
-		 declare persistent MB_Private_PersistentServerRestarted = False;
-		 declare MB_Private_ServerRestarted = MB_Private_PersistentServerRestarted;
+		 declare persistent Boolean MB_Private_PersistentServerRestarted = False;
+		 declare Boolean MB_Private_ServerRestarted = MB_Private_PersistentServerRestarted;
 		 MB_Private_PersistentServerRestarted = True;
 
 		 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -433,8 +433,8 @@
 				 MB_Private_SkipIntroSequence = False;
 				 MB_Private_SkipPodiumSequence = False;
 
-				 declare persistent MB_Private_PersistentMapRestarted = False;
-				 declare MB_Private_MapRestarted = MB_Private_PersistentMapRestarted;
+				 declare persistent Boolean MB_Private_PersistentMapRestarted = False;
+				 declare Boolean MB_Private_MapRestarted = MB_Private_PersistentMapRestarted;
 				 MB_Private_PersistentMapRestarted = True;
 
 				 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -552,8 +552,8 @@
 						 +++PodiumSequence+++
 					 }
 					 { +++AfterPodiumSequence+++ }
-				 }
-				 XmlRpc_Base::SendPodium_End();
+					}
+					XmlRpc_Base::SendPodium_End();
 
 				 XmlRpc_Base::SendEndMap_End(<MB_Private_SectionCount_Map, MB_Private_SectionCount_Map>, Map);
 

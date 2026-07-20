@@ -16,6 +16,8 @@
 #Include "Libs/FlagRush/Core/Players.Script.txt"												as Players
 #Include "Libs/FlagRush/Core/Scores.Script.txt"													as Scores
 
+#Include "Libs/FlagRush/Util/PlayerRef.Script.txt" 											as PlayerRef
+
 // Event
 #Include "Libs/FlagRush/Event/PlayerLifecycleEvents.Script.txt" 				as PlayerLifecycleEvents
 #Include "Libs/FlagRush/Event/Progression.Script.txt"										as Progression
@@ -222,7 +224,7 @@ Void BeforeYield() {
 				UIModule_FlagMarker::Update();
 			}
 			case Playloop::C_EventType_PlayerRequestedRespawnButIsTooFast: {
-				declare CSmPlayer Player = Playloop::GetPlayer(Event.Player);
+				declare CSmPlayer Player = PlayerRef::GetPlayer(Event.Player);
 				if (Player != Null) {
 					UIModule_RespawnFlash::Flash(Player);
 				}

@@ -26,6 +26,7 @@
 #Include "Libs/FlagRush/Util/Hitbox.Script.txt" 							as Hitbox
 #Include "Libs/FlagRush/Util/Command.Script.txt" 							as Command
 #Include "Libs/FlagRush/Util/Chat.Script.txt" 								as Chat
+#Include "Libs/FlagRush/Util/PlayerRef.Script.txt"						as PlayerRef
 
 #Const C_Epsilon_Distance 0.001
 #Const C_AssistTimeThreshold 5000
@@ -49,16 +50,10 @@
 #Const C_EventType_FlagCarrierTeleported 11
 #Const C_EventType_PlayerScoredFlag 12
 
-#Struct K_PlayerRef {
-	Ident Id;
-	Ident UserId;
-	Ident ScoreId;
-}
-
 #Struct K_Event {
 	Integer Type;
-	K_PlayerRef Player; ///< Can be Invalid (containing NullIds). Meaning depends on event type.
-	K_PlayerRef RelatedPlayer; ///< Can be Invalid (containing NullIds). Meaning depends on event type.
+	PlayerRef::K_Ref Player; ///< Can be Invalid (containing NullIds). Meaning depends on event type.
+	PlayerRef::K_Ref RelatedPlayer; ///< Can be Invalid (containing NullIds). Meaning depends on event type.
 	CMapLandmark Landmark; ///< Can be Null. Meaning depends on the event type.
 	Vec3 Position;
 	Boolean Silent; ///< Do not show any notification; Needed for Flag reset on initial spawn and after scoring
@@ -68,35 +63,6 @@ declare Flag::K_Flag G_PreviousFlag;
 declare K_Event[] G_PendingEvents;
 
 // MARK: Helper functions
-
-K_PlayerRef Private_CreatePlayerRef(CSmPlayer _Player) {
-	if (_Player == Null) {
-		return K_PlayerRef{};
-	}
-
-	return K_PlayerRef{
-		Id = _Player.Id,
-		UserId = _Player.User.Id,
-		ScoreId = _Player.Score.Id
-	};
-}
-
-K_PlayerRef Private_CreatePlayerRef(CSmScore _Score) {
-	if (_Score == Null) {
-		return K_PlayerRef{};
-	}
-
-	declare CSmPlayer Player = GetPlayer(_Score.User.Login);
-	if (Player != Null) {
-		return Private_CreatePlayerRef(Player);
-	}
-
-	return K_PlayerRef{
-		Id = NullId, // Disconnected
-		UserId = _Score.User.Id,
-		ScoreId = _Score.Id
-	};
-}
 
 Vehicles::K_Tuning Private_Player_GetVehicleTuning(CSmPlayer _Player) {
 	// Team skin Ids are not available in Vehicles lib
@@ -232,7 +198,7 @@ Void Private_Player_Spawn(CSmPlayer _Player) {
 		Private_Player_ApplyVehicleTuning(_Player);
 		G_PendingEvents.add(K_Event{
 			Type = C_EventType_PlayerSpawned,
-			Player = Private_CreatePlayerRef(_Player),
+			Player = PlayerRef::CreateFor(_Player),
 			Landmark = SpawnLandmark,
 			Position = SpawnLandmark.Position
 		});
@@ -282,8 +248,8 @@ Void Private_FlagCarrier_PassFlag(CSmPlayer _ToPlayer) {
 
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerPassedFlag,
-		Player = Private_CreatePlayerRef(OldCarrier),
-		RelatedPlayer = Private_CreatePlayerRef(_ToPlayer),
+		Player = PlayerRef::CreateFor(OldCarrier),
+		RelatedPlayer = PlayerRef::CreateFor(_ToPlayer),
 		Position = OldCarrier.Position
 	});
 }
@@ -295,9 +261,12 @@ Void Private_FlagCarrier_PassFlag(CSmPlayer _ToPlayer) {
  * or when the teleport detection forces the flag to be dropped.
  */
 Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
-  declare CSmPlayer OldCarrierPlayer = Flag::GetPlayer();
+	declare PlayerRef::K_Ref OldCarrierPlayerRef;
 
-	if (OldCarrierPlayer != Null) {
+	if (Flag::IsPlayerConnected()) {
+		declare CSmPlayer OldCarrierPlayer = Flag::GetPlayer();
+		OldCarrierPlayerRef = PlayerRef::CreateFor(OldCarrierPlayer);
+
     // If dropping in player stack, do a pass instead
 		declare CSmPlayer ReceiverPlayer = Private_GetFirstCollidingPlayer_OpponentPriority(OldCarrierPlayer);
 		if (ReceiverPlayer != Null) {
@@ -305,9 +274,16 @@ Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
 			return;
 		}
 
-    // Reset old player;
+    // Reset old player
     Private_Player_ResetHandicaps(OldCarrierPlayer);
 		Flag::LockForPlayer(Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_DropFlagPickupPenalty) * 1000), OldCarrierPlayer);
+	} else {
+		// Flag was carried by a player who left, causing the CSmPlayer to be removed immediately
+		declare Flag::K_Player OldCarrierPlayer = Flag::Get().Location.Player;
+		OldCarrierPlayerRef = PlayerRef::K_Ref {
+			UserId = OldCarrierPlayer.UserId,
+			ScoreId = OldCarrierPlayer.ScoreId
+		};
 	}
 
 	declare Integer DropStateEndDate = Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_FlagDropStateDurationSeconds) * 1000);
@@ -316,7 +292,7 @@ Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
 
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerDroppedFlag,
-		Player = Private_CreatePlayerRef(OldCarrierPlayer),
+		Player = OldCarrierPlayerRef,
 		Position = _Position
 	});
 }
@@ -338,8 +314,8 @@ Void Private_FlagCarrier_ScoreFlag(CMapLandmark _Base) {
 	Private_Player_ResetHandicaps(CarrierPlayer);
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerScoredFlag,
-		Player = Private_CreatePlayerRef(CarrierPlayer),
-		RelatedPlayer = Private_CreatePlayerRef(AssistScore),
+		Player = PlayerRef::CreateFor(CarrierPlayer),
+		RelatedPlayer = PlayerRef::CreateFor(AssistScore),
 		Landmark = _Base,
 		Position = CarrierPlayer.Position
 	});
@@ -357,7 +333,7 @@ Void Private_OnFlagCarrierTeleported() {
 	declare CSmPlayer CarrierPlayer = Flag::GetPlayer();
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_FlagCarrierTeleported,
-		Player = Private_CreatePlayerRef(CarrierPlayer),
+		Player = PlayerRef::CreateFor(CarrierPlayer),
 		Position = CarrierPlayer.Position
 	});
   Private_FlagCarrier_DropFlag(G_PreviousFlag.Location.Position);
@@ -379,7 +355,7 @@ Void Private_OnPlayerPicksUpFlag(CSmPlayer _Player) {
 	Private_Player_ApplyHandicaps(_Player);
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerPickedUpFlag,
-		Player = Private_CreatePlayerRef(_Player),
+		Player = PlayerRef::CreateFor(_Player),
 		Position = _Player.Position
 	});
 }
@@ -393,7 +369,7 @@ Void Private_OnPlayerOutOfBound(CSmPlayer _Player) {
 	Scores::OnPlayerOutOfBounds(_Player.Score);
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerOutOfBounds,
-		Player = Private_CreatePlayerRef(_Player),
+		Player = PlayerRef::CreateFor(_Player),
 		Position = _Player.Position
 	});
 
@@ -413,7 +389,7 @@ Void Private_OnPlayerRequestsClanChange(CSmPlayer _Player) {
 Void Private_OnPlayerEliminated(CSmPlayer _Player) {
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerEliminated,
-		Player = Private_CreatePlayerRef(_Player),
+		Player = PlayerRef::CreateFor(_Player),
 		Position = _Player.Position
 	});
 
@@ -437,7 +413,7 @@ Void Private_OnPlayerRequestsRespawn(CSmPlayer _Player) {
 	if (Settings::GetReal(SettingNames::S_RespawnSpeedLimitKmh) >= 0 && _Player.Speed > Settings::GetReal(SettingNames::S_RespawnSpeedLimitKmh) / 3.6) {
 		G_PendingEvents.add(K_Event{
 			Type = C_EventType_PlayerRequestedRespawnButIsTooFast,
-			Player = Private_CreatePlayerRef(_Player),
+			Player = PlayerRef::CreateFor(_Player),
 			Position = _Player.Position
 		});
 		return;
@@ -446,7 +422,7 @@ Void Private_OnPlayerRequestsRespawn(CSmPlayer _Player) {
 	Private_Player_Unspawn(_Player);
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerRespawned,
-		Player = Private_CreatePlayerRef(_Player),
+		Player = PlayerRef::CreateFor(_Player),
 		Position = _Player.Position
 	});
 	Scores::OnPlayerRespawn(_Player.Score);
@@ -634,18 +610,6 @@ K_Event[] GetPendingEvents() {
 	return G_PendingEvents;
 }
 
-CSmPlayer GetPlayer(K_PlayerRef _PlayerStruct) {
-	return AllPlayers.get(_PlayerStruct.Id, Null);
-}
-
-CSmScore GetScore(K_PlayerRef _PlayerStruct) {
-	return Scores.get(_PlayerStruct.ScoreId, Null);
-}
-
-CUser GetUser(K_PlayerRef _PlayerStruct) {
-	return Users.get(_PlayerStruct.UserId, Null);
-}
-
 // MARK: Lifecycle
 
 Void Start() {
@@ -685,7 +649,7 @@ Void WarmUpLoop() {
 			if (Private_Player_IsDead(Player)) {
 				G_PendingEvents.add(K_Event{
 					Type = C_EventType_PlayerEliminated,
-					Player = Private_CreatePlayerRef(Player),
+					Player = PlayerRef::CreateFor(Player),
 					Position = Player.Position
 				});
 			}
@@ -709,7 +673,7 @@ Void WarmUpLoop() {
 					FlagRush_Warmup_UnspawnDate = Now;
 					G_PendingEvents.add(K_Event{
 						Type = C_EventType_PlayerRespawned,
-						Player = Private_CreatePlayerRef(Event.Player),
+						Player = PlayerRef::CreateFor(Event.Player),
 						Position = Event.Player.Position
 					});
 				}
@@ -722,7 +686,7 @@ Void WarmUpLoop() {
 					FlagRush_Warmup_UnspawnDate = Now;
 					G_PendingEvents.add(K_Event{
 						Type = C_EventType_PlayerOutOfBounds,
-						Player = Private_CreatePlayerRef(Event.Player),
+						Player = PlayerRef::CreateFor(Event.Player),
 						Position = Event.Player.Position
 					});
 				}

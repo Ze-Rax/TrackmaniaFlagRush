@@ -223,6 +223,10 @@ Boolean IsPlayerConnected() {
 	return IsOnPlayer() && Players.existskey(G_Flag.Location.Player.Id);
 }
 
+/**
+ * Returns the player currently carrying the flag.
+ * Null if the flag is not carried by a player, or if the player left the server.
+ */
 CSmPlayer GetPlayer() {
 	return Players.get(G_Flag.Location.Player.Id, Null);
 }

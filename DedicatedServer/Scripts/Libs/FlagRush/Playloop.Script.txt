@@ -279,10 +279,10 @@ Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
 		Flag::LockForPlayer(Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_DropFlagPickupPenalty) * 1000), OldCarrierPlayer);
 	} else {
 		// Flag was carried by a player who left, causing the CSmPlayer to be removed immediately
-		declare Flag::K_Player CurrentFlagCarrier = Flag::Get().Location.Player;
+		declare Flag::K_Player OldCarrierPlayer = Flag::Get().Location.Player;
 		OldCarrierPlayerRef = PlayerRef::K_Ref {
-			UserId = CurrentFlagCarrier.UserId,
-			ScoreId = CurrentFlagCarrier.ScoreId
+			UserId = OldCarrierPlayer.UserId,
+			ScoreId = OldCarrierPlayer.ScoreId
 		};
 	}
 

@@ -295,9 +295,12 @@ Void Private_FlagCarrier_PassFlag(CSmPlayer _ToPlayer) {
  * or when the teleport detection forces the flag to be dropped.
  */
 Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
-  declare CSmPlayer OldCarrierPlayer = Flag::GetPlayer();
+	declare K_PlayerRef OldCarrierPlayerRef;
 
-	if (OldCarrierPlayer != Null) {
+	if (Flag::IsPlayerConnected()) {
+		declare CSmPlayer OldCarrierPlayer = Flag::GetPlayer();
+		OldCarrierPlayerRef = Private_CreatePlayerRef(OldCarrierPlayer);
+
     // If dropping in player stack, do a pass instead
 		declare CSmPlayer ReceiverPlayer = Private_GetFirstCollidingPlayer_OpponentPriority(OldCarrierPlayer);
 		if (ReceiverPlayer != Null) {
@@ -305,9 +308,16 @@ Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
 			return;
 		}
 
-    // Reset old player;
+    // Reset old player
     Private_Player_ResetHandicaps(OldCarrierPlayer);
 		Flag::LockForPlayer(Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_DropFlagPickupPenalty) * 1000), OldCarrierPlayer);
+	} else {
+		// Flag was carried by a player who left, causing the CSmPlayer to be removed immediately
+		declare Flag::K_Player CurrentFlagCarrier = Flag::Get().Location.Player;
+		OldCarrierPlayerRef = K_PlayerRef {
+			UserId = CurrentFlagCarrier.UserId,
+			ScoreId = CurrentFlagCarrier.ScoreId
+		};
 	}
 
 	declare Integer DropStateEndDate = Now + ML::NearestInteger(Settings::GetReal(SettingNames::S_FlagDropStateDurationSeconds) * 1000);
@@ -316,7 +326,7 @@ Void Private_FlagCarrier_DropFlag(Vec3 _Position) {
 
 	G_PendingEvents.add(K_Event{
 		Type = C_EventType_PlayerDroppedFlag,
-		Player = Private_CreatePlayerRef(OldCarrierPlayer),
+		Player = OldCarrierPlayerRef,
 		Position = _Position
 	});
 }

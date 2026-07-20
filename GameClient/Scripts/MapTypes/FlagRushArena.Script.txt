@@ -9,7 +9,7 @@
 
 #RequireContext CSmMapType
 
-#Const Version "2022-09-18"
+#Const Version "2026-07-20"
 #Const C_MapTypeVersion 1
 #Const ScriptName "MapTypes/FlagRushArena.Script.txt"
 
@@ -80,7 +80,7 @@ Text GetToolbarManialink() {
 	return """
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <manialink version="3" name="FlagRushArena_Toolbar">
-	<frame id="teamcolor" pos="52.5 -84.5">
+	<frame id="teamcolor" pos="42 -84.5">
 		<quad id="background" z-index="-1" size="12 10" halign="center" valign="center" style="UICommon128_1" substyle="BgFrameTilted2" opacity="{{{ C_UI_BackgroundOpacity }}}" />
 		<quad id="button" size="7 7" z-index="1" halign="center" valign="center" style="UICommon64_1" substyle="Flag_dark" scriptevents="1" tooltip="FlagRush" />
 	</frame>

@@ -642,17 +642,17 @@ main() { // @mslint-disable-line max-statements
 
 				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 				// Podium sequence
-				XmlRpc_Base::SendPodium_Start();
 				if(!MB_Private_SkipPodiumSequence) {
+					XmlRpc_Base::SendPodium_Start();
 					{ +++BeforePodiumSequence+++ }
 					if (MB_Settings_UseDefaultPodiumSequence) {
 						MB_Private_PodiumSequence();
 					} else {
-						+++PodiumSequence+++
+						{ +++PodiumSequence+++ }
 					}
 					{ +++AfterPodiumSequence+++ }
-					}
 					XmlRpc_Base::SendPodium_End();
+				}
 
 				XmlRpc_Base::SendEndMap_End(MB_Private_SectionCount_Map, Map);
 

@@ -131,6 +131,9 @@
 #Setting S_ModeCommands_AdminLoginsCsv 			"" 			as "<hidden>" // Admin logins for the mode commands ui
 #Setting S_Debug														False		as "<hidden>"
 
+// Modebase overrides
+#Setting S_ChatTime													0
+
 //////////////
 // Commands //
 //////////////
@@ -373,7 +376,9 @@ Progression::StartMatch();
 
 ***EndMatch***
 ***
-Progression::EndMatch(Scores::GetClanMatchPoints(1), Scores::GetClanMatchPoints(2), Scores::EvaluateMatch());
+// End match logic happens in AfterEndMap to show scorestable to players and prepare the podium.
+// This is necessary since EndMatch occurs between maploads, so we can't have a podium there or show UI.
+{} // @mslint-disable-line no-empty -- Dummy placeholder
 ***
 
 ***AfterEndMatch***
@@ -428,10 +433,24 @@ UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
 ***AfterEndMap***
 ***
-if (Private_MatchPointLimitReached()) {
-	MB_StopMatch();
+declare Boolean MatchConitnues = !Private_MatchPointLimitReached();
+if (MatchConitnues) {
+	MB_SkipPodiumSequence(); // Podium is only to be shown at match end
 } else {
-	MB_SkipPodiumSequence(); // Podium sequence contains match end, since we need a map for the MVP
+	// Finalize match here already, as EndMatch happens between map loads and after podium
+	MB_StopMatch();
+	if (!Progression::MatchIsValid()) {
+		Scores::Clear(Scores::C_Level_Match);
+	}
+	Progression::EndMatch(Scores::GetClanMatchPoints(1), Scores::GetClanMatchPoints(2), Scores::EvaluateMatch());
+
+	// Score table phase
+	UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
+	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
+	MB_Sleep(Durations::C_Segment_MatchEnd / 2);
+	Scores::EndMatch();
+	MB_Sleep(Durations::C_Segment_MatchEnd / 2);
+	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 }
 ***
 
@@ -556,32 +575,12 @@ Playloop::End();
 
 ***PodiumSequence***
 ***
-// Mostly EndMatch logic, but podium is part of the map and not the match, so evaluate match here.
-
-// Score table phase
-Progression::StartMatchEndScoresTable();
+Progression::StartPodium();
+UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
+declare Integer PodiumDuration = ML::Max(Durations::C_Segment_Podium, S_ChatTime * 1000);
+MB_Sleep(PodiumDuration);
 UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
-declare Boolean MatchIsValid = Progression::MatchIsValid();
-if (!MatchIsValid) {
-	Scores::Clear(Scores::C_Level_Match);
-}
-
-// Sleep during message and show scoreboard update half way through
-UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-MB_Sleep(Durations::C_Segment_MatchEnd / 2);
-Scores::EndMatch();
-MB_Sleep(Durations::C_Segment_MatchEnd / 2);
-UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
-Progression::EndMatchEndScoresTable();
-
-// Actual podium phase
-if (HasPodium) {
-	Progression::StartPodium();
-	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
-	MB_Sleep(Durations::C_Segment_Podium);
-	UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
-	Progression::EndPodium();
-}
+Progression::EndPodium();
 ***
 
 // ~~~~~~~~~~ WarmUp / Pause ~~~~~~~~~~ //

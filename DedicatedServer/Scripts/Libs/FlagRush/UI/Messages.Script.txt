@@ -321,18 +321,6 @@ Void BeforeYield() {
 					case Progression::C_Segment_Overtime: {
 						Private_OnOvertimeStarted();
 					}
-					case Progression::C_Segment_MatchEndScoresTable: {
-						if (Event.IsInvalid) {
-							Private_OnMatchSkipped();
-							break;
-						}
-						declare Integer WinnerClan = Scores::EvaluateRound();
-						if (WinnerClan == 0) {
-							Private_OnMatchDraw();
-						} else {
-							Private_OnMatchWon(WinnerClan);
-						}
-					}
 					case Progression::C_Segment_WarmUp: {
 						Private_OnWarmUpStarted();
 						if (Settings::GetBoolean(SettingNames::S_WarmUpWaitForApproval)) {
@@ -347,6 +335,15 @@ Void BeforeYield() {
 			// Segment End
 			case Progression::C_EventType_SegmentEnd: {
 				switch (Event.Segment) {
+					case Progression::C_Segment_Match: {
+						if (Event.IsInvalid) {
+							Private_OnMatchSkipped();
+						} else if (Event.WinnerClan == 0) {
+							Private_OnMatchDraw();
+						} else {
+							Private_OnMatchWon(Event.WinnerClan);
+						}
+					}
 					case Progression::C_Segment_Map: {
 						if (Event.IsInvalid) {
 							Private_OnMapSkipped();

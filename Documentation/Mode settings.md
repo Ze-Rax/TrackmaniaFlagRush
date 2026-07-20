@@ -18,6 +18,7 @@ These settings change how the general progression of a match works, i.e. how man
 | S_UseWarmUp                   | Boolean | True          | Use warm up. At the beginning of the map players have to press the ready button for the match to start. If at least one player in each team is ready, a 60 second countdown starts after which the map starts. If all players are ready, a 5 second countdown start after which the map starts. |
 | S_WarmUpWaitForApproval       | Boolean | False         | Wait for the approval of an admin for the warmup countdowns to start. Requires usage of ModeCommandsUI. |
 | S_SkipMatchOnLastPlayerLeave  | Boolean | True          | Skip the ongoing match if all players leave the server or switch to spectator. |
+| S_ChatTime                    | Integer | 0             | Duration in seconds for the podium sequence at the end of the match. Only takes effect if it's longer than the default podium duration (15s) |
 
 
 ## Gameplay settings

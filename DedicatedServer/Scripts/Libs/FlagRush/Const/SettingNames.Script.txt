@@ -3,6 +3,8 @@
  * Constants for all the available FlagRush settings, both progression and main gamemode settings.
  */
 
+// @mslint-disable naming-convention-constant
+
 // Progression
 #Const S_NbMapsToWinMatch "S_NbMapsToWinMatch"
 #Const S_NbRoundsToWinMap "S_NbRoundsToWinMap"
@@ -12,6 +14,7 @@
 #Const S_UseWarmUp "S_UseWarmUp"
 #Const S_WarmUpWaitForApproval "S_WarmUpWaitForApproval"
 #Const S_SkipMatchOnLastPlayerLeave "S_SkipMatchOnLastPlayerLeave"
+#Const S_ChatTime "S_ChatTime"
 
 // Teams
 #Const S_Team1Name "S_Team1Name"

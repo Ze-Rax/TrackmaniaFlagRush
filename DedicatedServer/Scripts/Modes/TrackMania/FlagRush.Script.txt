@@ -222,6 +222,7 @@ Settings::Track(SettingNames::S_UseOvertime, S_UseOvertime);
 Settings::Track(SettingNames::S_UseWarmUp, S_UseWarmUp);
 Settings::Track(SettingNames::S_WarmUpWaitForApproval, S_WarmUpWaitForApproval);
 Settings::Track(SettingNames::S_SkipMatchOnLastPlayerLeave, S_SkipMatchOnLastPlayerLeave);
+Settings::Track(SettingNames::S_ChatTime, S_ChatTime);
 
 // Teams
 Settings::Track(SettingNames::S_Team1Name, S_Team1Name);

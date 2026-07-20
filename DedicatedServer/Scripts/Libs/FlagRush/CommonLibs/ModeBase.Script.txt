@@ -46,11 +46,16 @@ declare Boolean MB_Private_RunSection_Round; ///< Run the round section as long 
 declare Boolean MB_Private_RunSection_Turn; ///< Run the turn section as long as this is true
 declare Boolean MB_Private_SkipIntroSequence; ///< Skip the intro sequence
 declare Boolean MB_Private_SkipPodiumSequence; ///< Skip the podium sequence
-declare Integer MB_Private_SectionCount_Match; ///< Number of matches played since the beginning of the script
-declare Integer MB_Private_SectionCount_Map; ///< Number of maps played since the beginning of the match
-declare Integer MB_Private_SectionCount_Round; ///< Number of rounds played since the beginning of the map
-declare Integer MB_Private_SectionCount_Turn; ///< Number of turns played since the beginning of the map
-declare Integer MB_Private_SectionCount_PlayLoop; ///< Number of playloops played since the beginning of the turn
+declare Int2 MB_Private_SectionCount_Match; ///< Number of matches played since the beginning of the script
+declare Int2 MB_Private_SectionCount_Map; ///< Number of maps played since the beginning of the match
+declare Int2 MB_Private_SectionCount_Round; ///< Number of rounds played since the beginning of the map
+declare Int2 MB_Private_SectionCount_Turn; ///< Number of turns played since the beginning of the map
+declare Int2 MB_Private_SectionCount_PlayLoop; ///< Number of playloops played since the beginning of the turn
+declare Boolean MB_Private_SectionValid_Match; ///< The latest match section is valid
+declare Boolean MB_Private_SectionValid_Map; ///< The latest match section is valid
+declare Boolean MB_Private_SectionValid_Round; ///< The latest round section is valid
+declare Boolean MB_Private_SectionValid_Turn; ///< The latest turn section is valid
+declare Boolean MB_Private_SectionValid_PlayLoop; ///< The latest playloop section is valid
 declare Integer MB_Private_CurrentNow; ///< Save the value of Now after the yield
 
 declare Boolean MB_Settings_UseDefaultIntroSequence; ///< Use the default introduction sequence at the beginning of the map
@@ -200,10 +205,10 @@ Boolean MB_TurnIsRunning() {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 /** Get the number of matches played since the beginning of the script
  *
- *	@return														The number of match
+ *	@return														The number of matches
  */
 Integer MB_GetMatchCount() {
-	return MB_Private_SectionCount_Match;
+	return MB_Private_SectionCount_Match.Y;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -212,7 +217,7 @@ Integer MB_GetMatchCount() {
  *	@return														The number of maps
  */
 Integer MB_GetMapCount() {
-	return MB_Private_SectionCount_Map;
+	return MB_Private_SectionCount_Map.Y;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -221,7 +226,7 @@ Integer MB_GetMapCount() {
  *	@return														The number of rounds
  */
 Integer MB_GetRoundCount() {
-	return MB_Private_SectionCount_Round;
+	return MB_Private_SectionCount_Round.Y;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -230,7 +235,61 @@ Integer MB_GetRoundCount() {
  *	@return														The number of turns
  */
 Integer MB_GetTurnCount() {
-	return MB_Private_SectionCount_Turn;
+	return MB_Private_SectionCount_Turn.Y;
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+/** Get the number of valid matches played since the beginning of the script
+ *
+ *	@return														The number of valid matches
+ */
+Integer MB_GetValidMatchCount() {
+	return MB_Private_SectionCount_Match.X;
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+/** Get the number of valid maps played since the beginning of the match
+ *
+ *	@return														The number of valid maps
+ */
+Integer MB_GetValidMapCount() {
+	return MB_Private_SectionCount_Map.X;
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+/** Get the number of valid rounds played since the beginning of the map
+ *
+ *	@return														The number of valid rounds
+ */
+Integer MB_GetValidRoundCount() {
+	return MB_Private_SectionCount_Round.X;
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+/** Get the number of valid turns played since the beginning of the map
+ *
+ *	@return														The number of valid turns
+ */
+Integer MB_GetValidTurnCount() {
+	return MB_Private_SectionCount_Turn.X;
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+/// Validate or invalidate the ongoing section
+Void MB_SetValidMatch(Boolean _IsValid) {
+	MB_Private_SectionValid_Match = _IsValid;
+}
+Void MB_SetValidMap(Boolean _IsValid) {
+	MB_Private_SectionValid_Map = _IsValid;
+}
+Void MB_SetValidRound(Boolean _IsValid) {
+	MB_Private_SectionValid_Round = _IsValid;
+}
+Void MB_SetValidTurn(Boolean _IsValid) {
+	MB_Private_SectionValid_Turn = _IsValid;
+}
+Void MB_SetValidPlayLoop(Boolean _IsValid) {
+	MB_Private_SectionValid_PlayLoop = _IsValid;
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -375,10 +434,16 @@ main() { // @mslint-disable-line max-statements
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 		// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 		// Initialize section
-		MB_Private_SectionCount_Match = 0;
-		MB_Private_SectionCount_Map = 0;
-		MB_Private_SectionCount_Round = 0;
-		MB_Private_SectionCount_Turn = 0;
+		MB_Private_SectionCount_Match = <0, 0>;
+		MB_Private_SectionCount_Map = <0, 0>;
+		MB_Private_SectionCount_Round = <0, 0>;
+		MB_Private_SectionCount_Turn = <0, 0>;
+		MB_Private_SectionCount_PlayLoop = <0, 0>;
+		MB_Private_SectionValid_Match = True;
+		MB_Private_SectionValid_Map = True;
+		MB_Private_SectionValid_Round = True;
+		MB_Private_SectionValid_Turn = True;
+		MB_Private_SectionValid_PlayLoop = True;
 		MB_Private_RunSection_Script = True;
 
 		declare persistent Boolean MB_Private_PersistentServerRestarted = False;
@@ -407,16 +472,25 @@ main() { // @mslint-disable-line max-statements
 			// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 			// Initialize section
 			MB_Private_RunSection_Match = True;
-			MB_Private_SectionCount_Match += 1;
-			MB_Private_SectionCount_Map = 0;
-			MB_Private_SectionCount_Round = 0;
-			MB_Private_SectionCount_Turn = 0;
-			MB_Private_SectionCount_PlayLoop = 0;
+			MB_Private_SectionCount_Match.Y += 1;
+			if (MB_Private_SectionValid_Match) {
+				MB_Private_SectionCount_Match.X += 1;
+			} else {
+				MB_Private_SectionValid_Match = True;
+			}
+			MB_Private_SectionCount_Map = <0, 0>;
+			MB_Private_SectionCount_Round = <0, 0>;
+			MB_Private_SectionCount_Turn = <0, 0>;
+			MB_Private_SectionCount_PlayLoop = <0, 0>;
+			MB_Private_SectionValid_Map = True;
+			MB_Private_SectionValid_Round = True;
+			MB_Private_SectionValid_Turn = True;
+			MB_Private_SectionValid_PlayLoop = True;
 
-			XmlRpc_Base::SendStartMatch_Start(<MB_Private_SectionCount_Match, MB_Private_SectionCount_Match>);
+			XmlRpc_Base::SendStartMatch_Start(MB_Private_SectionCount_Match);
 			{ +++InitMatch+++ }
 			{ +++StartMatch+++ }
-			XmlRpc_Base::SendStartMatch_End(<MB_Private_SectionCount_Match, MB_Private_SectionCount_Match>);
+			XmlRpc_Base::SendStartMatch_End(MB_Private_SectionCount_Match);
 
 			while (MB_MatchIsRunning()) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -426,11 +500,18 @@ main() { // @mslint-disable-line max-statements
 				// Initialize section
 				MatchEndRequested = False; //< (True when a vote for next map pass)
 				MB_Private_RunSection_Map = True;
-				MB_Private_SectionCount_Map += 1;
-				MB_Private_SectionCount_Round = 0;
-				MB_Private_SectionCount_Turn = 0;
-				MB_Private_SectionCount_PlayLoop = 0;
-				MB_Private_SkipIntroSequence = False;
+				MB_Private_SectionCount_Map.Y += 1;
+				if (MB_Private_SectionValid_Map) {
+					MB_Private_SectionCount_Map.X += 1;
+				} else {
+					MB_Private_SectionValid_Map = True;
+				}
+				MB_Private_SectionCount_Round = <0, 0>;
+				MB_Private_SectionCount_Turn = <0, 0>;
+				MB_Private_SectionCount_PlayLoop = <0, 0>;
+				MB_Private_SectionValid_Round = True;
+				MB_Private_SectionValid_Turn = True;
+				MB_Private_SectionValid_PlayLoop = True;
 				MB_Private_SkipPodiumSequence = False;
 
 				declare persistent Boolean MB_Private_PersistentMapRestarted = False;
@@ -445,7 +526,7 @@ main() { // @mslint-disable-line max-statements
 				{ +++AfterLoadMap+++ }
 				XmlRpc_Base::SendLoadingMap_End(Map, MB_Private_MapRestarted);
 
-				XmlRpc_Base::SendStartMap_Start(<MB_Private_SectionCount_Map, MB_Private_SectionCount_Map>, Map, MB_Private_MapRestarted);
+				XmlRpc_Base::SendStartMap_Start(MB_Private_SectionCount_Map, Map, MB_Private_MapRestarted);
 
 				{ +++InitMap+++ }
 
@@ -464,7 +545,7 @@ main() { // @mslint-disable-line max-statements
 				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 				{ +++StartMap+++ }
 
-				XmlRpc_Base::SendStartMap_End(<MB_Private_SectionCount_Map, MB_Private_SectionCount_Map>, Map, MB_Private_MapRestarted);
+				XmlRpc_Base::SendStartMap_End(MB_Private_SectionCount_Map, Map, MB_Private_MapRestarted);
 
 				while (MB_MapIsRunning()) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -473,14 +554,21 @@ main() { // @mslint-disable-line max-statements
 					// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 					// Initialize section
 					MB_Private_RunSection_Round = True;
-					MB_Private_SectionCount_Round += 1;
-					MB_Private_SectionCount_Turn = 0;
-					MB_Private_SectionCount_PlayLoop = 0;
+					MB_Private_SectionCount_Round.Y += 1;
+					if (MB_Private_SectionValid_Round) {
+						MB_Private_SectionCount_Round.X += 1;
+					} else {
+						MB_Private_SectionValid_Round = True;
+					}
+					MB_Private_SectionCount_Turn = <0, 0>;
+					MB_Private_SectionCount_PlayLoop = <0, 0>;
+					MB_Private_SectionValid_Turn = True;
+					MB_Private_SectionValid_PlayLoop = True;
 
-					XmlRpc_Base::SendStartRound_Start(<MB_Private_SectionCount_Round, MB_Private_SectionCount_Round>);
+					XmlRpc_Base::SendStartRound_Start(MB_Private_SectionCount_Round);
 					{ +++InitRound+++ }
 					{ +++StartRound+++ }
-					XmlRpc_Base::SendStartRound_End(<MB_Private_SectionCount_Round, MB_Private_SectionCount_Round>);
+					XmlRpc_Base::SendStartRound_End(MB_Private_SectionCount_Round);
 
 					while (MB_RoundIsRunning()) {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
@@ -489,17 +577,28 @@ main() { // @mslint-disable-line max-statements
 						// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 						// Initialize section
 						MB_Private_RunSection_Turn = True;
-						MB_Private_SectionCount_Turn += 1;
-						MB_Private_SectionCount_PlayLoop = 0;
+						MB_Private_SectionCount_Turn.Y += 1;
+						if (MB_Private_SectionValid_Turn) {
+							MB_Private_SectionCount_Turn.X += 1;
+						} else {
+							MB_Private_SectionValid_Turn = True;
+						}
+						MB_Private_SectionCount_PlayLoop = <0, 0>;
+						MB_Private_SectionValid_PlayLoop = True;
 
-						XmlRpc_Base::SendStartTurn_Start(<MB_Private_SectionCount_Turn, MB_Private_SectionCount_Turn>);
+						XmlRpc_Base::SendStartTurn_Start(MB_Private_SectionCount_Turn);
 						{ +++InitTurn+++ }
 						{ +++StartTurn+++ }
-						XmlRpc_Base::SendStartTurn_End(<MB_Private_SectionCount_Turn, MB_Private_SectionCount_Turn>);
+						XmlRpc_Base::SendStartTurn_End(MB_Private_SectionCount_Turn);
 
-						MB_Private_SectionCount_PlayLoop += 1;
+						MB_Private_SectionCount_PlayLoop.Y += 1;
+						if (MB_Private_SectionValid_PlayLoop) {
+							MB_Private_SectionCount_PlayLoop.X += 1;
+						} else {
+							MB_Private_SectionValid_PlayLoop = True;
+						}
 
-						XmlRpc_Base::SendStartPlayLoop(<MB_Private_SectionCount_PlayLoop, MB_Private_SectionCount_PlayLoop>);
+						XmlRpc_Base::SendStartPlayLoop(MB_Private_SectionCount_PlayLoop);
 						{ +++InitPlayLoop+++ }
 						{ +++StartPlayLoop+++ }
 
@@ -517,26 +616,26 @@ main() { // @mslint-disable-line max-statements
 // Turn section end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-						XmlRpc_Base::SendEndPlayLoop(<MB_Private_SectionCount_PlayLoop, MB_Private_SectionCount_PlayLoop>);
-						XmlRpc_Base::SendEndTurn_Start(<MB_Private_SectionCount_Turn, MB_Private_SectionCount_Turn>);
+						XmlRpc_Base::SendEndPlayLoop(MB_Private_SectionCount_PlayLoop);
+						XmlRpc_Base::SendEndTurn_Start(MB_Private_SectionCount_Turn);
 						{ +++EndTurn+++ }
 						{ +++AfterEndTurn+++ }
-						XmlRpc_Base::SendEndTurn_End(<MB_Private_SectionCount_Turn, MB_Private_SectionCount_Turn>);
+						XmlRpc_Base::SendEndTurn_End(MB_Private_SectionCount_Turn);
 					}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Round section end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-					XmlRpc_Base::SendEndRound_Start(<MB_Private_SectionCount_Round, MB_Private_SectionCount_Round>);
+					XmlRpc_Base::SendEndRound_Start(MB_Private_SectionCount_Round);
 					{ +++EndRound+++ }
 					{ +++AfterEndRound+++ }
-					XmlRpc_Base::SendEndRound_End(<MB_Private_SectionCount_Round, MB_Private_SectionCount_Round>);
+					XmlRpc_Base::SendEndRound_End(MB_Private_SectionCount_Round);
 				}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Map section end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-				XmlRpc_Base::SendEndMap_Start(<MB_Private_SectionCount_Map, MB_Private_SectionCount_Map>, Map);
+				XmlRpc_Base::SendEndMap_Start(MB_Private_SectionCount_Map, Map);
 
 				{ +++EndMap+++ }
 				{ +++AfterEndMap+++ }
@@ -555,7 +654,7 @@ main() { // @mslint-disable-line max-statements
 					}
 					XmlRpc_Base::SendPodium_End();
 
-				XmlRpc_Base::SendEndMap_End(<MB_Private_SectionCount_Map, MB_Private_SectionCount_Map>, Map);
+				XmlRpc_Base::SendEndMap_End(MB_Private_SectionCount_Map, Map);
 
 				// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 				// Unload the current map
@@ -576,10 +675,10 @@ main() { // @mslint-disable-line max-statements
 // Match section end
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
-			XmlRpc_Base::SendEndMatch_Start(<MB_Private_SectionCount_Match, MB_Private_SectionCount_Match>);
+			XmlRpc_Base::SendEndMatch_Start(MB_Private_SectionCount_Match);
 			{ +++EndMatch+++ }
 			{ +++AfterEndMatch+++ }
-			XmlRpc_Base::SendEndMatch_End(<MB_Private_SectionCount_Match, MB_Private_SectionCount_Match>);
+			XmlRpc_Base::SendEndMatch_End(MB_Private_SectionCount_Match);
 		}
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 // Main/Server end

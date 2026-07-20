@@ -399,6 +399,7 @@ Progression::StartMap();
 if (!Map::IsValid()) {
 	Progression::InvalidateMap();
 	Progression::RequestMapEnd();
+	MB_SetValidMap(False);
 }
 MB_Sleep(Durations::C_Segment_MapStart);
 
@@ -719,12 +720,13 @@ if (ReinitTeamNames) {
 }
 
 // Skip running match if the last player left, but not if we're before the first round of the first map
-declare Boolean MatchWasStarted =  MB_GetMapCount() > 1 || MB_GetRoundCount() > 0; // At least first round on first map was started
+declare Boolean MatchWasStarted =  MB_GetValidMapCount() > 1 || MB_GetValidRoundCount() > 0; // At least first round on first map was started
 if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted && Map != Null) {
 	Progression::SignalMatchSkippedDueToNoPlayersLeft();
 	Log::Info("Current match was skipped as there are no players remaining");
 	Progression::InvalidateMatch();
 	Progression::RequestMatchEnd(); // Keep for consistency
+	MB_SetValidMatch(False);
 	MB_StopMatch();
 	if (Progression::WarmUpIsRunning()) {
 		WarmUpReadyUp::Stop();
@@ -843,11 +845,13 @@ foreach (Command in Commands::GetPendingEvents()) {
 		case CommandNames::Command_SkipRound: {
 			Progression::InvalidateRound();
 			Progression::RequestRoundEnd();
+			MB_SetValidRound(False);
 			CommandText = "The round was skipped.";
 		}
 		case CommandNames::Command_SkipMap: {
 			Progression::InvalidateMap();
 			Progression::RequestMapEnd();
+			MB_SetValidMap(False);
 			CommandText = "The map was skipped.";
 		}
 		case CommandNames::Command_SetTeam1RoundScore: {

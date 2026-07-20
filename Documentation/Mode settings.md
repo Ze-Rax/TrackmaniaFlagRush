@@ -1,6 +1,6 @@
 # Gamemode settings
 
-Server owners can adjust the behaviour of the gamemode to a certain extend by simply changing settings in the match settings file (sometimes also referred to as maplist) that is used when starting the server.
+Server owners can adjust the behaviour of the gamemode to a certain extent by simply changing settings in the match settings file (sometimes also referred to as the maplist) that is used when starting the server.
 
 FlagRush provides a long list of settings to customize the experience to your liking, including settings to change the general match progression (timelimit, flag score limit, ...) or mid round gameplay (flag carrier penalties, collisions, ...).
 
@@ -13,10 +13,10 @@ These settings change how the general progression of a match works, i.e. how man
 | S_NbMapsToWinMatch            | Integer | 1             | Number of maps to win a match. |
 | S_NbRoundsToWinMap            | Integer | 2             | Number of rounds to win a map. |
 | S_NbFlagsToWinRound           | Integer | 3             | Number of flags scored to win a round. Unlimited if <= 0.0 |
-| S_RoundTimeLimitSeconds       | Integer | 360           | Round timelimit in seconds. Unlimited if <= 0.0 |
-| S_UseOvertime                 | Boolean | True          | Use overtime. If the match is tied when the timelimit runs out, the round will go into overtime until a team scores the next flag. |
-| S_UseWarmUp                   | Boolean | True          | Use warm up. At the beginning of the map players have to press the ready button for the match to start. If at least one player in each team is ready, a 60 second countdown starts after which the map starts. If all players are ready, a 5 second countdown start after which the map starts. |
-| S_WarmUpWaitForApproval       | Boolean | False         | Wait for the approval of an admin for the warmup countdowns to start. Requires usage of ModeCommandsUI. |
+| S_RoundTimeLimitSeconds       | Integer | 360           | Round timelimit in seconds. Unlimited if <= 0 |
+| S_UseOvertime                 | Boolean | True          | Whether or not to use overtime. If enabled and a round is tied when the timelimit runs out, the round will go into overtime until a team scores the next flag. |
+| S_UseWarmUp                   | Boolean | True          | Whether or not to use warm up. If enable, players will have to press the ready button at the beginning of a map for it to start. If at least one player in each team is ready, a 60 second countdown starts after which the map starts. If all players are ready, a 5 second countdown start after which the map starts. |
+| S_WarmUpWaitForApproval       | Boolean | False         | Wait for the approval of an admin for the warmup countdowns to start. Requires usage of ModeCommandsUI or XmlRpc Commands. |
 | S_SkipMatchOnLastPlayerLeave  | Boolean | True          | Skip the ongoing match if all players leave the server or switch to spectator. |
 | S_ChatTime                    | Integer | 0             | Duration in seconds for the podium sequence at the end of the match. Only takes effect if it's longer than the default podium duration (15s) |
 
@@ -37,9 +37,9 @@ These settings change how the gameplay in a round behaves.
 | S_FlagCarrierAdherence           | Real    | 0.9           | Adherence ("Grip") coefficient for the flag carrier. Multiplicative to vehicle tunings. |
 | S_RespawnSpeedLimitKmh           | Real    | 30.0          | Maximum speed allowed for respawning. No limitation if <= 0.0. |
 | S_RespawnDelayPerPlayer          | Real    | 1.0           | Respawn delay in seconds per player in a team: `Total respawn delay = S_RespawnDelayPerPlayer * Number of players in the team + 1.5 (spawn animation)`|
-| S_DropFlagPickupPenalty          | Real    | 3.0           | Duration in seconds in which a player cannot pick up the flag after dropping it. (Other players can instantly pick it up.) |
+| S_DropFlagPickupPenalty          | Real    | 3.0           | Duration in seconds in which a player cannot pick up the flag after dropping it. (Other players can immediately pick it up.) |
 | S_TeleportDetectionThreshold     | Real    | 32.0          | Maximum distance in meters that a player is allowed to teleport (lag) during one server frame before the flag is automatically dropped. Teleport detection is disabled for values <= 0 |
-| S_UseCollisions                  | Boolean | False         | Whether or not to use physics based collisions between players. This setting is EXPERIMENTAL: Player collisions can feel and be weird and inconsistent. If enabled, server will also switch to server side simulation (See S_TrustClientSimu) and disable crude extrapolation (See S_UseCrudeExtrapolation). |
+| S_UseCollisions                  | Boolean | False         | Whether or not to use physics based collisions between players. This setting is EXPERIMENTAL: Player collisions can feel and act weird and inconsistent. If enabled, the server will also switch to server side simulation (See S_TrustClientSimu) and disable crude extrapolation (See S_UseCrudeExtrapolation). |
 | S_UseLightTrails                 | Boolean | True          | Whether to use light trails for the player carrying the flag. |
 
 ## Vehicle Settings
@@ -68,12 +68,12 @@ These settings change the appearance of the teams, including their names and col
 
 | Setting name                  | Type    | Default value | Description |
 | ----------------------------- | ------- | ------------- | ----------- |
-| S_Team1Name                   | Text    | "" (blank)    | Force team 1 name. Use default if blank. |
-| S_Team1Hue                    | Integer | -1            | Force team 1 hue. Range [0, 359] or -1 for default. |
-| S_Team2Name                   | Text    | "" (blank)    | Force team 2 name. Use default if blank. |
-| S_Team2Hue                    | Integer | -1            | Force team 2 hue. Range [0, 359] or -1 for default. |
+| S_Team1Name                   | Text    | "" (blank)    | Force the name of team 1. Use default if blank. |
+| S_Team1Hue                    | Integer | -1            | Force the hue of team 1. Valid values are in range [0, 359] or -1 for default. |
+| S_Team2Name                   | Text    | "" (blank)    | Force the name of team 2. Use default if blank. |
+| S_Team2Hue                    | Integer | -1            | Force the hue of team 2. Valid values are in range [0, 359] or -1 for default. |
 | S_UseClubTags                 | Boolean | True          | Derive teamnames from the clubtags of the players. If all players in a team have the same clubtag, the team name will be set to that club tag (without text formatting), else default names are used. Forced team names take precedence. |
-| S_UseTeamSkins                | Boolean | True          | Force animal/royal skins according to the color of the teams. |
+| S_UseTeamSkins                | Boolean | True          | Force colored skins, according to the color of the teams. |
 
 
 ## Other settings
@@ -84,5 +84,5 @@ Administrative and miscellaneous settings.
 | ----------------------------- | ------- | ------------- | ----------- |
 | S_Debug                       | Boolean | False         | Enables additional debugging features, like more informative logs. |
 | S_ModeCommands_AdminLoginsCsv | Text    | "" (blank)    | Ingame logins of the players that should have access to the ModeCommandsUI. ModeCommandUI provides the ability to manually reset the flag, pause ongoing rounds, set scores and more. |
-| S_UseCrudeExtrapolation       | Boolean | True          | Determines the method that is used by clients to extrapolate player positions. Settings this setting to False has caused major desync issues in the past and is therefore not recommended. |
-| S_TrustClientSimu             | Boolean | True          | Whether to trust the physics simulation of the clients (players) or use serside physics simulation. Serverside physics simulation can cause teleporation on the client side, depending on their network connection to the server. |
+| S_UseCrudeExtrapolation       | Boolean | True          | Whether or not to use crude extrapolation that is used by clients to extrapolate player positions. Disabling crude extrapolation has caused major desync issues in the past and is therefore not recommended. |
+| S_TrustClientSimu             | Boolean | True          | Whether to trust the physics simulation of the clients (players) or use serside physics simulation. Serverside physics simulation can cause minor jittering or teleporation on the client side, depending on their network connection to the server. |

@@ -3,12 +3,14 @@
 ## 1.7.0
 
 ### General
++ Implemented new vehicle specific hitboxes based on object-oriented bounding boxes.
++ Added a settings `S_ChatTime` to extend the podium duration.
 * Completely reworked XmlRpc Callbacks. Check the [XmlRpc Documentation](./Documentation/XmlRpc/XmlRpc.md) for the new specification
-* Implemented new vehicle specific hitboxes based on object-oriented bounding boxes.
 
 ### Bugs and crashes
-* Fixed some minor typos.
+* Fixed a crash when the current flagcarrier disconnects from the server.
 * Fixed stadium vehicle tunings not being applied.
+* Fixed some minor typos.
 
 ## 1.6.0
 

@@ -1,13 +1,13 @@
 # XmlRpc
 
-Additional to the regular Callbacks sent by common Trackmania gamemodes, FlagRush sends additional XmlRpc-Callbacks for the most important events. Those include general progression events, as well as gameplay related events. Below, a list of all callbacks and the situation in which they are sent is provided. The actual payload definition is defined through the provded Json-Schema in the `JsonSchema` subdirectory.
+Additional to the regular Callbacks sent by common Trackmania gamemodes, FlagRush sends additional gamemode specific XmlRpc-Callbacks for the most important events. Those include general progression events, as well as gameplay related events. Below, a list of all callbacks and the situation in which they are sent is provided. The actual payload definition is defined through the provded Json-Schema in the `JsonSchema` subdirectory.
 
-Warning: These Callbacks are heavily work in progress and might change with breaking changes in the future.
+Warning: These Callbacks are work in progress and might change with breaking changes in the future.
 
 ## Callbacks
 
 ### Progression
-The following callbacks are sent when the match progresses to a new segment. Note that even though some names might be similar to the common callbacks from Nadeo gamemodes, the timing might be different due to different requriements for themode.
+The following callbacks are sent when the match progresses to a new segment. Note that even though some names might be similar to the common callbacks from Nadeo gamemodes, the timing might be different due to different requriements for the mode.
 
 | Callback Name                         | Description | Payload |
 | ------------------------------------- | ----------- | ------- |

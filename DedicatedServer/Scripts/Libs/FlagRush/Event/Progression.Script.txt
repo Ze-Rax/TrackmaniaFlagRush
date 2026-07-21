@@ -27,7 +27,6 @@
 #Const C_Segment_WarmUp 7
 #Const C_Segment_Pause 8
 #Const C_Segment_Podium 9
-#Const C_Segment_MatchEndScoresTable 10 ///< Unfortunately, the match winner is determined during the podium sequence which happens before match end, so we need a special segment
 
 #Const C_EventTypeNames [
 	1 => "SegmentStart",
@@ -49,8 +48,7 @@
 	6 => "Overtime",
 	7 => "WarmUp",
 	8 => "Pause",
-	9 => "Podium",
-	10 => "MatchEndScoresTable"
+	9 => "Podium"
 ]
 
 
@@ -574,20 +572,6 @@ Void EndPodium() {
   G_PendingEvents.add(K_Event{
     Type = C_EventType_SegmentEnd,
     Segment = C_Segment_Podium
-  });
-}
-
-Void StartMatchEndScoresTable() {
-  G_PendingEvents.add(K_Event{
-    Type = C_EventType_SegmentStart,
-    Segment = C_Segment_MatchEndScoresTable
-  });
-}
-
-Void EndMatchEndScoresTable() {
-  G_PendingEvents.add(K_Event{
-    Type = C_EventType_SegmentEnd,
-    Segment = C_Segment_MatchEndScoresTable
   });
 }
 

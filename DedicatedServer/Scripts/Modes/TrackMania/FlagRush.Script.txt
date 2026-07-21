@@ -405,6 +405,7 @@ Progression::StartMap();
 if (!Map::IsValid()) {
 	Progression::InvalidateMap();
 	Progression::RequestMapEnd();
+	MB_SetValidMap(False);
 }
 MB_Sleep(Durations::C_Segment_MapStart);
 
@@ -434,10 +435,7 @@ UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
 ***AfterEndMap***
 ***
-declare Boolean MatchConitnues = !Private_MatchPointLimitReached();
-if (MatchConitnues) {
-	MB_SkipPodiumSequence(); // Podium is only to be shown at match end
-} else {
+if (Private_MatchPointLimitReached()) {
 	// Finalize match here already, as EndMatch happens between map loads and after podium
 	MB_StopMatch();
 	if (!Progression::MatchIsValid()) {
@@ -453,6 +451,12 @@ if (MatchConitnues) {
 	MB_Sleep(Durations::C_Segment_MatchEnd / 2);
 	UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 }
+// Usually we'd skip the podium sequence here, if the match isn't finished, so we only show the podium when the whole match ends,
+// but some server controllers (namely Pyplanet) rely on the podium sequence XmlRpc callbacks for their map queue.
+// See also ***PodiumSequence***
+// else {
+// 	MB_SkipPodiumSequence();
+// }
 ***
 
 // ~~~~~~~~~~ Round ~~~~~~~~~~ //
@@ -576,12 +580,18 @@ Playloop::End();
 
 ***PodiumSequence***
 ***
-Progression::StartPodium();
-UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
-declare Integer PodiumDuration = ML::Max(Durations::C_Segment_Podium, S_ChatTime * 1000);
-MB_Sleep(PodiumDuration);
-UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
-Progression::EndPodium();
+// Usually, if the match isn't finished, we mark the podium sequence to be skipped in AfterEndMap, where we also finalize the match,
+// but some server controllers (namely Pyplanet) rely on the podium sequence XmlRpc callbacks for their map queue.
+// Therefore we don't skip it and just do nothing during the sequence in that case.
+// See also ***AfterEndMap***
+if (!Progression::MatchIsRunning()) {
+	Progression::StartPodium();
+	UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
+	declare Integer PodiumDuration = ML::Max(Durations::C_Segment_Podium, S_ChatTime * 1000);
+	MB_Sleep(PodiumDuration);
+	UIManager.UIAll.UISequence = CUIConfig::EUISequence::PlayersPresentation;
+	Progression::EndPodium();
+}
 ***
 
 // ~~~~~~~~~~ WarmUp / Pause ~~~~~~~~~~ //
@@ -719,12 +729,13 @@ if (ReinitTeamNames) {
 }
 
 // Skip running match if the last player left, but not if we're before the first round of the first map
-declare Boolean MatchWasStarted =  MB_GetMapCount() > 1 || MB_GetRoundCount() > 0; // At least first round on first map was started
+declare Boolean MatchWasStarted =  MB_GetValidMapCount() > 1 || MB_GetValidRoundCount() > 0; // At least first round on first map was started
 if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted && Map != Null) {
 	Progression::SignalMatchSkippedDueToNoPlayersLeft();
 	Log::Info("Current match was skipped as there are no players remaining");
 	Progression::InvalidateMatch();
 	Progression::RequestMatchEnd(); // Keep for consistency
+	MB_SetValidMatch(False);
 	MB_StopMatch();
 	if (Progression::WarmUpIsRunning()) {
 		WarmUpReadyUp::Stop();
@@ -843,11 +854,13 @@ foreach (Command in Commands::GetPendingEvents()) {
 		case CommandNames::Command_SkipRound: {
 			Progression::InvalidateRound();
 			Progression::RequestRoundEnd();
+			MB_SetValidRound(False);
 			CommandText = "The round was skipped.";
 		}
 		case CommandNames::Command_SkipMap: {
 			Progression::InvalidateMap();
 			Progression::RequestMapEnd();
+			MB_SetValidMap(False);
 			CommandText = "The map was skipped.";
 		}
 		case CommandNames::Command_SetTeam1RoundScore: {

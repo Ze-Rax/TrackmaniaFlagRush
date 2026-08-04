@@ -459,7 +459,10 @@ Text GetManialink() {
 				CloseMenu();
 			}
 			case "{{{ C_Action_ToggleSpecate }}}": {
-				Playground.RequestSpectatorClient( !InputPlayer.RequestsSpectate );
+				// InputPlayer may be null after mapload, during synchro, before intro.
+				if (InputPlayer != Null) {
+					Playground.RequestSpectatorClient(!InputPlayer.RequestsSpectate);
+				}
 			}
 			case "{{{ C_Action_Quit }}}": {
 				if (G_QuitConfirm) {

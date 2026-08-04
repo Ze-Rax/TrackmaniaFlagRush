@@ -10,6 +10,7 @@
 ### Bugs and crashes
 * Fixed a crash when the current flagcarrier disconnects from the server.
 * Fixed stadium vehicle tunings not being applied.
+* Fixed a pause menu crash when clients try to toggle spectator after mapload but before the intro sequence.
 * Fixed some minor typos.
 
 ## 1.6.0

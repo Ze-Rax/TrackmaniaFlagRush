@@ -729,7 +729,8 @@ if (ReinitTeamNames) {
 }
 
 // Skip running match if the last player left, but not if we're before the first round of the first map
-declare Boolean MatchWasStarted =  MB_GetValidMapCount() > 1 || MB_GetValidRoundCount() > 0; // At least first round on first map was started
+// TODO: This still sometimes skips when it shouldn't, after a map was skipped wotjpit tje forst round even starting. Doesn't cause issues, but it's an unnecessary skip.
+declare Boolean MatchWasStarted = MB_GetValidMapCount() > 1 || MB_GetValidRoundCount() > 0; // At least first round on first map was started
 if (S_SkipMatchOnLastPlayerLeave && LastPlayerLeft && MatchWasStarted && Map != Null) {
 	Progression::SignalMatchSkippedDueToNoPlayersLeft();
 	Log::Info("Current match was skipped as there are no players remaining");
